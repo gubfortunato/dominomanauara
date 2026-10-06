@@ -378,6 +378,23 @@ body{touch-action:manipulation}
 .res-patro.has-banner{display:block;text-align:center}
 .res-patro.has-banner .sp-k{display:block;margin-bottom:6px}
 .res-patro.has-banner .sp-slides{margin:0 auto}
+.brandlink{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;text-align:left;cursor:pointer;letter-spacing:inherit;line-height:inherit;-webkit-tap-highlight-color:transparent}
+.brandlink:active{opacity:.75}
+.mechip{position:relative}
+.mechip .face{display:block;border-radius:50%}
+.mechip .edit{position:absolute;right:-3px;bottom:-3px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--nos);color:var(--bg-2);box-shadow:0 0 0 2.5px var(--bg)}
+.mechip .edit svg{width:14px;height:14px}
+.rulescard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;width:100%;text-align:left;padding:12px 18px 12px 20px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);cursor:pointer;font:inherit}
+.rulescard:active{transform:scale(.99)}
+.rc-ic{display:block;width:24px;height:48px;transform:rotate(-14deg);filter:drop-shadow(0 3px 4px var(--shadow))}
+.rc-ic svg{width:100%;height:100%;display:block}
+.rc-tx{display:grid;gap:1px;min-width:0}
+.rc-k{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.rc-tx b{font-family:var(--font-display);font-weight:400;font-size:21px;line-height:1.15}
+.rc-tx small{font-size:13px;line-height:1.35;color:var(--muted)}
+.rc-go{font-size:30px;line-height:1;color:var(--muted);padding-bottom:3px}
+#setupPatro:empty{display:none}
+#setupPatro .sponsor{margin-top:6px}
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:12px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
@@ -480,10 +497,9 @@ body{touch-action:manipulation}
   </section>
 
   <section class="screen panel" id="scrHome" hidden>
-    <button type="button" class="backbtn" id="homeBack">← Voltar</button>
     <div class="home-top">
-      <div><p class="kicker">Regras de Manaus</p><h1 class="brand">Dominó <em>Manauara</em></h1></div>
-      <button type="button" class="mechip" id="meChip" aria-label="Trocar nome ou foto"></button>
+      <div><p class="kicker">Regras de Manaus</p><h1 class="brand"><button type="button" class="brandlink" id="brandHome" aria-label="Dominó Manauara: ir para a tela inicial">Dominó <em>Manauara</em></button></h1></div>
+      <button type="button" class="mechip" id="meChip" aria-label="Editar perfil: nome e foto"><span class="face" id="meChipFace"></span><span class="edit" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span></button>
     </div>
     <p class="lead">Fala, <b id="homeName"></b>. Bora pra mesa?</p>
     <button type="button" class="card wood" id="goResume" hidden>
@@ -497,6 +513,11 @@ body{touch-action:manipulation}
     <button type="button" class="card wood card-off" id="goOnline" disabled aria-disabled="true">
       <span class="ck">Mesa online · em breve</span><span class="ct">Jogar com os amigos</span>
       <span class="cd">Quatro pessoas de verdade na mesma mesa, cada uma no seu celular e com sua foto. Está chegando.</span>
+    </button>
+    <button type="button" class="rulescard" id="howBtn">
+      <span class="rc-ic" id="rulesTile" aria-hidden="true"></span>
+      <span class="rc-tx"><span class="rc-k">Como se joga</span><b>Regras de Manaus</b><small>Bucho, garagem, passe e galo, explicados</small></span>
+      <span class="rc-go" aria-hidden="true">›</span>
     </button>
     <div class="mytreino wood" id="myTreino" hidden>
       <span class="ck">Seu histórico neste celular</span>
@@ -523,10 +544,6 @@ body{touch-action:manipulation}
       <span>O jogo está começando e cada opinião ajuda a deixar ele do jeito da nossa mesa.</span>
     </button>
     <a class="sponsor" id="sponsor" target="_blank" rel="noopener" hidden></a>
-    <div class="links">
-      <button type="button" class="linkbtn" id="howBtn">Regras de Manaus</button>
-      <button type="button" class="linkbtn" id="changeName">Trocar nome ou foto</button>
-    </div>
     <p class="note foot">Dominó Manauara · <a href="privacidade.html">Privacidade</a></p>
   </section>
 
@@ -538,6 +555,7 @@ body{touch-action:manipulation}
     <div class="field"><label for="selRight">Adversário à direita <small>· joga antes de você</small></label><select id="selRight"></select></div>
     <div class="row"><button type="button" class="secondary" id="shuffleBtn">Sortear a mesa</button></div>
     <button type="button" class="primary" id="startOffline">Começar</button>
+    <div id="setupPatro"></div>
   </section>
   <section class="screen game" id="scrGame" hidden>
     <header class="score">
@@ -1206,14 +1224,14 @@ $('#saveProfile').addEventListener('click', () => {
 // ---- Início ----
 function renderHome() {
   $('#homeName').textContent = me;
-  $('#meChip').innerHTML = faceImg(myFaceURI(), 'chipface');
+  $('#meChipFace').innerHTML = faceImg(myFaceURI(), 'chipface');
   renderResume(); renderMyTreino(); renderInstall(); renderSponsor(); readySlides();
   $('#fbCard').hidden = !CONFIG.whats;
   renderApoio();
   $('#homeName').innerHTML = esc(me) + (isApoiador() ? '<span class="apoiador">Apoiador</span>' : '');
 }
 $('#meChip').addEventListener('click', () => openProfile('home'));
-$('#changeName').addEventListener('click', () => openProfile('home'));
+$('#brandHome').addEventListener('click', () => show('who'));
 $('#howBtn').addEventListener('click', () => {
   openSheet('info', `${RULES_HTML}<button type="button" class="primary" id="closeInfo">Entendi</button>`);
   $('#closeInfo').addEventListener('click', closeSheet);
@@ -1299,7 +1317,12 @@ SEL.forEach(id => $(id).addEventListener('change', e => {
   el.dataset.prev = v;
 }));
 $('#shuffleBtn').addEventListener('click', () => setupFill());
-$('#goOffline').addEventListener('click', () => { setupFill(); show('setup'); });
+$('#goOffline').addEventListener('click', () => {
+  setupFill();
+  const p = CONFIG.patrocinio, box = $('#setupPatro');
+  box.innerHTML = p && p.nome ? `<a class="sponsor${p.banner ? ' has-banner' : ''}" href="${esc(p.link || SITE_URL)}" target="_blank" rel="noopener"><span class="sp-k">Patrocínio</span>${p.banner ? bannerSlides(p) : `<b>${esc(p.nome)}</b><span>${esc(p.texto || '')}</span>`}</a>` : '';
+  show('setup'); readySlides();
+});
 
 // ---- Histórico neste celular (só de quem joga de verdade, cadeira 0) ----
 function blankTreino() { return { jogos: 0, vitorias: 0, partidas: 0, partidasVencidas: 0, maos: 0, batidas: 0, galos: 0 }; }
@@ -1445,7 +1468,7 @@ function sponsorResult() {
   const m = sponsorMark(); if (!m) return;
   $('#boardWrap').insertAdjacentHTML('afterbegin', `<div class="mesa-patro" aria-hidden="true">${m}</div>`);
 })();
-document.addEventListener('click', e => { if (e.target.closest('#sponsor, .res-patro')) track('patrocinio-clique'); });
+document.addEventListener('click', e => { if (e.target.closest('.sponsor, .res-patro')) track('patrocinio-clique'); });
 
 // ---- Banner animado: as imagens se alternam com fade ----
 function bannerSlides(p) {
@@ -1490,6 +1513,8 @@ document.addEventListener('error', e => {
     const rest = slides.querySelectorAll('img');
     if (rest.length) { if (wasOn) rest[0].classList.add('on'); return; }
     if (slides.closest('#sponsor')) { renderSponsor(true); return; }
+    const card = slides.closest('.sponsor');
+    if (card) { const p = CONFIG.patrocinio || {}; card.classList.remove('has-banner'); slides.outerHTML = `<b>${esc(p.nome || '')}</b><span>${esc(p.texto || '')}</span>`; return; }
   }
   const box = im.closest('.res-patro, .mesa-patro');
   if (!box) return;
@@ -1500,7 +1525,8 @@ document.addEventListener('error', e => {
   } else im.remove();
 }, true);
 
-$('#homeBack').addEventListener('click', () => show('who'));
+
+$('#rulesTile').innerHTML = `<svg viewBox="-0.04 -0.04 1.08 2.08">${tileSVG({ x: .5, y: 1, o: 'v', v1: 5, v2: 5 }, '', false)}</svg>`;
 
 
 // ---- Desenho das peças ----
