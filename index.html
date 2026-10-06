@@ -407,6 +407,14 @@ body{touch-action:manipulation}
 .menubtn svg{width:18px;height:18px}
 .menubtn:active{transform:scale(.96)}
 @media (orientation: landscape) and (max-height: 560px){ .meta .menubtn{order:3;min-height:34px;padding:6px 14px 6px 12px;font-size:14px} }
+.editbtn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:10px 22px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+.editbtn svg{width:17px;height:17px;color:var(--nos)}
+.editbtn:active{transform:scale(.97)}
+.fpw{position:relative;display:block}
+.fpw .edit{position:absolute;right:-4px;bottom:-2px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--nos);color:var(--bg-2);box-shadow:0 0 0 2.5px var(--bg)}
+.fpw .edit svg{width:15px;height:15px}
+/* mesa redonda um pouco menor no celular em pé, para os nomes dos lados não encostarem na borda */
+@media (orientation: portrait), (min-height: 561px){ .rt-wrap{width:min(62vw,40vh,330px)} }
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:12px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
@@ -486,7 +494,7 @@ body{touch-action:manipulation}
     </div>
     <div class="entry-actions">
       <button type="button" class="primary" id="enterBtn">Começar</button>
-      <button type="button" class="linkbtn" id="editProfile" hidden>Trocar nome ou foto</button>
+      <button type="button" class="editbtn" id="editProfile" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>Editar perfil</button>
     </div>
     <div class="train go" id="train" role="button" tabindex="0" aria-label="Derrubar as pedras de novo"></div>
   </section>
@@ -1156,7 +1164,7 @@ function renderEntry() {
   const html = ENTRY_SEATS.map((s, i) => {
     const a = s.ang * Math.PI / 180, style = `left:${f2(50 + 50 * Math.cos(a))}%;top:${f2(50 + 50 * Math.sin(a))}%;--i:${i}`;
     if (!s.you) return `<div class="friend bot" style="${style}">${faceImg(botFaceURI(s.bot), 'fp')}<span class="fn">${esc(s.bot)}</span></div>`;
-    const face = profile ? faceImg(myFaceURI(), 'fp') : '<span class="fi">?</span>';
+    const face = profile ? `<span class="fpw">${faceImg(myFaceURI(), 'fp')}<span class="edit" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span></span>` : '<span class="fi">?</span>';
     return `<button type="button" class="friend${profile ? ' you' : ''}" id="meSeat" style="${style}" aria-label="${profile ? 'Trocar nome ou foto' : 'Criar seu perfil'}">${face}<span class="fn">${profile ? esc(me) : 'Você'}</span></button>`;
   }).join('');
   $$('#roundTable .friend').forEach(el => el.remove());
