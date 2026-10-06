@@ -1112,6 +1112,7 @@ function toast(msg) {
 const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Game'];
 let showTimer = null;
 function show(name) {
+  if (window.__reloadWhenFree && name !== 'game') { saveGame(); location.reload(); return; }
   screen = name;
   const next = $('#scr' + name[0].toUpperCase() + name.slice(1));
   const cur = SCREENS.map(s => $('#scr' + s)).find(el => !el.hidden && el !== next && !el.classList.contains('fade-out'));
@@ -2079,7 +2080,14 @@ let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTime
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}); });
+  // Versão nova publicada: recarrega sozinho para mostrar, mas nunca no meio de uma mão.
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) return;
+    if (screen === 'game') { window.__reloadWhenFree = true; return; }
+    saveGame(); location.reload();
+  });
 }
 show('who');
 </script>

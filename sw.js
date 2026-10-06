@@ -1,6 +1,6 @@
 // Dominó Manauara: guarda o jogo no celular para abrir rápido e funcionar sem internet.
 // Ao publicar uma versão nova, troque o número abaixo para os celulares baixarem tudo de novo.
-const CACHE = 'dominomanauara-v10';
+const CACHE = 'dominomanauara-v11';
 const FILES = [
   './',
   './index.html',
@@ -14,7 +14,8 @@ const FILES = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  // cache: 'reload' busca direto no servidor, sem pegar cópia velha guardada pelo navegador
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -41,7 +42,8 @@ self.addEventListener('fetch', e => {
     // Página: tenta a internet primeiro (pega a versão nova); com internet ruim ou sem internet, usa a guardada.
     e.respondWith((async () => {
       const cached = await caches.match(req, { ignoreSearch: true }) || await caches.match('./index.html');
-      const net = fetch(req).then(res => putInCache(req, res));
+      // 'no-cache': sempre confere com o servidor se a página mudou (rápido quando não mudou)
+      const net = fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }).then(res => putInCache(req, res));
       if (!cached) return net;
       net.catch(() => {});
       const slow = new Promise(r => setTimeout(() => r(cached), 3500));
