@@ -491,6 +491,39 @@ body{touch-action:manipulation}
 .novidades li{font-size:14.5px;line-height:1.45}
 /* Celular deitado: nomes dos lados da mesa redonda não encostam na borda */
 @media (orientation: landscape) and (max-height: 560px){ .entry .rt-wrap{margin-inline:62px} }
+
+/* ---- Fale com a gente ---- */
+.fale-form{display:grid;gap:16px}
+.fale-texto{width:100%;font:inherit;font-size:16px;line-height:1.45;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg);resize:vertical;min-height:140px}
+.fale-contato{width:100%;font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg)}
+.fale-texto:focus,.fale-contato:focus{outline:2px solid var(--glow);outline-offset:1px}
+.fale-conta{justify-self:end}
+.fale-ok{display:grid;gap:8px;padding:20px}
+.fale-ok .ck{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+.fale-ok b{font-family:var(--font-display);font-weight:400;font-size:24px;line-height:1.15}
+.fale-ok small{font-size:14.5px;line-height:1.45;color:var(--wood-muted)}
+.fale-ok .primary{margin-top:8px}
+/* ---- Caixa de mensagens do dono ---- */
+.dn-msgs-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.dn-msgn{font-size:12px;font-weight:700;color:var(--wood-muted)}
+.dn-msgs .dn-seg{background:rgba(0,0,0,.2);border-color:rgba(239,226,204,.18)}
+.dn-msgs .dn-seg button{color:var(--wood-muted)}
+.dn-msgs .dn-seg button[aria-pressed="true"]{color:var(--bg-2)}
+.dn-msglista li{display:grid;gap:6px;align-items:start}
+.dn-msglista .m-top{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--wood-muted)}
+.dn-msglista .m-tipo{font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:11px}
+.dn-msglista .m-tipo.problema{color:var(--alert)}
+.dn-msglista .m-tipo.ideia{color:var(--glow)}
+.dn-msglista .m-tipo.elogio{color:var(--ok)}
+.dn-msglista .m-txt{font-size:15px;line-height:1.45;white-space:pre-wrap;word-break:break-word;color:var(--wood-ink)}
+.dn-msglista .m-meta{font-size:12px;color:var(--wood-muted);word-break:break-word}
+.dn-msglista .m-acoes{display:flex;gap:8px;flex-wrap:wrap}
+.dn-msglista .m-acoes button{border:1px solid rgba(239,226,204,.3);background:transparent;color:var(--wood-ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.dn-msglista .m-acoes button.perigo{color:var(--alert);border-color:var(--alert)}
+.dn-msglista li.resolvido .m-txt{opacity:.6}
+.dn-msglista .m-meta a{color:var(--glow);text-decoration:underline}
+.idade{grid-template-columns:1fr 1fr}
+.idade button[aria-checked="true"]{background:var(--nos);color:var(--bg-2)}
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:12px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
@@ -583,11 +616,18 @@ body{touch-action:manipulation}
       <input id="nameInput" type="text" maxlength="14" autocomplete="nickname" autocapitalize="words" enterkeyhint="done" spellcheck="false" placeholder="Ex.: Zé do Bairro">
     </div>
     <div class="field">
+      <span class="flabel" id="idadeLbl">Sua idade</span>
+      <div class="dn-seg idade" id="idadeSeg" role="radiogroup" aria-labelledby="idadeLbl">
+        <button type="button" role="radio" data-i="maior" aria-checked="false">18 anos ou mais</button><button type="button" role="radio" data-i="menor" aria-checked="false">Menos de 18</button>
+      </div>
+      <p class="note">Guardamos só a faixa, não a data de nascimento, e ela fica neste aparelho.</p>
+    </div>
+    <div class="field">
       <span class="flabel">Sua cara na mesa</span>
       <div class="avatars" id="avatarGrid" role="radiogroup" aria-label="Escolha sua foto ou um avatar"></div>
       <div class="links" id="photoTools" hidden><button type="button" class="linkbtn" id="photoChange">Trocar foto</button><button type="button" class="linkbtn" id="photoRemove">Remover foto</button></div>
       <input type="file" id="photoInput" accept="image/*" hidden>
-      <p class="note">Com foto, os outros jogadores veem que você é gente de verdade: ela vai aparecer na mesa online, que está chegando. Não quer aparecer? Escolha um avatar.</p>
+      <p class="note" id="fotoNota">Com foto, os outros jogadores veem que você é gente de verdade: ela vai aparecer na mesa online, que está chegando. Não quer aparecer? Escolha um avatar.</p>
     </div>
     <button type="button" class="primary" id="saveProfile">Salvar e entrar</button>
     <p class="note aceite">Ao salvar, você aceita os <a href="termos.html">Termos de uso</a> e a <a href="privacidade.html">Privacidade</a>.</p>
@@ -660,6 +700,33 @@ body{touch-action:manipulation}
     <div id="setupPatro"></div>
   </section>
 
+  <section class="screen panel" id="scrFale" hidden>
+    <button type="button" class="backbtn" id="faleBack">← Voltar</button>
+    <div><p class="kicker">Fale com a gente</p><h2 class="brand" style="font-size:30px">Problema, ideia ou elogio?</h2></div>
+    <div class="fale-form" id="faleForm">
+      <div class="dn-seg" id="faleTipo" role="group" aria-label="Tipo de mensagem">
+        <button type="button" data-t="problema" aria-pressed="true">Problema</button><button type="button" data-t="ideia" aria-pressed="false">Ideia</button><button type="button" data-t="elogio" aria-pressed="false">Elogio</button>
+      </div>
+      <div class="field">
+        <label for="faleTexto">Conte pra gente</label>
+        <textarea id="faleTexto" class="fale-texto" rows="6" maxlength="1000"></textarea>
+        <small class="note fale-conta" id="faleConta">0/1000</small>
+      </div>
+      <div class="field">
+        <label for="faleContato">Quer resposta? <small>· opcional</small></label>
+        <input id="faleContato" class="fale-contato" type="text" maxlength="60" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Seu WhatsApp ou e-mail">
+      </div>
+      <p class="note">Junto vão o seu apelido, a versão do app e o tipo de aparelho, para achar o problema mais rápido. Sua foto não vai.</p>
+      <button type="button" class="primary" id="faleEnviar">Enviar</button>
+    </div>
+    <div class="fale-ok wood" id="faleOk" hidden>
+      <span class="ck">Recebido</span>
+      <b>Obrigado! Sua mensagem chegou.</b>
+      <small id="faleOkTx"></small>
+      <button type="button" class="primary" id="faleFim">Voltar</button>
+    </div>
+  </section>
+
   <section class="screen panel" id="scrDono" hidden>
     <button type="button" class="backbtn" id="donoBack">← Voltar</button>
     <div><p class="kicker">Área do dono</p><h2 class="brand" style="font-size:30px">Como está a mesa</h2></div>
@@ -686,6 +753,14 @@ body{touch-action:manipulation}
       </div>
       <div class="dn-list wood"><span class="ck">O que fizeram</span><ul id="dnEventos"></ul></div>
       <div class="dn-list wood"><span class="ck">De onde jogam</span><ul id="dnCidades"></ul></div>
+    </div>
+    <div class="dn-list wood dn-msgs" id="dnMsgs" hidden>
+      <div class="dn-msgs-top"><span class="ck">Mensagens do Fale com a gente</span><span class="dn-msgn" id="dnMsgN"></span></div>
+      <div class="dn-seg dn-msgfiltro" id="dnMsgFiltro" role="group" aria-label="Quais mensagens">
+        <button type="button" data-f="novo" aria-pressed="true">Novas</button><button type="button" data-f="" aria-pressed="false">Todas</button>
+      </div>
+      <button type="button" class="primary" id="dnMsgSenha" hidden>Digite a senha de novo para ver as mensagens</button>
+      <ul id="dnMsgLista" class="dn-msglista"></ul>
     </div>
     <p class="dn-err" id="dnErr" role="status" hidden></p>
     <div class="dn-key wood" id="dnKey" hidden>
@@ -1111,8 +1186,9 @@ const CONFIG = {
   // Ex.: { nome: 'Açaí do Bairro', texto: 'Peça pelo WhatsApp', link: 'https://wa.me/55...', logo: 'patrocinio/acai.png' }
   // Estatística anônima (Umami Cloud): o "Website ID" do painel. Vazio: nada é contado.
   umamiId: '52db3c75-c2b5-4f28-b0b4-eb0fce4cecb0',
+  api: '',    // Servidor do jogo (Cloudflare): mensagens do Fale com a gente; depois ranking e mesa online
   // Área do dono: o link do painel do Umami, cifrado. Só abre com a senha do dono (nunca fica no código).
-  dono: {it: 600000, salt: 'p2uDQFlY5kRWxeL7s3CBKg==', iv: 'JeSEA+26vctz1/+3', data: 'cXrohcb3VrLdLyg01dNiMbXO9xsvTEw+HCWPlB9fNuOJ163MrpZfo474TczQu1KhyFom6sRFMM8vNAHmeYCBvK95vMpEJ+jweQ=='},
+  dono: {it: 600000, salt: 'Rsv+TFmbGp/qqRK3SjZflA==', iv: 'rbh9acXT08e5qqKS', data: 'pGUT+l1pDLcf1hbMgRRqvf36nSmWePJDvuuU7kFRbuuuHqmguqUMq8Q+aZdHQiAH9kIlbTbE1cDAdtlo97Q7q+oPJOoiPQl2MWKiWe/dBx7kDWxvEDUhoBz1Dknq9aX+fenYQUMD1il6Py4DJY/+qphQmQrKnwGP9KLGLwQeEQ=='},
   patrocinio: {
     nome: 'alug+', texto: 'Baixe agora grátis · alugmaisapp.com',
     alt: 'alug+: baixe agora grátis. alugmaisapp.com. Sem taxa por imóvel, imóveis ilimitados.',
@@ -1139,6 +1215,10 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.4', data: '06/10/2026', itens: [
+    'O perfil pergunta a faixa de idade (só 18+ ou menos de 18, sem data de nascimento).',
+    'Menores de 18 anos jogam com avatar, sem foto.'
+  ] },
   { v: '1.3', data: '06/10/2026', itens: [
     'Termos de uso, no rodapé do início e na criação do perfil.',
     'Apelidos com palavrão, ofensa ou preconceito não são aceitos.'
@@ -1241,7 +1321,11 @@ const PKEY = 'dmz-perfil', FKEY = 'dmz-foto', GKEY = 'dmz-jogo', HKEY = 'dmz-his
 function loadProfile() {
   try {
     const p = JSON.parse(store.get(PKEY) || 'null');
-    return p && typeof p.name === 'string' && p.name.trim() ? { name: p.name.trim().slice(0, 14), av: typeof p.av === 'string' ? p.av : 'a1' } : null;
+    if (!(p && typeof p.name === 'string' && p.name.trim())) return null;
+    const pr = { name: p.name.trim().slice(0, 14), av: typeof p.av === 'string' ? p.av : 'a1' };
+    if (p.idade === 'maior' || p.idade === 'menor') pr.idade = p.idade;
+    if (pr.idade === 'menor' && pr.av === 'foto') pr.av = 'a1';   // menor joga só com avatar
+    return pr;
   } catch (e) { return null; }
 }
 let profile = loadProfile(), photo = store.get(FKEY);
@@ -1291,7 +1375,7 @@ function toast(msg) {
   clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 4200);
 }
 // Troca de tela com fade: a tela atual some suave e a próxima aparece suave.
-const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Game', 'Dono'];
+const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Game', 'Dono', 'Fale'];
 let showTimer = null;
 function show(name) {
   if (window.__reloadWhenFree && name !== 'game') { saveGame(); location.reload(); return; }
@@ -1308,6 +1392,7 @@ function show(name) {
     if (name === 'who') { renderEntry(); topple(true); }
     if (name === 'profile') renderProfile();
     if (name === 'dono') renderDono();
+    if (name === 'fale') renderFale();
     if (name === 'game' && G) render();
   };
   if (!cur || reduce) { finish(); return; }
@@ -1346,28 +1431,43 @@ function renderEntry() {
   $('#editProfile').hidden = !profile;
 }
 $('#roundTable').addEventListener('click', e => { if (e.target.closest('#meSeat')) openProfile('who'); });
-$('#enterBtn').addEventListener('click', () => { if (profile) show('home'); else openProfile('who'); });
+$('#enterBtn').addEventListener('click', () => {
+  if (!profile) { openProfile('who'); return; }
+  // Perfis de antes da pergunta de idade: falta só ela.
+  if (!profile.idade) { openProfile('who'); toast('Falta só uma coisa: escolha a sua faixa de idade.'); return; }
+  show('home');
+});
 $('#editProfile').addEventListener('click', () => openProfile('who'));
 $$('[data-go="home"]').forEach(b => b.addEventListener('click', () => show('home')));
 
 // ---- Perfil ----
-let draft = { name: '', av: null, photo: null }, profileFrom = 'who';
+let draft = { name: '', av: null, photo: null, idade: null }, profileFrom = 'who';
 function openProfile(from) {
   profileFrom = from || 'who';
-  draft = { name: profile ? profile.name : '', av: profile ? profile.av : null, photo };
+  draft = { name: profile ? profile.name : '', av: profile ? profile.av : null, photo, idade: profile ? profile.idade || null : null };
   if (draft.av === 'foto' && !draft.photo) draft.av = null;
   $('#nameInput').value = draft.name;
   show('profile');
 }
 const CAM = '<svg viewBox="0 0 24 24" class="cam" aria-hidden="true"><path d="M3.5 8.5h3.4l1.7-2.6h6.8l1.7 2.6h3.4v10.6h-17z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="13.4" r="3.5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>';
+const FOTO_NOTA = 'Com foto, os outros jogadores veem que você é gente de verdade: ela vai aparecer na mesa online, que está chegando. Não quer aparecer? Escolha um avatar.';
 function renderProfile() {
-  $('#profileBack').hidden = !profile;
+  $('#profileBack').hidden = !profile || !profile.idade;
+  $$('#idadeSeg button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.i === draft.idade)));
+  // Menor de 18: só avatar, sem foto (proteção do ECA Digital).
+  const menor = draft.idade === 'menor';
+  if (menor && (draft.photo || draft.av === 'foto')) { draft.photo = null; if (draft.av === 'foto') draft.av = null; }
+  $('#fotoNota').textContent = menor ? 'Menores de 18 anos jogam com avatar, sem foto. Escolha o seu.' : FOTO_NOTA;
   const ph = draft.photo;
   $('#avatarGrid').innerHTML =
-    `<button type="button" class="avbtn photo${ph ? ' has' : ''}" role="radio" aria-checked="${draft.av === 'foto'}" data-av="foto"><span class="face">${ph ? `<img src="${ph}" alt="">` : CAM}</span><span>${ph ? 'Sua foto' : 'Pôr foto'}</span></button>`
+    (menor ? '' : `<button type="button" class="avbtn photo${ph ? ' has' : ''}" role="radio" aria-checked="${draft.av === 'foto'}" data-av="foto"><span class="face">${ph ? `<img src="${ph}" alt="">` : CAM}</span><span>${ph ? 'Sua foto' : 'Pôr foto'}</span></button>`)
     + AVATARS.map((a, i) => `<button type="button" class="avbtn" role="radio" aria-checked="${draft.av === a.id}" data-av="${a.id}" aria-label="Avatar ${i + 1}"><span class="face"><img src="${avatarURI(a)}" alt=""></span></button>`).join('');
   $('#photoTools').hidden = !ph;
 }
+$('#idadeSeg').addEventListener('click', e => {
+  const b = e.target.closest('button[data-i]'); if (!b) return;
+  draft.idade = b.dataset.i; renderProfile();
+});
 $('#avatarGrid').addEventListener('click', e => {
   const b = e.target.closest('.avbtn'); if (!b) return;
   if (b.dataset.av === 'foto' && !draft.photo) { $('#photoInput').click(); return; }
@@ -1404,6 +1504,8 @@ $('#saveProfile').addEventListener('click', () => {
   const name = $('#nameInput').value.replace(/\s+/g, ' ').trim().slice(0, 14);
   if (!name) { toast('Escreva seu nome ou apelido.'); $('#nameInput').focus(); return; }
   if (nomeOfensivo(name)) { toast('Esse apelido não pode ser usado aqui. Escolha outro.'); $('#nameInput').focus(); $('#nameInput').select(); return; }
+  if (!draft.idade) { toast('Escolha a sua faixa de idade.'); $('#idadeSeg').scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+  if (draft.idade === 'menor') { draft.photo = null; if (draft.av === 'foto') draft.av = null; }
   let av = draft.av || AVATARS[Math.floor(Math.random() * AVATARS.length)].id;
   if (draft.photo !== photo) {
     if (!draft.photo) { store.del(FKEY); photo = null; }
@@ -1411,7 +1513,7 @@ $('#saveProfile').addEventListener('click', () => {
     else toast('Não deu para guardar a foto neste celular. Fica um avatar por enquanto.');
   }
   if (av === 'foto' && !photo) av = 'a1';
-  profile = { name, av }; me = name;
+  profile = { name, av, idade: draft.idade }; me = name;
   store.set(PKEY, JSON.stringify(profile));
   show('home');
 });
@@ -1421,7 +1523,7 @@ function renderHome() {
   $('#homeName').textContent = me;
   $('#meChipFace').innerHTML = faceImg(myFaceURI(), 'chipface');
   renderResume(); renderMyTreino(); renderInstall(); renderSponsor(); readySlides();
-  $('#fbCard').hidden = !CONFIG.whats;
+  $('#fbCard').hidden = !(CONFIG.api || CONFIG.whats);
   renderApoio(); renderDonoCard();
   $('#homeName').innerHTML = esc(me) + (isApoiador() ? '<span class="apoiador">Apoiador</span>' : '');
 }
@@ -1603,7 +1705,7 @@ function closeFeedback() {
   closeSheet();
   if (fbFromGame && G) resumeAfterMenu();
 }
-$('#fbCard').addEventListener('click', () => openFeedback(false));
+$('#fbCard').addEventListener('click', () => abrirFale('home'));
 
 // ---- Apoio voluntário: o jogo continua de graça, quem quiser ajuda com um valor fixo ----
 const AKEY = 'dmz-apoiador';
@@ -1746,9 +1848,9 @@ async function donoAbrir(senha) {
 }
 function donoSalvar() { if (dono) store.set(DKEY, JSON.stringify(dono)); else store.del(DKEY); }
 
-function openDonoLogin() {
+function openDonoLogin(deNovo) {
   if (!CONFIG.dono) return;
-  if (dono) { show('dono'); return; }
+  if (dono && !deNovo) { show('dono'); return; }
   openSheet('info', `<p class="eyebrow">Área do dono</p><h2 id="sheetTitle">Digite a senha</h2>
     <form id="donoForm" class="dn-form" autocomplete="on">
       <input type="text" name="username" value="dono" autocomplete="username" hidden>
@@ -1768,8 +1870,10 @@ function openDonoLogin() {
       $('#donoPw').select();
       return;
     }
-    dono = { share: r.share, semContar: true }; donoSalvar();
-    closeSheet(); show('dono');
+    dono = Object.assign(dono || { semContar: true }, { share: r.share });
+    if (r.admin) dono.admin = r.admin;
+    donoSalvar();
+    closeSheet(); if (screen === 'dono') renderDono(); else show('dono');
   });
 }
 
@@ -1909,7 +2013,7 @@ function renderDono() {
   // Plano grátis do Umami: sem API, então os números abrem no painel compartilhado.
   // Com a chave do plano Pro, os números aparecem aqui mesmo.
   const temChave = !!dono.key;
-  $('#dnFull').href = $('#dnOpen').href = dono.share; dnTela();
+  $('#dnFull').href = $('#dnOpen').href = dono.share; dnTela(); dnMsgCarregar();
   $('#dnOpen').hidden = temChave; $('#dnFull').hidden = !temChave;
   $('#dnLive').hidden = $('#dnBody').hidden = $('#dnRange').hidden = !temChave;
   $('#dnKey').hidden = true; $('#dnErr').hidden = true;
@@ -1935,8 +2039,79 @@ function dnTela() {
 function renderDonoCard() {
   const c = $('#donoCard');
   c.hidden = !dono;
-  if (dono) dnAoVivo();
+  if (dono) { dnAoVivo(); dnCartaoMsgs(); }
 }
+
+// ---- Caixa de mensagens do Fale com a gente ----
+let dnMsgFiltro = 'novo';
+const TIPO_NOME = { problema: 'Problema', ideia: 'Ideia', elogio: 'Elogio', outro: 'Outro' };
+function dnContato(c) {
+  if (!c) return '';
+  const dig = c.replace(/\D/g, '');
+  if (/@/.test(c)) return ` · <a href="mailto:${esc(c)}">${esc(c)}</a>`;
+  if (dig.length >= 10 && dig.length <= 13) {
+    const n = dig.length >= 12 ? dig : '55' + dig;
+    return ` · <a href="https://wa.me/${n}" target="_blank" rel="noopener">WhatsApp ${esc(c)}</a>`;
+  }
+  return ` · contato: ${esc(c)}`;
+}
+function dnData(ms) {
+  const d = new Date(ms), p = n => String(n).padStart(2, '0');
+  return `${p(d.getDate())}/${p(d.getMonth() + 1)} às ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+async function dnMsgPedir(caminho, opcoes) {
+  const r = await fetch(CONFIG.api + caminho, Object.assign({ cache: 'no-store' }, opcoes || {}, {
+    headers: Object.assign({ 'x-admin-key': dono.admin }, (opcoes && opcoes.headers) || {})
+  }));
+  if (r.status === 401) { dono.admin = null; donoSalvar(); throw new Error('sem-chave'); }
+  if (!r.ok) throw new Error('http-' + r.status);
+  return r.json();
+}
+async function dnCartaoMsgs() {
+  if (!CONFIG.api || !dono || !dono.admin) return;
+  try {
+    const j = await dnMsgPedir('/dono/mensagens?status=novo');
+    if (j.novas) $('#donoCardTx').textContent = `${j.novas} ${j.novas > 1 ? 'mensagens novas' : 'mensagem nova'} no Fale com a gente`;
+  } catch (e) {}
+}
+async function dnMsgCarregar() {
+  const box = $('#dnMsgs');
+  box.hidden = !CONFIG.api;
+  if (!CONFIG.api) return;
+  const semChave = !dono.admin;
+  $('#dnMsgSenha').hidden = !semChave; $('#dnMsgFiltro').hidden = semChave;
+  $$('#dnMsgFiltro button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === dnMsgFiltro)));
+  if (semChave) { $('#dnMsgLista').innerHTML = ''; $('#dnMsgN').textContent = ''; return; }
+  try {
+    const j = await dnMsgPedir('/dono/mensagens' + (dnMsgFiltro ? '?status=' + dnMsgFiltro : ''));
+    $('#dnMsgN').textContent = j.novas ? `${j.novas} ${j.novas > 1 ? 'novas' : 'nova'}` : 'nenhuma nova';
+    $('#dnMsgLista').innerHTML = (j.mensagens || []).length ? j.mensagens.map(m => `
+      <li class="${esc(m.status)}" data-id="${Number(m.id)}">
+        <div class="m-top"><span class="m-tipo ${esc(m.tipo)}">${TIPO_NOME[m.tipo] || 'Outro'}${m.status === 'resolvido' ? ' · resolvida' : ''}</span><span>${dnData(m.criado_em)}</span></div>
+        <div class="m-txt">${esc(m.texto)}</div>
+        <div class="m-meta">${esc(m.nome || 'sem apelido')}${dnContato(m.contato)} · versão ${esc(m.versao || '?')} · ${esc(m.aparelho || '?')}</div>
+        <div class="m-acoes">${m.status === 'resolvido' ? '<button type="button" data-a="novo">Reabrir</button>' : '<button type="button" data-a="resolvido">Marcar como resolvida</button>'}<button type="button" class="perigo" data-a="apagado">Apagar</button></div>
+      </li>`).join('') : `<li class="dn-empty"><span>${dnMsgFiltro ? 'Nenhuma mensagem nova.' : 'Nenhuma mensagem ainda.'}</span></li>`;
+  } catch (e) {
+    if (e.message === 'sem-chave') { dnMsgCarregar(); return; }
+    $('#dnMsgLista').innerHTML = '<li class="dn-empty"><span>Não deu para carregar as mensagens agora. Confira a internet.</span></li>';
+  }
+}
+$('#dnMsgFiltro').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  dnMsgFiltro = b.dataset.f; dnMsgCarregar();
+});
+$('#dnMsgSenha').addEventListener('click', () => openDonoLogin(true));
+$('#dnMsgLista').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-a]'); if (!b) return;
+  const li = b.closest('li'), id = li.dataset.id, a = b.dataset.a;
+  if (a === 'apagado' && !b.dataset.armado) { b.dataset.armado = '1'; b.textContent = 'Toque de novo para apagar'; return; }
+  b.disabled = true;
+  try {
+    await dnMsgPedir(`/dono/mensagens/${id}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ status: a }) });
+  } catch (err) { toast('Não deu para mudar a mensagem agora.'); }
+  dnMsgCarregar();
+});
 $('#dnRange').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b || b.dataset.r === dnRange) return;
   dnRange = b.dataset.r;
@@ -1967,6 +2142,88 @@ $('#dnSair').addEventListener('click', () => {
 });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && screen === 'dono') dnAoVivo();
+});
+
+// ---- Fale com a gente: a mensagem vai para o servidor e aparece na Área do dono ----
+const SAIDA = 'dmz-saida';   // mensagens esperando internet
+let faleTipo = 'problema', faleVolta = 'home';
+const FALE_DICA = {
+  problema: 'O que aconteceu? Se foi na mesa, diga em que momento.',
+  ideia: 'O que deixaria o jogo melhor?',
+  elogio: 'Do que você mais gostou?'
+};
+function faleAtivo() { return !!CONFIG.api; }
+function abrirFale(deOnde) {
+  if (!faleAtivo()) { openFeedback(deOnde === 'game'); return; }
+  faleVolta = deOnde || 'home';
+  if (deOnde === 'game') { closeSheet(); leaveGame(); }
+  show('fale');
+}
+function renderFale() {
+  $('#faleOk').hidden = true; $('#faleForm').hidden = false;
+  $$('#faleTipo button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === faleTipo)));
+  $('#faleTexto').placeholder = FALE_DICA[faleTipo];
+  faleConta();
+}
+function faleConta() { $('#faleConta').textContent = `${$('#faleTexto').value.length}/1000`; }
+function faleSair() {
+  if (faleVolta === 'game' && loadSavedGame()) { $('#goResume').click(); return; }
+  show(profile ? 'home' : 'who');
+}
+$('#faleTipo').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  faleTipo = b.dataset.t; renderFale();
+});
+$('#faleTexto').addEventListener('input', faleConta);
+$('#faleBack').addEventListener('click', faleSair);
+$('#faleFim').addEventListener('click', faleSair);
+
+function saidaLer() { try { return JSON.parse(store.get(SAIDA) || '[]'); } catch (e) { return []; } }
+function saidaGuardar(lista) { if (lista.length) store.set(SAIDA, JSON.stringify(lista.slice(-10))); else store.del(SAIDA); }
+async function faleMandar(msg) {
+  try {
+    const r = await fetch(CONFIG.api + '/mensagens', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(msg) });
+    return r.status;
+  } catch (e) { return 0; }
+}
+// Manda o que ficou esperando internet (ao abrir o app e quando a conexão volta).
+let saidaOcupada = false;
+async function saidaEsvaziar() {
+  if (saidaOcupada || !faleAtivo() || navigator.onLine === false) return;
+  const lista = saidaLer(); if (!lista.length) return;
+  saidaOcupada = true; saidaGuardar([]);          // tira da fila antes de mandar: nada sai duas vezes
+  const resto = [];
+  for (const m of lista) {
+    const st = await faleMandar(m);
+    if (st === 0 || st >= 500) resto.push(m);   // tenta de novo depois; recusadas (400/429) saem da fila
+  }
+  saidaGuardar(saidaLer().concat(resto));
+  saidaOcupada = false;
+}
+window.addEventListener('online', saidaEsvaziar);
+setTimeout(saidaEsvaziar, 4000);
+
+$('#faleEnviar').addEventListener('click', async () => {
+  const texto = $('#faleTexto').value.trim();
+  if (texto.length < 3) { toast('Escreva a sua mensagem antes de enviar.'); $('#faleTexto').focus(); return; }
+  const msg = { tipo: faleTipo, texto, contato: $('#faleContato').value.trim(), nome: me || '', versao: APP_VERSION, aparelho: deviceInfo() };
+  const btn = $('#faleEnviar'); btn.disabled = true; btn.textContent = 'Enviando…';
+  const st = await faleMandar(msg);
+  btn.disabled = false; btn.textContent = 'Enviar';
+  if (st === 201) {
+    track('opiniao-' + faleTipo);
+    $('#faleTexto').value = ''; $('#faleContato').value = '';
+    $('#faleForm').hidden = true; $('#faleOk').hidden = false;
+    $('#faleOkTx').textContent = faleTipo === 'problema' ? 'Vamos olhar o problema. Se você deixou contato, a gente responde.' : 'A gente lê todas as mensagens.';
+    return;
+  }
+  if (st === 429) { toast('Muitas mensagens em pouco tempo. Tente de novo mais tarde.'); return; }
+  if (st === 400) { toast('Escreva um pouco mais sobre o que aconteceu.'); return; }
+  // Sem internet ou servidor fora: guarda e manda depois.
+  saidaGuardar(saidaLer().concat([msg]));
+  $('#faleTexto').value = ''; $('#faleContato').value = '';
+  $('#faleForm').hidden = true; $('#faleOk').hidden = false;
+  $('#faleOkTx').textContent = 'Sem conexão agora: a mensagem fica guardada e vai sozinha quando a internet voltar.';
 });
 
 
@@ -2463,10 +2720,10 @@ function showMenu() {
   </div>
   <div style="margin-top:22px">${RULES_HTML}</div>
   <button type="button" class="secondary" id="closeMenu2" style="width:100%;margin-top:6px">Voltar à mesa</button>
-  ${CONFIG.whats ? '<button type="button" class="menu-fb" id="menuFb">Achou um erro? Fale com a gente</button>' : ''}
+  ${CONFIG.api || CONFIG.whats ? '<button type="button" class="menu-fb" id="menuFb">Achou um erro? Fale com a gente</button>' : ''}
   <p class="note menu-ver">Dominó Manauara · versão ${APP_VERSION}</p>`);
   const mf = $('#menuFb');
-  if (mf) mf.addEventListener('click', () => openFeedback(true));
+  if (mf) mf.addEventListener('click', () => abrirFale('game'));
   $('#homeBtn').addEventListener('click', () => {
     closeSheet(); leaveGame(); show('home');
     toast('Jogo guardado. Para voltar, toque em "Continuar de onde parou".');
