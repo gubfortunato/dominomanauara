@@ -1,0 +1,7 @@
+name: teste-acesso
+on: push
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -s -o /dev/null -w "cloudflare %{http_code}\n" https://api.cloudflare.com/client/v4 ; node --version
