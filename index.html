@@ -403,6 +403,10 @@ body{touch-action:manipulation}
 /* Nada pode ficar mais largo que a tela: evita a tela "dançar" de lado ao rolar */
 .panel{overflow-x:hidden;overscroll-behavior-y:contain}
 .mechip{margin-right:4px}
+.menubtn{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 18px 8px 14px;border:0;border-radius:999px;background:var(--fg);color:var(--bg);font:inherit;font-weight:800;font-size:15px;letter-spacing:.02em;cursor:pointer;box-shadow:0 6px 14px -6px var(--shadow)}
+.menubtn svg{width:18px;height:18px}
+.menubtn:active{transform:scale(.96)}
+@media (orientation: landscape) and (max-height: 560px){ .meta .menubtn{order:3;min-height:34px;padding:6px 14px 6px 12px;font-size:14px} }
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:12px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
@@ -566,7 +570,7 @@ body{touch-action:manipulation}
   <section class="screen game" id="scrGame" hidden>
     <header class="score">
       <div class="team L"><span class="tlabel" id="tL">Nós</span><span class="tnum" id="sL">0</span><div class="bar"><i id="bL"></i></div><span class="float" id="fL"></span></div>
-      <div class="meta"><span class="pt" id="ptLbl">Partida 1 · até 200</span><span class="sr" id="srLbl">0 × 0</span><button class="linkbtn" id="menuBtn" type="button">Menu</button></div>
+      <div class="meta"><span class="pt" id="ptLbl">Partida 1 · até 200</span><span class="sr" id="srLbl">0 × 0</span><button class="menubtn" id="menuBtn" type="button" aria-label="Abrir o menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>Menu</button></div>
       <div class="team R"><span class="tlabel" id="tR">Eles</span><span class="tnum" id="sR">0</span><div class="bar"><i id="bR"></i></div><span class="float" id="fR"></span></div>
     </header>
     <main class="table wood">
