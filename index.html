@@ -364,6 +364,10 @@ body{touch-action:manipulation}
 .res-patro.has-banner{display:grid;gap:6px;padding:0;border:0;justify-items:stretch}
 .res-patro.has-banner .sp-k{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:center}
 .res-patro.has-banner img{width:100%;max-width:420px;max-height:none;height:auto;aspect-ratio:5/2;border-radius:12px;justify-self:center;object-fit:cover}
+.sp-slides{position:relative;display:block;width:100%;aspect-ratio:5/2;border-radius:10px;overflow:hidden;background:#05070a}
+.sp-slides img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .9s ease}
+.sp-slides img.on{opacity:1}
+.res-patro.has-banner .sp-slides{max-width:420px;justify-self:center;border-radius:12px}
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:12px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
@@ -932,7 +936,12 @@ const CONFIG = {
     nome: 'alug+', texto: 'Baixe agora grátis · alugmaisapp.com',
     alt: 'alug+: baixe agora grátis. alugmaisapp.com. Sem taxa por imóvel, imóveis ilimitados.',
     link: 'https://alugmaisapp.com/?utm_source=dominomanauara&utm_medium=patrocinio&utm_campaign=mesa',
-    logo: 'patrocinio/alugmais-logo.png', banner: 'patrocinio/alugmais-banner.jpg'
+    logo: 'patrocinio/alugmais-logo.png', banner: 'patrocinio/alugmais-banner.jpg',
+    // Banner animado: as imagens se alternam com fade (ms = quanto tempo cada uma fica na tela)
+    banners: [
+      { src: 'patrocinio/alugmais-banner-1.jpg', ms: 3800, alt: 'Ainda controla seus aluguéis com planilha ou caderno?' },
+      { src: 'patrocinio/alugmais-banner.jpg', ms: 5200 }
+    ]
   },
   // Apoio voluntário (links de pagamento do Asaas, Pix ou cartão). Link vazio: o valor não aparece.
   // No Asaas, configure o retorno depois do pagamento para: https://dominomanauara.com.br/?apoio=ok
@@ -1212,10 +1221,9 @@ function renderSponsor(noBanner) {
   if (p && p.nome) {
     el.hidden = false; el.href = p.link || SITE_URL;
     el.classList.toggle('has-banner', !!p.banner);
-    el.innerHTML = p.banner ? `<span class="sp-k">Patrocínio</span><img class="sp-banner" src="${esc(p.banner)}" alt="${esc(p.alt || p.nome)}">`
+    el.innerHTML = p.banner ? `<span class="sp-k">Patrocínio</span>${bannerSlides(p)}`
       : `<span class="sp-k">Patrocínio</span>${p.logo ? `<img class="sp-logo" src="${esc(p.logo)}" alt="">` : ''}<b>${esc(p.nome)}</b><span>${esc(p.texto || '')}</span>`;
-    const im = el.querySelector('img');
-    if (im && !noBanner) im.addEventListener('error', () => renderSponsor(true), { once: true });
+
   } else if (CONFIG.whats) {
     el.hidden = false;
     el.href = `https://wa.me/${CONFIG.whats}?text=` + encodeURIComponent('Olá! Quero anunciar no Dominó Manauara.');
@@ -1423,7 +1431,7 @@ function sponsorMark() {
 }
 function sponsorResult() {
   const p = CONFIG.patrocinio; if (!p || !p.nome) return '';
-  if (p.banner) return `<a class="res-patro has-banner" href="${esc(p.link || SITE_URL)}" target="_blank" rel="noopener"><span class="sp-k">Oferecimento</span><img src="${esc(p.banner)}" alt="${esc(p.alt || p.nome)}"></a>`;
+  if (p.banner) return `<a class="res-patro has-banner" href="${esc(p.link || SITE_URL)}" target="_blank" rel="noopener"><span class="sp-k">Oferecimento</span>${bannerSlides(p)}</a>`;
   return `<a class="res-patro" href="${esc(p.link || SITE_URL)}" target="_blank" rel="noopener">${p.logo ? `<img src="${esc(p.logo)}" alt="">` : ''}<span>Oferecimento <b>${esc(p.nome)}</b>${p.texto ? ` · ${esc(p.texto)}` : ''}</span></a>`;
 }
 (function placeSponsorMark() {
@@ -1432,10 +1440,38 @@ function sponsorResult() {
 })();
 document.addEventListener('click', e => { if (e.target.closest('#sponsor, .res-patro')) track('patrocinio-clique'); });
 
+// ---- Banner animado: as imagens se alternam com fade ----
+function bannerSlides(p) {
+  const list = (p.banners && p.banners.length ? p.banners : [{ src: p.banner }]).filter(b => b && b.src);
+  return `<span class="sp-slides">${list.map((b, i) => `<img src="${esc(b.src)}" data-ms="${+b.ms || 4500}" alt="${esc(b.alt || p.alt || p.nome)}"${i ? ' aria-hidden="true"' : ' class="on"'}>`).join('')}</span>`;
+}
+const reduceMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+setInterval(() => {
+  const now = Date.now();
+  $$('.sp-slides').forEach(box => {
+    const imgs = Array.from(box.querySelectorAll('img'));
+    if (imgs.length < 2 || box.offsetParent === null) return;
+    let i = imgs.findIndex(im => im.classList.contains('on')); if (i < 0) i = 0;
+    if (!box._next) { box._next = now + (+imgs[i].dataset.ms || 4500); return; }
+    if (now < box._next) return;
+    const j = reduceMotion() ? imgs.length - 1 : (i + 1) % imgs.length;
+    imgs.forEach((im, k) => { im.classList.toggle('on', k === j); im.setAttribute('aria-hidden', String(k !== j)); });
+    box._next = now + (+imgs[j].dataset.ms || 4500);
+  });
+}, 200);
+
 // Imagem de patrocinador que falhar some, em vez de aparecer quebrada.
 document.addEventListener('error', e => {
   const im = e.target;
   if (!(im instanceof HTMLImageElement)) return;
+  const slides = im.closest('.sp-slides');
+  if (slides) {
+    const wasOn = im.classList.contains('on');
+    im.remove();
+    const rest = slides.querySelectorAll('img');
+    if (rest.length) { if (wasOn) rest[0].classList.add('on'); return; }
+    if (slides.closest('#sponsor')) { renderSponsor(true); return; }
+  }
   const box = im.closest('.res-patro, .mesa-patro');
   if (!box) return;
   if (box.classList.contains('has-banner')) {
