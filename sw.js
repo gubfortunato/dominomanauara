@@ -1,0 +1,55 @@
+// Dominó Manauara: guarda o jogo no celular para abrir rápido e funcionar sem internet.
+// Ao publicar uma versão nova, troque o número abaixo para os celulares baixarem tudo de novo.
+const CACHE = 'dominomanauara-v1';
+const FILES = [
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './privacidade.html',
+  './fonts/alfa-slab-one.woff',
+  './fonts/figtree.woff',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/apple-touch-icon.png'
+];
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
+
+function putInCache(req, res) {
+  if (res && res.ok && res.type === 'basic') {
+    const copy = res.clone();
+    caches.open(CACHE).then(c => c.put(req, copy));
+  }
+  return res;
+}
+
+self.addEventListener('fetch', e => {
+  const req = e.request;
+  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+
+  if (req.mode === 'navigate') {
+    // Página: tenta a internet primeiro (pega a versão nova); com internet ruim ou sem internet, usa a guardada.
+    e.respondWith((async () => {
+      const cached = await caches.match(req, { ignoreSearch: true }) || await caches.match('./index.html');
+      const net = fetch(req).then(res => putInCache(req, res));
+      if (!cached) return net;
+      net.catch(() => {});
+      const slow = new Promise(r => setTimeout(() => r(cached), 3500));
+      try { return await Promise.race([net, slow]); } catch (err) { return cached; }
+    })());
+    return;
+  }
+
+  // Fontes, ícones e o resto: o que já está guardado abre na hora.
+  e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => putInCache(req, res))));
+});

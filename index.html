@@ -1,0 +1,1808 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dominó Manauara</title>
+<meta name="description" content="Dominó em duplas com as regras de Manaus: bucho, garagem, passe e galo. Grátis no celular, até sem internet.">
+<meta name="theme-color" content="#15100c">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dominó">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dominó Manauara">
+<meta property="og:title" content="Dominó Manauara">
+<meta property="og:description" content="Dominó em duplas com as regras de Manaus. Bucho, garagem, passe e galo. Grátis no celular.">
+<meta property="og:image" content="https://dominomanauara.com.br/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://dominomanauara.com.br/">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="fonts/alfa-slab-one.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="fonts/figtree.woff" as="font" type="font/woff" crossorigin>
+<style>
+@font-face{font-family:"Alfa Slab One";src:url(fonts/alfa-slab-one.woff) format("woff");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Figtree";src:url(fonts/figtree.woff) format("woff");font-weight:300 900;font-style:normal;font-display:swap}
+/* Layout: telas curtas (nome, início, montar mesa, mesa online) e o jogo numa tela só —
+   placar no topo, mesa de madeira no meio com os outros três na borda, sua mão embaixo.
+   Paleta: Encontro das Águas — Rio Negro (escuro) e Solimões (barrento). Nós = ocre, Eles = verde-água. */
+:root{
+  --bg:#15100c; --bg-2:#211812; --fg:#f2e7d5; --muted:#a8937a; --line:#3b2d22;
+  --nos:#e5a650; --eles:#8fbcc2; --alert:#e58a6c; --ok:#86c98f;
+  --nos-t:#e9ab55; --eles-t:#96c4c9; --ok-t:#8fd39a;
+  --wood-1:#3d2719; --wood-2:#26180f; --wood-edge:#5c3d27; --wood-ink:#efe2cc; --wood-muted:#b79f82;
+  --tile:#f6eedf; --tile-2:#e4d5bb; --tile-shade:#cbb895; --pip:#1b130d; --pin:#c4964a;
+  --glow:#f3c063; --shadow:rgba(8,4,2,.45); --scrim:rgba(10,7,5,.62);
+  --tw:clamp(34px,11vw,50px);
+  --back-1:#2e2e30; --back-2:#0b0b0c; --back-edge:#67676b; --back-line:#424246; --back-dot:#ffffff;
+  --font-display:"Alfa Slab One","Rockwell","Roboto Slab",Georgia,serif;
+  --font-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#e3d0ae; --bg-2:#efe2c8; --fg:#24180f; --muted:#6c5640; --line:#c9b088;
+    --nos:#97520f; --eles:#245e6a; --alert:#a8402a; --ok:#2f7a3d; --scrim:rgba(40,26,14,.45);
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#e3d0ae; --bg-2:#efe2c8; --fg:#24180f; --muted:#6c5640; --line:#c9b088;
+  --nos:#97520f; --eles:#245e6a; --alert:#a8402a; --ok:#2f7a3d; --scrim:rgba(40,26,14,.45);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#15100c; --bg-2:#211812; --fg:#f2e7d5; --muted:#a8937a; --line:#3b2d22;
+  --nos:#e5a650; --eles:#8fbcc2; --alert:#e58a6c; --ok:#86c98f; --scrim:rgba(10,7,5,.62);
+  color-scheme:dark;
+}
+html{box-sizing:border-box;height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;-webkit-tap-highlight-color:transparent;overflow:hidden}
+button,select{font:inherit;color:inherit}
+button:focus-visible,select:focus-visible{outline:2px solid var(--glow);outline-offset:2px}
+.shell{height:100%;max-width:720px;margin:0 auto;padding-inline:16px}
+.screen{height:100%}
+.screen.fade-in{animation:scrIn .38s ease-out both}
+.screen.fade-out{animation:scrOut .22s ease-in both;pointer-events:none}
+@keyframes scrIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes scrOut{from{opacity:1}to{opacity:0}}
+
+/* Telas de texto */
+.panel{overflow-y:auto;padding-block:22px 30px;display:flex;flex-direction:column;gap:18px;-webkit-overflow-scrolling:touch}
+.kicker{margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.brand{margin:0;font-family:var(--font-display);font-weight:400;font-size:38px;line-height:1.02;text-wrap:balance}
+.brand em{font-style:normal;color:var(--nos)}
+.ask{margin:6px 0 0;font-size:19px;font-weight:700}
+.lead{margin:0;font-size:16px;line-height:1.45;color:var(--muted)}
+.lead b{color:var(--fg)}
+.note{margin:0;font-size:13px;line-height:1.45;color:var(--muted)}
+.names{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.wood{border-radius:18px;color:var(--wood-ink);
+  background:
+    repeating-linear-gradient(92deg, rgba(255,235,205,.025) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(88deg, rgba(0,0,0,.08) 0 1px, transparent 1px 13px),
+    radial-gradient(120% 90% at 50% 45%, var(--wood-1), var(--wood-2));
+  box-shadow:inset 0 0 0 2px var(--wood-edge), inset 0 0 40px rgba(0,0,0,.35), 0 10px 30px -14px var(--shadow)}
+.card{display:grid;gap:6px;text-align:left;border:0;padding:20px 18px;cursor:pointer;width:100%}
+.card .ck{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+.card .ct{font-family:var(--font-display);font-size:23px;line-height:1.1}
+.card .cd{font-size:14px;line-height:1.4;color:var(--wood-muted)}
+.card:active{transform:scale(.99)}
+.card.card-off{opacity:.42;filter:grayscale(.7);cursor:default}
+.card.card-off:active{transform:none}
+a.card{text-decoration:none}
+.linkcta{display:block;text-align:center;text-decoration:none;margin-top:16px}
+.linkcta2{display:block;text-align:center;text-decoration:none;margin-top:10px;color:var(--fg)}
+.backbtn{align-self:flex-start;border:0;background:none;padding:4px 0;font-weight:600;color:var(--muted);cursor:pointer}
+.linkbtn{border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--fg);align-self:flex-start}
+.field{display:grid;gap:6px}
+.field label{font-size:13px;font-weight:700}
+.field small{font-weight:500;color:var(--muted)}
+.field select{appearance:none;-webkit-appearance:none;width:100%;font-size:16px;font-weight:600;padding:12px 40px 12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg);
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 20px) 52%,calc(100% - 14px) 52%;background-size:6px 6px;background-repeat:no-repeat}
+.field.nos select{border-color:var(--nos)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:10px 16px;font-weight:600;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--nos);color:var(--bg-2)}
+.primary{display:block;width:100%;border:0;border-radius:14px;padding:15px 16px;font-weight:700;font-size:16px;cursor:pointer;background:var(--nos);color:var(--bg-2)}
+.primary:disabled{opacity:.4;cursor:default}
+.secondary{border:1px solid var(--line);background:transparent;border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
+.danger{color:var(--alert);border-color:var(--alert)}
+
+/* Tela de entrada: mesa redonda com a turma em volta */
+.entry{align-items:center;text-align:center;gap:6px;padding-block:24px 28px}
+.entry > :first-child{margin-top:auto}
+.entry > :last-child{margin-bottom:auto}
+.entry-head{display:grid;justify-items:center;gap:6px}
+.entry-title{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(42px,12.5vw,60px);line-height:.92;letter-spacing:-.01em;text-wrap:balance}
+.entry-title span{display:block;color:var(--nos)}
+.rt-wrap{position:relative;width:min(70vw,40vh,330px);aspect-ratio:1;max-width:100%;margin:58px auto 54px;flex:none}
+.rt{position:absolute;inset:0;border-radius:50%;
+  background:
+    repeating-radial-gradient(circle at 50% 50%, rgba(255,235,205,.03) 0 2px, transparent 2px 9px),
+    radial-gradient(circle at 42% 38%, var(--wood-1), var(--wood-2) 75%);
+  box-shadow:inset 0 0 0 7px var(--wood-edge), inset 0 0 0 10px rgba(0,0,0,.28), inset 0 0 60px rgba(0,0,0,.5), 0 24px 40px -18px var(--shadow)}
+.rt-center{position:absolute;left:50%;top:50%;width:54%;transform:translate(-50%,-50%) rotate(-8deg);overflow:visible}
+.friend{position:absolute;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:5px;border:0;background:none;padding:0;cursor:pointer;color:var(--fg);z-index:2;
+  animation:seatIn .5s cubic-bezier(.2,.8,.3,1.2) both;animation-delay:calc(var(--i) * 90ms)}
+.friend .fp,.friend .fi{width:clamp(58px,17vw,74px);height:clamp(58px,17vw,74px);border-radius:50%;object-fit:cover;display:grid;place-items:center;
+  box-shadow:0 0 0 3px var(--tile),0 0 0 5px var(--pin),0 10px 18px -6px var(--shadow);transition:transform .15s}
+.friend .fi{background:var(--wood-1);color:var(--wood-ink);font-family:var(--font-display);font-size:26px}
+.friend .fn{font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--bg-2);border:1px solid var(--line);white-space:nowrap}
+.friend:active .fp,.friend:active .fi{transform:scale(.93)}
+.friend.you .fp,.friend.you .fi{box-shadow:0 0 0 3px var(--tile),0 0 0 6px var(--glow),0 0 26px 6px rgba(243,192,99,.4)}
+.friend.you .fn{background:var(--glow);border-color:var(--glow);color:var(--wood-2)}
+@keyframes seatIn{from{transform:translate(-50%,-50%) scale(.8)}to{transform:translate(-50%,-50%) scale(1)}}
+.entry-actions{display:grid;gap:8px;width:100%;max-width:360px;justify-items:center}
+.entry-hint{margin:0;font-size:15px;font-weight:600;color:var(--muted)}
+.train{--g:18px;display:flex;align-items:flex-end;gap:var(--g);height:52px;padding:0 44px 0 0;margin:18px auto 0;border-bottom:2px solid var(--line);cursor:pointer;flex:none}
+.dom{width:20px;aspect-ratio:1/2;transform-origin:100% 100%;filter:drop-shadow(0 2px 2px var(--shadow))}
+.dom svg{width:100%;height:100%;display:block}
+.train.go .dom{animation:topple .34s cubic-bezier(.55,0,1,.45) forwards;animation-delay:calc(var(--d0, .9s) + var(--i) * 110ms)}
+.train.go .dom:last-child{animation-name:toppleLast}
+@keyframes topple{to{transform:rotate(26.7deg)}}
+@keyframes toppleLast{to{transform:rotate(90deg)}}
+
+
+/* Treino: histórico e ranking */
+.mytreino{display:grid;gap:10px;padding:16px 18px}
+.mytreino .ck{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+.mt-nums{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;text-align:center}
+.mt-nums b{display:block;font-family:var(--font-display);font-weight:400;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
+.mt-nums small{font-size:11px;color:var(--wood-muted)}
+.mt-share{justify-self:start;font-size:14px;font-weight:700;color:var(--wood-ink);text-decoration:none;padding:9px 14px;border-radius:999px;border:1px solid rgba(239,226,204,.3)}
+.share-wa{display:block;text-align:center;text-decoration:none;margin-top:14px;padding:13px 16px;border-radius:14px;font-weight:700;font-size:16px;background:#25d366;color:#0b2e17}
+
+/* Jogo */
+.game{display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;padding-block:10px 12px}
+.score{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:10px}
+.team{position:relative;display:grid;gap:3px;min-width:0}
+.team.R{text-align:right}
+.tlabel{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;line-height:1.25}
+.team.L .tlabel{color:var(--nos)}
+.team.R .tlabel{color:var(--eles)}
+.tnum{font-family:var(--font-display);font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.team.L .tnum{color:var(--nos)}
+.team.R .tnum{color:var(--eles)}
+.bar{height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;transition:width .5s ease}
+.team.L .bar i{background:var(--nos)}
+.team.R .bar i{background:var(--eles);margin-left:auto}
+.meta{display:grid;justify-items:center;gap:4px;padding-bottom:2px}
+.meta .pt{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;white-space:nowrap}
+.meta .sr{font-family:var(--font-display);font-size:15px;letter-spacing:.04em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.meta .linkbtn{align-self:auto;padding:4px 12px;font-size:12px}
+.float{position:absolute;top:-4px;font-family:var(--font-display);font-size:18px;pointer-events:none;opacity:0}
+.team.L .float{left:62px;color:var(--nos)}
+.team.R .float{right:62px;color:var(--eles)}
+.float.go{animation:floatUp 1.4s ease-out forwards}
+@keyframes floatUp{0%{opacity:0;transform:translateY(8px)}15%{opacity:1}100%{opacity:0;transform:translateY(-16px)}}
+.table{position:relative;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;padding:10px;border-radius:20px}
+.seats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;position:relative;z-index:2}
+.seat{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:7px 4px 6px;border-radius:12px;background:rgba(0,0,0,.18);border:1px solid rgba(255,240,215,.06);min-width:0;transition:background .2s, box-shadow .2s}
+.av{position:relative;flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-display);font-size:15px;color:var(--wood-2);background:var(--eles-t);box-shadow:0 0 0 2px var(--eles-t)}
+.seat.nos .av{background:var(--nos-t);box-shadow:0 0 0 2px var(--nos-t)}
+.av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.seat.turn .av{box-shadow:0 0 0 3px var(--glow)}
+.av .on{position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:var(--ok-t);box-shadow:0 0 0 2px var(--wood-2)}
+.sinfo{display:grid;justify-items:center;min-width:0;max-width:100%;line-height:1.2}
+.sn{font-weight:700;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.sc{font-size:11px;color:var(--wood-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.seat.turn .sc{color:var(--glow)}
+.seat.turn{background:rgba(243,192,99,.14);box-shadow:0 0 0 1.5px var(--glow)}
+.bubble{position:absolute;left:50%;top:calc(100% + 6px);transform:translateX(-50%) scale(.9);white-space:nowrap;background:var(--tile);color:var(--pip);font-weight:700;font-size:12px;padding:4px 9px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;box-shadow:0 4px 12px var(--shadow)}
+.bubble::before{content:"";position:absolute;left:50%;top:-5px;margin-left:-5px;border:5px solid transparent;border-top:0;border-bottom-color:var(--tile)}
+.bubble.show{opacity:1;transform:translateX(-50%) scale(1)}
+.bubble.galo{background:var(--glow)}
+.bubble.galo::before{border-bottom-color:var(--glow)}
+.board-wrap{position:relative;min-height:0}
+.board-wrap svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.tablefoot{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:22px;padding-inline:2px}
+.feed{margin:0;font-size:13px;line-height:1.3;color:var(--wood-ink);min-width:0;flex:1}
+.ends{flex:none;font-size:12px;font-weight:600;color:var(--wood-muted);padding:3px 9px;border-radius:999px;border:1px solid rgba(255,240,215,.12);font-variant-numeric:tabular-nums}
+.ends.hit{color:var(--wood-2);background:var(--glow);border-color:var(--glow)}
+
+/* Peças (SVG) */
+.t-body{fill:url(#bone);stroke:var(--tile-shade);stroke-width:.03}
+.t-shadow{fill:var(--shadow)}
+.t-div{stroke:var(--tile-shade);stroke-width:.04}
+.t-pip{fill:var(--pip)}
+.t-pin{fill:var(--pin)}
+.b-body{fill:url(#backg);stroke:var(--back-edge);stroke-width:.04}
+.b-line{fill:none;stroke:var(--back-line);stroke-width:.045}
+.b-dot{fill:var(--back-dot)}
+.bstop1{stop-color:var(--back-1)}
+.bstop2{stop-color:var(--back-2)}
+.stop1{stop-color:var(--tile)}
+.stop2{stop-color:var(--tile-2)}
+.last .t-body{stroke:var(--glow);stroke-width:.08}
+.fresh{animation:drop .35s ease-out;transform-box:fill-box;transform-origin:center}
+.incoming{opacity:0}
+.flytile{position:fixed;left:0;top:0;z-index:16;pointer-events:none;will-change:transform;filter:drop-shadow(0 10px 12px rgba(0,0,0,.5))}
+.flytile svg{width:100%;height:100%;display:block;overflow:visible}
+@keyframes drop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.emptymsg{fill:var(--wood-muted);font-family:var(--font-body);font-size:.5px;font-weight:600;text-anchor:middle}
+
+/* Mão */
+.me{display:grid;gap:8px}
+.me-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;min-height:44px}
+.me-txt{display:grid;gap:2px;min-width:0}
+.passbtn{border:2px solid var(--nos);background:transparent;color:var(--nos);border-radius:999px;padding:9px 20px;font-family:var(--font-display);font-size:16px;letter-spacing:.02em;cursor:pointer}
+.passbtn:active{background:var(--nos);color:var(--bg-2)}
+.passbtn:disabled{opacity:.4}
+.me-name{font-weight:700;font-size:14px;min-width:0}
+.me-name small{font-weight:500;color:var(--muted);font-size:12px}
+.me-name img{width:24px;height:24px;border-radius:50%;object-fit:cover;vertical-align:-7px;margin-right:6px;box-shadow:0 0 0 2px var(--nos)}
+.prompt{font-size:13px;font-weight:600;color:var(--muted)}
+.prompt.you{color:var(--nos)}
+.hand{display:flex;justify-content:center;gap:6px;min-height:calc(var(--tw)*2 + 10px);align-items:flex-end}
+.ht{width:var(--tw);aspect-ratio:1/2;max-width:100%;padding:0;border:0;background:none;cursor:pointer;border-radius:8px;transition:transform .15s ease, opacity .15s;filter:drop-shadow(0 3px 4px var(--shadow))}
+.ht svg{width:100%;height:100%;display:block}
+.hand .ht{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.ht.lift{opacity:.25;transform:translateY(4px)}
+.dragtile{position:fixed;left:0;top:0;z-index:40;pointer-events:none;width:calc(var(--tw)*1.3);aspect-ratio:1/2;transform:translate(-50%,-112%) rotate(-5deg);filter:drop-shadow(0 12px 14px var(--shadow))}
+.dragtile svg{width:100%;height:100%;display:block}
+.zone .z-body{fill:rgba(243,192,99,.10);stroke:var(--glow);stroke-width:.06;stroke-dasharray:.16 .1}
+.zone .z-tx{fill:var(--glow);font-family:var(--font-body);font-weight:700;font-size:.4px;text-anchor:middle}
+.zone.over .z-body{fill:rgba(243,192,99,.38);stroke-width:.1;stroke-dasharray:none}
+.ht.wait{opacity:.6}
+.ht.back{cursor:default}
+.ht.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* Embaralhar e distribuir */
+.deal-layer{position:fixed;inset:0;z-index:15;pointer-events:none;overflow:hidden}
+.dt{position:absolute;left:0;top:0;will-change:transform,opacity;filter:drop-shadow(0 5px 6px var(--shadow))}
+.dt svg{width:100%;height:100%;display:block}
+.hand.dealing .ht{opacity:0}
+
+/* Folhas e aviso */
+.back{position:fixed;inset:0;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center;z-index:20;animation:backIn .25s ease-out}
+@keyframes backIn{from{opacity:0}to{opacity:1}}
+.sheet{width:100%;max-width:560px;max-height:88%;overflow:auto;background:var(--bg-2);color:var(--fg);border-radius:22px 22px 0 0;padding:22px 20px calc(20px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 40px var(--shadow);animation:up .25s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:.4}to{transform:none;opacity:1}}
+.eyebrow{margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.sheet h2{margin:0 0 8px;font-family:var(--font-display);font-weight:400;font-size:26px;line-height:1.1;text-wrap:balance}
+.sheet p{margin:0 0 10px;line-height:1.45}
+.sheet .win{font-family:var(--font-display);font-size:19px;color:var(--nos);margin:12px 0 4px}
+.sheet .win.them{color:var(--eles)}
+.tally{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.tally div{border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;justify-content:space-between;align-items:baseline;gap:6px;min-width:0}
+.tally span{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tally b{font-family:var(--font-display);font-weight:400;font-size:24px;font-variant-numeric:tabular-nums}
+.tally .L b{color:var(--nos)} .tally .R b{color:var(--eles)}
+.reveal{display:grid;gap:8px;margin:10px 0 4px}
+.rv{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
+.rv .who{font-weight:700;min-width:84px}
+.rv .mini{height:16px;width:32px}
+.rv .sum{color:var(--muted);margin-left:auto;font-variant-numeric:tabular-nums}
+.sheet .primary{margin-top:14px}
+.rules{margin:4px 0 12px;padding-left:18px;display:grid;gap:7px;line-height:1.42}
+.menu-actions{display:grid;gap:10px}
+.menu-actions .primary{margin-top:0}
+.menu-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.menu-row .secondary{padding:13px 12px}
+.sheet .row{margin-top:10px}
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);transform:translateX(-50%);z-index:30;width:min(92%,480px);background:var(--tile);color:var(--pip);font-weight:600;font-size:14px;line-height:1.35;padding:12px 14px;border-radius:14px;box-shadow:0 10px 30px var(--shadow)}
+/* ===== Dominó Manauara: perfil, início, instalação, patrocínio ===== */
+[hidden]{display:none!important}
+html,body{overscroll-behavior:none}
+body{touch-action:manipulation}
+.shell{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.friend.bot{cursor:default}
+.friend.bot:active .fp{transform:none}
+.friend .fi{font-size:30px}
+.field input[type=text]{width:100%;font:inherit;font-size:17px;font-weight:600;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg)}
+.field input[type=text]:focus{outline:2px solid var(--glow);outline-offset:1px}
+.flabel{font-size:13px;font-weight:700}
+.avatars{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:14px 10px;padding-top:4px}
+.avbtn{display:grid;justify-items:center;gap:5px;border:0;background:none;padding:0;cursor:pointer;color:var(--muted);font-size:12px;font-weight:700}
+.avbtn .face{width:62px;height:62px;border-radius:50%;overflow:hidden;display:grid;place-items:center;box-shadow:0 0 0 2px var(--line);transition:transform .15s, box-shadow .15s}
+.avbtn .face img{width:100%;height:100%;display:block;object-fit:cover}
+.avbtn[aria-checked="true"] .face{box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--glow)}
+.avbtn[aria-checked="true"]{color:var(--fg)}
+.avbtn:active .face{transform:scale(.93)}
+.avbtn.photo .face{background:var(--bg-2);box-shadow:inset 0 0 0 2px var(--muted);color:var(--fg)}
+.avbtn.photo.has .face{box-shadow:0 0 0 2px var(--line)}
+.avbtn.photo.has[aria-checked="true"] .face{box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--glow)}
+.avbtn .cam{width:30px;height:30px}
+.home-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.mechip{flex:none;border:0;background:none;padding:0;cursor:pointer;border-radius:50%}
+.mechip img{width:52px;height:52px;border-radius:50%;object-fit:cover;display:block;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--glow)}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.links .linkbtn{align-self:auto}
+.sponsor{display:grid;gap:3px;padding:14px 16px;border-radius:16px;border:1.5px dashed var(--line);color:var(--fg);text-decoration:none}
+.sponsor .sp-k{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.sponsor b{font-family:var(--font-display);font-weight:400;font-size:19px;line-height:1.15}
+.sponsor span:last-child{font-size:13.5px;line-height:1.4;color:var(--muted)}
+.install{display:grid;gap:10px;padding:16px 18px}
+.install .ck{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+.install p{margin:0;font-size:14.5px;line-height:1.45;color:var(--wood-ink)}
+.install .row .primary{width:auto;padding:11px 18px;font-size:15px}
+.install .linkbtn{color:var(--wood-ink);border-color:rgba(239,226,204,.3)}
+.install .ios-share{display:inline-block;width:17px;height:17px;vertical-align:-3px;margin:0 1px}
+.foot{text-align:center}
+.foot a{color:inherit}
+.chipface{width:52px;height:52px}
+@media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:12px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
+/* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
+@media (orientation: landscape) and (max-height: 560px){
+  :root{--tw:clamp(28px,11vh,44px)}
+  .shell{max-width:none;padding-inline:max(16px, env(safe-area-inset-left,0px)) max(16px, env(safe-area-inset-right,0px))}
+  .panel{padding-block:14px 18px;gap:12px}
+  .brand{font-size:28px}
+  /* entrada: título à esquerda, mesa redonda à direita */
+  .entry{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"head table" "actions table" "train table";align-content:center;align-items:center;column-gap:clamp(24px,5vw,56px);row-gap:12px;text-align:center}
+  .entry > :first-child, .entry > :last-child{margin:0}
+  .entry-head{grid-area:head}
+  .entry-title{font-size:clamp(34px,10vh,52px)}
+  .entry-actions{grid-area:actions;justify-self:center}
+  .train{grid-area:train;margin:0 auto;height:44px}
+  .rt-wrap{grid-area:table;width:min(44vw,calc(100vh - 150px),300px);margin:44px 34px}
+  .friend .fp,.friend .fi{width:clamp(40px,13vh,60px);height:clamp(40px,13vh,60px);font-size:20px}
+  .friend .fn{font-size:11px;padding:2px 8px}
+  /* início e montar mesa em duas colunas */
+  #scrHome,#scrSetup{display:grid;grid-template-columns:1fr 1fr;align-content:start;column-gap:14px}
+  #scrHome > :not(.card), #scrSetup > :not(.field), #scrSetup > .field:last-of-type{grid-column:1/-1}
+  #scrSetup > .field.nos{grid-column:auto}
+  #scrSetup .backbtn{justify-self:start}
+  /* jogo */
+  .game{grid-template-columns:clamp(150px,21vw,210px) minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:8px 14px;padding-block:8px}
+  .score{grid-column:1;grid-row:1 / span 2;align-self:start;grid-template-columns:1fr 1fr;align-content:start;align-items:start;gap:10px 12px}
+  .team.L{order:1} .team.R{order:2;text-align:left}
+  .team.R .bar i{margin-left:0}
+  .team.R .float,.team.L .float{left:auto;right:0}
+  .meta{order:3;grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:4px 10px}
+  .meta .linkbtn{order:3}
+  .tnum{font-size:28px}
+  .table{grid-column:2;grid-row:1;padding:6px 8px}
+  .seats{gap:6px}
+  .seat{flex-direction:row;text-align:left;justify-content:center;padding:4px 6px}
+  .sinfo{justify-items:start}
+  .av{width:26px;height:26px;font-size:11px}
+  .me{display:contents}
+  .me-head{grid-column:1;grid-row:1 / span 2;grid-template-columns:1fr;align-self:end;gap:6px}
+  .me-name{font-size:13px}
+  .passbtn{justify-self:start;padding:7px 18px;font-size:15px}
+  .hand{grid-column:2;grid-row:2;min-height:calc(var(--tw)*2 + 6px)}
+  /* folhas mais largas, resultado em duas colunas */
+  .sheet{max-width:760px;max-height:94%;border-radius:18px 18px 0 0;padding:16px 20px calc(14px + env(safe-area-inset-bottom,0px))}
+  .res-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);column-gap:22px;align-items:start}
+  .res-side .tally{margin-top:4px}
+  .sheet h2{font-size:22px}
+}
+@media (orientation: landscape) and (max-height: 360px){
+  .train{display:none}
+  .entry{grid-template-areas:"head table" "actions table"}
+}
+@media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="backg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" class="bstop1"/><stop offset="1" class="bstop2"/>
+    </linearGradient>
+    <linearGradient id="bone" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" class="stop1"/><stop offset="1" class="stop2"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="shell">
+  <section class="screen panel entry" id="scrWho" hidden>
+    <header class="entry-head">
+      <p class="kicker">Dominó em duplas · regras de Manaus</p>
+      <h1 class="entry-title">Dominó <span>Manauara</span></h1>
+    </header>
+    <div class="rt-wrap" id="roundTable">
+      <div class="rt" aria-hidden="true"></div>
+      <svg class="rt-center" id="rtCenter" viewBox="-3.4 -2.2 6.8 4.4" aria-hidden="true"></svg>
+    </div>
+    <div class="entry-actions">
+      <button type="button" class="primary" id="enterBtn">Começar</button>
+      <button type="button" class="linkbtn" id="editProfile" hidden>Trocar nome ou foto</button>
+    </div>
+    <div class="train go" id="train" role="button" tabindex="0" aria-label="Derrubar as pedras de novo"></div>
+  </section>
+
+  <section class="screen panel" id="scrProfile" hidden>
+    <button type="button" class="backbtn" id="profileBack">← Voltar</button>
+    <div><p class="kicker">Seu perfil</p><h2 class="brand" style="font-size:30px">Quem vai pra mesa?</h2></div>
+    <div class="field">
+      <label for="nameInput">Seu nome ou apelido</label>
+      <input id="nameInput" type="text" maxlength="14" autocomplete="nickname" autocapitalize="words" enterkeyhint="done" spellcheck="false" placeholder="Ex.: Zé do Bairro">
+    </div>
+    <div class="field">
+      <span class="flabel">Sua cara na mesa</span>
+      <div class="avatars" id="avatarGrid" role="radiogroup" aria-label="Escolha sua foto ou um avatar"></div>
+      <div class="links" id="photoTools" hidden><button type="button" class="linkbtn" id="photoChange">Trocar foto</button><button type="button" class="linkbtn" id="photoRemove">Remover foto</button></div>
+      <input type="file" id="photoInput" accept="image/*" hidden>
+      <p class="note">Com foto, os outros jogadores veem que você é gente de verdade: ela vai aparecer na mesa online, que está chegando. Não quer aparecer? Escolha um avatar.</p>
+    </div>
+    <button type="button" class="primary" id="saveProfile">Salvar e entrar</button>
+  </section>
+
+  <section class="screen panel" id="scrHome" hidden>
+    <div class="home-top">
+      <div><p class="kicker">Regras de Manaus</p><h1 class="brand">Dominó <em>Manauara</em></h1></div>
+      <button type="button" class="mechip" id="meChip" aria-label="Trocar nome ou foto"></button>
+    </div>
+    <p class="lead">Fala, <b id="homeName"></b>. Bora pra mesa?</p>
+    <button type="button" class="card wood" id="goResume" hidden>
+      <span class="ck">Jogo em andamento</span><span class="ct">Continuar de onde parou</span>
+      <span class="cd" id="resumeD"></span>
+    </button>
+    <button type="button" class="card wood" id="goOffline">
+      <span class="ck">Jogo offline</span><span class="ct">Você contra a turma do bairro</span>
+      <span class="cd">Você e um parceiro contra dois adversários, todos no mesmo nível e sem pressa. Funciona até sem internet.</span>
+    </button>
+    <button type="button" class="card wood card-off" id="goOnline" disabled aria-disabled="true">
+      <span class="ck">Mesa online · em breve</span><span class="ct">Jogar com os amigos</span>
+      <span class="cd">Quatro pessoas de verdade na mesma mesa, cada uma no seu celular e com sua foto. Está chegando.</span>
+    </button>
+    <div class="mytreino wood" id="myTreino" hidden>
+      <span class="ck">Seu histórico neste celular</span>
+      <div class="mt-nums">
+        <div><b id="mtV">0</b><small>vitórias</small></div><div><b id="mtJ">0</b><small>jogos</small></div>
+        <div><b id="mtB">0</b><small>batidas</small></div><div><b id="mtG">0</b><small>galos</small></div>
+      </div>
+      <a class="mt-share" id="mtShare" href="https://wa.me/" target="_blank" rel="noopener">Mandar no WhatsApp</a>
+    </div>
+    <div class="install wood" id="installCard" hidden>
+      <span class="ck">Deixe na tela de início</span>
+      <p id="installTxt"></p>
+      <div class="row"><button type="button" class="primary" id="installBtn" hidden>Instalar o app</button><button type="button" class="linkbtn" id="installNo">Agora não</button></div>
+    </div>
+    <a class="sponsor" id="sponsor" target="_blank" rel="noopener" hidden></a>
+    <div class="links">
+      <button type="button" class="linkbtn" id="shareApp">Chamar a turma</button>
+      <button type="button" class="linkbtn" id="howBtn">Regras de Manaus</button>
+      <button type="button" class="linkbtn" id="changeName">Trocar nome ou foto</button>
+    </div>
+    <p class="note foot">Dominó Manauara · <a href="privacidade.html">Privacidade</a></p>
+  </section>
+
+  <section class="screen panel" id="scrSetup" hidden>
+    <button type="button" class="backbtn" data-go="home">← Voltar</button>
+    <div><p class="kicker">Jogo offline</p><h2 class="brand" style="font-size:30px">Monte a mesa</h2></div>
+    <div class="field nos"><label for="selPartner">Seu parceiro <small>· senta na sua frente</small></label><select id="selPartner"></select></div>
+    <div class="field"><label for="selLeft">Adversário à esquerda <small>· joga depois de você</small></label><select id="selLeft"></select></div>
+    <div class="field"><label for="selRight">Adversário à direita <small>· joga antes de você</small></label><select id="selRight"></select></div>
+    <div class="row"><button type="button" class="secondary" id="shuffleBtn">Sortear a mesa</button></div>
+    <button type="button" class="primary" id="startOffline">Começar</button>
+  </section>
+  <section class="screen game" id="scrGame" hidden>
+    <header class="score">
+      <div class="team L"><span class="tlabel" id="tL">Nós</span><span class="tnum" id="sL">0</span><div class="bar"><i id="bL"></i></div><span class="float" id="fL"></span></div>
+      <div class="meta"><span class="pt" id="ptLbl">Partida 1 · até 200</span><span class="sr" id="srLbl">0 × 0</span><button class="linkbtn" id="menuBtn" type="button">Menu</button></div>
+      <div class="team R"><span class="tlabel" id="tR">Eles</span><span class="tnum" id="sR">0</span><div class="bar"><i id="bR"></i></div><span class="float" id="fR"></span></div>
+    </header>
+    <main class="table wood">
+      <div class="seats">
+        <div class="seat" data-pos="1"><span class="av"></span><span class="sinfo"><span class="sn"></span><span class="sc"></span></span><span class="bubble"></span></div>
+        <div class="seat" data-pos="2"><span class="av"></span><span class="sinfo"><span class="sn"></span><span class="sc"></span></span><span class="bubble"></span></div>
+        <div class="seat" data-pos="3"><span class="av"></span><span class="sinfo"><span class="sn"></span><span class="sc"></span></span><span class="bubble"></span></div>
+      </div>
+      <div class="board-wrap" id="boardWrap"><svg id="board" role="img" aria-label="Mesa de dominó" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <div class="tablefoot"><p class="feed" id="feed" aria-live="polite"></p><span class="ends" id="ends" hidden></span></div>
+    </main>
+    <footer class="me">
+      <div class="me-head"><div class="me-txt"><span class="me-name" id="meName">Você</span><span class="prompt" id="prompt"></span></div><button type="button" class="passbtn" id="passBtn" hidden>Passo</button></div>
+      <div class="hand" id="hand"></div>
+    </footer>
+  </section>
+</div>
+
+<div class="back" id="back" hidden><section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></section></div>
+<div class="deal-layer" id="dealLayer" aria-hidden="true" hidden></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+// ===== ENGINE START =====
+const TEAM = p => p % 2;            // time 0 = cadeiras 0 e 2, time 1 = cadeiras 1 e 3
+const TARGET = 200;
+const isDbl = t => t[0] === t[1];
+const pips = t => t[0] + t[1];
+const tkey = t => Math.min(t[0], t[1]) + '-' + Math.max(t[0], t[1]);
+
+function fullSet() { const s = []; for (let a = 0; a <= 6; a++) for (let b = a; b <= 6; b++) s.push([a, b]); return s; }
+function shuffle(arr, rnd) { rnd = rnd || Math.random; for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+
+function newGame(names) {
+  return { names: (names || ['Jogador 1', 'Jogador 2', 'Jogador 3', 'Jogador 4']).slice(),
+    score: [0, 0], series: [0, 0], partida: 1, handNo: 0, nextStart: { mode: 'sena' },
+    hands: [[], [], [], []], chain: [], center: 0, bucho: { U: [], D: [] }, turn: 0, phase: 'idle', openMode: null,
+    passStreak: [], lastPlayer: null, lastKey: null, lacks: [[], [], [], []], events: [], result: null };
+}
+function addScore(st, team, pts) { st.score[team] += pts; }
+
+// Soma das pontas: carroça na ponta conta dobrado; a pedra de saída sozinha conta a soma dela.
+function endsSum(chain) {
+  if (!chain.length) return 0;
+  if (chain.length === 1) return chain[0].a + chain[0].b;
+  const f = chain[0], l = chain[chain.length - 1];
+  return (f.a === f.b ? 2 * f.a : f.a) + (l.a === l.b ? 2 * l.b : l.b);
+}
+function tablePoints(chain) { const s = endsSum(chain); return s > 0 && s % 5 === 0 ? s : 0; }
+// Soma da mesa: as duas pontas + cada lado do bucho que já recebeu pedra (carroça na ponta conta dobrado).
+function tableSum(T) {
+  let s = endsSum(T.chain);
+  if (T.chain.length && buchoOpen(T)) for (const k of ['U', 'D']) {
+    const arr = (T.bucho && T.bucho[k]) || [];
+    if (arr.length) { const t = arr[arr.length - 1]; s += t.n === t.f ? 2 * t.f : t.f; }
+  }
+  return s;
+}
+function tableScore(T) { const s = tableSum(T); return s > 0 && s % 5 === 0 ? s : 0; }
+
+// ---- Bucho: a carroça de saída abre os dois lados depois que as duas pontas dela têm pedra ----
+function buchoOpen(st) {
+  if (!st.chain.length) return false;
+  const c = st.chain[st.center];
+  return c.a === c.b && st.center > 0 && st.center < st.chain.length - 1;
+}
+function buchoEnd(st, k) {
+  const arr = (st.bucho && st.bucho[k]) || [];
+  return arr.length ? arr[arr.length - 1].f : st.chain[st.center].a;
+}
+function openEnds(st) {
+  if (!st.chain.length) return [];
+  const out = [{ side: 'L', v: st.chain[0].a }, { side: 'R', v: st.chain[st.chain.length - 1].b }];
+  if (buchoOpen(st)) { out.push({ side: 'U', v: buchoEnd(st, 'U') }); out.push({ side: 'D', v: buchoEnd(st, 'D') }); }
+  return out;
+}
+function tableTiles(st) {
+  const out = st.chain.map(c => [c.a, c.b]);
+  const b = st.bucho || {};
+  for (const k of ['U', 'D']) for (const x of (b[k] || [])) out.push([x.n, x.f]);
+  return out;
+}
+function cloneT(st) {
+  const b = st.bucho || {};
+  return { chain: st.chain.map(c => ({ a: c.a, b: c.b })), center: st.center,
+    bucho: { U: (b.U || []).map(x => ({ n: x.n, f: x.f })), D: (b.D || []).map(x => ({ n: x.n, f: x.f })) } };
+}
+// Ninguém joga mais quando todas as pedras de cada número aberto já estão na mesa.
+function lockedTable(st) {
+  const tiles = tableTiles(st);
+  return openEnds(st).every(e => tiles.filter(t => t[0] === e.v || t[1] === e.v).length === 7);
+}
+
+function legalMoves(st, p) {
+  const h = st.hands[p], out = [];
+  if (!h) return out;
+  if (!st.chain.length) {
+    if (p !== st.turn) return out;
+    h.forEach((t, i) => {
+      if (st.openMode === 'sena' && !(t[0] === 6 && t[1] === 6)) return;
+      if (st.openMode === 'carroca' && !isDbl(t)) return;
+      out.push({ i, side: 'C' });
+    });
+    return out;
+  }
+  const ends = openEnds(st);
+  h.forEach((t, i) => {
+    for (const e of ends) if (t[0] === e.v || t[1] === e.v) out.push({ i, side: e.side });
+  });
+  return out;
+}
+
+function place(st, t, side) {
+  if (side === 'C') { st.chain = [{ a: t[0], b: t[1] }]; st.center = 0; st.bucho = { U: [], D: [] }; return; }
+  if (side === 'U' || side === 'D') {
+    if (!st.bucho) st.bucho = { U: [], D: [] };
+    const e = buchoEnd(st, side);
+    st.bucho[side].push({ n: e, f: t[0] === e ? t[1] : t[0] });
+    return;
+  }
+  if (side === 'L') {
+    const L = st.chain[0].a;
+    st.chain.unshift(t[1] === L ? { a: t[0], b: t[1] } : { a: t[1], b: t[0] });
+    st.center++;
+  } else {
+    const R = st.chain[st.chain.length - 1].b;
+    st.chain.push(t[0] === R ? { a: t[0], b: t[1] } : { a: t[1], b: t[0] });
+  }
+}
+
+function startHand(st) {
+  st.handNo++;
+  let redeals = 0, hands;
+  for (;;) {
+    const d = shuffle(fullSet());
+    hands = [d.slice(0, 7), d.slice(7, 14), d.slice(14, 21), d.slice(21, 28)];
+    if (hands.some(h => h.filter(isDbl).length >= 5)) { redeals++; continue; }
+    break;
+  }
+  hands.forEach(h => h.sort((x, y) => x[0] - y[0] || x[1] - y[1]));
+  Object.assign(st, { hands, chain: [], center: 0, bucho: { U: [], D: [] }, passStreak: [], lastPlayer: null, lastKey: null,
+    lacks: [[], [], [], []], result: null, phase: 'play', events: [] });
+  if (redeals) st.events.push({ type: 'redeal', n: redeals });
+  const ns = st.nextStart;
+  if (ns.mode === 'sena') {
+    st.turn = hands.findIndex(h => h.some(t => t[0] === 6 && t[1] === 6));
+    st.openMode = 'sena';
+    st.events.push({ type: 'start', p: st.turn, mode: 'sena' });
+  } else {
+    const b = ns.player;
+    if (hands[b].some(isDbl)) { st.turn = b; st.openMode = 'carroca'; st.events.push({ type: 'start', p: b, mode: 'carroca' }); }
+    else {
+      const team = 1 - TEAM(b);
+      addScore(st, team, 20);
+      st.events.push({ type: 'semCarroca', p: b, team, pts: 20 });
+      st.turn = (b + 1) % 4; st.openMode = 'livre';
+      st.events.push({ type: 'start', p: st.turn, mode: 'livre' });
+    }
+  }
+}
+
+function anyoneCanPlay(st) { for (let q = 0; q < 4; q++) if (legalMoves(st, q).length) return true; return false; }
+
+function applyMove(st, p, mv) {
+  st.events = [];
+  const t = st.hands[p].splice(mv.i, 1)[0];
+  place(st, t, mv.side);
+  st.passStreak = []; st.lastPlayer = p; st.lastKey = tkey(t); st.openMode = null;
+  const pts = tableScore(st);   // soma das 4 pontas (bucho incluído)
+  if (pts) addScore(st, TEAM(p), pts);
+  st.events.push({ type: 'play', p, t, pts, team: TEAM(p), side: mv.side });
+  if (!st.hands[p].length) {
+    const carroca = isDbl(t);
+    if (carroca) addScore(st, TEAM(p), 20);
+    st.events.push({ type: 'batida', p, carroca, team: TEAM(p), pts: carroca ? 20 : 0 });
+    // Garagem: os pontos que sobraram na mão da dupla que não bateu vão para a dupla que bateu
+    // (arredondados para baixo no múltiplo de 5, como no jogo fechado).
+    const opp = 1 - TEAM(p);
+    const gSum = st.hands.reduce((s, h, q) => TEAM(q) === opp ? s + h.reduce((a, x) => a + pips(x), 0) : s, 0);
+    const garagem = Math.floor(gSum / 5) * 5;
+    if (garagem) addScore(st, TEAM(p), garagem);
+    st.events.push({ type: 'garagem', p, team: TEAM(p), sum: gSum, pts: garagem });
+    endHand(st, { kind: 'batida', p, carroca, lastPts: pts, garagem, garagemSum: gSum });
+    return;
+  }
+  if (!anyoneCanPlay(st)) { closeHand(st, p); return; }
+  st.turn = (p + 1) % 4;
+}
+
+function applyPass(st, p) {
+  st.events = [];
+  for (const e of openEnds(st)) if (!st.lacks[p].includes(e.v)) st.lacks[p].push(e.v);
+  // O passe vale 20 para a dupla de quem jogou por último. Se quem passa é parceiro de quem jogou, ninguém marca.
+  const lp = st.lastPlayer, team = TEAM(lp);
+  const pts = TEAM(p) !== team ? 20 : 0;
+  if (pts) addScore(st, team, pts);
+  st.passStreak.push({ team, pts, p });
+  if (st.passStreak.length >= 3) {
+    // Passe geral (galo): os três passaram e a vez volta para quem jogou.
+    for (const e of st.passStreak) addScore(st, e.team, -e.pts);
+    const ap = st.lastPlayer;
+    addScore(st, TEAM(ap), 50);
+    st.events.push({ type: 'pass', p, team, pts, voided: true });
+    st.events.push({ type: 'galo', p: ap, team: TEAM(ap), pts: 50 });
+    st.passStreak = [];
+  } else st.events.push({ type: 'pass', p, team, pts });
+  st.turn = (p + 1) % 4;
+}
+
+function closeHand(st, p) {
+  const sums = [0, 0];
+  st.hands.forEach((h, q) => { sums[TEAM(q)] += h.reduce((s, t) => s + pips(t), 0); });
+  let team = null, pts = 0, hi = null;
+  if (sums[0] !== sums[1]) {
+    hi = sums[0] > sums[1] ? 0 : 1; team = 1 - hi;
+    pts = Math.floor(sums[hi] / 5) * 5;
+    if (pts) addScore(st, team, pts);
+  }
+  st.events.push({ type: 'fechado', p, sums, team, pts });
+  endHand(st, { kind: 'fechado', p, sums, team, hi, pts });
+}
+
+function endHand(st, info) {
+  st.phase = 'handEnd';
+  // A próxima mão sai sempre com quem jogou a última pedra (batida ou fechamento), com qualquer carroça.
+  st.nextStart = { mode: 'carroca', player: info.p };
+  const r = Object.assign({}, info, { hands: st.hands.map(h => h.map(t => t.slice())), score: st.score.slice(),
+    handNo: st.handNo, partida: st.partida });
+  const [a, b] = st.score;
+  if (Math.max(a, b) >= TARGET && a !== b) {
+    const w = a > b ? 0 : 1;
+    st.series[w]++; r.matchWinner = w; r.series = st.series.slice();
+    if (st.series[w] >= 2) r.gameWinner = w;
+  }
+  st.result = r;
+}
+
+function nextHand(st) {
+  const r = st.result;
+  if (r && r.matchWinner != null) {
+    // Jogo novo começa com a carroça de sena; partida nova segue com quem jogou a última pedra.
+    if (r.gameWinner != null) { const fresh = newGame(st.names); Object.keys(st).forEach(k => delete st[k]); Object.assign(st, fresh); }
+    else { st.partida++; st.score = [0, 0]; st.handNo = 0; }
+  }
+  startHand(st);
+}
+
+// Robô (o mesmo para todos): pontos na mesa, provocar passe, evitar dar ponto, não trancar com a mão pesada.
+function botChoose(st, p, rnd) {
+  rnd = rnd || Math.random;
+  const moves = legalMoves(st, p);
+  if (moves.length === 1) return moves[0];
+  const hand = st.hands[p];
+  const seen = new Set(hand.map(tkey));
+  tableTiles(st).forEach(t => seen.add(tkey(t)));
+  const unseen = fullSet().filter(t => !seen.has(tkey(t)));
+  const avg = unseen.length ? unseen.reduce((s, t) => s + pips(t), 0) / unseen.length : 0;
+  const opp = (p + 1) % 4, partner = (p + 2) % 4, opp2 = (p + 3) % 4;
+  const oppL = st.lacks[opp], parL = st.lacks[partner];
+  let best = moves[0], bestV = -Infinity;
+  for (const mv of moves) {
+    const t = hand[mv.i];
+    const sim = cloneT(st);
+    place(sim, t, mv.side);
+    const pts = tableScore(sim);
+    const rest = hand.filter((_, j) => j !== mv.i);
+    let v = pts;
+    if (!rest.length) v += 300 + (isDbl(t) ? 20 : 0);
+    if (isDbl(t)) v += 4;
+    v += pips(t) * 0.35;
+    const ends = openEnds(sim).map(e => e.v);
+    if (rest.length && lockedTable(sim)) {
+      const ours = rest.reduce((s, x) => s + pips(x), 0) + avg * st.hands[partner].length;
+      const theirs = avg * (st.hands[opp].length + st.hands[opp2].length);
+      v += ours < theirs ? 0.8 * Math.floor(theirs / 5) * 5 : -0.8 * Math.floor(ours / 5) * 5;
+    } else if (rest.length) {
+      const blocked = ends.every(e => oppL.includes(e));
+      if (blocked) v += 14; else if (ends.some(e => oppL.includes(e))) v += 2;
+      if (ends.every(e => parL.includes(e))) v -= 6;
+      if (!blocked) {
+        const simEnds = openEnds(sim);
+        let risk = 0;
+        for (const u of unseen) {
+          if (oppL.includes(u[0]) || oppL.includes(u[1])) continue;
+          for (const e of simEnds) {
+            if (u[0] !== e.v && u[1] !== e.v) continue;
+            const s2 = cloneT(sim);
+            place(s2, u, e.side);
+            risk = Math.max(risk, tableScore(s2));
+          }
+        }
+        v -= risk * 0.45;
+      }
+      v += rest.filter(x => ends.some(e => x[0] === e || x[1] === e)).length * 1.5;
+    }
+    v += (rnd() - 0.5) * 2;
+    if (v > bestV) { bestV = v; best = mv; }
+  }
+  return best;
+}
+
+// Mesa: com carroça de saída, cada braço ocupa um quadrante (cata-vento) — ponta direita desce pela direita,
+// ponta esquerda sobe pela esquerda, bucho de baixo vai para a esquerda e bucho de cima para a direita.
+// Sem carroça no centro, as duas pontas usam a largura toda.
+function layoutTable(T, Xmax) {
+  const chain = T.chain, center = T.center, bu = T.bucho || {};
+  const res = { main: new Array(chain.length), U: [], D: [] };
+  if (!chain.length) return res;
+  const c = chain[center];
+  const right = [], left = [];
+  for (let i = center + 1; i < chain.length; i++) right.push({ idx: i, near: chain[i].a, far: chain[i].b });
+  for (let i = center - 1; i >= 0; i--) left.push({ idx: i, near: chain[i].b, far: chain[i].a });
+  const toMain = (t, p) => { res.main[t.idx] = p; };
+  if (c.a === c.b) {
+    res.main[center] = { x: 0, y: 0, o: 'v', v1: c.a, v2: c.b };
+    armLayout(right, { x: 0.5, y: 0, dir: 1, vdir: 1, lo: 2, hi: Xmax }, toMain);
+    armLayout(left, { x: -0.5, y: 0, dir: -1, vdir: -1, lo: -Xmax, hi: -2 }, toMain);
+    const asArm = arr => (arr || []).map(t => ({ near: t.n, far: t.f }));
+    armLayout(asArm(bu.D), { mode: 'col', colX: 0, colEnd: 1, dir: 1, vdir: 1, lo: -Xmax, hi: -0.5, firstNeed: 3 }, (t, p) => res.D.push(p));
+    armLayout(asArm(bu.U), { mode: 'col', colX: 0, colEnd: -1, dir: -1, vdir: -1, lo: 0.5, hi: Xmax, firstNeed: 3 }, (t, p) => res.U.push(p));
+  } else {
+    res.main[center] = { x: 0, y: 0, o: 'h', v1: c.a, v2: c.b };
+    armLayout(right, { x: 1, y: 0, dir: 1, vdir: 1, lo: -Xmax, hi: Xmax }, toMain);
+    armLayout(left, { x: -1, y: 0, dir: -1, vdir: -1, lo: -Xmax, hi: Xmax }, toMain);
+  }
+  return res;
+}
+function layoutChain(chain, center, Xmax) { return layoutTable({ chain, center }, Xmax).main; }
+// Carroça sempre atravessada e centrada na pedra em que encaixou; a linha segue reto do outro lado dela.
+// Se a fileira acaba logo depois de uma carroça, a linha desce (ou sobe) a partir da ponta da carroça.
+function armLayout(tiles, o, put) {
+  let x = o.x || 0, y = o.y || 0, dir = o.dir, mode = o.mode || 'row', colX = o.colX || 0, colEnd = o.colEnd || 0, rows = 0;
+  let lastDbl = null, colAfterDbl = false;
+  const vdir = o.vdir, lo = o.lo, hi = o.hi, eps = 1e-9;
+  const out = v => v > hi + eps || v < lo - eps;
+  for (const t of tiles) {
+    const dbl = t.near === t.far;
+    const vert = () => ({ v1: vdir > 0 ? t.near : t.far, v2: vdir > 0 ? t.far : t.near });
+    if (mode === 'row') {
+      if (dbl) {
+        // carroça em pé (atravessada na fileira), centrada na pedra anterior — mesmo no fim da fileira
+        put(t, { x: x + dir * 0.5, y, o: 'v', v1: t.near, v2: t.far });
+        lastDbl = { x: x + dir * 0.5, y }; x += dir; continue;
+      }
+      if (!out(x + dir * 2)) {
+        put(t, { x: x + dir, y, o: 'h', v1: dir > 0 ? t.near : t.far, v2: dir > 0 ? t.far : t.near });
+        lastDbl = null; x += dir * 2; continue;
+      }
+      // a fileira acabou: vira para a coluna
+      if (lastDbl) { colX = lastDbl.x; colEnd = y + vdir * 1; mode = 'col'; colAfterDbl = true; lastDbl = null; }
+      else {
+        const cx = x + dir * 0.5;
+        put(t, Object.assign({ x: cx, y: y + vdir * 0.5, o: 'v' }, vert()));
+        colX = cx; colEnd = y + vdir * 1.5; mode = 'col'; colAfterDbl = false; continue;
+      }
+    }
+    // coluna
+    if (dbl) {
+      // carroça deitada (atravessada na coluna), centrada na pedra anterior
+      put(t, { x: colX, y: colEnd + vdir * 0.5, o: 'h', v1: t.near, v2: t.far });
+      colEnd += vdir; colAfterDbl = true; continue;
+    }
+    const need = rows === 0 && o.firstNeed ? o.firstNeed : Math.abs(y) + 2;
+    const ny = colEnd + vdir * 0.5;
+    if (Math.abs(ny) < need - eps || colAfterDbl) {
+      put(t, Object.assign({ x: colX, y: colEnd + vdir, o: 'v' }, vert()));
+      colEnd += vdir * 2; colAfterDbl = false; continue;
+    }
+    dir = -dir;
+    put(t, { x: colX + dir * 0.5, y: ny, o: 'h', v1: dir > 0 ? t.near : t.far, v2: dir > 0 ? t.far : t.near });
+    x = colX + dir * 1.5; y = ny; mode = 'row'; rows++; lastDbl = null;
+  }
+}
+// ===== ENGINE END =====
+
+// ===== UI =====
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+const PIPS = { 0: [], 1: [[.5, .5]], 2: [[.27, .27], [.73, .73]], 3: [[.27, .27], [.5, .5], [.73, .73]],
+  4: [[.27, .27], [.73, .27], [.27, .73], [.73, .73]], 5: [[.27, .27], [.73, .27], [.5, .5], [.27, .73], [.73, .73]],
+  6: [[.28, .22], [.28, .5], [.28, .78], [.72, .22], [.72, .5], [.72, .78]] };
+const f2 = n => Math.round(n * 1000) / 1000;
+// Ritmo fixo dos robôs: 4,5 s por jogada, para dar tempo de contar as pedras.
+const SPEEDS = { normal: { play: 4500, pass: 3000, mine: 1500, end: 2200 } };
+const POS = ['Sul', 'Oeste', 'Norte', 'Leste'];
+
+// ===== Dominó Manauara =====
+const CONFIG = {
+  site: 'dominomanauara.com.br',
+  // WhatsApp para vender anúncios (só números, com 55 e DDD, ex.: '5592999999999'). Vazio: o cartão "Anuncie aqui" não aparece.
+  anuncieWhats: '',
+  // Patrocinador da vez, mostrado no início. Ex.: { nome: 'Açaí do Bairro', texto: 'Peça pelo WhatsApp', link: 'https://wa.me/55...' }
+  patrocinio: null
+};
+// Endereço do jogo para os convites: o site onde ele está aberto (ou o domínio, quando aberto fora da internet).
+const SITE_URL = /^https?:$/.test(location.protocol) && !/^(localhost|127\.)/.test(location.hostname)
+  ? location.origin + location.pathname.replace(/[^/]*$/, '') : 'https://' + CONFIG.site + '/';
+const TURMA = 'a turma do bairro';
+
+// ---- Avatares (desenhados aqui mesmo, sem foto de ninguém) ----
+const SKIN = { claro: '#f1c9a5', medio: '#e0ac7e', moreno: '#c68a5c', jambo: '#9a6440', escuro: '#6e4429' };
+const HAIR = { preto: '#1f1712', castanho: '#4a2e1c', grisalho: '#b9b4ab', branco: '#ece8e0' };
+function shade(hex, k) {
+  const n = parseInt(hex.slice(1), 16);
+  return '#' + [n >> 16, (n >> 8) & 255, n & 255]
+    .map(v => Math.max(0, Math.min(255, Math.round(k < 0 ? v * (1 + k) : v + (255 - v) * k))).toString(16).padStart(2, '0')).join('');
+}
+function avatarSVG(a) {
+  const skin = a.skin, dk = shade(skin, -0.16), hc = a.hc || HAIR.preto, ink = '#2a1a10';
+  let back = '', hair = '', top = '';
+  const sides = y => `<path d="M33.2 ${y}C32.5 ${y + 7} 33.5 ${y + 12} 35.5 ${y + 15}L37 ${y + 4}Z M66.8 ${y}C67.5 ${y + 7} 66.5 ${y + 12} 64.5 ${y + 15}L63 ${y + 4}Z" fill="${hc}"/>`;
+  switch (a.style) {
+    case 'curto': hair = `<path d="M33 44C31 27 40 21.5 50 21.5S69 27 67 44C66 37 63 33 58 31.5C52 34 44 34 38 32C35 35 34 39 33 44Z" fill="${hc}"/>`; break;
+    case 'raspado': hair = `<path d="M33.5 42C33 28 41 24.5 50 24.5S67 28 66.5 42C63 34 57 31 50 31S37 34 33.5 42Z" fill="${hc}"/>`; break;
+    case 'careca': hair = sides(39) + '<ellipse cx="44" cy="30" rx="6" ry="2.6" fill="#fff" opacity=".22"/>'; break;
+    case 'cacheado': hair = [[35, 36, 7], [41, 28.5, 7.5], [50, 25, 8], [59, 28.5, 7.5], [65, 36, 7], [33.5, 43, 4.5], [66.5, 43, 4.5]]
+      .map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${hc}"/>`).join(''); break;
+    case 'longo':
+      back = `<path d="M31 48C29 26 39 19 50 19S71 26 69 48L71 72C64 76 58 72 57 66L43 66C42 72 36 76 29 72Z" fill="${hc}"/>`;
+      hair = `<path d="M33 43C32 28 41 22 50 22S68 28 67 43C62 34 55 30 47 31C41 33 36 37 33 43Z" fill="${hc}"/>`; break;
+    case 'coque':
+      back = `<circle cx="50" cy="20" r="8.5" fill="${hc}"/>`;
+      hair = `<path d="M33.5 43C33 28 41 23.5 50 23.5S67 28 66.5 43C63 34 57 30.5 50 30.5S37 34 33.5 43Z" fill="${hc}"/>`; break;
+    case 'bone': {
+      const cc = a.cap || '#c0392b', cd = shade(cc, -0.28);
+      hair = sides(38);
+      top = `<path d="M32 37C32 23 40 18 50 18S68 23 68 37Z" fill="${cc}"/><path d="M29 36.5Q50 41.5 71 36.5L72 40Q50 47 28 40Z" fill="${cd}"/><circle cx="50" cy="18.6" r="1.8" fill="${cd}"/>`; break;
+    }
+    case 'chapeu':
+      hair = sides(37);
+      top = '<ellipse cx="50" cy="31.5" rx="31" ry="6.5" fill="#d9b46a"/><path d="M36 32C36 19.5 42 14.5 50 14.5S64 19.5 64 32Z" fill="#e8c983"/>'
+        + '<path d="M36.3 27.5H63.7V31.5H36.3Z" fill="#8a3b26"/><ellipse cx="50" cy="33.2" rx="25" ry="2.6" fill="#c9a259" opacity=".6"/>'; break;
+  }
+  const capped = a.style === 'bone' || a.style === 'chapeu', stache = a.bigode || a.barba;
+  let face = `<circle cx="43.5" cy="46.5" r="2.1" fill="${ink}"/><circle cx="56.5" cy="46.5" r="2.1" fill="${ink}"/>`;
+  if (!capped) face += `<path d="M39.8 41.6q3.6-2.2 7.2 0M53 41.6q3.6-2.2 7.2 0" stroke="${a.brow || hc}" stroke-width="1.9" fill="none" stroke-linecap="round"/>`;
+  face += '<circle cx="39" cy="53.5" r="3.4" fill="#e8796a" opacity=".16"/><circle cx="61" cy="53.5" r="3.4" fill="#e8796a" opacity=".16"/>';
+  if (a.barba) face += `<path d="M33.5 48C34 60 41 66.5 50 66.5S66 60 66.5 48C64 55 60 58.5 56 58.5C53 56.5 47 56.5 44 58.5C40 58.5 36 55 33.5 48Z" fill="${a.barba}"/>`;
+  face += `<path d="M45 ${stache ? 58.4 : 56.5}q5 3.6 10 0" stroke="${a.barba ? shade(skin, -0.45) : '#6a3322'}" stroke-width="1.9" fill="none" stroke-linecap="round"/>`;
+  if (stache) face += `<path d="M41.5 53.5C44.5 50.5 48 51 50 52.5C52 51 55.5 50.5 58.5 53.5C55.5 55.6 52.5 55.1 50 54.3C47.5 55.1 44.5 55.6 41.5 53.5Z" fill="${stache}"/>`;
+  if (a.oculos) face += '<g fill="rgba(255,255,255,.14)" stroke="#2b2622" stroke-width="1.7"><circle cx="43.5" cy="46.5" r="5.2"/><circle cx="56.5" cy="46.5" r="5.2"/></g>'
+    + '<path d="M48.7 46.3h2.6M38.3 45.6L33.6 44.6M61.7 45.6L66.4 44.6" stroke="#2b2622" stroke-width="1.7" fill="none"/>';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><clipPath id="c"><circle cx="50" cy="50" r="50"/></clipPath></defs>'
+    + `<g clip-path="url(#c)"><rect width="100" height="100" fill="${a.bg}"/>${back}`
+    + `<path d="M12 104C14 80 30 71 50 71S86 80 88 104Z" fill="${a.shirt}"/><path d="M43 62H57V72Q50 78 43 72Z" fill="${dk}"/><path d="M42.5 71.5L50 79.5L57.5 71.5Z" fill="${dk}"/>`
+    + `<circle cx="32.8" cy="47.5" r="4.4" fill="${dk}"/><circle cx="67.2" cy="47.5" r="4.4" fill="${dk}"/><ellipse cx="50" cy="45" rx="17" ry="20" fill="${skin}"/>`
+    + `${hair}${face}${top}</g></svg>`;
+}
+const avCache = new Map();
+function avatarURI(a) {
+  let u = avCache.get(a);
+  if (!u) { u = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(avatarSVG(a)); avCache.set(a, u); }
+  return u;
+}
+const AVATARS = [
+  { id: 'a1', bg: '#e5a650', skin: SKIN.moreno, style: 'curto', hc: HAIR.preto, shirt: '#245e6a' },
+  { id: 'a2', bg: '#8fbcc2', skin: SKIN.medio, style: 'careca', hc: HAIR.grisalho, bigode: HAIR.grisalho, shirt: '#97520f' },
+  { id: 'a3', bg: '#86c98f', skin: SKIN.jambo, style: 'bone', cap: '#c0392b', hc: HAIR.preto, shirt: '#f2e7d5' },
+  { id: 'a4', bg: '#d9825b', skin: SKIN.moreno, style: 'chapeu', hc: HAIR.preto, bigode: HAIR.preto, shirt: '#3d6b4f' },
+  { id: 'a5', bg: '#e9c46a', skin: SKIN.claro, style: 'raspado', hc: HAIR.grisalho, oculos: true, shirt: '#4f7fa6' },
+  { id: 'a6', bg: '#c77dab', skin: SKIN.medio, style: 'longo', hc: HAIR.preto, shirt: '#f6eedf' },
+  { id: 'a7', bg: '#8fb3d9', skin: SKIN.moreno, style: 'coque', hc: HAIR.grisalho, oculos: true, shirt: '#a8402a' },
+  { id: 'a8', bg: '#e58a6c', skin: SKIN.escuro, style: 'cacheado', hc: HAIR.preto, barba: HAIR.preto, shirt: '#e5a650' },
+  { id: 'a9', bg: '#a7c97a', skin: SKIN.claro, style: 'curto', hc: HAIR.castanho, shirt: '#7d4e7a' },
+  { id: 'a10', bg: '#7d9fc2', skin: SKIN.medio, style: 'bone', cap: '#1f4e79', hc: HAIR.castanho, barba: HAIR.castanho, shirt: '#e9c46a' },
+  { id: 'a11', bg: '#f0b98b', skin: SKIN.escuro, style: 'cacheado', hc: HAIR.preto, shirt: '#245e6a' }
+];
+// A turma do bairro: os três da mesa offline saem daqui
+const BOTS = [
+  { name: 'Seu Raimundo', av: { bg: '#5f8f78', skin: SKIN.moreno, style: 'chapeu', hc: HAIR.grisalho, bigode: HAIR.grisalho, shirt: '#e8dcc4' } },
+  { name: 'Nonato', av: { bg: '#d9a05b', skin: SKIN.jambo, style: 'bone', cap: '#c0392b', hc: HAIR.preto, shirt: '#2f4f6f' } },
+  { name: 'Dona Socorro', av: { bg: '#b98bc4', skin: SKIN.moreno, style: 'coque', hc: HAIR.grisalho, oculos: true, shirt: '#2e7d6b' } },
+  { name: 'Tonhão', av: { bg: '#e0b15e', skin: SKIN.escuro, style: 'careca', hc: HAIR.preto, barba: HAIR.preto, shirt: '#b03a2e' } },
+  { name: 'Chiquinho', av: { bg: '#7fb0b8', skin: SKIN.medio, style: 'curto', hc: HAIR.preto, shirt: '#e5a650' } },
+  { name: 'Dona Graça', av: { bg: '#e48a7a', skin: SKIN.medio, style: 'longo', hc: HAIR.castanho, shirt: '#3d5a80' } }
+];
+const BOT_NAMES = BOTS.map(b => b.name);
+
+// ---- Perfil: nome e foto ficam só neste celular ----
+const PKEY = 'dmz-perfil', FKEY = 'dmz-foto', GKEY = 'dmz-jogo', HKEY = 'dmz-historico';
+function loadProfile() {
+  try {
+    const p = JSON.parse(store.get(PKEY) || 'null');
+    return p && typeof p.name === 'string' && p.name.trim() ? { name: p.name.trim().slice(0, 14), av: typeof p.av === 'string' ? p.av : 'a1' } : null;
+  } catch (e) { return null; }
+}
+let profile = loadProfile(), photo = store.get(FKEY);
+let me = profile ? profile.name : null;
+function myFaceURI() {
+  if (profile && profile.av === 'foto' && photo) return photo;
+  return avatarURI(AVATARS.find(a => profile && a.id === profile.av) || AVATARS[0]);
+}
+function botFaceURI(name) { const b = BOTS.find(x => x.name === name); return b ? avatarURI(b.av) : null; }
+function faceImg(uri, cls) { return uri ? `<img class="${cls || ''}" src="${uri}" alt="">` : ''; }
+function seatFace(p, cls) { return faceImg(p === seatMe ? myFaceURI() : botFaceURI(G.names[p]), cls); }
+
+// Contagem de uso: fica pronta para um serviço de estatística anônima (ex.: GoatCounter) quando ele for ligado.
+function track(ev) {
+  try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'evento-' + ev, title: ev, event: true }); } catch (e) {}
+}
+
+let screen = 'who', mode = null;
+let G = null, seatMe = null, offSt = null;
+const speed = 'normal';
+let timer = null, freshKey = null, Xmax = 5, sheetKind = null, armedReset = false;
+const bubbleTimers = {};
+function schedule(fn, ms) { clearTimeout(timer); timer = setTimeout(fn, ms); }
+function toast(msg) {
+  const el = $('#toast'); el.textContent = msg; el.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 4200);
+}
+// Troca de tela com fade: a tela atual some suave e a próxima aparece suave.
+const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Game'];
+let showTimer = null;
+function show(name) {
+  screen = name;
+  const next = $('#scr' + name[0].toUpperCase() + name.slice(1));
+  const cur = SCREENS.map(s => $('#scr' + s)).find(el => !el.hidden && el !== next && !el.classList.contains('fade-out'));
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  clearTimeout(showTimer);
+  const finish = () => {
+    SCREENS.forEach(s => { const el = $('#scr' + s); el.hidden = el !== next; el.classList.remove('fade-out'); });
+    next.classList.remove('fade-in'); void next.offsetWidth;
+    if (!reduce) next.classList.add('fade-in');
+    if (name === 'home') renderHome();
+    if (name === 'who') { renderEntry(); topple(true); }
+    if (name === 'profile') renderProfile();
+    if (name === 'game' && G) render();
+  };
+  if (!cur || reduce) { finish(); return; }
+  cur.classList.add('fade-out');
+  showTimer = setTimeout(finish, 220);
+}
+
+// ---- Tela de entrada: você e a turma do bairro em volta da mesa ----
+(function buildEntry() {
+  // carroça de sena no meio, com as primeiras pedras encostadas
+  $('#rtCenter').innerHTML =
+    tileSVG({ x: -2, y: 0, o: 'h', v1: 1, v2: 6 }) + tileSVG({ x: 0, y: 0, o: 'v', v1: 6, v2: 6 }) +
+    tileSVG({ x: 2, y: 0, o: 'h', v1: 6, v2: 3 }) + tileSVG({ x: 0, y: -1.5 - .5, o: 'v', v1: 5, v2: 6 }, '', true);
+  // fileira de pedras que cai em efeito dominó (os números se encaixam: 6|6, 6|3, 3|5…)
+  const run = [[6, 6], [6, 3], [3, 5], [5, 5], [5, 1], [1, 4], [4, 4]];
+  $('#train').innerHTML = run.map((t, i) => `<div class="dom" style="--i:${i}"><svg viewBox="-0.04 -0.04 1.08 2.08">${tileSVG({ x: .5, y: 1, o: 'v', v1: t[0], v2: t[1] }, '', false)}</svg></div>`).join('');
+})();
+function topple(first) {
+  const tr = $('#train');
+  tr.style.setProperty('--d0', first ? '.9s' : '.15s');
+  tr.classList.remove('go'); void tr.offsetWidth; tr.classList.add('go');
+}
+$('#train').addEventListener('click', () => topple(false));
+$('#train').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); topple(false); } });
+const ENTRY_SEATS = [{ ang: -90, bot: 'Nonato' }, { ang: 0, bot: 'Seu Raimundo' }, { ang: 90, you: true }, { ang: 180, bot: 'Dona Socorro' }];
+function renderEntry() {
+  const html = ENTRY_SEATS.map((s, i) => {
+    const a = s.ang * Math.PI / 180, style = `left:${f2(50 + 50 * Math.cos(a))}%;top:${f2(50 + 50 * Math.sin(a))}%;--i:${i}`;
+    if (!s.you) return `<div class="friend bot" style="${style}">${faceImg(botFaceURI(s.bot), 'fp')}<span class="fn">${esc(s.bot)}</span></div>`;
+    const face = profile ? faceImg(myFaceURI(), 'fp') : '<span class="fi">?</span>';
+    return `<button type="button" class="friend${profile ? ' you' : ''}" id="meSeat" style="${style}" aria-label="${profile ? 'Trocar nome ou foto' : 'Criar seu perfil'}">${face}<span class="fn">${profile ? esc(me) : 'Você'}</span></button>`;
+  }).join('');
+  $$('#roundTable .friend').forEach(el => el.remove());
+  $('#roundTable').insertAdjacentHTML('beforeend', html);
+  $('#enterBtn').textContent = profile ? `Entrar como ${me}` : 'Começar';
+  $('#editProfile').hidden = !profile;
+}
+$('#roundTable').addEventListener('click', e => { if (e.target.closest('#meSeat')) openProfile('who'); });
+$('#enterBtn').addEventListener('click', () => { if (profile) show('home'); else openProfile('who'); });
+$('#editProfile').addEventListener('click', () => openProfile('who'));
+$$('[data-go="home"]').forEach(b => b.addEventListener('click', () => show('home')));
+
+// ---- Perfil ----
+let draft = { name: '', av: null, photo: null }, profileFrom = 'who';
+function openProfile(from) {
+  profileFrom = from || 'who';
+  draft = { name: profile ? profile.name : '', av: profile ? profile.av : null, photo };
+  if (draft.av === 'foto' && !draft.photo) draft.av = null;
+  $('#nameInput').value = draft.name;
+  show('profile');
+}
+const CAM = '<svg viewBox="0 0 24 24" class="cam" aria-hidden="true"><path d="M3.5 8.5h3.4l1.7-2.6h6.8l1.7 2.6h3.4v10.6h-17z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="13.4" r="3.5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>';
+function renderProfile() {
+  $('#profileBack').hidden = !profile;
+  const ph = draft.photo;
+  $('#avatarGrid').innerHTML =
+    `<button type="button" class="avbtn photo${ph ? ' has' : ''}" role="radio" aria-checked="${draft.av === 'foto'}" data-av="foto"><span class="face">${ph ? `<img src="${ph}" alt="">` : CAM}</span><span>${ph ? 'Sua foto' : 'Pôr foto'}</span></button>`
+    + AVATARS.map((a, i) => `<button type="button" class="avbtn" role="radio" aria-checked="${draft.av === a.id}" data-av="${a.id}" aria-label="Avatar ${i + 1}"><span class="face"><img src="${avatarURI(a)}" alt=""></span></button>`).join('');
+  $('#photoTools').hidden = !ph;
+}
+$('#avatarGrid').addEventListener('click', e => {
+  const b = e.target.closest('.avbtn'); if (!b) return;
+  if (b.dataset.av === 'foto' && !draft.photo) { $('#photoInput').click(); return; }
+  draft.av = b.dataset.av; renderProfile();
+});
+$('#photoChange').addEventListener('click', () => $('#photoInput').click());
+$('#photoRemove').addEventListener('click', () => { draft.photo = null; if (draft.av === 'foto') draft.av = null; renderProfile(); });
+// Recorta a foto num quadrado (puxando para cima no retrato, onde costuma estar o rosto) e reduz para caber no celular.
+function squareJPEG(file, size) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      try {
+        const w = img.naturalWidth, h = img.naturalHeight, s = Math.min(w, h);
+        const c = document.createElement('canvas'); c.width = c.height = size;
+        c.getContext('2d').drawImage(img, (w - s) / 2, h > w ? (h - s) * 0.3 : 0, s, s, 0, 0, size, size);
+        URL.revokeObjectURL(url); resolve(c.toDataURL('image/jpeg', 0.84));
+      } catch (e) { URL.revokeObjectURL(url); reject(e); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('foto')); };
+    img.src = url;
+  });
+}
+$('#photoInput').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try { draft.photo = await squareJPEG(f, 240); draft.av = 'foto'; renderProfile(); }
+  catch (err) { toast('Não consegui abrir essa foto. Tente outra.'); }
+});
+$('#nameInput').addEventListener('input', e => { draft.name = e.target.value; });
+$('#nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+$('#profileBack').addEventListener('click', () => show(profileFrom));
+$('#saveProfile').addEventListener('click', () => {
+  const name = $('#nameInput').value.replace(/\s+/g, ' ').trim().slice(0, 14);
+  if (!name) { toast('Escreva seu nome ou apelido.'); $('#nameInput').focus(); return; }
+  let av = draft.av || AVATARS[Math.floor(Math.random() * AVATARS.length)].id;
+  if (draft.photo !== photo) {
+    if (!draft.photo) { store.del(FKEY); photo = null; }
+    else if (store.set(FKEY, draft.photo)) photo = draft.photo;
+    else toast('Não deu para guardar a foto neste celular. Fica um avatar por enquanto.');
+  }
+  if (av === 'foto' && !photo) av = 'a1';
+  profile = { name, av }; me = name;
+  store.set(PKEY, JSON.stringify(profile));
+  show('home');
+});
+
+// ---- Início ----
+function renderHome() {
+  $('#homeName').textContent = me;
+  $('#meChip').innerHTML = faceImg(myFaceURI(), 'chipface');
+  renderResume(); renderMyTreino(); renderInstall(); renderSponsor();
+}
+$('#meChip').addEventListener('click', () => openProfile('home'));
+$('#changeName').addEventListener('click', () => openProfile('home'));
+$('#howBtn').addEventListener('click', () => {
+  openSheet('info', `${RULES_HTML}<button type="button" class="primary" id="closeInfo">Entendi</button>`);
+  $('#closeInfo').addEventListener('click', closeSheet);
+});
+$('#shareApp').addEventListener('click', async () => {
+  const text = 'Bora jogar dominó com as regras de Manaus? Bucho, garagem, passe e galo, de graça no celular.';
+  track('convite');
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Dominó Manauara', text, url: SITE_URL }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  window.open('https://wa.me/?text=' + encodeURIComponent(text + '\n' + SITE_URL), '_blank', 'noopener');
+});
+function renderSponsor() {
+  const el = $('#sponsor'), p = CONFIG.patrocinio;
+  if (p && p.nome) {
+    el.hidden = false; el.href = p.link || SITE_URL;
+    el.innerHTML = `<span class="sp-k">Patrocínio</span><b>${esc(p.nome)}</b><span>${esc(p.texto || '')}</span>`;
+  } else if (CONFIG.anuncieWhats) {
+    el.hidden = false;
+    el.href = `https://wa.me/${CONFIG.anuncieWhats}?text=` + encodeURIComponent('Olá! Quero anunciar no Dominó Manauara.');
+    el.innerHTML = '<span class="sp-k">Espaço para anunciante</span><b>Sua marca aqui</b><span>Apareça para quem joga dominó em Manaus. Toque para falar com a gente.</span>';
+  } else el.hidden = true;
+}
+
+// ---- Instalar como app ----
+let installEvt = null;
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const SHARE_ICON = '<svg class="ios-share" viewBox="0 0 24 24" aria-label="Compartilhar"><path d="M12 3v12M7.5 7.5L12 3l4.5 4.5M6 11H5v10h14V11h-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function renderInstall() {
+  const box = $('#installCard');
+  if (isStandalone() || store.get('dmz-sem-instalar') === '1') { box.hidden = true; return; }
+  if (installEvt) {
+    $('#installTxt').textContent = 'Instale o Dominó Manauara: ele abre direto da tela inicial, como app, até sem internet.';
+    $('#installBtn').hidden = false; box.hidden = false;
+  } else if (isIOS()) {
+    $('#installTxt').innerHTML = `Toque em <b>Compartilhar</b> ${SHARE_ICON} e depois em <b>Adicionar à Tela de Início</b>. O jogo passa a abrir como app, até sem internet.`;
+    $('#installBtn').hidden = true; box.hidden = false;
+  } else box.hidden = true;
+}
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if (screen === 'home') renderInstall(); });
+window.addEventListener('appinstalled', () => { installEvt = null; track('instalou'); if (screen === 'home') renderInstall(); });
+$('#installBtn').addEventListener('click', async () => {
+  if (!installEvt) return;
+  const ev = installEvt; installEvt = null;
+  try { ev.prompt(); await ev.userChoice; } catch (e) {}
+  renderInstall();
+});
+$('#installNo').addEventListener('click', () => { store.set('dmz-sem-instalar', '1'); renderInstall(); });
+
+// ---- Jogo guardado: dá para sair e continuar depois ----
+function saveGame() { if (mode === 'off' && G && G === offSt) store.set(GKEY, JSON.stringify(G)); }
+function loadSavedGame() {
+  try {
+    const g = JSON.parse(store.get(GKEY) || 'null');
+    return g && Array.isArray(g.hands) && g.hands.length === 4 && Array.isArray(g.names) && (g.phase === 'play' || g.phase === 'handEnd') ? g : null;
+  } catch (e) { return null; }
+}
+function renderResume() {
+  const g = loadSavedGame();
+  $('#goResume').hidden = !g;
+  if (g) $('#resumeD').textContent = `Partida ${g.partida} · Nós ${g.score[0]} × ${g.score[1]} Eles · série ${g.series[0]} × ${g.series[1]}`;
+}
+$('#goResume').addEventListener('click', () => {
+  const g = loadSavedGame(); if (!g) { renderResume(); return; }
+  g.names[0] = me; mode = 'off'; seatMe = 0; offSt = g; G = g;
+  endDrag(); closeSheet(); show('game'); setFeed();
+  if (G.phase === 'handEnd') schedule(showResult, 600); else proceed();
+});
+
+// ---- Offline: montar a mesa ----
+const SEL = ['#selPartner', '#selLeft', '#selRight'];
+function setupFill(pick) {
+  const chosen = pick || shuffle(BOT_NAMES.slice()).slice(0, 3);
+  SEL.forEach((id, k) => {
+    $(id).innerHTML = BOT_NAMES.map(n => `<option value="${esc(n)}"${n === chosen[k] ? ' selected' : ''}>${esc(n)}</option>`).join('');
+    $(id).dataset.prev = chosen[k];
+  });
+}
+SEL.forEach(id => $(id).addEventListener('change', e => {
+  const el = e.target, v = el.value, prev = el.dataset.prev;
+  SEL.forEach(o => { if (o !== id && $(o).value === v) { $(o).value = prev; $(o).dataset.prev = prev; } });
+  el.dataset.prev = v;
+}));
+$('#shuffleBtn').addEventListener('click', () => setupFill());
+$('#goOffline').addEventListener('click', () => { setupFill(); show('setup'); });
+
+// ---- Histórico neste celular (só de quem joga de verdade, cadeira 0) ----
+function blankTreino() { return { jogos: 0, vitorias: 0, partidas: 0, partidasVencidas: 0, maos: 0, batidas: 0, galos: 0 }; }
+function loadHist() { try { return Object.assign(blankTreino(), JSON.parse(store.get(HKEY) || '{}') || {}); } catch (e) { return blankTreino(); } }
+function bumpHist(fn) { const t = loadHist(); fn(t); store.set(HKEY, JSON.stringify(t)); }
+function trackOffline() {
+  if (!G) return;
+  const evs = G.events || [];
+  if (!G.track) G.track = { b: 0, g: 0 };
+  const galos = evs.filter(e => e.type === 'galo' && e.p === 0).length;
+  const ended = evs.some(e => e.type === 'batida' || e.type === 'fechado') && G.phase === 'handEnd' && G.result;
+  if (!galos && !ended) return;
+  G.track.g += galos;
+  if (ended && G.result.kind === 'batida' && G.result.p === 0) G.track.b++;
+  bumpHist(t => {
+    t.galos += galos;
+    if (!ended) return;
+    const r = G.result; t.maos++;
+    if (r.kind === 'batida' && r.p === 0) t.batidas++;
+    if (r.matchWinner != null) { t.partidas++; if (r.matchWinner === 0) t.partidasVencidas++; }
+    if (r.gameWinner != null) { t.jogos++; if (r.gameWinner === 0) t.vitorias++; }
+  });
+  if (ended && G.result.gameWinner != null) track(G.result.gameWinner === 0 ? 'vitoria' : 'derrota');
+}
+const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`;
+function renderMyTreino() {
+  const t = loadHist(), box = $('#myTreino');
+  box.hidden = !(t.jogos || t.maos);
+  $('#mtV').textContent = t.vitorias; $('#mtJ').textContent = t.jogos; $('#mtB').textContent = t.batidas; $('#mtG').textContent = t.galos;
+  const txt = `📊 Meu histórico no *Dominó Manauara*: ${plural(t.vitorias, 'vitória', 'vitórias')} em ${plural(t.jogos, 'jogo', 'jogos')}, ${plural(t.batidas, 'batida', 'batidas')} e ${plural(t.galos, 'galo', 'galos')} contra ${TURMA}.\nDuvido você fazer melhor, com as regras de Manaus: ${SITE_URL}`;
+  $('#mtShare').href = 'https://wa.me/?text=' + encodeURIComponent(txt);
+}
+function gameShare() {
+  const r = G.result; if (!r || r.gameWinner == null) return null;
+  const tr = G.track || { b: 0, g: 0 }, a = r.series[0], b = r.series[1];
+  const head = r.gameWinner === 0 ? `🏆 Ganhei da turma do bairro por *${a} × ${b}* no Dominó Manauara!` : `🎲 A turma do bairro me pegou por *${b} × ${a}* no Dominó Manauara. Revanche já!`;
+  const txt = `${head} Fiz ${plural(tr.b, 'batida', 'batidas')} e ${plural(tr.g, 'galo', 'galos')}.\nJogue também, com as regras de Manaus: ${SITE_URL}`;
+  return 'https://wa.me/?text=' + encodeURIComponent(txt);
+}
+$('#startOffline').addEventListener('click', () => {
+  const [partner, left, right] = SEL.map(id => $(id).value);
+  mode = 'off'; seatMe = 0;
+  offSt = newGame([me, left, partner, right]); startHand(offSt); G = offSt;
+  saveGame(); track('jogo-novo');
+  endDrag(); closeSheet(); prepDeal(); show('game');
+  const g0 = G; setTimeout(() => { if (G === g0) runDeal(() => { announce(); proceed(); }); }, 460);
+});
+
+
+// ---- Desenho das peças ----
+function tileSVG(p, cls, shadow) {
+  const w = p.o === 'h' ? 2 : 1, h = p.o === 'h' ? 1 : 2;
+  const x0 = p.x - w / 2, y0 = p.y - h / 2, g = 0.035;
+  let s = `<g class="${cls || ''}">`;
+  if (shadow !== false) s += `<rect x="${f2(x0 + g + .03)}" y="${f2(y0 + g + .07)}" width="${f2(w - 2 * g)}" height="${f2(h - 2 * g)}" rx=".13" class="t-shadow"/>`;
+  s += `<rect x="${f2(x0 + g)}" y="${f2(y0 + g)}" width="${f2(w - 2 * g)}" height="${f2(h - 2 * g)}" rx=".13" class="t-body"/>`;
+  if (p.o === 'h') s += `<line x1="${f2(p.x)}" y1="${f2(y0 + .15)}" x2="${f2(p.x)}" y2="${f2(y0 + h - .15)}" class="t-div"/>`;
+  else s += `<line x1="${f2(x0 + .15)}" y1="${f2(p.y)}" x2="${f2(x0 + w - .15)}" y2="${f2(p.y)}" class="t-div"/>`;
+  const halves = p.o === 'h' ? [[x0, y0, p.v1], [x0 + 1, y0, p.v2]] : [[x0, y0, p.v1], [x0, y0 + 1, p.v2]];
+  for (const [hx, hy, v] of halves) for (const [px, py] of PIPS[v]) {
+    const [qx, qy] = p.o === 'h' ? [py, px] : [px, py];
+    s += `<circle cx="${f2(hx + qx)}" cy="${f2(hy + qy)}" r=".095" class="t-pip"/>`;
+  }
+  s += `<circle cx="${f2(p.x)}" cy="${f2(p.y)}" r=".065" class="t-pin"/>`;
+  return s + '</g>';
+}
+// costas da pedra: preta e lisa, só com o filete de acabamento
+const backSVG = '<rect x=".035" y=".035" width=".93" height="1.93" rx=".13" class="b-body"/><rect x=".17" y=".17" width=".66" height="1.66" rx=".08" class="b-line"/>';
+function miniTile(t) {
+  return `<svg class="mini" viewBox="-0.05 -0.05 2.1 1.1" aria-label="${t[0]} e ${t[1]}">${tileSVG({ x: 1, y: .5, o: 'h', v1: t[0], v2: t[1] }, '', false)}</svg>`;
+}
+
+// ---- Textos do jogo ----
+function base() { return seatMe == null ? 0 : seatMe; }
+function who(p) { return p === seatMe ? 'Você' : G.names[p]; }
+function duo(team) { return `${G.names[team]} e ${G.names[team + 2]}`; }
+function teamName(team) { return seatMe == null ? duo(team) : (TEAM(seatMe) === team ? 'Nós' : 'Eles'); }
+function describe(ev) {
+  const n = who(ev.p), sai = ev.p === seatMe ? 'Você sai' : n + ' sai';
+  switch (ev.type) {
+    case 'play': return `${n} jogou ${ev.t[0]}|${ev.t[1]}` + (ev.side === 'U' || ev.side === 'D' ? ' no bucho' : '') + (ev.pts ? ` e marcou ${ev.pts}` : '');
+    case 'pass': return ev.voided ? `${n} passou` : ev.pts ? `${n} passou: +20 para ${teamName(ev.team)}` : `${n} passou: parceiro de quem jogou, não vale ponto`;
+    case 'galo': return `Galo! ${n} aplicou: +50 para ${teamName(ev.team)}, no lugar dos passes`;
+    case 'batida': return ev.carroca ? `${n} bateu com carroça: +20` : `${n} bateu`;
+    case 'garagem': return ev.pts ? `Garagem: +${ev.pts} para ${teamName(ev.team)}` : '';
+    case 'fechado': return 'Jogo fechado';
+    case 'semCarroca': return `${n} saiu sem carroça: +20 para ${teamName(ev.team)}`;
+    case 'redeal': return 'Mão com 5 carroças: pedras misturadas de novo';
+    case 'start':
+      if (ev.mode === 'sena') return `${sai} com a carroça de sena`;
+      if (ev.mode === 'carroca') return `${sai} com uma carroça`;
+      return `${ev.p === seatMe ? 'Você abre' : n + ' abre'} com qualquer pedra`;
+  }
+  return '';
+}
+function setFeed() { $('#feed').textContent = (G.events || []).map(describe).filter(Boolean).join(' · '); }
+function side(team) { return team === TEAM(base()) ? 'L' : 'R'; }
+// valores da pedra na ordem em que ela ficou na mesa (para o voo chegar já virada certo)
+function findPlaced(key) {
+  for (const c of G.chain) if (tkey([c.a, c.b]) === key) return [c.a, c.b];
+  for (const k of ['U', 'D']) for (const t of ((G.bucho && G.bucho[k]) || [])) if (tkey([t.n, t.f]) === key) return [t.n, t.f];
+  return null;
+}
+function announce() {
+  if (mode === 'off') { trackOffline(); saveGame(); }
+  setFeed();
+  for (const ev of G.events || []) {
+    if (ev.type === 'play') {
+      freshKey = tkey(ev.t);
+      const placed = findPlaced(freshKey);
+      if (placed) pendingFly = { key: freshKey, p: ev.p, v1: placed[0], v2: placed[1] };
+      if (ev.pts) { floatPts(ev.team, '+' + ev.pts); bubble(ev.p, '+' + ev.pts); }
+    }
+    if (ev.type === 'pass') { if (!ev.voided && ev.pts) floatPts(ev.team, '+20'); bubble(ev.p, 'Passo'); }
+    if (ev.type === 'galo') { floatPts(ev.team, '+50'); bubble(ev.p, 'Galo!', true); }
+    if (ev.type === 'semCarroca') floatPts(ev.team, '+20');
+    if (ev.type === 'garagem' && ev.pts) floatPts(ev.team, '+' + ev.pts);
+    if ((ev.type === 'batida' || ev.type === 'fechado') && ev.pts) floatPts(ev.team, '+' + ev.pts);
+  }
+}
+function floatPts(team, text) {
+  const el = $('#f' + side(team)); el.textContent = text; el.classList.remove('go'); void el.offsetWidth; el.classList.add('go');
+}
+function bubble(p, text, galo) {
+  const pos = (p - base() + 4) % 4; if (!pos) return;
+  const el = $(`.seat[data-pos="${pos}"] .bubble`); if (!el) return;
+  el.textContent = text; el.classList.toggle('galo', !!galo); el.classList.add('show');
+  clearTimeout(bubbleTimers[pos]); bubbleTimers[pos] = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+// ---- Render do jogo ----
+function render() {
+  if (!G) return;
+  const L = TEAM(base()), R = 1 - L;
+  $('#tL').textContent = teamName(L); $('#tR').textContent = teamName(R);
+  $('#sL').textContent = G.score[L]; $('#sR').textContent = G.score[R];
+  $('#bL').style.width = Math.min(100, G.score[L] / TARGET * 100) + '%';
+  $('#bR').style.width = Math.min(100, G.score[R] / TARGET * 100) + '%';
+  $('#ptLbl').textContent = `Partida ${G.partida} · até ${TARGET}`;
+  $('#srLbl').textContent = `${G.series[L]} × ${G.series[R]}`;
+  for (const pos of [1, 2, 3]) {
+    const p = (base() + pos) % 4, n = dealing ? dealtCount[p] : G.hands[p].length, el = $(`.seat[data-pos="${pos}"]`);
+    el.classList.toggle('nos', TEAM(p) === L);
+    el.classList.toggle('turn', !dealing && G.phase === 'play' && G.turn === p);
+    el.querySelector('.av').innerHTML = seatFace(p) || esc(G.names[p][0]);
+    el.querySelector('.sn').textContent = G.names[p];
+    const cnt = n === 1 ? '1 pedra' : `${n} pedras`;
+    el.querySelector('.sc').textContent = !dealing && G.phase === 'play' && G.turn === p ? `jogando · ${n}` : cnt;
+  }
+  const s = tableSum(G), ends = $('#ends');
+  ends.hidden = !G.chain.length; ends.textContent = `Pontas ${s}`; ends.classList.toggle('hit', s > 0 && s % 5 === 0);
+  $('#meName').innerHTML = `${faceImg(myFaceURI())}Você <small>· parceiro de ${esc(G.names[(seatMe + 2) % 4])}</small>`;
+  renderPrompt(); renderHand(); renderBoard();
+}
+function myTurnNow() { return !!G && !dealing && seatMe != null && G.phase === 'play' && G.turn === seatMe; }
+function renderPrompt() {
+  const el = $('#prompt'); let txt = '', you = false;
+  if (G.phase === 'play') {
+    if (seatMe != null && G.turn === seatMe) {
+      you = true;
+      const mv = legalMoves(G, seatMe);
+      if (dealing) txt = dealPhase;
+      else if (!G.chain.length) txt = G.openMode === 'sena' ? 'Arraste a carroça de sena para a mesa' : G.openMode === 'carroca' ? 'Arraste uma carroça para a mesa' : 'Arraste qualquer pedra para a mesa';
+      else txt = 'Sua vez: arraste a pedra ou passe';
+    } else txt = dealing ? dealPhase : `Vez de ${who(G.turn)}`;
+  } else if (G.phase === 'handEnd') txt = 'Fim da mão';
+  if (dealing) you = false;
+  el.textContent = txt; el.classList.toggle('you', you);
+  const pb = $('#passBtn');
+  pb.hidden = !(you && G.chain.length) || dealing;
+}
+function renderHand() {
+  const hand = $('#hand');
+  if (seatMe == null) {
+    hand.innerHTML = G.hands[0].map(() => `<span class="ht back"><svg viewBox="-0.04 -0.04 1.08 2.08">${backSVG}</svg></span>`).join('');
+    return;
+  }
+  hand.innerHTML = G.hands[seatMe].map((t, i) => {
+    const cls = ['ht', drag && drag.moved && drag.i === i ? 'lift' : ''].join(' ');
+    return `<button type="button" class="${cls}" data-i="${i}" aria-label="Pedra ${t[0]} e ${t[1]}"><svg viewBox="-0.04 -0.04 1.08 2.08">${tileSVG({ x: .5, y: 1, o: 'v', v1: t[0], v2: t[1] }, '', false)}</svg></button>`;
+  }).join('');
+}
+// As duas pontas da mesa (ou o centro, na saída) — mostradas iguais, sem dizer se a pedra serve.
+function dropZones() {
+  if (!G.chain.length) return [{ side: 'C', pos: { x: 0, y: 0, o: 'h' } }];
+  return openEnds(G).map(e => {
+    const t = e.side === 'L' ? [(e.v + 1) % 7, e.v] : [e.v, (e.v + 1) % 7];
+    const sim = cloneT(G);
+    place(sim, t, e.side);
+    const lay = layoutTable(sim, Xmax);
+    const pos = e.side === 'L' ? lay.main[0] : e.side === 'R' ? lay.main[sim.chain.length - 1] : lay[e.side][lay[e.side].length - 1];
+    return { side: e.side, pos };
+  });
+}
+function renderBoard() {
+  const wrap = $('#boardWrap'), svg = $('#board');
+  const W = wrap.clientWidth || 320, H = wrap.clientHeight || 300, a = W / H;
+  const base = Math.sqrt(112 * a) / 2;
+  const pin = G.chain.length && G.chain[G.center].a === G.chain[G.center].b;
+  Xmax = pin ? Math.max(5.5, Math.min(12, base * 1.5)) : Math.max(3.5, Math.min(10, base));
+  const lay = layoutTable(G, Xmax), pos = lay.main;
+  const bTiles = [];
+  for (const k of ['U', 'D']) ((G.bucho && G.bucho[k]) || []).forEach((t, j) => bTiles.push({ key: tkey([t.n, t.f]), pos: lay[k][j] }));
+  const zones = dropZones();
+  const showZones = !!(drag && drag.moved);
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  const grow = p => { const w = p.o === 'h' ? 1 : .5, h = p.o === 'h' ? .5 : 1; minX = Math.min(minX, p.x - w); maxX = Math.max(maxX, p.x + w); minY = Math.min(minY, p.y - h); maxY = Math.max(maxY, p.y + h); };
+  pos.forEach(grow); bTiles.forEach(b => grow(b.pos)); zones.forEach(z => grow(z.pos));
+  if (!isFinite(minX)) { minX = -1; maxX = 1; minY = -1; maxY = 1; }
+  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  let vw = Math.max(Math.min(2 * Xmax + 2.4, 13), maxX - minX + 1.4), vh = Math.max(vw / a, maxY - minY + 1.4);
+  if (vw / vh < a) vw = vh * a; else vh = vw / a;
+  svg.setAttribute('viewBox', `${f2(cx - vw / 2)} ${f2(cy - vh / 2)} ${f2(vw)} ${f2(vh)}`);
+  let html = '';
+  if (!G.chain.length && !showZones && !dealing) {
+    const ev = (G.events || []).find(e => e.type === 'start');
+    html += `<text x="0" y=".15" class="emptymsg">${esc(G.phase === 'play' && ev ? describe(ev) : 'Mesa vazia')}</text>`;
+  }
+  const tcls = k => ['tk' + k, k === G.lastKey ? 'last' : '', flying && flying.key === k ? 'incoming' : (k === freshKey && !pendingFly ? 'fresh' : '')].join(' ');
+  G.chain.forEach((c, i) => { html += tileSVG(pos[i], tcls(tkey([c.a, c.b]))); });
+  bTiles.forEach(b => { html += tileSVG(b.pos, tcls(b.key)); });
+  freshKey = null;
+  if (showZones) zones.forEach(z => {
+    const p = z.pos, w = p.o === 'h' ? 2 : 1, h = p.o === 'h' ? 1 : 2;
+    html += `<g class="zone${drag.side === z.side ? ' over' : ''}" data-side="${z.side}">
+      <rect class="z-body" x="${f2(p.x - w / 2 + .04)}" y="${f2(p.y - h / 2 + .04)}" width="${f2(w - .08)}" height="${f2(h - .08)}" rx=".13"/>
+      <text class="z-tx" x="${f2(p.x)}" y="${f2(p.y + .15)}">${z.side === 'C' ? 'solte aqui' : z.side === 'U' || z.side === 'D' ? 'bucho' : 'ponta'}</text></g>`;
+  });
+  svg.innerHTML = html;
+  if (showZones) drag.zones = $$('#board .zone').map(g => ({ side: g.dataset.side, el: g.querySelector('.z-body'), g }));
+  if (pendingFly) { const pf = pendingFly; pendingFly = null; flyIn(pf); }
+}
+
+// ---- A pedra jogada vai voando de quem jogou até o lugar dela na mesa ----
+let pendingFly = null, flying = null, lastDrop = null;
+function flyIn(pf) {
+  const g = $('#board .tk' + pf.key);
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!g || reduce || !Element.prototype.animate || screen !== 'game') return;
+  const body = g.querySelector('.t-body'), tr = body.getBoundingClientRect();
+  if (!tr.width) return;
+  const horiz = tr.width > tr.height;
+  const el = document.createElement('div');
+  el.className = 'flytile';
+  el.style.width = tr.width + 'px'; el.style.height = tr.height + 'px';
+  const t = pf.tile;
+  el.innerHTML = `<svg viewBox="${horiz ? '-1 -0.5 2 1' : '-0.5 -1 1 2'}">${tileSVG({ x: 0, y: 0, o: horiz ? 'h' : 'v', v1: pf.v1, v2: pf.v2 }, '', false)}</svg>`;
+  document.body.appendChild(el);
+  // de onde a pedra sai: o ponto onde você soltou, ou a foto de quem jogou
+  let sx, sy, s0, r0, dur;
+  const mine = pf.p === seatMe && lastDrop && Date.now() - lastDrop.t < 4000;
+  if (mine) { sx = lastDrop.x; sy = lastDrop.y; s0 = 1.05; r0 = horiz ? -90 : 0; dur = 260; lastDrop = null; }
+  else {
+    const pos = (pf.p - base() + 4) % 4;
+    const src = pos === 0 ? $('#hand') : $(`.seat[data-pos="${pos}"] .av`);
+    const r = src.getBoundingClientRect();
+    sx = r.left + r.width / 2; sy = r.top + r.height / 2; s0 = .45; r0 = (Math.random() < .5 ? -1 : 1) * (20 + Math.random() * 20); dur = 560;
+  }
+  const tx = tr.left + tr.width / 2, ty = tr.top + tr.height / 2;
+  const T = (x, y, sc, r) => `translate(${(x - tr.width / 2).toFixed(1)}px, ${(y - tr.height / 2).toFixed(1)}px) rotate(${r}deg) scale(${sc})`;
+  flying = { key: pf.key }; g.classList.add('incoming'); g.classList.remove('fresh');
+  const a = el.animate([
+    { transform: T(sx, sy, s0, r0), opacity: mine ? 1 : 0 },
+    { transform: T((sx + tx) / 2, Math.min(sy, ty) - (mine ? 10 : 30), (s0 + 1) / 2 + .08, r0 / 3), opacity: 1, offset: .55 },
+    { transform: T(tx, ty, 1, 0), opacity: 1 }
+  ], { duration: dur, easing: 'cubic-bezier(.3,.6,.25,1)', fill: 'forwards' });
+  const land = () => {
+    el.remove();
+    if (flying && flying.key === pf.key) flying = null;
+    const real = $('#board .tk' + pf.key);
+    if (real) real.classList.remove('incoming');
+  };
+  a.onfinish = land; a.oncancel = land;
+  setTimeout(() => { if (document.body.contains(el)) land(); }, dur + 400);
+}
+
+// ---- Embaralhar e distribuir as pedras ----
+let dealing = false, dealToken = 0, dealtCount = [7, 7, 7, 7], dealPhase = '';
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const backTileSVG = '<svg viewBox="-0.04 -0.04 1.08 2.08">' + backSVG + '</svg>';
+function prepDeal() { dealing = true; dealPhase = 'Embaralhando as pedras…'; dealtCount = [0, 0, 0, 0]; $('#hand').classList.add('dealing'); }
+function endDeal() {
+  dealing = false; dealPhase = ''; dealtCount = [7, 7, 7, 7];
+  $('#hand').classList.remove('dealing');
+  const layer = $('#dealLayer'); layer.innerHTML = ''; layer.hidden = true;
+}
+async function runDeal(after) {
+  const my = ++dealToken, g0 = G;
+  if (!dealing) prepDeal();
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const done = () => {
+    if (my !== dealToken) return;
+    endDeal();
+    if (!G || G !== g0) return;
+    render();
+    if (!reduce) $$('#hand .ht').forEach((el, i) => el.animate(
+      [{ transform: 'perspective(300px) rotateY(90deg)', opacity: .4 }, { transform: 'none', opacity: 1 }],
+      { duration: 340, delay: i * 50, easing: 'ease-out', fill: 'backwards' }));
+    if (after) after();
+  };
+  if (reduce || screen !== 'game' || !G || !window.Element || !Element.prototype.animate) { done(); return; }
+  render();
+  const layer = $('#dealLayer'); layer.innerHTML = ''; layer.hidden = false;
+  const br = $('#boardWrap').getBoundingClientRect();
+  const cx = br.left + br.width / 2, cy = br.top + br.height / 2;
+  const first = $('#hand .ht');
+  const tw = first ? first.getBoundingClientRect().width : 40, th = tw * 2;
+  const R = Math.min(br.width, br.height) * 0.3;
+  const T = (x, y, r, sc) => `translate(${(x - tw / 2).toFixed(1)}px, ${(y - th / 2).toFixed(1)}px) rotate(${r.toFixed(1)}deg) scale(${sc || 1})`;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const tiles = [];
+  for (let k = 0; k < 28; k++) {
+    const el = document.createElement('div');
+    el.className = 'dt'; el.style.width = tw + 'px'; el.style.height = th + 'px'; el.innerHTML = backTileSVG;
+    layer.appendChild(el); tiles.push(el);
+  }
+  // 1) embaralhar: as pedras se espalham e rodam na mesa, como mãos misturando
+  const SHUFFLE = 1600;
+  const pile = k => [cx, cy - 10 + (k - 14) * 0.7];
+  const mix = tiles.map((el, k) => {
+    const kf = [{ transform: T(cx + rnd(-6, 6), cy + rnd(-6, 6), rnd(-10, 10), .7), opacity: 0 }];
+    let ang = rnd(0, Math.PI * 2);
+    const spin = Math.random() < .5 ? 1 : -1;
+    for (let j = 0; j < 4; j++) {
+      ang += spin * rnd(.9, 1.6);
+      const r = R * Math.sqrt(rnd(.15, 1));
+      kf.push({ transform: T(cx + Math.cos(ang) * r * 1.15, cy + Math.sin(ang) * r, rnd(-200, 200)), opacity: 1, offset: [.14, .38, .62, .84][j] });
+    }
+    const [px, py] = pile(k);
+    kf.push({ transform: T(px, py, 90, .9), opacity: 1 });
+    return el.animate(kf, { duration: SHUFFLE, easing: 'ease-in-out', fill: 'forwards' });
+  });
+  await wait(SHUFFLE + 60);
+  if (my !== dealToken) return;
+  // 2) distribuir: uma pedra de cada vez, na ordem da mesa, até cada um ter 7
+  dealPhase = 'Distribuindo as pedras…'; renderPrompt();
+  const slots = $$('#hand .ht').map(e => e.getBoundingClientRect());
+  const seatXY = pos => { const r = $(`.seat[data-pos="${pos}"] .av`).getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+  const got = [0, 0, 0, 0], STEP = 60, FLY = 430;
+  tiles.forEach((el, k) => {
+    const pos = [1, 2, 3, 0][k % 4], idx = got[pos]++, p = (base() + pos) % 4;
+    const [px, py] = pile(k);
+    let to;
+    if (pos === 0) {
+      const r = slots[idx] || slots[slots.length - 1] || { left: cx, top: cy, width: tw, height: th };
+      to = [{ transform: T(r.left + r.width / 2, r.top + r.height / 2, 0, r.width / tw), opacity: 1 }];
+    } else {
+      const [sx, sy] = seatXY(pos), rot = rnd(-25, 25);
+      to = [{ transform: T(sx, sy, rot, .5), opacity: 1, offset: .82 }, { transform: T(sx, sy, rot, .35), opacity: 0 }];
+    }
+    const a = el.animate([{ transform: T(px, py, 90, .9), opacity: 1 }].concat(to), { duration: FLY, delay: k * STEP, easing: 'cubic-bezier(.3,.7,.25,1)', fill: 'both' });
+    a.onfinish = () => {
+      if (my !== dealToken || pos === 0) return;
+      dealtCount[p]++;
+      const sc = $(`.seat[data-pos="${pos}"] .sc`);
+      if (sc) sc.textContent = dealtCount[p] === 1 ? '1 pedra' : `${dealtCount[p]} pedras`;
+    };
+  });
+  mix.forEach(a => a.cancel());
+  await wait(27 * STEP + FLY + 260);
+  if (my !== dealToken) return;
+  done();
+}
+
+// ---- Fluxo offline (robôs) ----
+function proceed() {
+  if (mode !== 'off') return;
+  render();
+  const sp = SPEEDS[speed];
+  if (G.phase === 'handEnd') { schedule(showResult, sp.end); return; }
+  if (G.phase !== 'play') return;
+  const p = G.turn, moves = legalMoves(G, p);
+  if (p === 0) return; // sua vez: você joga arrastando ou toca em Passo
+  if (!moves.length) { schedule(() => { applyPass(G, p); announce(); proceed(); }, sp.pass); return; }
+  schedule(() => { applyMove(G, p, botChoose(G, p)); announce(); proceed(); }, sp.play);
+}
+function humanPlay(mv) { clearTimeout(timer); applyMove(G, 0, mv); announce(); proceed(); }
+
+// ---- Arrastar a pedra da mão até a ponta ----
+let drag = null; // { i, x0, y0, moved, el, side, zones, pid }
+function shakeTile(i, msg) {
+  const b = $(`#hand .ht[data-i="${i}"]`);
+  if (b) { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); }
+  if (msg) $('#feed').textContent = msg;
+}
+function placeGhostTile(x, y) {
+  drag.el.style.left = x + 'px'; drag.el.style.top = y + 'px';
+}
+function nearestZone(x, y) {
+  const br = $('#boardWrap').getBoundingClientRect();
+  if (x < br.left - 24 || x > br.right + 24 || y < br.top - 40 || y > br.bottom + 24) return null;
+  let best = null, bd = Infinity;
+  for (const z of drag.zones) {
+    const r = z.el.getBoundingClientRect(), zx = r.left + r.width / 2, zy = r.top + r.height / 2;
+    const d = Math.hypot(zx - x, zy - y);
+    if (d < bd) { bd = d; best = z.side; }
+  }
+  return best;
+}
+function endDrag() {
+  if (!drag) return;
+  if (drag.el) drag.el.remove();
+  drag = null;
+  window.removeEventListener('pointermove', onDragMove);
+  window.removeEventListener('pointerup', onDragEnd);
+  window.removeEventListener('pointercancel', onDragCancel);
+}
+function onDragMove(e) {
+  if (!drag || e.pointerId !== drag.pid) return;
+  const x = e.clientX, y = e.clientY;
+  if (!drag.moved) {
+    if (Math.hypot(x - drag.x0, y - drag.y0) < 8) return;
+    drag.moved = true;
+    const t = G.hands[seatMe][drag.i];
+    const el = document.createElement('div');
+    el.className = 'dragtile';
+    el.innerHTML = `<svg viewBox="-0.04 -0.04 1.08 2.08">${tileSVG({ x: .5, y: 1, o: 'v', v1: t[0], v2: t[1] }, '', false)}</svg>`;
+    document.body.appendChild(el);
+    drag.el = el; drag.side = null;
+    renderHand(); renderBoard();
+  }
+  e.preventDefault();
+  placeGhostTile(x, y);
+  // a pedra flutua acima do dedo: o alvo é o centro da pedra, não a ponta do dedo
+  const h = drag.el.getBoundingClientRect().height || 90;
+  const side = nearestZone(x, y - h * 0.65);
+  if (side !== drag.side) {
+    drag.side = side;
+    drag.zones.forEach(z => z.g.classList.toggle('over', z.side === side));
+  }
+}
+function onDragEnd(e) {
+  if (!drag || e.pointerId !== drag.pid) return;
+  const { i, moved, side } = drag;
+  if (moved && drag.el) { const r = drag.el.getBoundingClientRect(); lastDrop = { x: r.left + r.width / 2, y: r.top + r.height / 2, t: Date.now() }; }
+  endDrag();
+  if (!moved) { render(); if (myTurnNow()) $('#feed').textContent = 'Arraste a pedra até a ponta da mesa onde quer jogar.'; return; }
+  if (!myTurnNow() || !side) { render(); return; }
+  const mv = legalMoves(G, seatMe).find(m => m.i === i && m.side === side);
+  if (mv) { humanPlay(mv); return; }
+  render();
+  shakeTile(i, G.chain.length ? 'Essa pedra não encaixa nessa ponta.' : 'Essa pedra não pode abrir a mão.');
+}
+function onDragCancel(e) { if (drag && e.pointerId === drag.pid) { endDrag(); render(); } }
+$('#hand').addEventListener('pointerdown', e => {
+  const b = e.target.closest('.ht'); if (!b || b.classList.contains('back') || !G || seatMe == null || drag) return;
+  if (!myTurnNow()) return;
+  e.preventDefault();
+  drag = { i: +b.dataset.i, x0: e.clientX, y0: e.clientY, moved: false, el: null, side: null, zones: [], pid: e.pointerId };
+  window.addEventListener('pointermove', onDragMove, { passive: false });
+  window.addEventListener('pointerup', onDragEnd);
+  window.addEventListener('pointercancel', onDragCancel);
+});
+$('#hand').addEventListener('contextmenu', e => e.preventDefault());
+$('#passBtn').addEventListener('click', () => {
+  if (!myTurnNow() || !G.chain.length) return;
+  if (legalMoves(G, seatMe).length) { $('#feed').textContent = 'Você tem pedra que encaixa. Não dá para passar.'; return; }
+  clearTimeout(timer); applyPass(G, 0); announce(); proceed();
+});
+
+// ---- Folhas ----
+function openSheet(kind, html) {
+  sheetKind = kind; $('#sheet').innerHTML = html; $('#back').hidden = false;
+  const f = $('#sheet').querySelector('.primary'); if (f) f.focus({ preventScroll: true });
+}
+function closeSheet() { sheetKind = null; $('#back').hidden = true; $('#sheet').innerHTML = ''; }
+
+function showResult() {
+  if (!G || G.phase !== 'handEnd' || !G.result || sheetKind === 'rules') return;
+  const r = G.result;
+  let title, detail = '';
+  if (r.kind === 'batida') {
+    title = `${who(r.p)} bateu` + (r.carroca ? ' com carroça' : '');
+    if (r.carroca) detail += 'Batida de carroça vale +20. ';
+    if (r.lastPts) detail += `A última pedra ainda marcou ${r.lastPts} na mesa. `;
+    if (r.garagemSum != null) {
+      const opp = 1 - TEAM(r.p);
+      detail += `Garagem: ${r.garagemSum} pontos na mão de ${seatMe != null && TEAM(seatMe) === opp ? 'vocês' : duo(opp)}`;
+      detail += r.garagem ? `${r.garagem !== r.garagemSum ? ` (vale ${r.garagem})` : ''}, que vão para ${teamName(TEAM(r.p))}. ` : ', que não chega a 5. ';
+    }
+    detail += `Na próxima mão, ${r.p === seatMe ? 'você sai' : G.names[r.p] + ' sai'} com qualquer carroça.`;
+  } else {
+    title = 'Jogo fechado';
+    detail = `Pontos na mão: ${teamName(0)} ${r.sums[0]}, ${teamName(1)} ${r.sums[1]}. `;
+    detail += r.team == null ? 'Empate na contagem: ninguém marca.' : `A dupla com mais pontos na mão dá ${r.pts} para ${teamName(r.team)}.`;
+    detail += ` Na próxima mão, ${r.p === seatMe ? 'você sai' : G.names[r.p] + ' sai'} com qualquer carroça, por ter jogado a última pedra.`;
+  }
+  const rows = [0, 1, 2, 3].filter(p => r.hands[p].length).map(p => {
+    const sum = r.hands[p].reduce((s, t) => s + pips(t), 0);
+    return `<div class="rv"><span class="who">${esc(who(p))}</span>${r.hands[p].map(miniTile).join('')}<span class="sum">${sum} pts</span></div>`;
+  }).join('');
+  const L = TEAM(base()), R = 1 - L;
+  let win = '', btn = 'Próxima mão';
+  if (r.matchWinner != null) {
+    const ours = seatMe != null && TEAM(seatMe) === r.matchWinner;
+    const wtxt = seatMe == null ? `${duo(r.matchWinner)} venceram a partida.` : ours ? 'Vocês venceram a partida!' : 'Eles venceram a partida.';
+    win = `<p class="win ${r.matchWinner === L ? '' : 'them'}">${esc(wtxt)}</p>`;
+    if (r.gameWinner != null) { win += `<p>Jogo decidido em ${r.series[L]} × ${r.series[R]}.</p>`; btn = 'Novo jogo'; }
+    else { win += `<p>Série: ${esc(teamName(L))} ${r.series[L]} × ${r.series[R]} ${esc(teamName(R))}. Melhor de 3.</p>`; btn = 'Próxima partida'; }
+  }
+  const sh = r.gameWinner != null ? gameShare() : null;
+  openSheet('result', `<div class="res-grid"><div class="res-main"><p class="eyebrow">Mão ${r.handNo} · Partida ${r.partida}</p>
+    <h2 id="sheetTitle">${esc(title)}</h2><p>${esc(detail)}</p>
+    ${rows ? `<div class="reveal">${rows}</div>` : ''}</div><div class="res-side">
+    <div class="tally"><div class="L"><span>${esc(teamName(L))}</span><b>${r.score[L]}</b></div><div class="R"><span>${esc(teamName(R))}</span><b>${r.score[R]}</b></div></div>
+    ${win}${sh ? `<a class="share-wa" href="${sh}" target="_blank" rel="noopener">Mandar resultado no WhatsApp</a>` : ''}<button type="button" class="primary" id="nextBtn">${btn}</button>
+    </div></div>`);
+  $('#nextBtn').addEventListener('click', () => {
+    closeSheet(); nextHand(G); saveGame(); runDeal(() => { announce(); proceed(); });
+  });
+}
+
+const RULES_HTML = `  <p class="eyebrow">Como se joga em Manaus</p><h2 id="sheetTitle">Regras da mesa</h2>
+  <ol class="rules">
+    <li>Duas duplas, parceiros um de frente para o outro. Sete pedras para cada, sem monte. A vez gira pela esquerda.</li>
+    <li>Todo <b>jogo novo</b> começa com quem tem a <b>carroça de sena</b> (6|6). Nas outras mãos, inclusive na troca de partida, sai <b>quem jogou a última pedra</b> da mão anterior, com qualquer carroça. Sem carroça, perde a vez e dá <b>20</b> aos adversários.</li>
+    <li><b>Pontos na mesa:</b> se a soma das pontas (incluindo o bucho) der múltiplo de 5, a dupla de quem jogou marca a soma. Carroça na ponta conta dobrado.</li>
+    <li><b>Bucho:</b> a carroça de saída abre os dois lados depois que as duas pontas dela já têm pedra. Cada lado do bucho entra na soma das pontas assim que recebe a primeira pedra.</li>
+    <li><b>Passe:</b> vale 20 para a dupla de quem jogou por último. Se quem passa é o parceiro de quem jogou, ninguém marca.</li>
+    <li><b>Galo</b> (os três passam e a vez volta para quem jogou): 50 pontos para a dupla que aplicou.</li>
+    <li><b>Batida de carroça:</b> +20 para quem bateu.</li>
+    <li><b>Garagem:</b> quando alguém bate, os pontos que sobraram na mão da dupla que não bateu vão para a dupla que bateu, arredondados para baixo no múltiplo de 5.</li>
+    <li><b>Jogo fechado:</b> soma-se a mão de cada dupla. A dupla com mais pontos dá essa soma, arredondada para baixo no múltiplo de 5, para a outra. Empate: ninguém marca.</li>
+    <li>Mão com 5 carroças é misturada de novo.</li>
+    <li>A partida vai a <b>200 pontos</b> e é decidida no fim da mão: vence a dupla com mais pontos. O jogo é em melhor de 3 partidas.</li>
+  </ol>
+  <p class="note">Base: Regulamento de Dominó dos Jogos dos Servidores, Prefeitura de Manaus (2026). Onde o regulamento não detalha, a mesa segue assim: o galo substitui os passes da rodada; depois de uma saída sem carroça, o próximo abre com qualquer pedra; depois de jogo fechado, sai quem jogou a pedra que fechou.</p>`;
+function showMenu() {
+  clearTimeout(timer); armedReset = false;
+  openSheet('rules', `<p class="eyebrow">Menu</p>
+  <div class="menu-actions">
+    <button type="button" class="primary" id="closeMenu">Voltar à mesa</button>
+    <div class="menu-row"><button type="button" class="secondary" id="homeBtn">Pausar e sair</button><button type="button" class="secondary" id="resetBtn">Recomeçar jogo</button><button type="button" class="secondary danger" id="quitBtn">Desistir do jogo</button></div>
+  </div>
+  <div style="margin-top:22px">${RULES_HTML}</div>
+  <button type="button" class="secondary" id="closeMenu2" style="width:100%;margin-top:6px">Voltar à mesa</button>`);
+  $('#homeBtn').addEventListener('click', () => {
+    closeSheet(); leaveGame(); show('home');
+    toast('Jogo guardado. Para voltar, toque em "Continuar de onde parou".');
+  });
+  let armedQuit = false;
+  const qb = $('#quitBtn');
+  qb.addEventListener('click', () => {
+    if (!armedQuit) { armedQuit = true; qb.textContent = 'Toque de novo para desistir'; return; }
+    closeSheet(); leaveGame(); store.del(GKEY);
+    show('home'); toast('Jogo encerrado. Quando quiser, é só começar outro.');
+  });
+  const rb = $('#resetBtn');
+  rb.addEventListener('click', () => {
+    if (!armedReset) { armedReset = true; rb.textContent = 'Toque de novo para recomeçar'; return; }
+    closeSheet(); clearTimeout(timer); endDrag();
+    offSt = newGame(G.names); startHand(offSt); G = offSt; saveGame();
+    runDeal(() => { announce(); proceed(); });
+  });
+  $('#closeMenu').addEventListener('click', resumeAfterMenu);
+  $('#closeMenu2').addEventListener('click', resumeAfterMenu);
+}
+// Sai da mesa guardando o jogo (dá para continuar depois pelo início).
+function leaveGame() {
+  clearTimeout(timer); endDrag(); dealToken++; endDeal();
+  saveGame(); mode = null; G = null; offSt = null; seatMe = null;
+}
+function resumeAfterMenu() {
+  closeSheet();
+  if (!G) return;
+  if (G.phase === 'handEnd') showResult();
+  else if (mode === 'off') proceed();
+}
+$('#menuBtn').addEventListener('click', showMenu);
+$('#back').addEventListener('click', e => {
+  if (e.target.id !== 'back') return;
+  if (sheetKind === 'info') closeSheet(); else if (sheetKind === 'rules') resumeAfterMenu();
+});
+
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
+
+// ---- Começo ----
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
+window.addEventListener('pagehide', saveGame);
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+show('who');
+</script>
+</body>
+</html>
