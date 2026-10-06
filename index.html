@@ -451,6 +451,8 @@ body{touch-action:manipulation}
 .dn-list li:first-child{border-top:0}
 .dn-list li b{font-family:var(--font-display);font-weight:400;font-size:20px;font-variant-numeric:tabular-nums}
 .dn-list li.dn-empty span{color:var(--wood-muted);font-size:14px}
+.aceite{text-align:center}
+.aceite a{color:inherit}
 .dn-tela{font-size:11.5px;word-break:break-word}
 .dn-open{display:grid;gap:6px;padding:18px 20px;text-decoration:none}
 .dn-open .ck{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
@@ -588,6 +590,7 @@ body{touch-action:manipulation}
       <p class="note">Com foto, os outros jogadores veem que você é gente de verdade: ela vai aparecer na mesa online, que está chegando. Não quer aparecer? Escolha um avatar.</p>
     </div>
     <button type="button" class="primary" id="saveProfile">Salvar e entrar</button>
+    <p class="note aceite">Ao salvar, você aceita os <a href="termos.html">Termos de uso</a> e a <a href="privacidade.html">Privacidade</a>.</p>
   </section>
 
   <section class="screen panel" id="scrHome" hidden>
@@ -643,7 +646,7 @@ body{touch-action:manipulation}
       <span>O jogo está começando e cada opinião ajuda a deixar ele do jeito da nossa mesa.</span>
     </button>
     <a class="sponsor" id="sponsor" target="_blank" rel="noopener" hidden></a>
-    <p class="note foot"><span id="footBrand">Dominó Manauara</span> · <button type="button" class="verlink" id="verBtn">Versão <span class="appver"></span></button> · <a href="privacidade.html">Privacidade</a></p>
+    <p class="note foot"><span id="footBrand">Dominó Manauara</span> · <button type="button" class="verlink" id="verBtn">Versão <span class="appver"></span></button> · <a href="termos.html">Termos</a> · <a href="privacidade.html">Privacidade</a></p>
   </section>
 
   <section class="screen panel" id="scrSetup" hidden>
@@ -1136,6 +1139,10 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.3', data: '06/10/2026', itens: [
+    'Termos de uso, no rodapé do início e na criação do perfil.',
+    'Apelidos com palavrão, ofensa ou preconceito não são aceitos.'
+  ] },
   { v: '1.2.3', data: '06/10/2026', itens: ['Pequenos ajustes.'] },
   { v: '1.2.2', data: '06/10/2026', itens: ['Pequenos ajustes.'] },
   { v: '1.2.1', data: '06/10/2026', itens: ['Corrigida a mesa que ficava espremida e a rolagem que travava no iPhone com o app instalado.'] },
@@ -1248,6 +1255,24 @@ function faceImg(uri, cls) { return uri ? `<img class="${cls || ''}" src="${uri}
 function seatFace(p, cls) { return faceImg(p === seatMe ? myFaceURI() : botFaceURI(G.names[p]), cls); }
 
 // Contagem de uso anônima (Umami): sem cookies, sem nome nem foto de ninguém.
+// ---- Filtro de apelidos ofensivos ----
+// Compara sem acento, sem pontuação e com números no lugar de letras (p0rr4 = porra).
+const NOME_RUIM_PARTE = ['porra', 'caralh', 'buceta', 'boceta', 'xoxota', 'xereca', 'piroca', 'punheta', 'siririca', 'arrombad',
+  'filhodaputa', 'fdp', 'fodase', 'fodido', 'fudido', 'foder', 'putaria', 'vagabund', 'cuzao', 'cusao', 'vadia', 'prostitut',
+  'traveco', 'retardad', 'nazista', 'hitler', 'estupr', 'pedofil', 'viadinho', 'porno', 'merda', 'bosta', 'cacete', 'pqp',
+  'tomarnocu', 'paunocu', 'vaitomar', 'safad', 'piranh'];
+// Curtas: só barram como palavra separada (para não pegar "Cunha" ou "Disputa").
+const NOME_RUIM_PALAVRA = ['cu', 'puta', 'putas', 'puto', 'foda', 'fode', 'rola', 'xota', 'viado', 'veado', 'bicha', 'sapatao',
+  'crioulo', 'corno', 'otario', 'babaca', 'anus', 'penis', 'vagina', 'kct', 'vsf', 'tnc', 'fdps'];
+function nomeOfensivo(nome) {
+  const junta = s => s.replace(/(.)\1+/g, '$1');
+  const leet = { '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', '@': 'a', '$': 's', '!': 'i' };
+  const base = String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[0134578@$!]/g, c => leet[c]);
+  const tudo = base.replace(/[^a-z]/g, ''), tudoJ = junta(tudo);
+  if (NOME_RUIM_PARTE.some(w => tudo.includes(w) || tudoJ.includes(junta(w)))) return true;
+  const palavras = base.split(/[^a-z]+/).filter(Boolean);
+  return NOME_RUIM_PALAVRA.some(w => tudo === w || tudoJ === junta(w) || palavras.some(p => p === w || junta(p) === junta(w)));
+}
 // No aparelho do dono, com "Não contar meus acessos" ligado, nada é contado.
 function semContar() { try { const d = JSON.parse(localStorage.getItem('dmz-dono') || 'null'); return !!(d && d.semContar); } catch (e) { return false; } }
 function track(ev, data) {
@@ -1378,6 +1403,7 @@ $('#profileBack').addEventListener('click', () => show(profileFrom));
 $('#saveProfile').addEventListener('click', () => {
   const name = $('#nameInput').value.replace(/\s+/g, ' ').trim().slice(0, 14);
   if (!name) { toast('Escreva seu nome ou apelido.'); $('#nameInput').focus(); return; }
+  if (nomeOfensivo(name)) { toast('Esse apelido não pode ser usado aqui. Escolha outro.'); $('#nameInput').focus(); $('#nameInput').select(); return; }
   let av = draft.av || AVATARS[Math.floor(Math.random() * AVATARS.length)].id;
   if (draft.photo !== photo) {
     if (!draft.photo) { store.del(FKEY); photo = null; }
