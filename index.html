@@ -415,6 +415,8 @@ body{touch-action:manipulation}
 .fpw .edit svg{width:15px;height:15px}
 /* mesa redonda um pouco menor no celular em pé, para os nomes dos lados não encostarem na borda */
 @media (orientation: portrait), (min-height: 561px){ .rt-wrap{width:min(62vw,40vh,330px)} }
+.entry-actions .menubtn{min-height:44px;padding:10px 22px 10px 18px;font-size:16px}
+.entry-actions .menubtn svg{width:17px;height:17px}
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:12px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
@@ -494,7 +496,7 @@ body{touch-action:manipulation}
     </div>
     <div class="entry-actions">
       <button type="button" class="primary" id="enterBtn">Começar</button>
-      <button type="button" class="editbtn" id="editProfile" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>Editar perfil</button>
+      <button type="button" class="menubtn" id="editProfile" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>Editar perfil</button>
     </div>
     <div class="train go" id="train" role="button" tabindex="0" aria-label="Derrubar as pedras de novo"></div>
   </section>
