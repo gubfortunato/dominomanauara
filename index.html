@@ -396,7 +396,7 @@ body{touch-action:manipulation}
 #setupPatro:empty{display:none}
 #setupPatro .sponsor{margin-top:6px}
 .home-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:-6px}
-.home-top{display:block}
+.home-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .rulespill{display:inline-flex;align-items:center;gap:10px;padding:9px 20px 9px 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;font-weight:700;font-size:16px;cursor:pointer}
 .rulespill:active{transform:scale(.97)}
 .rulespill .rc-ic{width:13px;height:26px;transform:rotate(-14deg)}
@@ -509,14 +509,16 @@ body{touch-action:manipulation}
   </section>
 
   <section class="screen panel" id="scrHome" hidden>
-    <div class="home-bar">
-      <button type="button" class="rulespill" id="howBtn"><span class="rc-ic" id="rulesTile" aria-hidden="true"></span>Regras</button>
-      <button type="button" class="mechip" id="meChip" aria-label="Editar perfil: nome e foto"><span class="face" id="meChipFace"></span><span class="edit" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span></button>
-    </div>
     <div class="home-top">
       <div><h1 class="brand"><button type="button" class="brandlink" id="brandHome" aria-label="Dominó Manauara: ir para a tela inicial">Dominó <em>Manauara</em></button></h1></div>
+      <button type="button" class="mechip" id="meChip" aria-label="Editar perfil: nome e foto"><span class="face" id="meChipFace"></span><span class="edit" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span></button>
     </div>
     <p class="lead">Fala, <b id="homeName"></b>. Bora pra mesa?</p>
+    <button type="button" class="rulescard" id="howBtn">
+      <span class="rc-ic" id="rulesTile" aria-hidden="true"></span>
+      <span class="rc-tx"><b>Regras</b><small>Bucho, garagem, passe e galo, explicados</small></span>
+      <span class="rc-go" aria-hidden="true">›</span>
+    </button>
     <button type="button" class="card wood" id="goResume" hidden>
       <span class="ck">Jogo em andamento</span><span class="ct">Continuar de onde parou</span>
       <span class="cd" id="resumeD"></span>
