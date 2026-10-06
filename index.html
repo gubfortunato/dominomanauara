@@ -983,6 +983,8 @@ const CONFIG = {
   whats: '',
   // Patrocinador da vez: aparece no início, gravado na mesa e no fim de cada jogo.
   // Ex.: { nome: 'Açaí do Bairro', texto: 'Peça pelo WhatsApp', link: 'https://wa.me/55...', logo: 'patrocinio/acai.png' }
+  // Estatística anônima (Umami Cloud): o "Website ID" do painel. Vazio: nada é contado.
+  umamiId: '52db3c75-c2b5-4f28-b0b4-eb0fce4cecb0',
   patrocinio: {
     nome: 'alug+', texto: 'Baixe agora grátis · alugmaisapp.com',
     alt: 'alug+: baixe agora grátis. alugmaisapp.com. Sem taxa por imóvel, imóveis ilimitados.',
@@ -1105,9 +1107,9 @@ function botFaceURI(name) { const b = BOTS.find(x => x.name === name); return b 
 function faceImg(uri, cls) { return uri ? `<img class="${cls || ''}" src="${uri}" alt="">` : ''; }
 function seatFace(p, cls) { return faceImg(p === seatMe ? myFaceURI() : botFaceURI(G.names[p]), cls); }
 
-// Contagem de uso: fica pronta para um serviço de estatística anônima (ex.: GoatCounter) quando ele for ligado.
-function track(ev) {
-  try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'evento-' + ev, title: ev, event: true }); } catch (e) {}
+// Contagem de uso anônima (Umami): sem cookies, sem nome nem foto de ninguém.
+function track(ev, data) {
+  try { if (window.umami && window.umami.track) data ? window.umami.track(ev, data) : window.umami.track(ev); } catch (e) {}
 }
 
 let screen = 'who', mode = null;
@@ -2100,6 +2102,16 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     if (screen === 'game') { window.__reloadWhenFree = true; return; }
     saveGame(); location.reload();
   });
+}
+// ---- Estatística anônima e "online agora" ----
+if (CONFIG.umamiId && location.protocol === 'https:') {
+  const s = document.createElement('script');
+  s.defer = true; s.src = 'https://cloud.umami.is/script.js';
+  s.dataset.websiteId = CONFIG.umamiId; s.dataset.domains = CONFIG.site;
+  s.onload = () => track('abertura', { modo: isStandalone() ? 'app instalado' : 'navegador' });
+  document.head.appendChild(s);
+  // Sinal de vida a cada 4 minutos com o jogo aberto na tela: mantém o jogador na contagem de "online agora".
+  setInterval(() => { if (document.visibilityState === 'visible') track('online', { tela: screen === 'game' ? 'mesa' : 'menus' }); }, 4 * 60 * 1000);
 }
 show('who');
 </script>
