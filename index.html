@@ -25,22 +25,6 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preload" href="fonts/alfa-slab-one.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="fonts/figtree.woff" as="font" type="font/woff" crossorigin>
-<script>
-/* iPhone com o app na tela de início: o iOS mede a tela sem a barra de status e sobra uma faixa vazia embaixo.
-   Aqui a altura do app passa a ser a da tela inteira. */
-(function () {
-  if (!(navigator.standalone === true && /iPhone|iPod/.test(navigator.userAgent))) return;
-  var r = document.documentElement; r.classList.add('iosapp');
-  function fit() {
-    var land = window.matchMedia && matchMedia('(orientation: landscape)').matches;
-    var full = land ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
-    r.style.setProperty('--appH', Math.max(full, window.innerHeight) + 'px');
-  }
-  fit();
-  addEventListener('resize', fit);
-  addEventListener('orientationchange', function () { setTimeout(fit, 300); });
-})();
-</script>
 <style>
 @font-face{font-family:"Alfa Slab One";src:url(fonts/alfa-slab-one.woff) format("woff");font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:"Figtree";src:url(fonts/figtree.woff) format("woff");font-weight:300 900;font-style:normal;font-display:swap}
@@ -313,8 +297,6 @@ html,body{overscroll-behavior:none}
 body{touch-action:manipulation}
 .shell{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 /* Telas com rolagem descem até a borda de baixo; o espaço da barrinha do iPhone fica dentro da rolagem */
-.iosapp,.iosapp body{height:var(--appH,100%)}
-.iosapp{overflow:hidden}
 .shell>.screen.panel{height:calc(100% + env(safe-area-inset-bottom,0px));padding-bottom:calc(var(--panel-pb,30px) + env(safe-area-inset-bottom,0px))}
 @media (orientation: landscape) and (max-height: 560px){:root{--panel-pb:18px}}
 .friend.bot{cursor:default}
@@ -469,6 +451,8 @@ body{touch-action:manipulation}
 .dn-list li:first-child{border-top:0}
 .dn-list li b{font-family:var(--font-display);font-weight:400;font-size:20px;font-variant-numeric:tabular-nums}
 .dn-list li.dn-empty span{color:var(--wood-muted);font-size:14px}
+.dn-tela{font-size:11.5px;word-break:break-word}
+.dn-diag{display:block;margin-top:8px;font-size:12px;color:var(--muted);word-break:break-word}
 .dn-err{margin:0;padding:12px 14px;border-radius:12px;border:1px solid var(--alert);color:var(--fg);font-size:14px;line-height:1.45}
 .dn-full{display:block;text-align:center;text-decoration:none;color:var(--fg);padding:13px 14px;border-radius:14px}
 .dn-sw{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;cursor:pointer}
@@ -686,6 +670,7 @@ body{touch-action:manipulation}
     <a class="secondary dn-full" id="dnFull" href="#" target="_blank" rel="noopener">Abrir o painel completo do Umami</a>
     <label class="dn-sw"><input type="checkbox" id="dnSemContar"><span><b>Não contar meus acessos</b><small>Seus testes neste aparelho ficam fora dos números.</small></span></label>
     <button type="button" class="linkbtn" id="dnSair">Sair da Área do dono neste aparelho</button>
+    <p class="note dn-tela" id="dnTela"></p>
   </section>
   <section class="screen game" id="scrGame" hidden>
     <header class="score">
@@ -1121,10 +1106,10 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.2.1', data: '06/10/2026', itens: ['Corrigida a mesa que ficava espremida e a rolagem que travava no iPhone com o app instalado.'] },
   { v: '1.2', data: '06/10/2026', itens: [
     'O app agora se atualiza sozinho: toda melhoria chega para todo mundo, sem precisar fazer nada.',
-    'O número da versão aparece no início do app, com a lista do que mudou.',
-    'No iPhone com o app na tela de início, a tela vai até o fim, sem cortar o patrocínio nem a mesa.'
+    'O número da versão aparece no início do app, com a lista do que mudou.'
   ] },
   { v: '1.1', itens: [
     'Banner do patrocinador, botão para chamar os amigos e regras explicadas.',
@@ -1740,22 +1725,27 @@ $('#donoCard').addEventListener('click', () => show('dono'));
 $('#donoBack').addEventListener('click', () => show(profile ? 'home' : 'who'));
 
 // ---- Números do Umami (só leitura, pelo link de compartilhamento) ----
-const UMAMI_APIS = ['https://cloud.umami.is/api', 'https://api.umami.is/v1'];
+// O painel do Umami Cloud conversa com o gateway (o mesmo endereço que o contador usa); os outros ficam de reserva.
+const UMAMI_APIS = ['https://gateway.umami.is/api', 'https://cloud.umami.is/api', 'https://api.umami.is/v1'];
+let dnDiag = [];
+const dnHost = u => u.replace(/^https:\/\//, '').split('/')[0];
 async function dnSessao() {
   if (dnSes) return dnSes;
+  dnDiag = [];
   const slug = (dono.share.split('/share/')[1] || '').split(/[/?#]/)[0];
   const bases = dono.api ? [dono.api].concat(UMAMI_APIS.filter(b => b !== dono.api)) : UMAMI_APIS;
   for (const base of bases) {
     try {
       const r = await fetch(`${base}/share/${encodeURIComponent(slug)}`, { cache: 'no-store' });
-      if (!r.ok) continue;
-      const j = await r.json();
+      if (!r.ok) { dnDiag.push(`${dnHost(base)}: ${r.status}`); continue; }
+      let j = null; try { j = await r.json(); } catch (e) { dnDiag.push(`${dnHost(base)}: não é JSON`); continue; }
+      if (!(j && j.token && j.websiteId)) dnDiag.push(`${dnHost(base)}: sem token`);
       if (j && j.token && j.websiteId) {
         dnSes = { base, websiteId: j.websiteId, token: j.token };
         if (dono.api !== base) { dono.api = base; donoSalvar(); }
         return dnSes;
       }
-    } catch (e) {}
+    } catch (e) { dnDiag.push(`${dnHost(base)}: bloqueado`); }
   }
   throw new Error('sem-acesso');
 }
@@ -1763,9 +1753,11 @@ async function dnGet(path, params) {
   const s = await dnSessao();
   const u = new URL(`${s.base}/websites/${s.websiteId}${path}`);
   Object.entries(params || {}).forEach(([k, v]) => u.searchParams.set(k, v));
-  const r = await fetch(u, { cache: 'no-store', headers: { 'x-umami-share-token': s.token, 'x-umami-share-context': '1' } });
-  if (r.status === 401 || r.status === 403) { dnSes = null; throw new Error('sem-permissao'); }
-  if (!r.ok) throw new Error('http-' + r.status);
+  let r;
+  try { r = await fetch(u, { cache: 'no-store', headers: { 'x-umami-share-token': s.token, 'x-umami-share-context': '1' } }); }
+  catch (e) { dnDiag.push(`${dnHost(s.base)}${path}: bloqueado`); throw e; }
+  if (r.status === 401 || r.status === 403) { dnDiag.push(`${dnHost(s.base)}${path}: ${r.status}`); dnSes = null; throw new Error('sem-permissao'); }
+  if (!r.ok) { dnDiag.push(`${dnHost(s.base)}${path}: ${r.status}`); throw new Error('http-' + r.status); }
   return r.json();
 }
 function dnPeriodo() {
@@ -1787,6 +1779,11 @@ function dnErro(e) {
     ? 'O link do Umami não deixa ver estes números. No Umami, confira se Overview, Events e Realtime estão marcados no compartilhamento.'
     : navigator.onLine === false ? 'Sem internet agora. Os números aparecem quando a conexão voltar.'
       : 'Não deu para carregar os números aqui. Toque em "Abrir o painel completo do Umami".';
+  if (dnDiag.length) {
+    const d = document.createElement('small'); d.className = 'dn-diag';
+    d.textContent = 'Detalhe técnico: ' + Array.from(new Set(dnDiag)).join(' · ');
+    el.appendChild(d);
+  }
   el.hidden = false;
 }
 
@@ -1861,7 +1858,7 @@ async function dnCarregar() {
 
 function renderDono() {
   if (!dono) { show(profile ? 'home' : 'who'); return; }
-  $('#dnFull').href = dono.share;
+  $('#dnFull').href = dono.share; dnTela();
   $('#dnSemContar').checked = !!dono.semContar;
   $$('#dnRange button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.r === dnRange)));
   dnAoVivo(); dnCarregar();
@@ -1870,6 +1867,15 @@ function renderDono() {
     if (screen !== 'dono') { clearInterval(dnTimer); return; }
     if (document.visibilityState === 'visible') dnAoVivo();
   }, 30000);
+}
+// Medidas da tela deste aparelho (para acertar o layout do iPhone com o app instalado).
+function dnTela() {
+  const probe = css => { const d = document.createElement('div'); d.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;' + css; document.body.appendChild(d); const h = Math.round(d.getBoundingClientRect().height); d.remove(); return h; };
+  const st = (navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches)) ? 'app' : 'navegador';
+  const vv = window.visualViewport ? Math.round(visualViewport.height) : '-';
+  $('#dnTela').textContent = `Tela (${st}): janela ${innerWidth}×${innerHeight} · visível ${vv} · aparelho ${screen.width}×${screen.height} · página ${document.documentElement.clientHeight}` +
+    ` · lvh ${probe('height:100lvh')} · dvh ${probe('height:100dvh')} · svh ${probe('height:100svh')}` +
+    ` · margem topo ${probe('height:0;padding-top:env(safe-area-inset-top,0px)')} · base ${probe('height:0;padding-bottom:env(safe-area-inset-bottom,0px)')}`;
 }
 function renderDonoCard() {
   const c = $('#donoCard');
