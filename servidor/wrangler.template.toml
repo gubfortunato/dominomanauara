@@ -1,0 +1,14 @@
+# Gerado pelo GitHub Actions: o ID do banco entra na hora de publicar.
+name = "api"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[vars]
+# Resumo (SHA-256) da chave do dono. A chave em si nunca fica aqui.
+ADMIN_HASH = "e57e78a3bb0d8127b02226822dbc4fe943bb5ddd711696f032bcf36adf28589c"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "dominomanauara"
+database_id = "__D1_ID__"
