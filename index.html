@@ -452,6 +452,12 @@ body{touch-action:manipulation}
 .dn-list li b{font-family:var(--font-display);font-weight:400;font-size:20px;font-variant-numeric:tabular-nums}
 .dn-list li.dn-empty span{color:var(--wood-muted);font-size:14px}
 .dn-tela{font-size:11.5px;word-break:break-word}
+.dn-open{display:grid;gap:6px;padding:18px 20px;text-decoration:none}
+.dn-open .ck{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+.dn-open b{font-family:var(--font-display);font-weight:400;font-size:22px;line-height:1.15;color:var(--wood-ink)}
+.dn-open small{font-size:14px;line-height:1.4;color:var(--wood-muted)}
+.dn-open .dn-open-go{justify-self:start;margin-top:8px;padding:10px 16px;border-radius:12px;background:var(--nos);color:var(--bg-2);font-weight:800;font-size:15px}
+.dn-open:active{transform:scale(.99)}
 .dn-key{display:grid;gap:10px;padding:16px 18px}
 .dn-key .ck{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
 .dn-key p{margin:0;font-size:14.5px;line-height:1.45}
@@ -654,7 +660,13 @@ body{touch-action:manipulation}
   <section class="screen panel" id="scrDono" hidden>
     <button type="button" class="backbtn" id="donoBack">← Voltar</button>
     <div><p class="kicker">Área do dono</p><h2 class="brand" style="font-size:30px">Como está a mesa</h2></div>
-    <div class="dn-live wood">
+    <a class="dn-open wood" id="dnOpen" href="#" target="_blank" rel="noopener" hidden>
+      <span class="ck">Números do jogo</span>
+      <b>Ver quem está online e o movimento</b>
+      <small>Abre o painel do Umami: online agora, visitas, o que fizeram no jogo e as cidades.</small>
+      <span class="dn-open-go">Abrir os números ›</span>
+    </a>
+    <div class="dn-live wood" id="dnLive">
       <span class="dn-dot" aria-hidden="true"></span>
       <div class="dn-now"><b id="dnOnline">–</b><span id="dnOnlineTx">jogando agora</span></div>
       <small id="dnUpd"></small>
@@ -686,7 +698,7 @@ body{touch-action:manipulation}
     </div>
     <a class="secondary dn-full" id="dnFull" href="#" target="_blank" rel="noopener">Abrir o painel completo do Umami</a>
     <label class="dn-sw"><input type="checkbox" id="dnSemContar"><span><b>Não contar meus acessos</b><small>Seus testes neste aparelho ficam fora dos números.</small></span></label>
-    <button type="button" class="linkbtn" id="dnKeyTrocar" hidden>Trocar a chave do Umami</button>
+    <button type="button" class="linkbtn" id="dnKeyTrocar">Tenho o plano Pro do Umami: colar a chave</button>
     <button type="button" class="linkbtn" id="dnSair">Sair da Área do dono neste aparelho</button>
     <p class="note dn-tela" id="dnTela"></p>
   </section>
@@ -1124,6 +1136,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.2.3', data: '06/10/2026', itens: ['Pequenos ajustes.'] },
   { v: '1.2.2', data: '06/10/2026', itens: ['Pequenos ajustes.'] },
   { v: '1.2.1', data: '06/10/2026', itens: ['Corrigida a mesa que ficava espremida e a rolagem que travava no iPhone com o app instalado.'] },
   { v: '1.2', data: '06/10/2026', itens: [
@@ -1780,7 +1793,7 @@ function fmtTempo(seg) {
 }
 function dnErro(e) {
   const el = $('#dnErr');
-  if (e && e.message === 'sem-chave') { $('#dnKey').hidden = false; return; }
+  if (e && e.message === 'sem-chave') return;
   if (e && e.message === 'chave-recusada') $('#dnKey').hidden = false;
   el.textContent = e && e.message === 'chave-recusada'
     ? 'O Umami não aceitou a chave. Confira se copiou ela inteira, ou crie outra e cole abaixo.'
@@ -1838,7 +1851,7 @@ function dnEventos(rows) {
 
 async function dnCarregar() {
   if (!dono) return;
-  if (!dono.key) { $('#dnKey').hidden = false; return; }
+  if (!dono.key) return;
   dnDiag = [];
   const seq = ++dnSeq, p = dnPeriodo();
   $('#dnBody').classList.add('dn-loading'); $('#dnErr').hidden = true;
@@ -1867,9 +1880,14 @@ async function dnCarregar() {
 
 function renderDono() {
   if (!dono) { show(profile ? 'home' : 'who'); return; }
-  $('#dnFull').href = dono.share; dnTela();
-  $('#dnKey').hidden = !!dono.key; $('#dnKeyTrocar').hidden = !dono.key; $('#dnErr').hidden = true;
-  $('#dnBody').hidden = $('#dnRange').hidden = !dono.key;
+  // Plano grátis do Umami: sem API, então os números abrem no painel compartilhado.
+  // Com a chave do plano Pro, os números aparecem aqui mesmo.
+  const temChave = !!dono.key;
+  $('#dnFull').href = $('#dnOpen').href = dono.share; dnTela();
+  $('#dnOpen').hidden = temChave; $('#dnFull').hidden = !temChave;
+  $('#dnLive').hidden = $('#dnBody').hidden = $('#dnRange').hidden = !temChave;
+  $('#dnKey').hidden = true; $('#dnErr').hidden = true;
+  $('#dnKeyTrocar').textContent = temChave ? 'Trocar a chave do Umami' : 'Tenho o plano Pro do Umami: colar a chave';
   $('#dnSemContar').checked = !!dono.semContar;
   $$('#dnRange button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.r === dnRange)));
   dnAoVivo(); dnCarregar();
@@ -1913,6 +1931,7 @@ $('#dnKeySave').addEventListener('click', () => {
 });
 $('#dnKeyTrocar').addEventListener('click', () => {
   $('#dnKey').hidden = false; $('#dnKeyIn').focus();
+  $('#dnKey').scrollIntoView({ block: 'center', behavior: 'smooth' });
 });
 $('#dnSair').addEventListener('click', () => {
   dono = null; dnSes = null; donoSalvar(); clearInterval(dnTimer);
