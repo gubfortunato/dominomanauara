@@ -331,6 +331,39 @@ body{touch-action:manipulation}
 .foot{text-align:center}
 .foot a{color:inherit}
 .chipface{width:52px;height:52px}
+.fbcard{display:grid;gap:3px;text-align:left;padding:14px 16px;border-radius:16px;border:1.5px solid var(--nos);background:transparent;color:var(--fg);cursor:pointer;font:inherit}
+.fbcard .sp-k{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--nos)}
+.fbcard b{font-family:var(--font-display);font-weight:400;font-size:19px;line-height:1.15}
+.fbcard span:last-child{font-size:13.5px;line-height:1.4;color:var(--muted)}
+.fbcard:active{transform:scale(.99)}
+.fb-kind{display:grid;grid-template-columns:repeat(3,1fr);margin:6px 0 14px}
+.fb-kind button{padding:11px 6px}
+.sheet .field textarea{width:100%;font:inherit;font-size:16px;line-height:1.4;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg);resize:vertical}
+.sheet .field textarea:focus{outline:2px solid var(--glow);outline-offset:1px}
+.menu-fb{display:block;width:100%;margin-top:12px;border:0;background:none;color:var(--muted);font-weight:600;text-decoration:underline;cursor:pointer;padding:8px}
+.apoio{display:grid;gap:10px;padding:16px 18px}
+.apoio .ck{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+.apoio p{margin:0;font-size:14.5px;line-height:1.45;color:var(--wood-ink)}
+.apoio-vals{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px}
+.apoio-vals a{display:grid;gap:2px;justify-items:center;text-align:center;text-decoration:none;padding:10px 6px;border-radius:12px;border:1px solid rgba(239,226,204,.3);color:var(--wood-ink)}
+.apoio-vals a b{font-family:var(--font-display);font-weight:400;font-size:20px;color:var(--glow)}
+.apoio-vals a span{font-size:11.5px;line-height:1.25;color:var(--wood-muted)}
+.apoio-vals a:active{background:rgba(243,192,99,.15)}
+.apoiador{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;background:var(--glow);color:var(--wood-2);font-size:11px;font-weight:700;letter-spacing:.06em;vertical-align:2px}
+.res-apoio{display:block;text-align:center;margin-top:10px;color:var(--muted);font-weight:600;text-decoration:underline;background:none;border:0;width:100%;cursor:pointer;font:inherit;padding:6px}
+.sp-logo{max-height:38px;max-width:160px;object-fit:contain;margin:2px 0}
+.mesa-patro{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;opacity:.32;pointer-events:none;white-space:nowrap;color:var(--wood-ink);font-size:11.5px;letter-spacing:.02em}
+.mesa-patro img{max-height:22px;max-width:70px;object-fit:contain;filter:grayscale(.3)}
+.mesa-patro b{font-weight:700}
+.res-patro{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;padding:8px 10px;border-radius:12px;border:1px dashed var(--line);color:var(--muted);text-decoration:none;font-size:12.5px;line-height:1.35;text-align:left}
+.res-patro img{max-height:28px;max-width:80px;object-fit:contain}
+.res-patro b{color:var(--fg)}
+.sponsor.has-banner{padding:10px 10px 12px;gap:8px;border-style:solid}
+.sponsor.has-banner .sp-k{padding-left:4px}
+.sp-banner{display:block;width:100%;height:auto;aspect-ratio:5/2;border-radius:10px;object-fit:cover}
+.res-patro.has-banner{display:grid;gap:6px;padding:0;border:0;justify-items:stretch}
+.res-patro.has-banner .sp-k{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:center}
+.res-patro.has-banner img{width:100%;max-width:420px;max-height:none;height:auto;aspect-ratio:5/2;border-radius:12px;justify-self:center;object-fit:cover}
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:12px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
@@ -463,6 +496,16 @@ body{touch-action:manipulation}
       <p id="installTxt"></p>
       <div class="row"><button type="button" class="primary" id="installBtn" hidden>Instalar o app</button><button type="button" class="linkbtn" id="installNo">Agora não</button></div>
     </div>
+    <div class="apoio wood" id="apoioCard" hidden>
+      <span class="ck" id="apoioK">Apoie o jogo</span>
+      <p id="apoioTxt">O Dominó Manauara é de graça. Se você curte, ajude a manter a mesa de pé com quanto puder.</p>
+      <div class="apoio-vals" id="apoioVals"></div>
+    </div>
+    <button type="button" class="fbcard" id="fbCard" hidden>
+      <span class="sp-k">Fale com a gente</span>
+      <b>Achou um erro ou tem uma ideia?</b>
+      <span>O jogo está começando e cada opinião ajuda a deixar ele do jeito da nossa mesa.</span>
+    </button>
     <a class="sponsor" id="sponsor" target="_blank" rel="noopener" hidden></a>
     <div class="links">
       <button type="button" class="linkbtn" id="shareApp">Chamar a turma</button>
@@ -880,15 +923,30 @@ const POS = ['Sul', 'Oeste', 'Norte', 'Leste'];
 // ===== Dominó Manauara =====
 const CONFIG = {
   site: 'dominomanauara.com.br',
-  // WhatsApp para vender anúncios (só números, com 55 e DDD, ex.: '5592999999999'). Vazio: o cartão "Anuncie aqui" não aparece.
-  anuncieWhats: '',
-  // Patrocinador da vez, mostrado no início. Ex.: { nome: 'Açaí do Bairro', texto: 'Peça pelo WhatsApp', link: 'https://wa.me/55...' }
-  patrocinio: null
+  // WhatsApp do Dominó Manauara (só números, com 55 e DDD, ex.: '5592999999999').
+  // Recebe as opiniões dos jogadores e os pedidos de anúncio. Vazio: esses botões não aparecem.
+  whats: '',
+  // Patrocinador da vez: aparece no início, gravado na mesa e no fim de cada jogo.
+  // Ex.: { nome: 'Açaí do Bairro', texto: 'Peça pelo WhatsApp', link: 'https://wa.me/55...', logo: 'patrocinio/acai.png' }
+  patrocinio: {
+    nome: 'alug+', texto: 'Baixe agora grátis · alugmaisapp.com',
+    alt: 'alug+: baixe agora grátis. alugmaisapp.com. Sem taxa por imóvel, imóveis ilimitados.',
+    link: 'https://alugmaisapp.com/?utm_source=dominomanauara&utm_medium=patrocinio&utm_campaign=mesa',
+    logo: 'patrocinio/alugmais-logo.png', banner: 'patrocinio/alugmais-banner.jpg'
+  },
+  // Apoio voluntário (links de pagamento do Asaas, Pix ou cartão). Link vazio: o valor não aparece.
+  // No Asaas, configure o retorno depois do pagamento para: https://dominomanauara.com.br/?apoio=ok
+  apoio: [
+    { valor: 10, nome: 'Um cafezinho', link: '' },
+    { valor: 20, nome: 'Uma rodada de guaraná', link: '' },
+    { valor: 50, nome: 'Um tambaqui assado', link: '' }
+  ]
 };
 // Endereço do jogo para os convites: o site onde ele está aberto (ou o domínio, quando aberto fora da internet).
 const SITE_URL = /^https?:$/.test(location.protocol) && !/^(localhost|127\.)/.test(location.hostname)
   ? location.origin + location.pathname.replace(/[^/]*$/, '') : 'https://' + CONFIG.site + '/';
 const TURMA = 'a turma do bairro';
+const APP_VERSION = '1.1';
 
 // ---- Avatares (desenhados aqui mesmo, sem foto de ninguém) ----
 const SKIN = { claro: '#f1c9a5', medio: '#e0ac7e', moreno: '#c68a5c', jambo: '#9a6440', escuro: '#6e4429' };
@@ -1130,6 +1188,9 @@ function renderHome() {
   $('#homeName').textContent = me;
   $('#meChip').innerHTML = faceImg(myFaceURI(), 'chipface');
   renderResume(); renderMyTreino(); renderInstall(); renderSponsor();
+  $('#fbCard').hidden = !CONFIG.whats;
+  renderApoio();
+  $('#homeName').innerHTML = esc(me) + (isApoiador() ? '<span class="apoiador">Apoiador</span>' : '');
 }
 $('#meChip').addEventListener('click', () => openProfile('home'));
 $('#changeName').addEventListener('click', () => openProfile('home'));
@@ -1150,10 +1211,12 @@ function renderSponsor() {
   const el = $('#sponsor'), p = CONFIG.patrocinio;
   if (p && p.nome) {
     el.hidden = false; el.href = p.link || SITE_URL;
-    el.innerHTML = `<span class="sp-k">Patrocínio</span><b>${esc(p.nome)}</b><span>${esc(p.texto || '')}</span>`;
-  } else if (CONFIG.anuncieWhats) {
+    el.classList.toggle('has-banner', !!p.banner);
+    el.innerHTML = p.banner ? `<span class="sp-k">Patrocínio</span><img class="sp-banner" src="${esc(p.banner)}" alt="${esc(p.alt || p.nome)}">`
+      : `<span class="sp-k">Patrocínio</span>${p.logo ? `<img class="sp-logo" src="${esc(p.logo)}" alt="">` : ''}<b>${esc(p.nome)}</b><span>${esc(p.texto || '')}</span>`;
+  } else if (CONFIG.whats) {
     el.hidden = false;
-    el.href = `https://wa.me/${CONFIG.anuncieWhats}?text=` + encodeURIComponent('Olá! Quero anunciar no Dominó Manauara.');
+    el.href = `https://wa.me/${CONFIG.whats}?text=` + encodeURIComponent('Olá! Quero anunciar no Dominó Manauara.');
     el.innerHTML = '<span class="sp-k">Espaço para anunciante</span><b>Sua marca aqui</b><span>Apareça para quem joga dominó em Manaus. Toque para falar com a gente.</span>';
   } else el.hidden = true;
 }
@@ -1267,6 +1330,105 @@ $('#startOffline').addEventListener('click', () => {
   endDrag(); closeSheet(); prepDeal(); show('game');
   const g0 = G; setTimeout(() => { if (G === g0) runDeal(() => { announce(); proceed(); }); }, 460);
 });
+
+// ---- Opinião: abre o WhatsApp do Dominó Manauara com a mensagem pronta ----
+const FB_KINDS = { erro: 'Achei um erro', ideia: 'Tenho uma ideia', elogio: 'Gostei' };
+let fbKind = 'erro', fbFromGame = false;
+function deviceInfo() {
+  const ua = navigator.userAgent;
+  const dev = /iphone/i.test(ua) ? 'iPhone' : /ipad/i.test(ua) ? 'iPad' : /android/i.test(ua) ? 'Android' : 'Computador';
+  const ios = ua.match(/OS (\d+)_(\d+)/);
+  return `${dev}${ios && dev !== 'Computador' && dev !== 'Android' ? ' iOS ' + ios[1] + '.' + ios[2] : ''} · ${isStandalone() ? 'app instalado' : 'navegador'}`;
+}
+function openFeedback(fromGame) {
+  if (!CONFIG.whats) return;
+  fbFromGame = !!fromGame;
+  openSheet('fb', `<p class="eyebrow">Fale com a gente</p><h2 id="sheetTitle">O que você achou?</h2>
+    <div class="seg fb-kind" role="group" aria-label="Tipo de mensagem">${Object.entries(FB_KINDS).map(([k, t]) => `<button type="button" data-k="${k}" aria-pressed="${k === fbKind}">${t}</button>`).join('')}</div>
+    <div class="field"><label for="fbText">Conte pra gente</label>
+      <textarea id="fbText" rows="4" maxlength="800" placeholder="Ex.: a pedra não encaixou na ponta. Ou: queria jogar online com meus amigos."></textarea></div>
+    <button type="button" class="primary" id="fbSend">Enviar pelo WhatsApp</button>
+    <p class="note" style="margin-top:10px">Abre o WhatsApp com a mensagem pronta. Você confere antes de enviar.</p>
+    <button type="button" class="backbtn" id="fbClose" style="margin-top:6px">← Voltar</button>`);
+  $$('.fb-kind [data-k]').forEach(b => b.addEventListener('click', () => {
+    fbKind = b.dataset.k; $$('.fb-kind [data-k]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+  $('#fbSend').addEventListener('click', () => {
+    const txt = $('#fbText').value.trim();
+    if (!txt) { toast('Escreva a sua mensagem antes de enviar.'); $('#fbText').focus(); return; }
+    const msg = `*Dominó Manauara · ${FB_KINDS[fbKind]}*\n${txt}\n\n— ${me || 'jogador'} · versão ${APP_VERSION} · ${deviceInfo()}`;
+    track('opiniao-' + fbKind);
+    window.open(`https://wa.me/${CONFIG.whats}?text=` + encodeURIComponent(msg), '_blank', 'noopener');
+    closeFeedback();
+    toast('Obrigado! Agora é só tocar em enviar no WhatsApp.');
+  });
+  $('#fbClose').addEventListener('click', closeFeedback);
+}
+function closeFeedback() {
+  closeSheet();
+  if (fbFromGame && G) resumeAfterMenu();
+}
+$('#fbCard').addEventListener('click', () => openFeedback(false));
+
+// ---- Apoio voluntário: o jogo continua de graça, quem quiser ajuda com um valor fixo ----
+const AKEY = 'dmz-apoiador';
+const apoioLinks = () => (CONFIG.apoio || []).filter(a => a.link);
+const isApoiador = () => !!store.get(AKEY);
+function apoioButtons() {
+  return apoioLinks().map(a => `<a href="${esc(a.link)}" target="_blank" rel="noopener" data-v="${a.valor}"><b>R$${a.valor}</b><span>${esc(a.nome)}</span></a>`).join('');
+}
+function renderApoio() {
+  const card = $('#apoioCard'), has = apoioLinks().length > 0;
+  card.hidden = !has;
+  if (!has) return;
+  const fan = isApoiador();
+  $('#apoioK').textContent = fan ? 'Obrigado, apoiador!' : 'Apoie o jogo';
+  $('#apoioTxt').textContent = fan ? 'Seu apoio ajuda a manter o Dominó Manauara de graça para a turma toda. Se quiser ajudar de novo, é por aqui.'
+    : 'O Dominó Manauara é de graça. Se você curte, ajude a manter a mesa de pé com quanto puder.';
+  $('#apoioVals').innerHTML = apoioButtons();
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest('.apoio-vals a, .sheet-apoio a'); if (a) track('apoio-' + a.dataset.v);
+});
+// Convite leve no fim do jogo: só para quem ainda não apoiou, a cada 3 jogos terminados.
+function apoioInvite() {
+  if (!apoioLinks().length || isApoiador()) return '';
+  const t = loadHist();
+  return t.jogos > 0 && t.jogos % 3 === 1 ? '<button type="button" class="res-apoio" id="resApoio">Curtiu? Apoie o Dominó Manauara</button>' : '';
+}
+function openApoioSheet(fromGame) {
+  fbFromGame = !!fromGame;
+  openSheet('fb', `<p class="eyebrow">Apoie o jogo</p><h2 id="sheetTitle">Mantenha a mesa de pé</h2>
+    <p>O Dominó Manauara é de graça e feito aqui em Manaus. Se você curte, escolha um valor. Dá para pagar com Pix ou cartão.</p>
+    <div class="apoio-vals sheet-apoio" style="margin:12px 0">${apoioButtons()}</div>
+    <button type="button" class="backbtn" id="apoioClose">← Voltar</button>`);
+  $('#apoioClose').addEventListener('click', closeFeedback);
+}
+// Volta do pagamento: o Asaas devolve para ?apoio=ok
+(function apoioReturn() {
+  const q = new URLSearchParams(location.search);
+  if (q.get('apoio') !== 'ok') return;
+  store.set(AKEY, new Date().toISOString().slice(0, 10));
+  track('apoio-pago');
+  try { history.replaceState(null, '', location.pathname); } catch (e) {}
+  setTimeout(() => toast('Obrigado pelo apoio! Você agora é apoiador do Dominó Manauara.'), 900);
+})();
+
+// ---- Patrocinador na mesa (gravado no feltro) e no fim do jogo ----
+function sponsorMark() {
+  const p = CONFIG.patrocinio; if (!p || !p.nome) return '';
+  return `${p.logo ? `<img src="${esc(p.logo)}" alt="">` : ''}<span>Mesa oferecida por <b>${esc(p.nome)}</b></span>`;
+}
+function sponsorResult() {
+  const p = CONFIG.patrocinio; if (!p || !p.nome) return '';
+  if (p.banner) return `<a class="res-patro has-banner" href="${esc(p.link || SITE_URL)}" target="_blank" rel="noopener"><span class="sp-k">Oferecimento</span><img src="${esc(p.banner)}" alt="${esc(p.alt || p.nome)}"></a>`;
+  return `<a class="res-patro" href="${esc(p.link || SITE_URL)}" target="_blank" rel="noopener">${p.logo ? `<img src="${esc(p.logo)}" alt="">` : ''}<span>Oferecimento <b>${esc(p.nome)}</b>${p.texto ? ` · ${esc(p.texto)}` : ''}</span></a>`;
+}
+(function placeSponsorMark() {
+  const m = sponsorMark(); if (!m) return;
+  $('#boardWrap').insertAdjacentHTML('afterbegin', `<div class="mesa-patro" aria-hidden="true">${m}</div>`);
+})();
+document.addEventListener('click', e => { if (e.target.closest('#sponsor, .res-patro')) track('patrocinio-clique'); });
 
 
 // ---- Desenho das peças ----
@@ -1726,7 +1888,8 @@ function showResult() {
     ${rows ? `<div class="reveal">${rows}</div>` : ''}</div><div class="res-side">
     <div class="tally"><div class="L"><span>${esc(teamName(L))}</span><b>${r.score[L]}</b></div><div class="R"><span>${esc(teamName(R))}</span><b>${r.score[R]}</b></div></div>
     ${win}${sh ? `<a class="share-wa" href="${sh}" target="_blank" rel="noopener">Mandar resultado no WhatsApp</a>` : ''}<button type="button" class="primary" id="nextBtn">${btn}</button>
-    </div></div>`);
+    ${r.gameWinner != null ? sponsorResult() + apoioInvite() : ''}</div></div>`);
+  const ra = $('#resApoio'); if (ra) ra.addEventListener('click', () => openApoioSheet(true));
   $('#nextBtn').addEventListener('click', () => {
     closeSheet(); nextHand(G); saveGame(); runDeal(() => { announce(); proceed(); });
   });
@@ -1755,7 +1918,10 @@ function showMenu() {
     <div class="menu-row"><button type="button" class="secondary" id="homeBtn">Pausar e sair</button><button type="button" class="secondary" id="resetBtn">Recomeçar jogo</button><button type="button" class="secondary danger" id="quitBtn">Desistir do jogo</button></div>
   </div>
   <div style="margin-top:22px">${RULES_HTML}</div>
-  <button type="button" class="secondary" id="closeMenu2" style="width:100%;margin-top:6px">Voltar à mesa</button>`);
+  <button type="button" class="secondary" id="closeMenu2" style="width:100%;margin-top:6px">Voltar à mesa</button>
+  ${CONFIG.whats ? '<button type="button" class="menu-fb" id="menuFb">Achou um erro? Fale com a gente</button>' : ''}`);
+  const mf = $('#menuFb');
+  if (mf) mf.addEventListener('click', () => openFeedback(true));
   $('#homeBtn').addEventListener('click', () => {
     closeSheet(); leaveGame(); show('home');
     toast('Jogo guardado. Para voltar, toque em "Continuar de onde parou".');
@@ -1791,7 +1957,7 @@ function resumeAfterMenu() {
 $('#menuBtn').addEventListener('click', showMenu);
 $('#back').addEventListener('click', e => {
   if (e.target.id !== 'back') return;
-  if (sheetKind === 'info') closeSheet(); else if (sheetKind === 'rules') resumeAfterMenu();
+  if (sheetKind === 'info') closeSheet(); else if (sheetKind === 'fb') closeFeedback(); else if (sheetKind === 'rules') resumeAfterMenu();
 });
 
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
