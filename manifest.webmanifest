@@ -1,7 +1,7 @@
 {
   "name": "Dominó Manauara",
   "short_name": "Dominó",
-  "description": "Dominó em duplas com as regras de Manaus: bucho, garagem, passe e galo.",
+  "description": "Dominó em duplas com bucho, garagem, passe e galo.",
   "lang": "pt-BR",
   "id": "./",
   "start_url": "./",

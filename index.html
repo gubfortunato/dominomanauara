@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Dominó Manauara</title>
-<meta name="description" content="Dominó em duplas com as regras de Manaus: bucho, garagem, passe e galo. Grátis no celular, até sem internet.">
+<meta name="description" content="Dominó em duplas com bucho, garagem, passe e galo. Grátis no celular, até sem internet.">
 <meta name="theme-color" content="#15100c">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -16,7 +16,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Dominó Manauara">
 <meta property="og:title" content="Dominó Manauara">
-<meta property="og:description" content="Dominó em duplas com as regras de Manaus. Bucho, garagem, passe e galo. Grátis no celular.">
+<meta property="og:description" content="Dominó em duplas com bucho, garagem, passe e galo. Grátis no celular.">
 <meta property="og:image" content="https://gubfortunato.github.io/dominomanauara/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -395,6 +395,14 @@ body{touch-action:manipulation}
 .rc-go{font-size:30px;line-height:1;color:var(--muted);padding-bottom:3px}
 #setupPatro:empty{display:none}
 #setupPatro .sponsor{margin-top:6px}
+.home-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:-6px}
+.home-top{display:block}
+.rulespill{display:inline-flex;align-items:center;gap:10px;padding:9px 20px 9px 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;font-weight:700;font-size:16px;cursor:pointer}
+.rulespill:active{transform:scale(.97)}
+.rulespill .rc-ic{width:13px;height:26px;transform:rotate(-14deg)}
+/* Nada pode ficar mais largo que a tela: evita a tela "dançar" de lado ao rolar */
+.panel{overflow-x:hidden;overscroll-behavior-y:contain}
+.mechip{margin-right:4px}
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:12px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
@@ -465,7 +473,7 @@ body{touch-action:manipulation}
 <div class="shell">
   <section class="screen panel entry" id="scrWho" hidden>
     <header class="entry-head">
-      <p class="kicker">Dominó em duplas · regras de Manaus</p>
+      <p class="kicker">Dominó em duplas</p>
       <h1 class="entry-title">Dominó <span>Manauara</span></h1>
     </header>
     <div class="rt-wrap" id="roundTable">
@@ -497,9 +505,12 @@ body{touch-action:manipulation}
   </section>
 
   <section class="screen panel" id="scrHome" hidden>
-    <div class="home-top">
-      <div><p class="kicker">Regras de Manaus</p><h1 class="brand"><button type="button" class="brandlink" id="brandHome" aria-label="Dominó Manauara: ir para a tela inicial">Dominó <em>Manauara</em></button></h1></div>
+    <div class="home-bar">
+      <button type="button" class="rulespill" id="howBtn"><span class="rc-ic" id="rulesTile" aria-hidden="true"></span>Regras</button>
       <button type="button" class="mechip" id="meChip" aria-label="Editar perfil: nome e foto"><span class="face" id="meChipFace"></span><span class="edit" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span></button>
+    </div>
+    <div class="home-top">
+      <div><h1 class="brand"><button type="button" class="brandlink" id="brandHome" aria-label="Dominó Manauara: ir para a tela inicial">Dominó <em>Manauara</em></button></h1></div>
     </div>
     <p class="lead">Fala, <b id="homeName"></b>. Bora pra mesa?</p>
     <button type="button" class="card wood" id="goResume" hidden>
@@ -513,11 +524,6 @@ body{touch-action:manipulation}
     <button type="button" class="card wood card-off" id="goOnline" disabled aria-disabled="true">
       <span class="ck">Mesa online · em breve</span><span class="ct">Jogar com os amigos</span>
       <span class="cd">Quatro pessoas de verdade na mesma mesa, cada uma no seu celular e com sua foto. Está chegando.</span>
-    </button>
-    <button type="button" class="rulescard" id="howBtn">
-      <span class="rc-ic" id="rulesTile" aria-hidden="true"></span>
-      <span class="rc-tx"><span class="rc-k">Como se joga</span><b>Regras de Manaus</b><small>Bucho, garagem, passe e galo, explicados</small></span>
-      <span class="rc-go" aria-hidden="true">›</span>
     </button>
     <div class="mytreino wood" id="myTreino" hidden>
       <span class="ck">Seu histórico neste celular</span>
@@ -1237,7 +1243,7 @@ $('#howBtn').addEventListener('click', () => {
   $('#closeInfo').addEventListener('click', closeSheet);
 });
 $('#shareApp').addEventListener('click', async () => {
-  const text = 'Bora jogar dominó com as regras de Manaus? Bucho, garagem, passe e galo, de graça no celular.';
+  const text = 'Bora jogar dominó? Bucho, garagem, passe e galo, de graça no celular.';
   track('convite');
   window.open('https://wa.me/?text=' + encodeURIComponent(text + '\n' + SITE_URL), '_blank', 'noopener');
 });
@@ -1352,14 +1358,14 @@ function renderMyTreino() {
   const t = loadHist(), box = $('#myTreino');
   box.hidden = !(t.jogos || t.maos);
   $('#mtV').textContent = t.vitorias; $('#mtJ').textContent = t.jogos; $('#mtB').textContent = t.batidas; $('#mtG').textContent = t.galos;
-  const txt = `📊 Meu histórico no *Dominó Manauara*: ${plural(t.vitorias, 'vitória', 'vitórias')} em ${plural(t.jogos, 'jogo', 'jogos')}, ${plural(t.batidas, 'batida', 'batidas')} e ${plural(t.galos, 'galo', 'galos')} contra ${TURMA}.\nDuvido você fazer melhor, com as regras de Manaus: ${SITE_URL}`;
+  const txt = `📊 Meu histórico no *Dominó Manauara*: ${plural(t.vitorias, 'vitória', 'vitórias')} em ${plural(t.jogos, 'jogo', 'jogos')}, ${plural(t.batidas, 'batida', 'batidas')} e ${plural(t.galos, 'galo', 'galos')} contra ${TURMA}.\nDuvido você fazer melhor: ${SITE_URL}`;
   $('#mtShare').href = 'https://wa.me/?text=' + encodeURIComponent(txt);
 }
 function gameShare() {
   const r = G.result; if (!r || r.gameWinner == null) return null;
   const tr = G.track || { b: 0, g: 0 }, a = r.series[0], b = r.series[1];
   const head = r.gameWinner === 0 ? `🏆 Ganhei da turma do bairro por *${a} × ${b}* no Dominó Manauara!` : `🎲 A turma do bairro me pegou por *${b} × ${a}* no Dominó Manauara. Revanche já!`;
-  const txt = `${head} Fiz ${plural(tr.b, 'batida', 'batidas')} e ${plural(tr.g, 'galo', 'galos')}.\nJogue também, com as regras de Manaus: ${SITE_URL}`;
+  const txt = `${head} Fiz ${plural(tr.b, 'batida', 'batidas')} e ${plural(tr.g, 'galo', 'galos')}.\nJogue também: ${SITE_URL}`;
   return 'https://wa.me/?text=' + encodeURIComponent(txt);
 }
 $('#startOffline').addEventListener('click', () => {
@@ -1998,7 +2004,7 @@ function showResult() {
   });
 }
 
-const RULES_HTML = `  <p class="eyebrow">Como se joga em Manaus</p><h2 id="sheetTitle">Regras da mesa</h2>
+const RULES_HTML = `  <p class="eyebrow">Como se joga</p><h2 id="sheetTitle">Regras</h2>
   <ol class="rules">
     <li>Duas duplas, parceiros um de frente para o outro. Sete pedras para cada, sem monte. A vez gira pela esquerda.</li>
     <li>Todo <b>jogo novo</b> começa com quem tem a <b>carroça de sena</b> (6|6). Nas outras mãos, inclusive na troca de partida, sai <b>quem jogou a última pedra</b> da mão anterior, com qualquer carroça. Sem carroça, perde a vez e dá <b>20</b> aos adversários.</li>

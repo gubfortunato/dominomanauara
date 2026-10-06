@@ -1,6 +1,6 @@
 # Dominó Manauara
 
-Dominó em duplas com as regras de Manaus: bucho, garagem, passe e galo.
+Dominó em duplas com bucho, garagem, passe e galo.
 Jogo para celular que funciona no navegador, pode ser instalado na tela de início e roda até sem internet.
 
 - `index.html`: o jogo inteiro
