@@ -452,6 +452,12 @@ body{touch-action:manipulation}
 .dn-list li b{font-family:var(--font-display);font-weight:400;font-size:20px;font-variant-numeric:tabular-nums}
 .dn-list li.dn-empty span{color:var(--wood-muted);font-size:14px}
 .dn-tela{font-size:11.5px;word-break:break-word}
+.dn-key{display:grid;gap:10px;padding:16px 18px}
+.dn-key .ck{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+.dn-key p{margin:0;font-size:14.5px;line-height:1.45}
+.dn-key ol{margin:0;padding-left:20px;display:grid;gap:4px;font-size:14px;line-height:1.4;color:var(--wood-ink)}
+.dn-key .dn-pw{background:rgba(0,0,0,.25);color:var(--wood-ink);border-color:rgba(239,226,204,.3)}
+.dn-key .primary{margin-top:2px}
 .dn-diag{display:block;margin-top:8px;font-size:12px;color:var(--muted);word-break:break-word}
 .dn-err{margin:0;padding:12px 14px;border-radius:12px;border:1px solid var(--alert);color:var(--fg);font-size:14px;line-height:1.45}
 .dn-full{display:block;text-align:center;text-decoration:none;color:var(--fg);padding:13px 14px;border-radius:14px}
@@ -667,8 +673,20 @@ body{touch-action:manipulation}
       <div class="dn-list wood"><span class="ck">De onde jogam</span><ul id="dnCidades"></ul></div>
     </div>
     <p class="dn-err" id="dnErr" role="status" hidden></p>
+    <div class="dn-key wood" id="dnKey" hidden>
+      <span class="ck">Ligar os números</span>
+      <p>O Umami só mostra os números aqui com uma chave da sua conta. Ela fica guardada só neste aparelho.</p>
+      <ol>
+        <li>No Umami, toque na sua foto de perfil e depois em <b>Settings</b></li>
+        <li>Abra <b>API keys</b> e toque em <b>Create key</b></li>
+        <li>Copie a chave inteira e cole aqui</li>
+      </ol>
+      <input id="dnKeyIn" class="dn-pw" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Cole a chave aqui" aria-label="Chave da API do Umami">
+      <button type="button" class="primary" id="dnKeySave">Salvar chave</button>
+    </div>
     <a class="secondary dn-full" id="dnFull" href="#" target="_blank" rel="noopener">Abrir o painel completo do Umami</a>
     <label class="dn-sw"><input type="checkbox" id="dnSemContar"><span><b>Não contar meus acessos</b><small>Seus testes neste aparelho ficam fora dos números.</small></span></label>
+    <button type="button" class="linkbtn" id="dnKeyTrocar" hidden>Trocar a chave do Umami</button>
     <button type="button" class="linkbtn" id="dnSair">Sair da Área do dono neste aparelho</button>
     <p class="note dn-tela" id="dnTela"></p>
   </section>
@@ -1106,6 +1124,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.2.2', data: '06/10/2026', itens: ['Pequenos ajustes.'] },
   { v: '1.2.1', data: '06/10/2026', itens: ['Corrigida a mesa que ficava espremida e a rolagem que travava no iPhone com o app instalado.'] },
   { v: '1.2', data: '06/10/2026', itens: [
     'O app agora se atualiza sozinho: toda melhoria chega para todo mundo, sem precisar fazer nada.',
@@ -1724,41 +1743,27 @@ $('#footBrand').addEventListener('click', () => {
 $('#donoCard').addEventListener('click', () => show('dono'));
 $('#donoBack').addEventListener('click', () => show(profile ? 'home' : 'who'));
 
-// ---- Números do Umami (só leitura, pelo link de compartilhamento) ----
-// O painel do Umami Cloud conversa com o gateway (o mesmo endereço que o contador usa); os outros ficam de reserva.
-const UMAMI_APIS = ['https://gateway.umami.is/api', 'https://cloud.umami.is/api', 'https://api.umami.is/v1'];
+// ---- Números do Umami (só leitura) ----
+// O Umami Cloud só entrega os números pela API oficial, com uma chave da conta.
+// O dono cola a chave aqui e ela fica só neste aparelho (nunca no código do site).
+const UMAMI_API = 'https://api.umami.is/v1';
 let dnDiag = [];
-const dnHost = u => u.replace(/^https:\/\//, '').split('/')[0];
-async function dnSessao() {
-  if (dnSes) return dnSes;
-  dnDiag = [];
-  const slug = (dono.share.split('/share/')[1] || '').split(/[/?#]/)[0];
-  const bases = dono.api ? [dono.api].concat(UMAMI_APIS.filter(b => b !== dono.api)) : UMAMI_APIS;
-  for (const base of bases) {
-    try {
-      const r = await fetch(`${base}/share/${encodeURIComponent(slug)}`, { cache: 'no-store' });
-      if (!r.ok) { dnDiag.push(`${dnHost(base)}: ${r.status}`); continue; }
-      let j = null; try { j = await r.json(); } catch (e) { dnDiag.push(`${dnHost(base)}: não é JSON`); continue; }
-      if (!(j && j.token && j.websiteId)) dnDiag.push(`${dnHost(base)}: sem token`);
-      if (j && j.token && j.websiteId) {
-        dnSes = { base, websiteId: j.websiteId, token: j.token };
-        if (dono.api !== base) { dono.api = base; donoSalvar(); }
-        return dnSes;
-      }
-    } catch (e) { dnDiag.push(`${dnHost(base)}: bloqueado`); }
-  }
-  throw new Error('sem-acesso');
-}
 async function dnGet(path, params) {
-  const s = await dnSessao();
-  const u = new URL(`${s.base}/websites/${s.websiteId}${path}`);
+  if (!dono.key) throw new Error('sem-chave');
+  const u = new URL(`${UMAMI_API}/websites/${CONFIG.umamiId}${path}`);
   Object.entries(params || {}).forEach(([k, v]) => u.searchParams.set(k, v));
-  let r;
-  try { r = await fetch(u, { cache: 'no-store', headers: { 'x-umami-share-token': s.token, 'x-umami-share-context': '1' } }); }
-  catch (e) { dnDiag.push(`${dnHost(s.base)}${path}: bloqueado`); throw e; }
-  if (r.status === 401 || r.status === 403) { dnDiag.push(`${dnHost(s.base)}${path}: ${r.status}`); dnSes = null; throw new Error('sem-permissao'); }
-  if (!r.ok) { dnDiag.push(`${dnHost(s.base)}${path}: ${r.status}`); throw new Error('http-' + r.status); }
-  return r.json();
+  // A documentação do Umami cita dois jeitos de mandar a chave; usa o que funcionar e lembra dele.
+  const modos = dono.keyHdr === 'bearer' ? ['bearer', 'x'] : ['x', 'bearer'];
+  let ultimo = 0;
+  for (const m of modos) {
+    let r;
+    try { r = await fetch(u, { cache: 'no-store', headers: m === 'x' ? { 'x-umami-api-key': dono.key } : { authorization: 'Bearer ' + dono.key } }); }
+    catch (e) { dnDiag.push(`${path}: bloqueado (${m})`); continue; }
+    if (r.ok) { if (dono.keyHdr !== m) { dono.keyHdr = m; donoSalvar(); } return r.json(); }
+    ultimo = r.status; dnDiag.push(`${path}: ${r.status} (${m})`);
+    if (![400, 401, 403].includes(r.status)) break;
+  }
+  throw new Error(ultimo === 401 || ultimo === 403 ? 'chave-recusada' : 'falhou');
 }
 function dnPeriodo() {
   const d = new Date(); d.setHours(0, 0, 0, 0);
@@ -1775,8 +1780,10 @@ function fmtTempo(seg) {
 }
 function dnErro(e) {
   const el = $('#dnErr');
-  el.textContent = e && e.message === 'sem-permissao'
-    ? 'O link do Umami não deixa ver estes números. No Umami, confira se Overview, Events e Realtime estão marcados no compartilhamento.'
+  if (e && e.message === 'sem-chave') { $('#dnKey').hidden = false; return; }
+  if (e && e.message === 'chave-recusada') $('#dnKey').hidden = false;
+  el.textContent = e && e.message === 'chave-recusada'
+    ? 'O Umami não aceitou a chave. Confira se copiou ela inteira, ou crie outra e cole abaixo.'
     : navigator.onLine === false ? 'Sem internet agora. Os números aparecem quando a conexão voltar.'
       : 'Não deu para carregar os números aqui. Toque em "Abrir o painel completo do Umami".';
   if (dnDiag.length) {
@@ -1788,7 +1795,7 @@ function dnErro(e) {
 }
 
 async function dnAoVivo() {
-  if (!dono) return;
+  if (!dono || !dono.key) return;
   try {
     const a = await dnGet('/active');
     const n = Number((a && (a.visitors != null ? a.visitors : a.x)) || 0);
@@ -1831,6 +1838,8 @@ function dnEventos(rows) {
 
 async function dnCarregar() {
   if (!dono) return;
+  if (!dono.key) { $('#dnKey').hidden = false; return; }
+  dnDiag = [];
   const seq = ++dnSeq, p = dnPeriodo();
   $('#dnBody').classList.add('dn-loading'); $('#dnErr').hidden = true;
   try {
@@ -1859,6 +1868,8 @@ async function dnCarregar() {
 function renderDono() {
   if (!dono) { show(profile ? 'home' : 'who'); return; }
   $('#dnFull').href = dono.share; dnTela();
+  $('#dnKey').hidden = !!dono.key; $('#dnKeyTrocar').hidden = !dono.key; $('#dnErr').hidden = true;
+  $('#dnBody').hidden = $('#dnRange').hidden = !dono.key;
   $('#dnSemContar').checked = !!dono.semContar;
   $$('#dnRange button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.r === dnRange)));
   dnAoVivo(); dnCarregar();
@@ -1873,7 +1884,7 @@ function dnTela() {
   const probe = css => { const d = document.createElement('div'); d.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;' + css; document.body.appendChild(d); const h = Math.round(d.getBoundingClientRect().height); d.remove(); return h; };
   const st = (navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches)) ? 'app' : 'navegador';
   const vv = window.visualViewport ? Math.round(visualViewport.height) : '-';
-  $('#dnTela').textContent = `Tela (${st}): janela ${innerWidth}×${innerHeight} · visível ${vv} · aparelho ${screen.width}×${screen.height} · página ${document.documentElement.clientHeight}` +
+  $('#dnTela').textContent = `Tela (${st}): janela ${innerWidth}×${innerHeight} · visível ${vv} · aparelho ${window.screen.width}×${window.screen.height} · página ${document.documentElement.clientHeight}` +
     ` · lvh ${probe('height:100lvh')} · dvh ${probe('height:100dvh')} · svh ${probe('height:100svh')}` +
     ` · margem topo ${probe('height:0;padding-top:env(safe-area-inset-top,0px)')} · base ${probe('height:0;padding-bottom:env(safe-area-inset-bottom,0px)')}`;
 }
@@ -1892,6 +1903,16 @@ $('#dnSemContar').addEventListener('change', e => {
   dono.semContar = e.target.checked; donoSalvar();
   if (!dono.semContar) loadUmami();
   toast(dono.semContar ? 'Pronto: seus acessos neste aparelho não entram mais nos números.' : 'Seus acessos neste aparelho voltam a ser contados.');
+});
+$('#dnKeySave').addEventListener('click', () => {
+  const k = $('#dnKeyIn').value.trim();
+  if (!k) { $('#dnKeyIn').focus(); return; }
+  dono.key = k; delete dono.keyHdr; donoSalvar();
+  $('#dnKeyIn').value = '';
+  renderDono();
+});
+$('#dnKeyTrocar').addEventListener('click', () => {
+  $('#dnKey').hidden = false; $('#dnKeyIn').focus();
 });
 $('#dnSair').addEventListener('click', () => {
   dono = null; dnSes = null; donoSalvar(); clearInterval(dnTimer);
