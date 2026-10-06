@@ -25,6 +25,22 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preload" href="fonts/alfa-slab-one.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="fonts/figtree.woff" as="font" type="font/woff" crossorigin>
+<script>
+/* iPhone com o app na tela de início: o iOS mede a tela sem a barra de status e sobra uma faixa vazia embaixo.
+   Aqui a altura do app passa a ser a da tela inteira. */
+(function () {
+  if (!(navigator.standalone === true && /iPhone|iPod/.test(navigator.userAgent))) return;
+  var r = document.documentElement; r.classList.add('iosapp');
+  function fit() {
+    var land = window.matchMedia && matchMedia('(orientation: landscape)').matches;
+    var full = land ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
+    r.style.setProperty('--appH', Math.max(full, window.innerHeight) + 'px');
+  }
+  fit();
+  addEventListener('resize', fit);
+  addEventListener('orientationchange', function () { setTimeout(fit, 300); });
+})();
+</script>
 <style>
 @font-face{font-family:"Alfa Slab One";src:url(fonts/alfa-slab-one.woff) format("woff");font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:"Figtree";src:url(fonts/figtree.woff) format("woff");font-weight:300 900;font-style:normal;font-display:swap}
@@ -296,6 +312,11 @@ a.card{text-decoration:none}
 html,body{overscroll-behavior:none}
 body{touch-action:manipulation}
 .shell{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* Telas com rolagem descem até a borda de baixo; o espaço da barrinha do iPhone fica dentro da rolagem */
+.iosapp,.iosapp body{height:var(--appH,100%)}
+.iosapp{overflow:hidden}
+.shell>.screen.panel{height:calc(100% + env(safe-area-inset-bottom,0px));padding-bottom:calc(var(--panel-pb,30px) + env(safe-area-inset-bottom,0px))}
+@media (orientation: landscape) and (max-height: 560px){:root{--panel-pb:18px}}
 .friend.bot{cursor:default}
 .friend.bot:active .fp{transform:none}
 .friend .fi{font-size:30px}
@@ -417,6 +438,61 @@ body{touch-action:manipulation}
 @media (orientation: portrait), (min-height: 561px){ .rt-wrap{width:min(62vw,40vh,330px)} }
 .entry-actions .menubtn{min-height:44px;padding:10px 22px 10px 18px;font-size:16px}
 .entry-actions .menubtn svg{width:17px;height:17px}
+
+/* ---- Área do dono ---- */
+.donocard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;width:100%;text-align:left;padding:13px 18px 13px 20px;border-radius:16px;border:1.5px dashed var(--ok);background:transparent;color:var(--fg);cursor:pointer;font:inherit}
+.donocard .dc-tx{display:grid;gap:2px}
+.donocard b{font-size:16px;font-weight:800}
+.donocard small{font-size:13px;color:var(--muted)}
+.donocard .rc-go{font-size:26px;line-height:1;color:var(--muted)}
+.donocard:active{transform:scale(.99)}
+.dc-live,.dn-dot{width:12px;height:12px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 var(--ok);animation:dnpulse 2s ease-out infinite}
+@keyframes dnpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 60%,transparent)}100%{box-shadow:0 0 0 12px transparent}}
+@media (prefers-reduced-motion:reduce){.dc-live,.dn-dot{animation:none}}
+.dn-live{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:14px;row-gap:4px;padding:18px 20px}
+.dn-live .dn-dot{width:14px;height:14px}
+.dn-now{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.dn-now b{font-family:var(--font-display);font-weight:400;font-size:44px;line-height:1;font-variant-numeric:tabular-nums}
+.dn-now span{font-size:15px;font-weight:600}
+.dn-live small{grid-column:2;font-size:12px;color:var(--wood-muted)}
+.dn-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:14px;border:1px solid var(--line);background:var(--bg-2)}
+.dn-seg button{border:0;border-radius:10px;padding:10px 6px;font:inherit;font-weight:700;font-size:14px;background:transparent;color:var(--muted);cursor:pointer}
+.dn-seg button[aria-pressed="true"]{background:var(--nos);color:var(--bg-2)}
+.dn-body{display:flex;flex-direction:column;gap:inherit;transition:opacity .2s}
+#scrDono .dn-body{gap:18px}
+.dn-loading{opacity:.45}
+.dn-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.dn-list{display:grid;gap:8px;padding:16px 18px}
+.dn-list .ck{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+.dn-list ul{list-style:none;margin:0;padding:0;display:grid}
+.dn-list li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid rgba(239,226,204,.14);font-size:15px}
+.dn-list li:first-child{border-top:0}
+.dn-list li b{font-family:var(--font-display);font-weight:400;font-size:20px;font-variant-numeric:tabular-nums}
+.dn-list li.dn-empty span{color:var(--wood-muted);font-size:14px}
+.dn-err{margin:0;padding:12px 14px;border-radius:12px;border:1px solid var(--alert);color:var(--fg);font-size:14px;line-height:1.45}
+.dn-full{display:block;text-align:center;text-decoration:none;color:var(--fg);padding:13px 14px;border-radius:14px}
+.dn-sw{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;cursor:pointer}
+.dn-sw input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--nos)}
+.dn-sw span{display:grid;gap:2px}
+.dn-sw b{font-size:15px}
+.dn-sw small{font-size:13px;color:var(--muted)}
+.dn-form{display:grid;gap:10px;margin-top:12px}
+.dn-pw{width:100%;font:inherit;font-size:17px;font-weight:600;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.dn-pw:focus{outline:2px solid var(--glow);outline-offset:1px}
+.dn-bad{color:var(--alert)}
+.dn-form .primary{margin-top:4px}
+#footBrand{-webkit-user-select:none;user-select:none;cursor:default}
+
+/* ---- Versão ---- */
+.verlink{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.menu-ver{text-align:center;margin-top:14px}
+.novidades{display:grid;gap:16px;margin:12px 0 4px}
+.novidades h3{margin:0 0 6px;font-size:15px}
+.novidades h3 small{font-weight:500;color:var(--muted)}
+.novidades ul{margin:0;padding-left:20px;display:grid;gap:6px}
+.novidades li{font-size:14.5px;line-height:1.45}
+/* Celular deitado: nomes dos lados da mesa redonda não encostam na borda */
+@media (orientation: landscape) and (max-height: 560px){ .entry .rt-wrap{margin-inline:62px} }
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:12px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
@@ -541,6 +617,11 @@ body{touch-action:manipulation}
       <span class="ck">Mesa online · em breve</span><span class="ct">Jogar com os amigos</span>
       <span class="cd">Quatro pessoas de verdade na mesma mesa, cada uma no seu celular e com sua foto. Está chegando.</span>
     </button>
+    <button type="button" class="donocard" id="donoCard" hidden>
+      <span class="dc-live" aria-hidden="true"></span>
+      <span class="dc-tx"><b>Área do dono</b><small id="donoCardTx">Os números do jogo</small></span>
+      <span class="rc-go" aria-hidden="true">›</span>
+    </button>
     <div class="mytreino wood" id="myTreino" hidden>
       <span class="ck">Seu histórico neste celular</span>
       <div class="mt-nums">
@@ -566,7 +647,7 @@ body{touch-action:manipulation}
       <span>O jogo está começando e cada opinião ajuda a deixar ele do jeito da nossa mesa.</span>
     </button>
     <a class="sponsor" id="sponsor" target="_blank" rel="noopener" hidden></a>
-    <p class="note foot">Dominó Manauara · <a href="privacidade.html">Privacidade</a></p>
+    <p class="note foot"><span id="footBrand">Dominó Manauara</span> · <button type="button" class="verlink" id="verBtn">Versão <span class="appver"></span></button> · <a href="privacidade.html">Privacidade</a></p>
   </section>
 
   <section class="screen panel" id="scrSetup" hidden>
@@ -578,6 +659,33 @@ body{touch-action:manipulation}
     <div class="row"><button type="button" class="secondary" id="shuffleBtn">Sortear a mesa</button></div>
     <button type="button" class="primary" id="startOffline">Começar</button>
     <div id="setupPatro"></div>
+  </section>
+
+  <section class="screen panel" id="scrDono" hidden>
+    <button type="button" class="backbtn" id="donoBack">← Voltar</button>
+    <div><p class="kicker">Área do dono</p><h2 class="brand" style="font-size:30px">Como está a mesa</h2></div>
+    <div class="dn-live wood">
+      <span class="dn-dot" aria-hidden="true"></span>
+      <div class="dn-now"><b id="dnOnline">–</b><span id="dnOnlineTx">jogando agora</span></div>
+      <small id="dnUpd"></small>
+    </div>
+    <div class="dn-seg" id="dnRange" role="group" aria-label="Período">
+      <button type="button" data-r="hoje" aria-pressed="true">Hoje</button><button type="button" data-r="7" aria-pressed="false">7 dias</button><button type="button" data-r="30" aria-pressed="false">30 dias</button>
+    </div>
+    <div class="dn-body" id="dnBody">
+      <div class="mytreino wood">
+        <span class="ck">Movimento</span>
+        <div class="mt-nums dn-3">
+          <div><b id="dnPessoas">–</b><small>pessoas</small></div><div><b id="dnVisitas">–</b><small>visitas</small></div><div><b id="dnTempo">–</b><small>por visita</small></div>
+        </div>
+      </div>
+      <div class="dn-list wood"><span class="ck">O que fizeram</span><ul id="dnEventos"></ul></div>
+      <div class="dn-list wood"><span class="ck">De onde jogam</span><ul id="dnCidades"></ul></div>
+    </div>
+    <p class="dn-err" id="dnErr" role="status" hidden></p>
+    <a class="secondary dn-full" id="dnFull" href="#" target="_blank" rel="noopener">Abrir o painel completo do Umami</a>
+    <label class="dn-sw"><input type="checkbox" id="dnSemContar"><span><b>Não contar meus acessos</b><small>Seus testes neste aparelho ficam fora dos números.</small></span></label>
+    <button type="button" class="linkbtn" id="dnSair">Sair da Área do dono neste aparelho</button>
   </section>
   <section class="screen game" id="scrGame" hidden>
     <header class="score">
@@ -985,6 +1093,8 @@ const CONFIG = {
   // Ex.: { nome: 'Açaí do Bairro', texto: 'Peça pelo WhatsApp', link: 'https://wa.me/55...', logo: 'patrocinio/acai.png' }
   // Estatística anônima (Umami Cloud): o "Website ID" do painel. Vazio: nada é contado.
   umamiId: '52db3c75-c2b5-4f28-b0b4-eb0fce4cecb0',
+  // Área do dono: o link do painel do Umami, cifrado. Só abre com a senha do dono (nunca fica no código).
+  dono: {it: 600000, salt: 'p2uDQFlY5kRWxeL7s3CBKg==', iv: 'JeSEA+26vctz1/+3', data: 'cXrohcb3VrLdLyg01dNiMbXO9xsvTEw+HCWPlB9fNuOJ163MrpZfo474TczQu1KhyFom6sRFMM8vNAHmeYCBvK95vMpEJ+jweQ=='},
   patrocinio: {
     nome: 'alug+', texto: 'Baixe agora grátis · alugmaisapp.com',
     alt: 'alug+: baixe agora grátis. alugmaisapp.com. Sem taxa por imóvel, imóveis ilimitados.',
@@ -1008,7 +1118,20 @@ const CONFIG = {
 const SITE_URL = /^https?:$/.test(location.protocol) && !/^(localhost|127\.)/.test(location.hostname)
   ? location.origin + location.pathname.replace(/[^/]*$/, '') : 'https://' + CONFIG.site + '/';
 const TURMA = 'a turma do bairro';
-const APP_VERSION = '1.1';
+// ---- Versões ----
+// A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
+const NOVIDADES = [
+  { v: '1.2', data: '06/10/2026', itens: [
+    'O app agora se atualiza sozinho: toda melhoria chega para todo mundo, sem precisar fazer nada.',
+    'O número da versão aparece no início do app, com a lista do que mudou.',
+    'No iPhone com o app na tela de início, a tela vai até o fim, sem cortar o patrocínio nem a mesa.'
+  ] },
+  { v: '1.1', itens: [
+    'Banner do patrocinador, botão para chamar os amigos e regras explicadas.',
+    'Jogo offline contra a turma do bairro, histórico no celular e jogo guardado para continuar depois.'
+  ] }
+];
+const APP_VERSION = NOVIDADES[0].v;
 
 // ---- Avatares (desenhados aqui mesmo, sem foto de ninguém) ----
 const SKIN = { claro: '#f1c9a5', medio: '#e0ac7e', moreno: '#c68a5c', jambo: '#9a6440', escuro: '#6e4429' };
@@ -1108,7 +1231,10 @@ function faceImg(uri, cls) { return uri ? `<img class="${cls || ''}" src="${uri}
 function seatFace(p, cls) { return faceImg(p === seatMe ? myFaceURI() : botFaceURI(G.names[p]), cls); }
 
 // Contagem de uso anônima (Umami): sem cookies, sem nome nem foto de ninguém.
+// No aparelho do dono, com "Não contar meus acessos" ligado, nada é contado.
+function semContar() { try { const d = JSON.parse(localStorage.getItem('dmz-dono') || 'null'); return !!(d && d.semContar); } catch (e) { return false; } }
 function track(ev, data) {
+  if (semContar()) return;
   try { if (window.umami && window.umami.track) data ? window.umami.track(ev, data) : window.umami.track(ev); } catch (e) {}
 }
 
@@ -1123,7 +1249,7 @@ function toast(msg) {
   clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 4200);
 }
 // Troca de tela com fade: a tela atual some suave e a próxima aparece suave.
-const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Game'];
+const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Game', 'Dono'];
 let showTimer = null;
 function show(name) {
   if (window.__reloadWhenFree && name !== 'game') { saveGame(); location.reload(); return; }
@@ -1139,6 +1265,7 @@ function show(name) {
     if (name === 'home') renderHome();
     if (name === 'who') { renderEntry(); topple(true); }
     if (name === 'profile') renderProfile();
+    if (name === 'dono') renderDono();
     if (name === 'game' && G) render();
   };
   if (!cur || reduce) { finish(); return; }
@@ -1252,7 +1379,7 @@ function renderHome() {
   $('#meChipFace').innerHTML = faceImg(myFaceURI(), 'chipface');
   renderResume(); renderMyTreino(); renderInstall(); renderSponsor(); readySlides();
   $('#fbCard').hidden = !CONFIG.whats;
-  renderApoio();
+  renderApoio(); renderDonoCard();
   $('#homeName').innerHTML = esc(me) + (isApoiador() ? '<span class="apoiador">Apoiador</span>' : '');
 }
 $('#meChip').addEventListener('click', () => openProfile('home'));
@@ -1552,6 +1679,223 @@ document.addEventListener('error', e => {
 
 
 $('#rulesTile').innerHTML = `<svg viewBox="-0.04 -0.04 1.08 2.08">${tileSVG({ x: .5, y: 1, o: 'v', v1: 5, v2: 5 }, '', false)}</svg>`;
+
+// ---- Área do dono ----
+// Só abre com a senha. O link do painel fica cifrado no código; a senha nunca fica no site.
+// Entradas: dominomanauara.com.br/#dono, ou 5 toques em "Dominó Manauara" no rodapé do início.
+const DKEY = 'dmz-dono';
+let dono = null;
+try { dono = JSON.parse(store.get(DKEY) || 'null'); } catch (e) {}
+let dnSes = null, dnTimer = null, dnRange = 'hoje', dnSeq = 0;
+
+const b64d = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+function senhaLimpa(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim().replace(/\s+/g, '-'); }
+async function donoAbrir(senha) {
+  const c = CONFIG.dono;
+  if (!c || !window.crypto || !crypto.subtle) return null;
+  try {
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(senhaLimpa(senha)), 'PBKDF2', false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64d(c.salt), iterations: c.it, hash: 'SHA-256' },
+      base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64d(c.iv) }, key, b64d(c.data));
+    return JSON.parse(new TextDecoder().decode(pt));
+  } catch (e) { return null; }
+}
+function donoSalvar() { if (dono) store.set(DKEY, JSON.stringify(dono)); else store.del(DKEY); }
+
+function openDonoLogin() {
+  if (!CONFIG.dono) return;
+  if (dono) { show('dono'); return; }
+  openSheet('info', `<p class="eyebrow">Área do dono</p><h2 id="sheetTitle">Digite a senha</h2>
+    <form id="donoForm" class="dn-form" autocomplete="on">
+      <input type="text" name="username" value="dono" autocomplete="username" hidden>
+      <input id="donoPw" class="dn-pw" type="password" name="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="Senha" aria-label="Senha">
+      <p class="note" id="donoMsg">Depois de entrar, a Área do dono fica no início, só neste aparelho.</p>
+      <button type="submit" class="primary" id="donoGo">Entrar</button>
+    </form>`);
+  setTimeout(() => { const i = $('#donoPw'); if (i) i.focus(); }, 60);
+  $('#donoForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = $('#donoGo'), msg = $('#donoMsg');
+    btn.disabled = true; btn.textContent = 'Conferindo…';
+    const r = await donoAbrir($('#donoPw').value);
+    if (!r || !r.share) {
+      btn.disabled = false; btn.textContent = 'Entrar';
+      msg.textContent = 'Senha errada. Confira e tente de novo.'; msg.classList.add('dn-bad');
+      $('#donoPw').select();
+      return;
+    }
+    dono = { share: r.share, semContar: true }; donoSalvar();
+    closeSheet(); show('dono');
+  });
+}
+
+let ftaps = 0, ftLast = 0;
+$('#footBrand').addEventListener('click', () => {
+  const now = Date.now();
+  ftaps = now - ftLast < 800 ? ftaps + 1 : 1; ftLast = now;
+  if (ftaps >= 5) { ftaps = 0; openDonoLogin(); }
+});
+$('#donoCard').addEventListener('click', () => show('dono'));
+$('#donoBack').addEventListener('click', () => show(profile ? 'home' : 'who'));
+
+// ---- Números do Umami (só leitura, pelo link de compartilhamento) ----
+const UMAMI_APIS = ['https://cloud.umami.is/api', 'https://api.umami.is/v1'];
+async function dnSessao() {
+  if (dnSes) return dnSes;
+  const slug = (dono.share.split('/share/')[1] || '').split(/[/?#]/)[0];
+  const bases = dono.api ? [dono.api].concat(UMAMI_APIS.filter(b => b !== dono.api)) : UMAMI_APIS;
+  for (const base of bases) {
+    try {
+      const r = await fetch(`${base}/share/${encodeURIComponent(slug)}`, { cache: 'no-store' });
+      if (!r.ok) continue;
+      const j = await r.json();
+      if (j && j.token && j.websiteId) {
+        dnSes = { base, websiteId: j.websiteId, token: j.token };
+        if (dono.api !== base) { dono.api = base; donoSalvar(); }
+        return dnSes;
+      }
+    } catch (e) {}
+  }
+  throw new Error('sem-acesso');
+}
+async function dnGet(path, params) {
+  const s = await dnSessao();
+  const u = new URL(`${s.base}/websites/${s.websiteId}${path}`);
+  Object.entries(params || {}).forEach(([k, v]) => u.searchParams.set(k, v));
+  const r = await fetch(u, { cache: 'no-store', headers: { 'x-umami-share-token': s.token, 'x-umami-share-context': '1' } });
+  if (r.status === 401 || r.status === 403) { dnSes = null; throw new Error('sem-permissao'); }
+  if (!r.ok) throw new Error('http-' + r.status);
+  return r.json();
+}
+function dnPeriodo() {
+  const d = new Date(); d.setHours(0, 0, 0, 0);
+  if (dnRange !== 'hoje') d.setDate(d.getDate() - (Number(dnRange) - 1));
+  let tz = ''; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+  return Object.assign({ startAt: d.getTime(), endAt: Date.now() }, tz ? { timezone: tz } : {});
+}
+const fmtN = n => Number(n || 0).toLocaleString('pt-BR');
+function fmtTempo(seg) {
+  seg = Math.round(seg || 0);
+  if (seg < 60) return seg + 's';
+  const m = Math.round(seg / 60);
+  return m < 60 ? m + ' min' : Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0');
+}
+function dnErro(e) {
+  const el = $('#dnErr');
+  el.textContent = e && e.message === 'sem-permissao'
+    ? 'O link do Umami não deixa ver estes números. No Umami, confira se Overview, Events e Realtime estão marcados no compartilhamento.'
+    : navigator.onLine === false ? 'Sem internet agora. Os números aparecem quando a conexão voltar.'
+      : 'Não deu para carregar os números aqui. Toque em "Abrir o painel completo do Umami".';
+  el.hidden = false;
+}
+
+async function dnAoVivo() {
+  if (!dono) return;
+  try {
+    const a = await dnGet('/active');
+    const n = Number((a && (a.visitors != null ? a.visitors : a.x)) || 0);
+    const txt = n === 1 ? 'pessoa jogando agora' : 'pessoas jogando agora';
+    $('#dnOnline').textContent = fmtN(n); $('#dnOnlineTx').textContent = txt;
+    $('#donoCardTx').textContent = `${fmtN(n)} ${txt}`;
+    const h = new Date();
+    $('#dnUpd').textContent = `atualizado às ${String(h.getHours()).padStart(2, '0')}:${String(h.getMinutes()).padStart(2, '0')}`;
+  } catch (e) {
+    $('#donoCardTx').textContent = 'Os números do jogo';
+    if (screen === 'dono') dnErro(e);
+  }
+}
+
+const EV_NOMES = {
+  abertura: 'Vezes que abriram o jogo', 'jogo-novo': 'Jogos começados', vitoria: 'Jogos que o jogador ganhou',
+  derrota: 'Jogos que o jogador perdeu', convite: 'Convites mandados no WhatsApp', instalou: 'Instalaram o app',
+  'patrocinio-clique': 'Cliques no patrocinador', 'apoio-pago': 'Apoios pagos'
+};
+const EV_SEMPRE = ['abertura', 'jogo-novo', 'convite', 'instalou', 'patrocinio-clique'];
+function dnEventos(rows) {
+  const tot = {};
+  (rows || []).forEach(r => {
+    let k = String(r.x || ''); const y = Number(r.y || 0);
+    if (!k || k === 'online') return;
+    if (/^apoio-\d+$/.test(k)) k = 'apoio-toque';
+    else if (/^opiniao-/.test(k)) k = 'opiniao';
+    tot[k] = (tot[k] || 0) + y;
+  });
+  EV_SEMPRE.forEach(k => { if (!(k in tot)) tot[k] = 0; });
+  const nomes = Object.assign({ 'apoio-toque': 'Tocaram em apoiar', opiniao: 'Abriram o "Fale com a gente"' }, EV_NOMES);
+  const ordem = Object.keys(EV_NOMES).concat(['apoio-toque', 'opiniao']);
+  const keys = Object.keys(tot).sort((a, b) => {
+    const ia = ordem.indexOf(a), ib = ordem.indexOf(b);
+    if (ia < 0 && ib < 0) return tot[b] - tot[a];
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+  });
+  return keys.map(k => `<li><span>${esc(nomes[k] || k)}</span><b>${fmtN(tot[k])}</b></li>`).join('');
+}
+
+async function dnCarregar() {
+  if (!dono) return;
+  const seq = ++dnSeq, p = dnPeriodo();
+  $('#dnBody').classList.add('dn-loading'); $('#dnErr').hidden = true;
+  try {
+    const [st, ev, ci] = await Promise.all([
+      dnGet('/stats', p),
+      dnGet('/metrics', Object.assign({ type: 'event', limit: 50 }, p)),
+      dnGet('/metrics', Object.assign({ type: 'city', limit: 6 }, p))
+    ]);
+    if (seq !== dnSeq) return;
+    const val = v => Number(v && typeof v === 'object' ? v.value : v) || 0;
+    const visitas = val(st.visits), tempo = visitas ? val(st.totaltime) / visitas : 0;
+    $('#dnPessoas').textContent = fmtN(val(st.visitors));
+    $('#dnVisitas').textContent = fmtN(visitas);
+    $('#dnTempo').textContent = visitas ? fmtTempo(tempo) : '–';
+    $('#dnEventos').innerHTML = dnEventos(ev);
+    $('#dnCidades').innerHTML = (ci || []).length
+      ? ci.map(r => `<li><span>${esc(r.x || 'Não identificada')}</span><b>${fmtN(r.y)}</b></li>`).join('')
+      : '<li class="dn-empty"><span>Ninguém jogou ainda neste período.</span></li>';
+  } catch (e) {
+    if (seq === dnSeq) dnErro(e);
+  } finally {
+    if (seq === dnSeq) $('#dnBody').classList.remove('dn-loading');
+  }
+}
+
+function renderDono() {
+  if (!dono) { show(profile ? 'home' : 'who'); return; }
+  $('#dnFull').href = dono.share;
+  $('#dnSemContar').checked = !!dono.semContar;
+  $$('#dnRange button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.r === dnRange)));
+  dnAoVivo(); dnCarregar();
+  clearInterval(dnTimer);
+  dnTimer = setInterval(() => {
+    if (screen !== 'dono') { clearInterval(dnTimer); return; }
+    if (document.visibilityState === 'visible') dnAoVivo();
+  }, 30000);
+}
+function renderDonoCard() {
+  const c = $('#donoCard');
+  c.hidden = !dono;
+  if (dono) dnAoVivo();
+}
+$('#dnRange').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || b.dataset.r === dnRange) return;
+  dnRange = b.dataset.r;
+  $$('#dnRange button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  dnCarregar();
+});
+$('#dnSemContar').addEventListener('change', e => {
+  dono.semContar = e.target.checked; donoSalvar();
+  if (!dono.semContar) loadUmami();
+  toast(dono.semContar ? 'Pronto: seus acessos neste aparelho não entram mais nos números.' : 'Seus acessos neste aparelho voltam a ser contados.');
+});
+$('#dnSair').addEventListener('click', () => {
+  dono = null; dnSes = null; donoSalvar(); clearInterval(dnTimer);
+  loadUmami();
+  show(profile ? 'home' : 'who');
+  toast('Você saiu da Área do dono neste aparelho.');
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && screen === 'dono') dnAoVivo();
+});
 
 
 // ---- Desenho das peças ----
@@ -2047,7 +2391,8 @@ function showMenu() {
   </div>
   <div style="margin-top:22px">${RULES_HTML}</div>
   <button type="button" class="secondary" id="closeMenu2" style="width:100%;margin-top:6px">Voltar à mesa</button>
-  ${CONFIG.whats ? '<button type="button" class="menu-fb" id="menuFb">Achou um erro? Fale com a gente</button>' : ''}`);
+  ${CONFIG.whats ? '<button type="button" class="menu-fb" id="menuFb">Achou um erro? Fale com a gente</button>' : ''}
+  <p class="note menu-ver">Dominó Manauara · versão ${APP_VERSION}</p>`);
   const mf = $('#menuFb');
   if (mf) mf.addEventListener('click', () => openFeedback(true));
   $('#homeBtn').addEventListener('click', () => {
@@ -2094,26 +2439,66 @@ let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTime
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}); });
-  // Versão nova publicada: recarrega sozinho para mostrar, mas nunca no meio de uma mão.
-  const hadController = !!navigator.serviceWorker.controller;
+  // Procura versão nova ao abrir, ao voltar para o app e a cada 30 minutos com ele aberto.
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+      let lastCheck = Date.now();
+      const check = () => { lastCheck = Date.now(); if (navigator.onLine !== false) reg.update().catch(() => {}); };
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && Date.now() - lastCheck > 60 * 1000) check();
+      });
+      setInterval(check, 30 * 60 * 1000);
+    }).catch(() => {});
+  });
+  // Versão nova chegou: troca na hora; no meio do jogo, de um formulário ou de uma janela aberta, espera ficar livre.
+  // (a primeira instalação também dispara a troca; essa não tem versão velha para substituir)
+  let hadController = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!hadController) return;
-    if (screen === 'game') { window.__reloadWhenFree = true; return; }
+    if (!hadController) { hadController = true; return; }
+    if (screen === 'game' || screen === 'profile' || sheetKind) { window.__reloadWhenFree = true; return; }
     saveGame(); location.reload();
   });
+  // Saiu do app com uma versão nova esperando (e fora da mesa): troca sem ninguém ver.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && window.__reloadWhenFree && screen !== 'game') { saveGame(); location.reload(); }
+  });
 }
+// Versão: mostra no início e avisa quando o app acabou de se atualizar.
+$$('.appver').forEach(el => { el.textContent = APP_VERSION; });
+(function () {
+  const antes = store.get('dmz-versao');
+  if (antes && antes !== APP_VERSION) setTimeout(() => toast(`App atualizado para a versão ${APP_VERSION}. Toque em "Versão" no fim do início para ver o que mudou.`), 900);
+  store.set('dmz-versao', APP_VERSION);
+})();
+function openNovidades() {
+  openSheet('info', `<p class="eyebrow">Versão ${APP_VERSION}</p><h2 id="sheetTitle">O que mudou</h2>
+    <div class="novidades">${NOVIDADES.map(n => `<section><h3>Versão ${esc(n.v)}${n.data ? ` <small>· ${esc(n.data)}</small>` : ''}</h3><ul>${n.itens.map(i => `<li>${esc(i)}</li>`).join('')}</ul></section>`).join('')}</div>
+    <button type="button" class="primary" id="closeInfo">Fechar</button>`);
+  $('#closeInfo').addEventListener('click', closeSheet);
+}
+$('#verBtn').addEventListener('click', openNovidades);
 // ---- Estatística anônima e "online agora" ----
-if (CONFIG.umamiId && location.protocol === 'https:') {
+// #dono no endereço abre a senha da Área do dono; sai do endereço antes de qualquer contagem.
+const pedirDono = /^#dono\b/i.test(location.hash);
+if (pedirDono) history.replaceState(null, '', location.pathname + location.search);
+function loadUmami() {
+  if (window.__umamiOn || !CONFIG.umamiId || location.protocol !== 'https:' || semContar()) return;
+  window.__umamiOn = true;
   const s = document.createElement('script');
   s.defer = true; s.src = 'https://cloud.umami.is/script.js';
-  s.dataset.websiteId = CONFIG.umamiId; s.dataset.domains = CONFIG.site;
+  s.dataset.websiteId = CONFIG.umamiId; s.dataset.domains = CONFIG.site; s.dataset.excludeHash = 'true';
   s.onload = () => track('abertura', { modo: isStandalone() ? 'app instalado' : 'navegador' });
   document.head.appendChild(s);
-  // Sinal de vida a cada 4 minutos com o jogo aberto na tela: mantém o jogador na contagem de "online agora".
   setInterval(() => { if (document.visibilityState === 'visible') track('online', { tela: screen === 'game' ? 'mesa' : 'menus' }); }, 4 * 60 * 1000);
 }
+loadUmami();
 show('who');
+if (pedirDono) openDonoLogin();
+addEventListener('hashchange', () => {
+  if (!/^#dono\b/i.test(location.hash)) return;
+  history.replaceState(null, '', location.pathname + location.search);
+  openDonoLogin();
+});
 </script>
 </body>
 </html>
