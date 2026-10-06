@@ -375,6 +375,9 @@ body{touch-action:manipulation}
 .invite b{font-size:17px;font-weight:800;line-height:1.2}
 .invite small{font-size:13px;font-weight:600;opacity:.85}
 .invite:active{transform:scale(.99);filter:brightness(.95)}
+.res-patro.has-banner{display:block;text-align:center}
+.res-patro.has-banner .sp-k{display:block;margin-bottom:6px}
+.res-patro.has-banner .sp-slides{margin:0 auto}
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:12px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
@@ -396,7 +399,7 @@ body{touch-action:manipulation}
   #scrHome,#scrSetup{display:grid;grid-template-columns:1fr 1fr;align-content:start;column-gap:14px}
   #scrHome > :not(.card), #scrSetup > :not(.field), #scrSetup > .field:last-of-type{grid-column:1/-1}
   #scrSetup > .field.nos{grid-column:auto}
-  #scrSetup .backbtn{justify-self:start}
+  #scrSetup .backbtn, #scrHome .backbtn{justify-self:start}
   /* jogo */
   .game{grid-template-columns:clamp(150px,21vw,210px) minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:8px 14px;padding-block:8px}
   .score{grid-column:1;grid-row:1 / span 2;align-self:start;grid-template-columns:1fr 1fr;align-content:start;align-items:start;gap:10px 12px}
@@ -477,6 +480,7 @@ body{touch-action:manipulation}
   </section>
 
   <section class="screen panel" id="scrHome" hidden>
+    <button type="button" class="backbtn" id="homeBack">← Voltar</button>
     <div class="home-top">
       <div><p class="kicker">Regras de Manaus</p><h1 class="brand">Dominó <em>Manauara</em></h1></div>
       <button type="button" class="mechip" id="meChip" aria-label="Trocar nome ou foto"></button>
@@ -1496,6 +1500,8 @@ document.addEventListener('error', e => {
   } else im.remove();
 }, true);
 
+$('#homeBack').addEventListener('click', () => show('who'));
+
 
 // ---- Desenho das peças ----
 function tileSVG(p, cls, shadow) {
@@ -1953,10 +1959,14 @@ function showResult() {
     <h2 id="sheetTitle">${esc(title)}</h2><p>${esc(detail)}</p>
     ${rows ? `<div class="reveal">${rows}</div>` : ''}</div><div class="res-side">
     <div class="tally"><div class="L"><span>${esc(teamName(L))}</span><b>${r.score[L]}</b></div><div class="R"><span>${esc(teamName(R))}</span><b>${r.score[R]}</b></div></div>
-    ${win}${sh ? `<a class="share-wa" href="${sh}" target="_blank" rel="noopener">Mandar resultado no WhatsApp</a>` : ''}<button type="button" class="primary" id="nextBtn">${btn}</button>
+    ${win}${sh ? `<a class="share-wa" href="${sh}" target="_blank" rel="noopener">Mandar resultado no WhatsApp</a>` : ''}<button type="button" class="primary" id="nextBtn">${btn}</button><button type="button" class="secondary" id="resHome" style="width:100%;margin-top:10px">Voltar ao início</button>
     ${r.gameWinner != null ? sponsorResult() + apoioInvite() : ''}</div></div>`);
   const ra = $('#resApoio'); if (ra) ra.addEventListener('click', () => openApoioSheet(true));
   readySlides();
+  $('#resHome').addEventListener('click', () => {
+    closeSheet(); leaveGame(); show('home');
+    toast('Jogo guardado. Para voltar, toque em "Continuar de onde parou".');
+  });
   $('#nextBtn').addEventListener('click', () => {
     closeSheet(); nextHand(G); saveGame(); runDeal(() => { announce(); proceed(); });
   });
@@ -1982,7 +1992,7 @@ function showMenu() {
   openSheet('rules', `<p class="eyebrow">Menu</p>
   <div class="menu-actions">
     <button type="button" class="primary" id="closeMenu">Voltar à mesa</button>
-    <div class="menu-row"><button type="button" class="secondary" id="homeBtn">Pausar e sair</button><button type="button" class="secondary" id="resetBtn">Recomeçar jogo</button><button type="button" class="secondary danger" id="quitBtn">Desistir do jogo</button></div>
+    <div class="menu-row"><button type="button" class="secondary" id="homeBtn">Voltar ao início</button><button type="button" class="secondary" id="resetBtn">Recomeçar jogo</button><button type="button" class="secondary danger" id="quitBtn">Desistir do jogo</button></div>
   </div>
   <div style="margin-top:22px">${RULES_HTML}</div>
   <button type="button" class="secondary" id="closeMenu2" style="width:100%;margin-top:6px">Voltar à mesa</button>
