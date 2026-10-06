@@ -1207,13 +1207,15 @@ $('#shareApp').addEventListener('click', async () => {
   }
   window.open('https://wa.me/?text=' + encodeURIComponent(text + '\n' + SITE_URL), '_blank', 'noopener');
 });
-function renderSponsor() {
-  const el = $('#sponsor'), p = CONFIG.patrocinio;
+function renderSponsor(noBanner) {
+  const el = $('#sponsor'), p0 = CONFIG.patrocinio, p = p0 && noBanner ? Object.assign({}, p0, { banner: null, logo: null }) : p0;
   if (p && p.nome) {
     el.hidden = false; el.href = p.link || SITE_URL;
     el.classList.toggle('has-banner', !!p.banner);
     el.innerHTML = p.banner ? `<span class="sp-k">Patrocínio</span><img class="sp-banner" src="${esc(p.banner)}" alt="${esc(p.alt || p.nome)}">`
       : `<span class="sp-k">Patrocínio</span>${p.logo ? `<img class="sp-logo" src="${esc(p.logo)}" alt="">` : ''}<b>${esc(p.nome)}</b><span>${esc(p.texto || '')}</span>`;
+    const im = el.querySelector('img');
+    if (im && !noBanner) im.addEventListener('error', () => renderSponsor(true), { once: true });
   } else if (CONFIG.whats) {
     el.hidden = false;
     el.href = `https://wa.me/${CONFIG.whats}?text=` + encodeURIComponent('Olá! Quero anunciar no Dominó Manauara.');
@@ -1429,6 +1431,19 @@ function sponsorResult() {
   $('#boardWrap').insertAdjacentHTML('afterbegin', `<div class="mesa-patro" aria-hidden="true">${m}</div>`);
 })();
 document.addEventListener('click', e => { if (e.target.closest('#sponsor, .res-patro')) track('patrocinio-clique'); });
+
+// Imagem de patrocinador que falhar some, em vez de aparecer quebrada.
+document.addEventListener('error', e => {
+  const im = e.target;
+  if (!(im instanceof HTMLImageElement)) return;
+  const box = im.closest('.res-patro, .mesa-patro');
+  if (!box) return;
+  if (box.classList.contains('has-banner')) {
+    const p = CONFIG.patrocinio || {};
+    box.classList.remove('has-banner');
+    box.innerHTML = `<span>Oferecimento <b>${esc(p.nome || '')}</b>${p.texto ? ` · ${esc(p.texto)}` : ''}</span>`;
+  } else im.remove();
+}, true);
 
 
 // ---- Desenho das peças ----
