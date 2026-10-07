@@ -576,6 +576,83 @@ body{touch-action:manipulation}
   .entry{grid-template-areas:"head table" "actions table"}
 }
 @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
+/* ===== Mesa mais fácil de enxergar (v1.5): letras e pedras maiores, mesa ampliada, opção de adversários nas laterais ===== */
+/* Padrão: os três na fileira de cima, que deixa a mesa mais larga e as pedras maiores.
+   Opção no menu: parceiro em cima e um adversário de cada lado da mesa (classe .laterais). */
+.seats{grid-row:1;grid-column:1}
+.board-wrap{grid-row:2;grid-column:1}
+.tablefoot{grid-row:3;grid-column:1}
+.aviso{grid-row:2;grid-column:1}
+.laterais .table{grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) auto;
+  grid-template-areas:"top top top" "left board right" "foot foot foot";column-gap:8px;row-gap:8px}
+.laterais .seats{display:contents}
+.laterais .seat[data-pos="1"]{grid-area:left}
+.laterais .seat[data-pos="2"]{grid-area:top;justify-self:center;flex-direction:row;gap:10px;padding:6px 16px 6px 8px;text-align:left}
+.laterais .seat[data-pos="2"] .sinfo{justify-items:start}
+.laterais .seat[data-pos="3"]{grid-area:right}
+.laterais .seat[data-pos="1"],.laterais .seat[data-pos="3"]{align-self:center;width:clamp(78px,21vw,120px);padding:10px 3px}
+.laterais .seat[data-pos="1"] .sn,.laterais .seat[data-pos="3"] .sn{white-space:normal;line-height:1.15;font-size:13.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.laterais .board-wrap{grid-area:board}
+.laterais .tablefoot{grid-area:foot}
+.laterais .aviso{grid-area:board}
+/* Avatares e nomes maiores */
+.av{width:46px;height:46px;font-size:19px}
+.sn{font-size:15px}
+.sc{font-size:13px}
+.bubble{font-size:15px;padding:6px 11px}
+.feed{font-size:15px;line-height:1.35}
+.ends{font-size:13.5px}
+.prompt{font-size:15.5px}
+.me-name{font-size:16px}
+.me-name small{font-size:13.5px}
+.me-name img{width:28px;height:28px}
+.tlabel{font-size:12.5px}
+.meta .pt{font-size:13px}
+.meta .sr{font-size:17px}
+/* Pedras da mão: o maior tamanho que cabe 7 lado a lado */
+:root{--tw:clamp(40px,calc((min(100vw,720px) - 56px) / 7),66px)}
+.hand{gap:4px}
+/* "Você passou": aviso grande no meio da mesa */
+.aviso{position:relative;z-index:6;align-self:center;justify-self:center;display:grid;justify-items:center;gap:4px;text-align:center;
+  padding:16px 22px;border-radius:18px;background:rgba(21,16,12,.88);color:#f6eedf;box-shadow:0 14px 40px rgba(0,0,0,.45);pointer-events:none;max-width:92%}
+.aviso b{font-family:var(--font-display);font-weight:400;font-size:clamp(30px,9vw,46px);line-height:1.05;color:var(--glow)}
+.aviso small{font-size:15px;line-height:1.35;opacity:.9}
+.aviso.go{animation:avisoIn .28s ease-out}
+@keyframes avisoIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+.passbtn{display:none!important}
+/* Em pé: fileira de cima mais alta e legível */
+.seat{padding:6px 4px 5px;gap:3px}
+.table{padding:8px}
+@media (orientation: portrait) and (max-width: 599px){ .av{width:42px;height:42px;font-size:17px} }
+@media (max-height:700px) and (orientation: portrait){
+  .av{width:38px;height:38px;font-size:16px}
+  .sn{font-size:14px} .sc{font-size:12px}
+  .seat{padding:5px 4px}
+}
+/* Celular deitado: a mesa é larga, então as laterais cabem folgadas */
+@media (orientation: landscape) and (max-height: 560px){
+  :root{--tw:clamp(30px,12vh,54px)}
+  .table{padding:6px 8px;column-gap:8px}
+  .laterais .seat[data-pos="1"],.laterais .seat[data-pos="3"]{flex-direction:column;text-align:center;width:clamp(70px,12vw,104px);padding:6px 4px}
+  .laterais .seat[data-pos="1"] .sinfo,.laterais .seat[data-pos="3"] .sinfo{justify-items:center}
+  .laterais .seat[data-pos="2"]{padding:4px 12px 4px 6px}
+  .av{width:34px;height:34px;font-size:14px}
+  .sn{font-size:14px} .sc{font-size:12px}
+  .me-name{font-size:14.5px}
+  .prompt{font-size:14px}
+}
+/* Mesa ampliada */
+.tablefoot{gap:8px}
+.lupa{flex:none;display:flex;align-items:center;gap:5px;border:1px solid rgba(239,226,204,.3);background:rgba(0,0,0,.22);color:var(--wood-ink);border-radius:999px;padding:5px 11px 5px 8px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+.lupa svg{width:18px;height:18px}
+.lupa:active{transform:scale(.96)}
+.zoom{position:fixed;inset:0;z-index:25;display:grid;grid-template-rows:minmax(0,1fr) auto;background:radial-gradient(ellipse at center,#4a2f1e 0%,#24170f 75%);padding:calc(env(safe-area-inset-top,0px) + 12px) 10px calc(env(safe-area-inset-bottom,0px) + 10px);cursor:zoom-out;animation:backIn .2s ease-out}
+.zoom svg{width:100%;height:100%;display:block}
+.zoom-tx{margin:6px 0 0;text-align:center;color:#d9c7a8;font-size:15px;font-weight:600}
+.menu-opt{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;margin-top:18px;padding:14px;border:1px solid var(--line);border-radius:14px;cursor:pointer}
+.menu-opt input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--nos)}
+.menu-opt b{display:block;font-size:15.5px}
+.menu-opt small{display:block;font-size:13px;color:var(--muted);margin-top:2px}
 </style>
 </head>
 <body>
@@ -603,7 +680,6 @@ body{touch-action:manipulation}
     </div>
     <div class="entry-actions">
       <button type="button" class="primary" id="enterBtn">Começar</button>
-      <button type="button" class="menubtn" id="editProfile" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>Editar perfil</button>
     </div>
     <div class="train go" id="train" role="button" tabindex="0" aria-label="Derrubar as pedras de novo"></div>
   </section>
@@ -1215,6 +1291,13 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.5', data: '06/10/2026', itens: [
+    'Quando nenhuma pedra sua encaixa, aparece "Você passou" bem grande e o jogo passa sozinho.',
+    'Pedras da mão, nomes dos jogadores e avisos maiores.',
+    'Toque na mesa (ou em "Ampliar") para ver as pedras grandes.',
+    'No menu da mesa: opção de colocar os adversários nas laterais.',
+    'Para editar o perfil, toque na sua foto no canto do início.'
+  ] },
   { v: '1.4', data: '06/10/2026', itens: [
     'O perfil pergunta a faixa de idade (só 18+ ou menos de 18, sem data de nascimento).',
     'Menores de 18 anos jogam com avatar, sem foto.'
@@ -1428,7 +1511,6 @@ function renderEntry() {
   $$('#roundTable .friend').forEach(el => el.remove());
   $('#roundTable').insertAdjacentHTML('beforeend', html);
   $('#enterBtn').textContent = profile ? `Entrar como ${me}` : 'Começar';
-  $('#editProfile').hidden = !profile;
 }
 $('#roundTable').addEventListener('click', e => { if (e.target.closest('#meSeat')) openProfile('who'); });
 $('#enterBtn').addEventListener('click', () => {
@@ -1437,7 +1519,6 @@ $('#enterBtn').addEventListener('click', () => {
   if (!profile.idade) { openProfile('who'); toast('Falta só uma coisa: escolha a sua faixa de idade.'); return; }
   show('home');
 });
-$('#editProfile').addEventListener('click', () => openProfile('who'));
 $$('[data-go="home"]').forEach(b => b.addEventListener('click', () => show('home')));
 
 // ---- Perfil ----
@@ -2226,6 +2307,68 @@ $('#faleEnviar').addEventListener('click', async () => {
   $('#faleOkTx').textContent = 'Sem conexão agora: a mensagem fica guardada e vai sozinha quando a internet voltar.';
 });
 
+// ---- Mesa: "Você passou" grande e passe automático ----
+(function () {
+  $('.table').insertAdjacentHTML('beforeend', '<div class="aviso" id="aviso" role="status" aria-live="assertive" hidden><b id="avisoT"></b><small id="avisoS"></small></div>');
+})();
+let avisoTimer = null;
+function aviso(titulo, sub, ms) {
+  const el = $('#aviso'); if (!el) return;
+  $('#avisoT').textContent = titulo; $('#avisoS').textContent = sub || '';
+  el.hidden = false; el.classList.remove('go'); void el.offsetWidth; el.classList.add('go');
+  clearTimeout(avisoTimer); avisoTimer = setTimeout(() => { el.hidden = true; }, ms || 1700);
+}
+// Sem pedra que encaixe: o jogo avisa grande e passa sozinho.
+function autoPassMe() {
+  if (!G || mode !== 'off' || dealing || G.phase !== 'play' || G.turn !== 0 || !G.chain.length || legalMoves(G, 0).length) return;
+  aviso('Você passou', 'Nenhuma pedra sua encaixa nas pontas', 1800);
+  schedule(() => {
+    if (!G || G.phase !== 'play' || G.turn !== 0 || legalMoves(G, 0).length) return;
+    applyPass(G, 0); announce(); proceed();
+  }, 1900);
+}
+
+// ---- Mesa ampliada: toque na mesa para ver as pedras grandes ----
+(function () {
+  document.body.insertAdjacentHTML('beforeend', `<div class="zoom" id="zoom" hidden role="dialog" aria-label="Mesa ampliada">
+    <svg id="zoomSvg" preserveAspectRatio="xMidYMid meet"></svg>
+    <p class="zoom-tx">Toque em qualquer lugar para voltar</p></div>`);
+  $('#ends').insertAdjacentHTML('beforebegin', '<button type="button" class="lupa" id="lupa" aria-label="Ver a mesa grande"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M15.5 15.5 21 21M10.5 7.5v6M7.5 10.5h6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>Ampliar</button>');
+})();
+function zoomDesenhar() {
+  const src = $('#board'), dst = $('#zoomSvg');
+  dst.innerHTML = src.innerHTML;
+  dst.querySelectorAll('.zone, .emptymsg').forEach(e => e.remove());
+  let bb = null;
+  try { bb = dst.getBBox(); } catch (e) {}
+  if (!bb || !bb.width) { dst.setAttribute('viewBox', src.getAttribute('viewBox') || '-3 -3 6 6'); return; }
+  const m = 0.35;
+  dst.setAttribute('viewBox', `${bb.x - m} ${bb.y - m} ${bb.width + 2 * m} ${bb.height + 2 * m}`);
+}
+function zoomAbrir() {
+  if (!G || !G.chain.length || drag) return;
+  $('#zoom').hidden = false; zoomDesenhar();
+}
+function zoomFechar() { $('#zoom').hidden = true; }
+$('#lupa').addEventListener('click', e => { e.stopPropagation(); zoomAbrir(); });
+$('#boardWrap').addEventListener('click', e => { if (!e.target.closest('.lupa')) zoomAbrir(); });
+$('#zoom').addEventListener('click', zoomFechar);
+// A mesa ampliada acompanha as jogadas; fecha sozinha quando chega a sua vez de jogar ou a mão acaba.
+new MutationObserver(() => {
+  $('#lupa').hidden = !G || !G.chain.length;
+  if ($('#zoom').hidden) return;
+  if (!G || screen !== 'game' || G.phase !== 'play' || (G.turn === 0 && legalMoves(G, 0).length)) { zoomFechar(); return; }
+  zoomDesenhar();
+}).observe($('#board'), { childList: true });
+
+// ---- Opção: adversários nas laterais da mesa (fica guardada neste aparelho) ----
+document.body.classList.toggle('laterais', store.get('dmz-laterais') === '1');
+function mudarLaterais(on) {
+  document.body.classList.toggle('laterais', on);
+  if (on) store.set('dmz-laterais', '1'); else store.del('dmz-laterais');
+  requestAnimationFrame(() => { if (G && screen === 'game') render(); });
+}
+
 
 // ---- Desenho das peças ----
 function tileSVG(p, cls, shadow) {
@@ -2341,7 +2484,7 @@ function renderPrompt() {
       const mv = legalMoves(G, seatMe);
       if (dealing) txt = dealPhase;
       else if (!G.chain.length) txt = G.openMode === 'sena' ? 'Arraste a carroça de sena para a mesa' : G.openMode === 'carroca' ? 'Arraste uma carroça para a mesa' : 'Arraste qualquer pedra para a mesa';
-      else txt = 'Sua vez: arraste a pedra ou passe';
+      else txt = mv.length ? 'Sua vez: arraste a pedra para uma ponta' : 'Nenhuma pedra sua encaixa';
     } else txt = dealing ? dealPhase : `Vez de ${who(G.turn)}`;
   } else if (G.phase === 'handEnd') txt = 'Fim da mão';
   if (dealing) you = false;
@@ -2550,7 +2693,7 @@ function proceed() {
   if (G.phase === 'handEnd') { schedule(showResult, sp.end); return; }
   if (G.phase !== 'play') return;
   const p = G.turn, moves = legalMoves(G, p);
-  if (p === 0) return; // sua vez: você joga arrastando ou toca em Passo
+  if (p === 0) { if (G.chain.length && !moves.length) schedule(autoPassMe, 700); return; } // sua vez: sem pedra que encaixe, passa sozinho
   if (!moves.length) { schedule(() => { applyPass(G, p); announce(); proceed(); }, sp.pass); return; }
   schedule(() => { applyMove(G, p, botChoose(G, p)); announce(); proceed(); }, sp.play);
 }
@@ -2718,10 +2861,12 @@ function showMenu() {
     <button type="button" class="primary" id="closeMenu">Voltar à mesa</button>
     <div class="menu-row"><button type="button" class="secondary" id="homeBtn">Voltar ao início</button><button type="button" class="secondary" id="resetBtn">Recomeçar jogo</button><button type="button" class="secondary danger" id="quitBtn">Desistir do jogo</button></div>
   </div>
+  <label class="menu-opt"><input type="checkbox" id="optLaterais"${document.body.classList.contains('laterais') ? ' checked' : ''}><span><b>Adversários nas laterais da mesa</b><small>Parceiro em cima e um adversário de cada lado. As pedras da mesa ficam um pouco menores.</small></span></label>
   <div style="margin-top:22px">${RULES_HTML}</div>
   <button type="button" class="secondary" id="closeMenu2" style="width:100%;margin-top:6px">Voltar à mesa</button>
   ${CONFIG.api || CONFIG.whats ? '<button type="button" class="menu-fb" id="menuFb">Achou um erro? Fale com a gente</button>' : ''}
   <p class="note menu-ver">Dominó Manauara · versão ${APP_VERSION}</p>`);
+  $('#optLaterais').addEventListener('change', e => mudarLaterais(e.target.checked));
   const mf = $('#menuFb');
   if (mf) mf.addEventListener('click', () => abrirFale('game'));
   $('#homeBtn').addEventListener('click', () => {
