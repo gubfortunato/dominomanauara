@@ -13,6 +13,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Dominó">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>if (navigator.standalone === true) document.documentElement.classList.add('iosapp');</script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Dominó Manauara">
 <meta property="og:title" content="Dominó Manauara">
@@ -839,8 +840,12 @@ body{touch-action:manipulation}
 .friend .fala::after{content:'';position:absolute;left:50%;top:100%;margin-left:-6px;border:6px solid transparent;border-top-color:var(--tile)}
 @keyframes fala{0%{opacity:0;transform:translateX(-50%) translateY(6px) scale(.8)}12%,82%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(-6px)}}
 @media (prefers-reduced-motion:reduce){.entra *,.friend .fp,.friend .fi,#enterBtn::after{animation:none!important}}
-/* Teste do dono: tela inteira no iPhone com o app instalado */
-.telacheia,.telacheia body{height:var(--appH,100%)}
+/* iPhone com o app instalado: no iOS 26 a janela do app vem uma barra de status mais curta embaixo e sobra uma faixa vazia.
+   100lvh mede a tela inteira; os painéis presos embaixo (menu, lupa, festa) passam a ir até o fim da tela também. */
+@supports (height:100lvh){
+.iosapp,.iosapp body{height:100lvh}
+.iosapp .back,.iosapp .zoom,.iosapp .festa,.iosapp .deal-layer{bottom:auto;height:100lvh}
+}
 </style>
 </head>
 <body>
@@ -1055,7 +1060,6 @@ body{touch-action:manipulation}
     <label class="dn-sw"><input type="checkbox" id="dnSemContar"><span><b>Não contar meus acessos</b><small>Seus testes neste aparelho ficam fora dos números.</small></span></label>
     <button type="button" class="linkbtn" id="dnKeyTrocar">Tenho o plano Pro do Umami: colar a chave</button>
     <button type="button" class="linkbtn" id="dnSair">Sair da Área do dono neste aparelho</button>
-    <label class="dn-sw"><input type="checkbox" id="dnTelaCheia"><span><b>Teste: tela inteira no iPhone</b><small>Só neste aparelho e só com o app instalado. Liga, volta para o início e veja se a faixa vazia de baixo sumiu.</small></span></label>
     <p class="note dn-tela" id="dnTela"></p>
   </section>
   <section class="screen game" id="scrGame" hidden>
@@ -1286,8 +1290,9 @@ function closeHand(st, p) {
 
 function endHand(st, info) {
   st.phase = 'handEnd';
-  // A próxima mão sai sempre com quem jogou a última pedra (batida ou fechamento), com qualquer carroça.
-  st.nextStart = { mode: 'carroca', player: info.p };
+  // Depois de batida, a próxima mão sai com quem bateu, com qualquer carroça. Depois de jogo fechado, sai quem tem a carroça de sena
+  // (Regulamento de Dominó dos Jogos dos Servidores, Prefeitura de Manaus 2026, art. 5º, § 4º).
+  st.nextStart = info.kind === 'fechado' ? { mode: 'sena' } : { mode: 'carroca', player: info.p };
   const r = Object.assign({}, info, { hands: st.hands.map(h => h.map(t => t.slice())), score: st.score.slice(),
     handNo: st.handNo, partida: st.partida });
   const [a, b] = st.score;
@@ -1493,6 +1498,11 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.9.1', data: '06/10/2026', itens: [
+    'Regra igual ao regulamento de Manaus: depois de jogo fechado, a próxima mão sai com quem tem a carroça de sena.',
+    'iPhone com o app instalado: a tela vai até o fim, sem a faixa vazia que cortava o patrocínio.',
+    'Novas falas da turma na tela de entrada: "Passei!", "Bati!", "Quem sai?", "10 pontos!"…'
+  ] },
   { v: '1.9', data: '06/10/2026', itens: [
     'Tela de entrada animada: título, mesa, jogadores e pedras chegam em sequência, e a turma puxa conversa.',
     'Rótulos de "Monte a mesa" maiores.'
@@ -2343,7 +2353,6 @@ function renderDono() {
   $('#dnKey').hidden = true; $('#dnErr').hidden = true;
   $('#dnKeyTrocar').textContent = temChave ? 'Trocar a chave do Umami' : 'Tenho o plano Pro do Umami: colar a chave';
   $('#dnSemContar').checked = !!dono.semContar;
-  $('#dnTelaCheia').checked = store.get('dmz-telacheia') === '1';
   $$('#dnRange button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.r === dnRange)));
   dnAoVivo(); dnCarregar();
   clearInterval(dnTimer);
@@ -2467,12 +2476,6 @@ $('#dnSair').addEventListener('click', () => {
 });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && screen === 'dono') dnAoVivo();
-});
-
-$('#dnTelaCheia').addEventListener('change', e => {
-  if (e.target.checked) store.set('dmz-telacheia', '1'); else store.del('dmz-telacheia');
-  telaCheia(); dnTela();
-  toast(e.target.checked ? 'Teste ligado. Volte para o início e veja o fim da tela.' : 'Teste desligado.');
 });
 
 // ---- Fale com a gente: a mensagem vai para o servidor e aparece na Área do dono ----
@@ -2703,10 +2706,17 @@ function mudarLaterais(on) {
       <button type="button" class="primary" id="festaOk">Continuar</button>
     </div></div>`);
 })();
+// App instalado no iPhone: a página fica da altura da tela, um pouco maior que a janela que o iOS 26 informa
+// (veja .iosapp no CSS). Se algo rolar a página inteira para cima, ela volta para o lugar quando não há teclado aberto.
+if (document.documentElement.classList.contains('iosapp')) {
+  const topo = () => { const a = document.activeElement; if (window.scrollY && !(a && /^(INPUT|TEXTAREA)$/.test(a.tagName))) window.scrollTo(0, 0); };
+  addEventListener('scroll', topo, { passive: true });
+  addEventListener('focusout', () => setTimeout(topo, 200));
+}
 let confeteRAF = null;
 function confete(cores, ms) {
   const cv = $('#confete'), cx = cv.getContext('2d');
-  const W = cv.width = innerWidth * devicePixelRatio, H = cv.height = innerHeight * devicePixelRatio;
+  const W = cv.width = (cv.clientWidth || innerWidth) * devicePixelRatio, H = cv.height = (cv.clientHeight || innerHeight) * devicePixelRatio;
   if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { cx.clearRect(0, 0, W, H); return; }
   const dpr = devicePixelRatio, N = Math.min(180, Math.round(innerWidth / 2.2));
   const ps = Array.from({ length: N }, () => ({
@@ -2769,7 +2779,7 @@ renderEntry = function () {
   entrarOriginal();
   const s = $('#scrWho'); s.classList.remove('entra'); void s.offsetWidth; s.classList.add('entra');
 };
-const FALAS = ['Bora, %!', 'Hoje tem galo!', 'Embaralha aí!', 'Senta aí, %!', 'Tô com a sena!', 'Quem dá a saída?', 'Bucho!', 'Faltou um!', 'Bora uma partida?', 'Hoje eu bato!'];
+const FALAS = ['Bora, %!', 'Passei!', '10 pontos!', 'Senta aí, %!', 'Bati!', 'Quem sai?', 'Bora uma partida?', 'Mais 5!', 'Joga, parceiro!', 'Embaralha aí!', '20 pontos!', 'Fechou!', '15 pontos!', 'Carroça!'];
 let falaIdx = Math.floor(Math.random() * FALAS.length);
 setInterval(() => {
   if (screen !== 'who' || document.visibilityState !== 'visible') return;
@@ -2783,21 +2793,6 @@ setInterval(() => {
   b.insertAdjacentHTML('beforeend', `<span class="fala" aria-hidden="true">${esc(t)}</span>`);
   setTimeout(() => { const f = b.querySelector('.fala'); if (f) f.remove(); }, 2700);
 }, 3200);
-
-// ---- Teste do dono: usar a tela inteira no iPhone com o app instalado (a faixa vazia de baixo) ----
-function telaCheia() {
-  const r = document.documentElement;
-  const ligado = store.get('dmz-telacheia') === '1' && navigator.standalone === true;
-  r.classList.toggle('telacheia', ligado);
-  if (!ligado) { r.style.removeProperty('--appH'); return; }
-  const land = window.matchMedia && matchMedia('(orientation: landscape)').matches;
-  const sw = window.screen.width, sh = window.screen.height;   // window.screen: "screen" é a tela do jogo
-  const full = land ? Math.min(sw, sh) : Math.max(sw, sh);
-  if (full > 200) r.style.setProperty('--appH', Math.max(full, window.innerHeight) + 'px');
-}
-telaCheia();
-addEventListener('resize', telaCheia);
-addEventListener('orientationchange', () => setTimeout(telaCheia, 300));
 
 // ---- Lembretes para jogar (notificações push) ----
 // Só para maiores de 18 que pedirem. No iPhone, só com o app instalado na tela de início.
@@ -3350,7 +3345,7 @@ function showResult() {
     title = 'Jogo fechado';
     detail = `Pontos na mão: ${teamName(0)} ${r.sums[0]}, ${teamName(1)} ${r.sums[1]}. `;
     detail += r.team == null ? 'Empate na contagem: ninguém marca.' : `A dupla com mais pontos na mão dá ${r.pts} para ${teamName(r.team)}.`;
-    detail += ` Na próxima mão, ${r.p === seatMe ? 'você sai' : G.names[r.p] + ' sai'} com qualquer carroça, por ter jogado a última pedra.`;
+    detail += ' Na próxima mão, sai quem tiver a carroça de sena.';
   }
   const rows = [0, 1, 2, 3].filter(p => r.hands[p].length).map(p => {
     const sum = r.hands[p].reduce((s, t) => s + pips(t), 0);
@@ -3393,11 +3388,11 @@ const RULES_HTML = `  <p class="eyebrow">Como se joga</p><h2 id="sheetTitle">Reg
     <li><b>Galo</b> (os três passam e a vez volta para quem jogou): 50 pontos para a dupla que aplicou.</li>
     <li><b>Batida de carroça:</b> +20 para quem bateu.</li>
     <li><b>Garagem:</b> quando alguém bate, os pontos que sobraram na mão da dupla que não bateu vão para a dupla que bateu, arredondados para baixo no múltiplo de 5.</li>
-    <li><b>Jogo fechado:</b> soma-se a mão de cada dupla. A dupla com mais pontos dá essa soma, arredondada para baixo no múltiplo de 5, para a outra. Empate: ninguém marca.</li>
+    <li><b>Jogo fechado:</b> soma-se a mão de cada dupla. A dupla com mais pontos dá essa soma, arredondada para baixo no múltiplo de 5, para a outra. Empate: ninguém marca. Na mão seguinte, sai quem tiver a carroça de sena.</li>
     <li>Mão com 5 carroças é misturada de novo.</li>
     <li>A partida vai a <b>200 pontos</b> e é decidida no fim da mão: vence a dupla com mais pontos. O jogo é em melhor de 3 partidas.</li>
   </ol>
-  <p class="note">Base: Regulamento de Dominó dos Jogos dos Servidores, Prefeitura de Manaus (2026). Onde o regulamento não detalha, a mesa segue assim: o galo substitui os passes da rodada; depois de uma saída sem carroça, o próximo abre com qualquer pedra; depois de jogo fechado, sai quem jogou a pedra que fechou.</p>`;
+  <p class="note">Base: Regulamento de Dominó dos Jogos dos Servidores, Prefeitura de Manaus (2026). Onde o regulamento não detalha, a mesa segue assim: o galo substitui os passes da rodada; depois de uma saída sem carroça, o próximo abre com qualquer pedra.</p>`;
 function showMenu() {
   clearTimeout(timer); armedReset = false;
   openSheet('rules', `<p class="eyebrow">Menu</p>
