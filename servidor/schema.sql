@@ -40,3 +40,8 @@ CREATE TABLE IF NOT EXISTS planos (aparelho TEXT PRIMARY KEY, ate INTEGER NOT NU
 CREATE UNIQUE INDEX IF NOT EXISTS planos_codigo ON planos (codigo);
 CREATE TABLE IF NOT EXISTS eventos_asaas (id TEXT PRIMARY KEY, recebido_em INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS tentativas (marca TEXT NOT NULL, tipo TEXT NOT NULL, criado_em INTEGER NOT NULL);
+
+-- Patrocinadores (cadastrados pelo dono) e quantas vezes cada espaço apareceu / foi tocado por dia
+CREATE TABLE IF NOT EXISTS patrocinadores (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, texto TEXT, link TEXT, logo INTEGER, banners TEXT, espacos TEXT NOT NULL, inicio INTEGER, fim INTEGER, ativo INTEGER NOT NULL DEFAULT 1, peso INTEGER NOT NULL DEFAULT 1, criado_em INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS patro_imgs (id INTEGER PRIMARY KEY AUTOINCREMENT, mime TEXT NOT NULL, dados TEXT NOT NULL, criado_em INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS patro_contagem (patro INTEGER NOT NULL, dia TEXT NOT NULL, espaco TEXT NOT NULL, vistas INTEGER NOT NULL DEFAULT 0, cliques INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (patro, dia, espaco));
