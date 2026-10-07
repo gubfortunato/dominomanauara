@@ -3306,7 +3306,7 @@ function festa(r, depois) {
   const L = TEAM(eu), R = 1 - L;
   $('#festaK').textContent = jogo ? `Fim do jogo · série ${r.series[L]} × ${r.series[R]}` : `Fim da partida ${r.partida}`;
   $('#festaT').textContent = jogo ? (nos ? 'Vocês ganharam o jogo!' : 'Eles ganharam o jogo') : (nos ? 'Vocês venceram a partida!' : 'Eles venceram a partida');
-  $('#festaN').textContent = nomes + ' · ' + (nos ? sorteia(['Chibata!', 'Chibata, é nós!', 'Tá pocando!']) : sorteia(['bora virar na próxima!', 'leseira… bora virar na próxima!', 'fica pra próxima.']));
+  $('#festaN').textContent = nomes + ' · ' + (nos ? sorteia(['Chibata!', 'Chibata, é nós!', 'Vô mermo!']) : sorteia(['bora virar na próxima!', 'leseira… bora virar na próxima!', 'fica pra próxima.']));
   $('#festaP').innerHTML = `<span class="nos">Nós <b>${r.score[L]}</b></span> <i>×</i> <span class="eles"><b>${r.score[R]}</b> Eles</span>`;
   const el = $('#festa'); el.classList.remove('sumindo'); el.classList.toggle('deles', !nos); el.classList.toggle('jogo', jogo);
   el.hidden = false;
@@ -3339,7 +3339,7 @@ renderEntry = function () {
 };
 // Falas da turma na entrada: metade com termos de Manaus (só do Amazonas), intercaladas e curtas para o balão caber na tela
 const FALAS = ['Bora, %!', 'Iapois, passei!', '10 pontos!', 'Chibata, bati!', 'Senta aí, %!', 'Chibata!', 'Quem sai?', 'Tá de bubuia?',
-  'Passei!', 'Leseira, passei!', 'Mais 5!', 'Tá pocando!', 'Joga, %!', 'Tu é leso, é?', '20 pontos!', 'Iapois, %!',
+  'Passei!', 'Leseira, passei!', 'Mais 5!', 'Vô mermo!', 'Joga, %!', 'Tu é leso, é?', '20 pontos!', 'Iapois, %!',
   'Bati!', 'Leseira baré!', 'Fechou!', 'Joga logo, caboco!', 'Carroça!', 'Tô brocado!', '15 pontos!', 'Bora uma partida?'];
 let falaIdx = Math.floor(Math.random() * FALAS.length);
 setInterval(() => {
@@ -3629,7 +3629,7 @@ const ERROS_MESA = {
   'dados': 'Não deu para entrar na mesa. Confira o seu nome no perfil.'
 };
 // Reações rápidas: a ordem nunca muda (o servidor manda só o número). Para acrescentar, ponha no fim.
-const REACOES = ['Boa, parceiro!', 'Tá pocando!', 'Leseira baré!', 'Bate logo!', 'Segura essa!', 'Tá fácil!', 'Hoje tem galo!', 'Bora, bora!', '👏', '😂', '😮', '🔥',
+const REACOES = ['Boa, parceiro!', 'Vô mermo!', 'Leseira baré!', 'Bate logo!', 'Segura essa!', 'Tá fácil!', 'Hoje tem galo!', 'Bora, bora!', '👏', '😂', '😮', '🔥',
   'Iapois!', 'Chibata!', 'Tu é leso?', 'Tá de bubuia?', 'Joga logo, caboco!', 'Bora um tacacá?'];
 const FALA_MS = 2800;
 let falaMinhaT = null, reagiuEm = 0;
