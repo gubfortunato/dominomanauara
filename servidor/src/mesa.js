@@ -99,15 +99,21 @@ export class Mesa {
     this.espalhar(ws);
   }
 
+  async apoiador(id) {
+    try { const p = await this.env.DB.prepare('SELECT ate FROM planos WHERE aparelho = ?').bind(id).first(); return !!(p && p.ate > Date.now()); }
+    catch (e) { return false; }
+  }
   async entrar(ws, att, msg) {
     const m = this.m;
     const quem = this.pessoa(msg);
     if (!quem) return this.enviar(ws, { t: 'erro', cod: 'dados' });
+    quem.apoiador = await this.apoiador(quem.id);
     let p = m.cad.findIndex(c => c && c.id === quem.id);
     if (p >= 0) {
       // voltou (ou abriu em outro aparelho): retoma a cadeira; se tinha saído, volta a jogar
       const c = m.cad[p];
       if (m.fase === 'espera') { c.nome = quem.nome; c.av = quem.av; }
+      c.apoiador = quem.apoiador;
       if (c.saiu) { c.saiu = false; c.bot = false; }
     } else if (m.fase === 'espera') {
       p = [1, 2, 3, 0].find(k => !m.cad[k]);
@@ -274,7 +280,7 @@ export class Mesa {
       });
     }
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
-      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bot: !!c.bot, saiu: !!c.saiu, on: c.bot ? true : this.conectado(p) } : null),
+      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, on: c.bot ? true : this.conectado(p) } : null),
       jogo, agora: Date.now() };
   }
   enviar(ws, obj) { try { ws.send(JSON.stringify(obj)); } catch (e) {} }

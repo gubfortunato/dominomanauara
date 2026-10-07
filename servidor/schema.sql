@@ -31,3 +31,12 @@ CREATE INDEX IF NOT EXISTS avisos_envio ON avisos (ultimo_envio);
 -- Mesa online: limite de mesas criadas por hora (resumo do endereço que muda todo dia)
 CREATE TABLE IF NOT EXISTS mesas_criadas (marca TEXT NOT NULL, criado_em INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS mesas_criadas_marca ON mesas_criadas (marca, criado_em);
+
+-- Plano Apoiador e doações (Asaas). Só código do aparelho, produto, valor e datas; nada de CPF ou cartão.
+CREATE TABLE IF NOT EXISTS pedidos (id TEXT PRIMARY KEY, checkout TEXT, aparelho TEXT, produto TEXT NOT NULL, valor REAL NOT NULL, status TEXT NOT NULL, criado_em INTEGER NOT NULL, pago_em INTEGER, marca TEXT);
+CREATE INDEX IF NOT EXISTS pedidos_checkout ON pedidos (checkout);
+CREATE INDEX IF NOT EXISTS pedidos_marca ON pedidos (marca, criado_em);
+CREATE TABLE IF NOT EXISTS planos (aparelho TEXT PRIMARY KEY, ate INTEGER NOT NULL, desde INTEGER NOT NULL, codigo TEXT NOT NULL);
+CREATE UNIQUE INDEX IF NOT EXISTS planos_codigo ON planos (codigo);
+CREATE TABLE IF NOT EXISTS eventos_asaas (id TEXT PRIMARY KEY, recebido_em INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS tentativas (marca TEXT NOT NULL, tipo TEXT NOT NULL, criado_em INTEGER NOT NULL);

@@ -2,6 +2,7 @@
 // Caixa de mensagens "Fale com a gente", lembretes para jogar (Web Push), painel do dono e mesa online por convite.
 import { enviarPush } from './webpush.js';
 import { Mesa } from './mesa.js';
+import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos } from './pagamentos.js';
 export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
@@ -229,12 +230,21 @@ export default {
     const origin = req.headers.get('origin') || '';
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(origin) });
     try {
-      if (url.pathname === '/saude') return json({ ok: true, servico: 'dominomanauara', mesa: !!env.MESA }, 200, origin);
+      if (url.pathname === '/saude') return json({ ok: true, servico: 'dominomanauara', mesa: !!env.MESA, pagamentos: !!env.ASAAS_API_KEY }, 200, origin);
       if (url.pathname === '/mesa/nova' && req.method === 'POST') return await novaMesa(req, env, origin);
       const mc = url.pathname.match(/^\/mesa\/(\d{5})(\/ws)?$/);
       if (mc && req.method === 'GET') return await rotaMesa(req, env, origin, mc[1], !!mc[2]);
       if (url.pathname === '/mensagens' && req.method === 'POST') return await receberMensagem(req, env, origin);
       if (url.pathname === '/patrocinio' && req.method === 'POST') return await receberPatrocinio(req, env, origin);
+      // Plano Apoiador e doações (Asaas)
+      const H = { json, marcaDoDia, ehDono, SITE };
+      if (url.pathname === '/pagar' && req.method === 'POST') return await pagar(req, env, origin, H);
+      const pd = url.pathname.match(/^\/pedido\/([0-9a-f]{20})$/);
+      if (pd && req.method === 'GET') return await pedido(env, origin, H, pd[1]);
+      if (url.pathname === '/plano' && req.method === 'GET') return await plano(env, origin, H, url);
+      if (url.pathname === '/plano/trazer' && req.method === 'POST') return await trazerPlano(req, env, origin, H);
+      if (url.pathname === '/asaas/webhook' && req.method === 'POST') return await webhook(req, env, origin, H);
+      if (url.pathname === '/dono/pagamentos' && req.method === 'GET') return await donoPagamentos(req, env, origin, H);
       if (url.pathname === '/avisos/chave' && req.method === 'GET') return json({ chave: env.VAPID_PUBLIC || null }, env.VAPID_PUBLIC ? 200 : 503, origin);
       if (url.pathname === '/avisos/inscrever' && req.method === 'POST') return await avisosInscrever(req, env, origin);
       if (url.pathname === '/avisos/cancelar' && req.method === 'POST') return await avisosCancelar(req, env, origin);

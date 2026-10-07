@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      ASAAS_API_KEY: ${{ secrets.ASAAS_API_KEY }}
       # O Account ID não é senha (aparece no endereço do painel); o token continua só nos segredos do GitHub.
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || 'c5f546c10d461c0d2e3e1d54f83fba39' }}
     steps:
@@ -78,6 +79,35 @@ jobs:
           log "mesa online: $(node teste_publicado.mjs "$url" 2>&1 | tail -1)"
           for i in 1 2 3 4 5 6; do k=$(curl -s "$url/avisos/chave" | jq -c '{chave_publica: (.chave != null)}'); echo "$k" | grep -q true && break; sleep 10; done
           log "lembretes: $k"
+          # Pagamentos (Asaas): guarda a chave no Cloudflare, cadastra o aviso de pagamento (webhook) e testa uma cobrança
+          if [ -n "$ASAAS_API_KEY" ]; then
+            printf '%s' "$ASAAS_API_KEY" | wrangler secret put ASAAS_API_KEY > /dev/null 2>&1; log "asaas: chave guardada no Cloudflare (código $?)"
+            case "$ASAAS_API_KEY" in *_hmlg_*) AS=https://api-sandbox.asaas.com/v3; log "asaas: modo de teste (sandbox)";; *) AS=https://api.asaas.com/v3;; esac
+            UA='User-Agent: dominomanauara-publicacao'
+            conta=$(curl -s -H "access_token: $ASAAS_API_KEY" -H "$UA" "$AS/myAccount/commercialInfo")
+            log "asaas conta: $(echo "$conta" | jq -c '{empresa: (.companyName // .name), site: .site, situacao: .status, erro: .errors}')"
+            email=$(echo "$conta" | jq -r '.email // empty')
+            hooks=$(curl -s -H "access_token: $ASAAS_API_KEY" -H "$UA" "$AS/webhooks")
+            alvo="$url/asaas/webhook"
+            tem=$(echo "$hooks" | jq -r --arg u "$alvo" '[.data[]? | select(.url == $u)] | length')
+            if [ "${tem:-0}" = "0" ] || ! wrangler secret list 2>/dev/null | grep -q ASAAS_WEBHOOK_TOKEN; then
+              for hid in $(echo "$hooks" | jq -r --arg u "$alvo" '.data[]? | select(.url == $u) | .id'); do curl -s -X DELETE -H "access_token: $ASAAS_API_KEY" -H "$UA" "$AS/webhooks/$hid" > /dev/null; done
+              tok=$(openssl rand -hex 32)
+              printf '%s' "$tok" | wrangler secret put ASAAS_WEBHOOK_TOKEN > /dev/null 2>&1
+              corpo=$(jq -nc --arg u "$alvo" --arg t "$tok" --arg e "$email" '{name:"Dominó Manauara", url:$u, email:$e, enabled:true, interrupted:false, apiVersion:3, authToken:$t, sendType:"SEQUENTIALLY", events:["CHECKOUT_PAID","CHECKOUT_CANCELED","CHECKOUT_EXPIRED"]}')
+              r=$(curl -s -X POST -H "access_token: $ASAAS_API_KEY" -H "$UA" -H 'content-type: application/json' --data "$corpo" "$AS/webhooks")
+              log "asaas aviso de pagamento (webhook): $(echo "$r" | jq -c '{criado: (.id != null), ativo: .enabled, erro: .errors}')"
+              sleep 8
+            else
+              log "asaas aviso de pagamento (webhook): já cadastrado"
+            fi
+            t=$(curl -s -X POST -H 'content-type: application/json' --data '{"produto":"doacao5"}' "$url/pagar")
+            log "asaas cobrança de teste: $(echo "$t" | jq -c '{abriu: (.link != null), erro, detalhe}')"
+            co=$(echo "$t" | jq -r '.checkout // empty')
+            [ -n "$co" ] && curl -s -X POST -H "access_token: $ASAAS_API_KEY" -H "$UA" "$AS/checkouts/$co/cancel" > /dev/null && log "asaas: cobrança de teste cancelada"
+          else
+            log "asaas: falta o segredo ASAAS_API_KEY no GitHub (pagamentos desligados)"
+          fi
           log "url: $url"
       - name: Guardar o resultado
         if: always()
