@@ -2036,7 +2036,8 @@ const NOVIDADES = [
     'Instalar o app agora é o primeiro passo, com o passo a passo para iPhone e Android (dá para pular).',
     'Escolha o seu bairro no perfil: ele aparece na mesa online, para quem joga com você.',
     'Avatares novos: torcedor do Garantido e torcedora do Caprichoso.',
-    'Siga o Dominó Manauara no Instagram: @dominomanauara (link no início).'
+    'Siga o Dominó Manauara no Instagram: @dominomanauara (link no início).',
+    'Pedras maiores na mesa: a fileira dobra antes e a mesa aproveita melhor o espaço.'
   ] },
   { v: '2.6', data: '07/10/2026', itens: [
     'A mesa fica parada: o zoom não vai e volta mais a cada jogada. Ela só se afasta quando a fileira precisa de espaço.',
@@ -3512,31 +3513,32 @@ function mostrarFala(b, t) {
 // (antes ela recentralizava e mudava o zoom a cada jogada, e o vai e vem deixava o jogador tonto)
 let camMesa = null;
 function cameraMesa(minX, maxX, minY, maxY, Xmax, a) {
+  // Enquadra a mesa o mais perto possível (pedras grandes), e só mexe quando precisa:
+  // - não cabe a próxima pedra: afasta até caber, com uma folga para não mexer de novo na jogada seguinte;
+  // - sobrou muito espaço (dá para aumentar as pedras em mais de 30%): aproxima, uma vez;
+  // - no resto do tempo a mesa fica parada.
+  const m = 0.5, FOLGA = 1.06;
   const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
-  let vw = Math.max(Math.min(2 * Xmax + 2.4, 13), maxX - minX + 1.4), vh = Math.max(vw / a, maxY - minY + 1.4);
-  if (vw / vh < a) vw = vh * a; else vh = vw / a;
+  let iw = Math.max(Math.min(2 * Xmax + 2.4, 13), maxX - minX + 2 * m), ih = Math.max(iw / a, maxY - minY + 2 * m);
+  if (iw / ih < a) iw = ih * a; else ih = iw / a;
+  const nova = k => ({ x: cx - iw * k / 2, y: cy - ih * k / 2, w: iw * k, h: ih * k, a, Xmax });
   const c = camMesa, n = G && G.chain ? G.chain.length : 0;
   // recomeça na mão nova, ao girar o celular (proporção muda muito) ou se a largura da fileira mudou
-  if (!c || n <= 1 || Math.abs(c.a - a) / a > 0.08 || Math.abs(c.Xmax - Xmax) / Xmax > 0.05) {
-    camMesa = { x: cx - vw / 2, y: cy - vh / 2, w: vw, h: vh, a, Xmax };
-    return camMesa;
-  }
-  // diferença pequena de proporção (1 ou 2 pixels): só completa o lado que falta, sem aproximar
+  if (!c || n <= 1 || Math.abs(c.a - a) / a > 0.08 || Math.abs(c.Xmax - Xmax) / Xmax > 0.05) return (camMesa = nova(1));
+  // diferença pequena de proporção (1 ou 2 pixels): só completa o lado que falta
   if (Math.abs(c.a - a) > 1e-6) {
     if (c.w / c.h < a) { const nw = c.h * a; c.x -= (nw - c.w) / 2; c.w = nw; } else { const nh = c.w / a; c.y -= (nh - c.h) / 2; c.h = nh; }
     c.a = a;
   }
-  const m = 0.7, x0n = minX - m, x1n = maxX + m, y0n = minY - m, y1n = maxY + m;
-  if (x0n >= c.x && x1n <= c.x + c.w && y0n >= c.y && y1n <= c.y + c.h) return c;   // cabe: a mesa não mexe
-  // não cabe: abre o que falta (junta a vista atual com o que precisa), mantendo a proporção da tela
-  // (com uma folga de meia pedra no lado que estourou, para não precisar afastar de novo na jogada seguinte)
-  const f = 1.1;
-  let x0 = Math.min(c.x, x0n < c.x ? x0n - f : x0n), x1 = Math.max(c.x + c.w, x1n > c.x + c.w ? x1n + f : x1n);
-  let y0 = Math.min(c.y, y0n < c.y ? y0n - f : y0n), y1 = Math.max(c.y + c.h, y1n > c.y + c.h ? y1n + f : y1n);
-  let w = x1 - x0, h = y1 - y0;
-  if (w / h < a) { const nw = h * a; x0 -= (nw - w) / 2; w = nw; } else { const nh = w / a; y0 -= (nh - h) / 2; h = nh; }
-  Object.assign(c, { x: x0, y: y0, w, h });
-  return c;
+  const x0 = minX - m, x1 = maxX + m, y0 = minY - m, y1 = maxY + m;
+  const cabe = x0 >= c.x && x1 <= c.x + c.w && y0 >= c.y && y1 <= c.y + c.h;
+  if (cabe) return iw * FOLGA < c.w * 0.77 ? (camMesa = nova(FOLGA)) : c;
+  // não cabe, mas o tamanho atual comporta: só desliza o mínimo, sem mudar o tamanho das pedras
+  if (c.w >= x1 - x0 && c.h >= y1 - y0 && c.w <= iw * FOLGA * 1.3) {
+    c.x = Math.min(Math.max(c.x, x1 - c.w), x0); c.y = Math.min(Math.max(c.y, y1 - c.h), y0);
+    return c;
+  }
+  return (camMesa = nova(FOLGA));
 }
 
 // ---- Lembretes para jogar (notificações push) ----
@@ -5484,7 +5486,7 @@ function renderBoard() {
   const W = wrap.clientWidth || 320, H = wrap.clientHeight || 300, a = W / H;
   const base = Math.sqrt(112 * a) / 2;
   const pin = G.chain.length && G.chain[G.center].a === G.chain[G.center].b;
-  Xmax = pin ? Math.max(5.5, Math.min(12, base * 1.5)) : Math.max(3.5, Math.min(10, base));
+  Xmax = pin ? Math.max(5.5, Math.min(12, base * 1.2)) : Math.max(3.5, Math.min(10, base));   // fileira mais curta: a mesa usa a altura e as pedras ficam maiores
   const lay = layoutTable(G, Xmax), pos = lay.main;
   const bTiles = [];
   for (const k of ['U', 'D']) ((G.bucho && G.bucho[k]) || []).forEach((t, j) => bTiles.push({ key: tkey([t.n, t.f]), pos: lay[k][j] }));
