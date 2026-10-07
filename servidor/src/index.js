@@ -138,7 +138,7 @@ async function listarMensagens(req, env, origin, url) {
 const LEMBRETES = [
   { titulo: 'A mesa tá montada', texto: 'A turma do bairro tá te esperando. Bora uma partida?' },
   { titulo: 'Tá de bubuia?', texto: 'Então bora uma partidinha de dominó. A turma tá esperando.' },
-  { titulo: 'Égua, sumiu!', texto: 'A mesa tá posta e as pedras tão viradas. Bora jogar?' },
+  { titulo: 'Tá brocado?', texto: 'Pega um X‑caboquinho e vem pra mesa. A turma tá esperando.' },
   { titulo: 'Seu Raimundo mandou avisar', texto: 'Disse que hoje ninguém ganha dele. Vai deixar?' },
   { titulo: 'Bora bater uma?', texto: 'Uma partidinha de dominó antes da janta.' },
   { titulo: 'Cadê você?', texto: 'Dona Socorro já embaralhou as pedras. Só falta você na mesa.' },

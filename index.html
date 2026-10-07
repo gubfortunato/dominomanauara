@@ -867,6 +867,9 @@ body{touch-action:manipulation}
 /* inclinação para pedra de 44 de altura com vão de 12: asen(12 / 44) */
 @keyframes toppleP{to{transform:rotate(15.8deg)}}
 
+/* Balão da entrada que chegou para dentro: a ponta continua no amigo */
+.friend .fala::after{left:calc(50% - var(--ponta, 0px))}
+
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
 .sala-entrada,.sala-espera{display:grid;gap:14px}
@@ -1179,7 +1182,6 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
     </div>
     <p class="lead">Fala, <b id="homeName"></b>. Bora pra mesa?</p>
     <!-- Banner do patrocinador: primeira coisa da tela inicial -->
-    <a class="sponsor" id="sponsor" target="_blank" rel="noopener" hidden></a>
     <button type="button" class="rulescard" id="howBtn">
       <span class="rc-ic" id="rulesTile" aria-hidden="true"></span>
       <span class="rc-tx"><b>Regras</b><small>Bucho, garagem, passe e galo, explicados</small></span>
@@ -1240,6 +1242,7 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
       <b>Achou um erro ou tem uma ideia?</b>
       <span>O jogo está começando e cada opinião ajuda a deixar ele do jeito da nossa mesa.</span>
     </button>
+    <a class="sponsor" id="sponsor" target="_blank" rel="noopener" hidden></a>
     <button type="button" class="anuncie-link" id="anuncieLink" hidden><span>Quer ver a sua empresa no jogo?</span><b>Anuncie no Dominó Manauara ›</b></button>
     <p class="note foot"><span id="footBrand">Dominó Manauara</span> · <button type="button" class="verlink" id="verBtn">Versão <span class="appver"></span></button> · <a href="termos.html">Termos</a> · <a href="privacidade.html">Privacidade</a> · <button type="button" class="verlink" id="footAnuncie" hidden>Anuncie</button><span id="footApoioSep" hidden> · </span><button type="button" class="verlink" id="footApoio" hidden>Apoie o jogo</button></p>
   </section>
@@ -1923,14 +1926,15 @@ const TURMA = 'a turma do bairro';
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
   { v: '2.5', data: '07/10/2026', itens: [
-    'A turma do bairro agora fala do jeito de Manaus: "Iapois, passo", "Égua, bati!", "Chibata!".',
-    'Mesa online: novas reações, como Iapois!, Chibata!, Tu é leso? e Tá de bubuia?',
+    'A turma do bairro agora fala do jeito de Manaus: "Iapois, passo", "Chibata, bati!", "Tá de bubuia?".',
+    'Mesa online: novas reações, como Iapois!, Chibata!, Tu é leso?, Tá de bubuia? e Bora um tacacá?',
+    'Mesas novas no Plano Apoiador: Garantido, Caprichoso, Encontro das Águas e Tucumã.',
     'Regras ficam logo no começo da tela inicial.'
   ] },
   { v: '2.4', data: '07/10/2026', itens: [
     'Telas que sobem de baixo (regras, menu, reações) agora têm × para fechar, e dá para fechar arrastando para baixo.',
     'Regras: texto de quem sai em cada mão corrigido (depois de jogo fechado, sai a carroça de sena).',
-    'O banner do patrocinador fica no alto da tela inicial; o anúncio aparece no fim de cada partida e na tela da mesa online.',
+    'O anúncio do patrocinador aparece também no fim de cada partida e na tela da mesa online.',
     'Vários patrocinadores ao mesmo tempo, revezando nos espaços.',
     'Ajustes de tela: nada passa da borda em celular pequeno, e textos claros nos cartões escuros.'
   ] },
@@ -3262,7 +3266,7 @@ function confete(cores, ms) {
 const sorteia = l => l[Math.floor(Math.random() * l.length)];
 // (na mesa online quem está do outro lado é gente: aí o balão fica neutro)
 function falaPasse(p) { return mode !== 'on' && p !== seatMe && Math.random() < 0.35 ? 'Iapois, passo' : 'Passo'; }
-function falaBati(p) { return mode === 'on' || p === seatMe ? 'Bati!' : sorteia(['Bati!', 'Bati, mano!', 'Égua, bati!', 'Chibata, bati!']); }
+function falaBati(p) { return mode === 'on' || p === seatMe ? 'Bati!' : sorteia(['Bati!', 'Chibata, bati!', 'Bati, caboco!']); }
 function festa(r, depois) {
   const eu = seatMe == null ? 0 : seatMe, nos = TEAM(eu) === r.matchWinner, w = r.matchWinner;
   const jogo = r.gameWinner != null;
@@ -3271,7 +3275,7 @@ function festa(r, depois) {
   const L = TEAM(eu), R = 1 - L;
   $('#festaK').textContent = jogo ? `Fim do jogo · série ${r.series[L]} × ${r.series[R]}` : `Fim da partida ${r.partida}`;
   $('#festaT').textContent = jogo ? (nos ? 'Vocês ganharam o jogo!' : 'Eles ganharam o jogo') : (nos ? 'Vocês venceram a partida!' : 'Eles venceram a partida');
-  $('#festaN').textContent = nomes + ' · ' + (nos ? sorteia(['Chibata!', 'Aí sim, maninho!', 'É nós!']) : sorteia(['bora virar na próxima!', 'égua… bora virar na próxima!', 'fica pra próxima, maninho.']));
+  $('#festaN').textContent = nomes + ' · ' + (nos ? sorteia(['Chibata!', 'Chibata, é nós!', 'Tá pocando!']) : sorteia(['bora virar na próxima!', 'leseira… bora virar na próxima!', 'fica pra próxima.']));
   $('#festaP').innerHTML = `<span class="nos">Nós <b>${r.score[L]}</b></span> <i>×</i> <span class="eles"><b>${r.score[R]}</b> Eles</span>`;
   const el = $('#festa'); el.classList.toggle('deles', !nos); el.classList.toggle('jogo', jogo);
   el.hidden = false;
@@ -3302,21 +3306,36 @@ renderEntry = function () {
   entrarOriginal();
   const s = $('#scrWho'); s.classList.remove('entra'); void s.offsetWidth; s.classList.add('entra');
 };
-const FALAS = ['Bora, %!', 'Passei!', '10 pontos!', 'Senta aí, %!', 'Bati!', 'Quem sai?', 'Bora uma partida?', 'Mais 5!', 'Joga, parceiro!', 'Embaralha aí!', '20 pontos!', 'Fechou!', '15 pontos!', 'Carroça!',
-  'Iapois, passei!', 'Égua, bati!', 'Chibata!', 'Tá de bubuia? Senta aí!'];
+// Falas da turma na entrada: metade com termos de Manaus (só do Amazonas), intercaladas e curtas para o balão caber na tela
+const FALAS = ['Bora, %!', 'Iapois, passei!', '10 pontos!', 'Chibata, bati!', 'Senta aí, %!', 'Chibata!', 'Quem sai?', 'Tá de bubuia?',
+  'Passei!', 'Leseira, passei!', 'Mais 5!', 'Tá pocando!', 'Joga, %!', 'Tu é leso, é?', '20 pontos!', 'Iapois, %!',
+  'Bati!', 'Leseira baré!', 'Fechou!', 'Joga logo, caboco!', 'Carroça!', 'Tô brocado!', '15 pontos!', 'Bora uma partida?'];
 let falaIdx = Math.floor(Math.random() * FALAS.length);
 setInterval(() => {
   if (screen !== 'who' || document.visibilityState !== 'visible') return;
   if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const outros = $$('#roundTable .friend').filter(b => !b.classList.contains('me'));
+  const outros = $$('#roundTable .friend').filter(b => !b.classList.contains('me') && b.id !== 'meSeat');   // quem fala é a turma, não você
   if (!outros.length) return;
   const b = outros[Math.floor(Math.random() * outros.length)];
   if (b.querySelector('.fala')) return;
   falaIdx = (falaIdx + 1 + Math.floor(Math.random() * 3)) % FALAS.length;
-  const t = FALAS[falaIdx].replace('%', me || 'parceiro');
-  b.insertAdjacentHTML('beforeend', `<span class="fala" aria-hidden="true">${esc(t)}</span>`);
+  mostrarFala(b, FALAS[falaIdx].replace('%', me || 'parceiro'));
   setTimeout(() => { const f = b.querySelector('.fala'); if (f) f.remove(); }, 2700);
 }, 3200);
+// O balão fica centrado em quem fala, mas nunca sai da tela (nos lados, ele chega para dentro e a ponta continua apontando)
+function mostrarFala(b, t) {
+  b.insertAdjacentHTML('beforeend', `<span class="fala" aria-hidden="true">${esc(t)}</span>`);
+  const f = b.querySelector('.fala'), r = b.getBoundingClientRect(), w = f.offsetWidth, cx = r.left + r.width / 2, m = 8;
+  let dx = 0;
+  if (cx - w / 2 < m) dx = m - (cx - w / 2);
+  else if (cx + w / 2 > innerWidth - m) dx = innerWidth - m - (cx + w / 2);
+  if (dx) {
+    const ponta = Math.max(-(w / 2 - 16), Math.min(w / 2 - 16, dx));
+    f.style.left = `calc(50% + ${Math.round(dx)}px)`;
+    f.style.setProperty('--ponta', Math.round(ponta) + 'px');
+  }
+  return f;
+}
 
 // ---- Lembretes para jogar (notificações push) ----
 // Só para maiores de 18 que pedirem. No iPhone, só com o app instalado na tela de início.
@@ -3547,8 +3566,8 @@ const ERROS_MESA = {
   'dados': 'Não deu para entrar na mesa. Confira o seu nome no perfil.'
 };
 // Reações rápidas: a ordem nunca muda (o servidor manda só o número). Para acrescentar, ponha no fim.
-const REACOES = ['Boa, parceiro!', 'Égua!', 'Vixe!', 'Bate logo!', 'Segura essa!', 'Tá fácil!', 'Hoje tem galo!', 'Bora, bora!', '👏', '😂', '😮', '🔥',
-  'Iapois!', 'Chibata!', 'Tu é leso?', 'Tá de bubuia?', 'Leseira!', 'Arreda, vou bater!'];
+const REACOES = ['Boa, parceiro!', 'Tá pocando!', 'Leseira baré!', 'Bate logo!', 'Segura essa!', 'Tá fácil!', 'Hoje tem galo!', 'Bora, bora!', '👏', '😂', '😮', '🔥',
+  'Iapois!', 'Chibata!', 'Tu é leso?', 'Tá de bubuia?', 'Joga logo, caboco!', 'Bora um tacacá?'];
 const FALA_MS = 2800;
 let falaMinhaT = null, reagiuEm = 0;
 function mostrarReacao(pos, txt) {
