@@ -1481,7 +1481,7 @@ const CONFIG = {
   // Ex.: { nome: 'Açaí do Bairro', texto: 'Peça pelo WhatsApp', link: 'https://wa.me/55...', logo: 'patrocinio/acai.png' }
   // Estatística anônima (Umami Cloud): o "Website ID" do painel. Vazio: nada é contado.
   umamiId: '52db3c75-c2b5-4f28-b0b4-eb0fce4cecb0',
-  api: '',    // Servidor do jogo (Cloudflare): mensagens do Fale com a gente; depois ranking e mesa online
+  api: 'https://api.gubfort.workers.dev',    // Servidor do jogo (Cloudflare): mensagens do Fale com a gente; depois ranking e mesa online
   // Área do dono: o link do painel do Umami, cifrado. Só abre com a senha do dono (nunca fica no código).
   dono: {it: 600000, salt: 'Rsv+TFmbGp/qqRK3SjZflA==', iv: 'rbh9acXT08e5qqKS', data: 'pGUT+l1pDLcf1hbMgRRqvf36nSmWePJDvuuU7kFRbuuuHqmguqUMq8Q+aZdHQiAH9kIlbTbE1cDAdtlo97Q7q+oPJOoiPQl2MWKiWe/dBx7kDWxvEDUhoBz1Dknq9aX+fenYQUMD1il6Py4DJY/+qphQmQrKnwGP9KLGLwQeEQ=='},
   patrocinio: {
@@ -1510,6 +1510,10 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.10', data: '07/10/2026', itens: [
+    'Fale com a gente: mande um problema, uma ideia ou um elogio direto pelo app (no início ou no menu da mesa).',
+    'Lembretes para jogar, para maiores de 18: ligue no cartão do início ou no seu perfil. No máximo um a cada 3 dias.'
+  ] },
   { v: '1.9.3', data: '07/10/2026', itens: ['Seu histórico agora mostra as partidas de 200 que você ganhou, além dos jogos completos (melhor de 3 partidas).'] },
   { v: '1.9.2', data: '07/10/2026', itens: [
     'Mesa, placar e mão centralizados na tela: as 7 pedras da mão agora cabem sem empurrar tudo para a direita.',
