@@ -1,4 +1,6 @@
 // Pagamentos pelo Asaas (Pix ou cartão): Plano Apoiador (30 dias ou 1 ano, sem renovação automática) e doações.
+// Doação de R$ 20 leva 30 dias de plano de presente. Quem doa ganha selo ♥ (♥♥ a partir de R$ 30, ♥♥♥ a partir de R$ 100)
+// e um código para levar plano e doações para outro celular.
 // O Asaas avisa o pagamento pelo webhook (CHECKOUT_PAID); só então o plano liga. O jogo nunca vê CPF nem cartão:
 // quem paga preenche tudo na página do Asaas. Aqui fica só o código do aparelho, o produto, o valor e as datas.
 const DIA = 86400000;
@@ -7,7 +9,7 @@ export const PRODUTOS = {
   anual: { nome: 'Plano Apoiador · 1 ano', desc: 'Dominó Manauara: selo de apoiador, jogo sem anúncios, avatares e mesas exclusivos por 1 ano.', valor: 39.90, dias: 366 },
   doacao5: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter o jogo de graça.', valor: 5 },
   doacao10: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter o jogo de graça.', valor: 10 },
-  doacao20: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter o jogo de graça.', valor: 20 }
+  doacao20: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter o jogo de graça. De presente: 30 dias de Plano Apoiador.', valor: 20, brinde: 31 }
 };
 const PEDIDOS_POR_HORA = 12, TROCAS_POR_HORA = 10;
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
@@ -31,17 +33,35 @@ const mudou = res => (res && res.meta && res.meta.changes != null ? res.meta.cha
 async function planoDe(env, aparelho) {
   return await env.DB.prepare('SELECT ate, codigo FROM planos WHERE aparelho = ?').bind(aparelho).first();
 }
+// A "conta de apoio" do aparelho é a linha em planos (ate = 0 quando só doou): é ela que tem o código para trocar de celular.
+async function novaConta(env, aparelho, ate) {
+  for (let k = 0; k < 5; k++) {
+    try { await env.DB.prepare('INSERT INTO planos (aparelho, ate, desde, codigo) VALUES (?, ?, ?, ?)').bind(aparelho, ate, Date.now(), novoCodigo()).run(); return; }
+    catch (e) { if (k === 4) throw e; }   // código repetido (raríssimo): tenta outro
+  }
+}
 async function ligarPlano(env, aparelho, dias) {
   const agora = Date.now(), p = await planoDe(env, aparelho);
   const ate = Math.max(agora, (p && p.ate) || 0) + dias * DIA;
   if (p) await env.DB.prepare('UPDATE planos SET ate = ? WHERE aparelho = ?').bind(ate, aparelho).run();
-  else {
-    for (let k = 0; k < 5; k++) {
-      try { await env.DB.prepare('INSERT INTO planos (aparelho, ate, desde, codigo) VALUES (?, ?, ?, ?)').bind(aparelho, ate, agora, novoCodigo()).run(); break; }
-      catch (e) { if (k === 4) throw e; }   // código repetido (raríssimo): tenta outro
-    }
-  }
+  else await novaConta(env, aparelho, ate);
   return ate;
+}
+async function garantirConta(env, aparelho) { if (!(await planoDe(env, aparelho))) await novaConta(env, aparelho, 0); }
+
+// Doador: quanto já doou (só doações), desde quando apoia (qualquer pagamento) e a última doação
+export const nivelDoador = t => t >= 100 ? 3 : t >= 30 ? 2 : t > 0 ? 1 : 0;
+export async function doadorDe(env, aparelho) {
+  const r = await env.DB.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(valor), 0) AS total, MAX(pago_em) AS ultima FROM pedidos WHERE aparelho = ? AND status = 'pago' AND produto LIKE 'doacao%'").bind(aparelho).first();
+  if (!r || !r.n) return null;
+  const u = await env.DB.prepare("SELECT valor FROM pedidos WHERE aparelho = ? AND status = 'pago' AND produto LIKE 'doacao%' ORDER BY pago_em DESC LIMIT 1").bind(aparelho).first();
+  const d = await env.DB.prepare("SELECT MIN(pago_em) AS desde FROM pedidos WHERE aparelho = ? AND status = 'pago'").bind(aparelho).first();
+  const total = Math.round(r.total * 100) / 100;
+  return { n: r.n, total, desde: d && d.desde, ultima: r.ultima, ultimoValor: u ? u.valor : null, nivel: nivelDoador(total) };
+}
+async function contaDe(env, aparelho) {
+  const p = await planoDe(env, aparelho);
+  return { ate: p && p.ate ? p.ate : null, codigo: p ? p.codigo : null, doador: await doadorDe(env, aparelho) };
 }
 
 // POST /pagar {produto, aparelho} -> cria a página de pagamento do Asaas e devolve o link
@@ -73,8 +93,14 @@ export async function pagar(req, env, origin, h) {
 export async function pedido(env, origin, h, id) {
   const p = await env.DB.prepare('SELECT produto, status, aparelho FROM pedidos WHERE id = ?').bind(id).first();
   if (!p) return h.json({ erro: 'nao-encontrado' }, 404, origin);
-  const out = { status: p.status, produto: p.produto, plano: !!(PRODUTOS[p.produto] && PRODUTOS[p.produto].dias) };
-  if (out.plano && p.status === 'pago' && p.aparelho) { const pl = await planoDe(env, p.aparelho); if (pl) Object.assign(out, { ate: pl.ate, codigo: pl.codigo }); }
+  const prod = PRODUTOS[p.produto] || {};
+  const out = { status: p.status, produto: p.produto, plano: !!prod.dias, brinde: !!prod.brinde };
+  if (p.status === 'pago' && p.aparelho) {
+    const c = await contaDe(env, p.aparelho);
+    if (c.codigo) out.codigo = c.codigo;
+    if (c.ate) out.ate = c.ate;
+    if (c.doador) out.doador = c.doador;
+  }
   return h.json(out, 200, origin);
 }
 
@@ -82,8 +108,7 @@ export async function pedido(env, origin, h, id) {
 export async function plano(env, origin, h, url) {
   const ap = url.searchParams.get('aparelho');
   if (!idOk(ap)) return h.json({ erro: 'aparelho' }, 400, origin);
-  const p = await planoDe(env, ap);
-  return h.json(p ? { ate: p.ate, codigo: p.codigo } : { ate: null }, 200, origin);
+  return h.json(await contaDe(env, ap), 200, origin);
 }
 
 // POST /plano/trazer {codigo, aparelho} -> leva o plano de outro celular para este
@@ -102,9 +127,10 @@ export async function trazerPlano(req, env, origin, h) {
     const ate = Math.max(p.ate, (aqui && aqui.ate) || 0);
     await env.DB.prepare('DELETE FROM planos WHERE aparelho = ?').bind(b.aparelho).run();
     await env.DB.prepare('UPDATE planos SET aparelho = ?, ate = ? WHERE codigo = ?').bind(b.aparelho, ate, codigo).run();
+    // as doações vêm junto (o selo ♥ e o avatar do doador acompanham o código)
+    await env.DB.prepare('UPDATE pedidos SET aparelho = ? WHERE aparelho = ?').bind(b.aparelho, p.aparelho).run();
   }
-  const novo = await planoDe(env, b.aparelho);
-  return h.json({ ate: novo.ate, codigo: novo.codigo }, 200, origin);
+  return h.json(await contaDe(env, b.aparelho), 200, origin);
 }
 
 // POST /asaas/webhook -> o Asaas avisa que o pagamento foi feito
@@ -123,7 +149,10 @@ export async function webhook(req, env, origin, h) {
     if (p && p.status !== 'pago') {
       await env.DB.prepare("UPDATE pedidos SET status = 'pago', pago_em = ? WHERE id = ?").bind(Date.now(), p.id).run();
       const prod = PRODUTOS[p.produto];
-      if (prod && prod.dias && p.aparelho) await ligarPlano(env, p.aparelho, prod.dias);
+      if (prod && p.aparelho) {
+        if (prod.dias || prod.brinde) await ligarPlano(env, p.aparelho, prod.dias || prod.brinde);
+        else await garantirConta(env, p.aparelho);
+      }
     }
   }
   if ((b.event === 'CHECKOUT_CANCELED' || b.event === 'CHECKOUT_EXPIRED') && b.checkout) {

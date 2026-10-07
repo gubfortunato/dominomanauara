@@ -40,6 +40,11 @@ CREATE TABLE IF NOT EXISTS planos (aparelho TEXT PRIMARY KEY, ate INTEGER NOT NU
 CREATE UNIQUE INDEX IF NOT EXISTS planos_codigo ON planos (codigo);
 CREATE TABLE IF NOT EXISTS eventos_asaas (id TEXT PRIMARY KEY, recebido_em INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS tentativas (marca TEXT NOT NULL, tipo TEXT NOT NULL, criado_em INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS pedidos_aparelho ON pedidos (aparelho, status);
+-- Lembrete de renovação: qual inscrição de aviso é de qual aparelho, e quais avisos de "seu plano está acabando" já foram
+CREATE TABLE IF NOT EXISTS avisos_id (endpoint TEXT PRIMARY KEY, aparelho TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS avisos_id_aparelho ON avisos_id (aparelho);
+CREATE TABLE IF NOT EXISTS lembretes_plano (aparelho TEXT NOT NULL, ate INTEGER NOT NULL, enviado_em INTEGER NOT NULL, PRIMARY KEY (aparelho, ate));
 
 -- Patrocinadores (cadastrados pelo dono) e quantas vezes cada espaço apareceu / foi tocado por dia
 CREATE TABLE IF NOT EXISTS patrocinadores (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, texto TEXT, link TEXT, logo INTEGER, banners TEXT, espacos TEXT NOT NULL, inicio INTEGER, fim INTEGER, ativo INTEGER NOT NULL DEFAULT 1, peso INTEGER NOT NULL DEFAULT 1, criado_em INTEGER NOT NULL);

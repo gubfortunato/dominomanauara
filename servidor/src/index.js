@@ -137,6 +137,8 @@ async function listarMensagens(req, env, origin, url) {
 // ---- Lembretes para jogar (Web Push) ----
 const LEMBRETES = [
   { titulo: 'A mesa tá montada', texto: 'A turma do bairro tá te esperando. Bora uma partida?' },
+  { titulo: 'Tá de bubuia?', texto: 'Então bora uma partidinha de dominó. A turma tá esperando.' },
+  { titulo: 'Égua, sumiu!', texto: 'A mesa tá posta e as pedras tão viradas. Bora jogar?' },
   { titulo: 'Seu Raimundo mandou avisar', texto: 'Disse que hoje ninguém ganha dele. Vai deixar?' },
   { titulo: 'Bora bater uma?', texto: 'Uma partidinha de dominó antes da janta.' },
   { titulo: 'Cadê você?', texto: 'Dona Socorro já embaralhou as pedras. Só falta você na mesa.' },
@@ -157,12 +159,16 @@ async function avisosInscrever(req, env, origin) {
   await env.DB.prepare(`INSERT INTO avisos (endpoint, p256dh, auth, aparelho, criado_em, ultimo_jogo) VALUES (?, ?, ?, ?, ?, ?)
     ON CONFLICT(endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth, aparelho = excluded.aparelho`)
     .bind(s.endpoint, s.p256dh, s.auth, limpa(b.aparelho, 80), Date.now(), Date.now()).run();
+  // código do aparelho (o mesmo do plano): só para avisar quando o Plano Apoiador estiver acabando
+  if (/^[a-z0-9-]{8,40}$/i.test(String(b.id || '')))
+    await env.DB.prepare('INSERT INTO avisos_id (endpoint, aparelho) VALUES (?, ?) ON CONFLICT(endpoint) DO UPDATE SET aparelho = excluded.aparelho').bind(s.endpoint, String(b.id)).run();
   return json({ ok: true }, 201, origin);
 }
 async function avisosCancelar(req, env, origin) {
   let b; try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
   if (typeof (b && b.endpoint) !== 'string') return json({ erro: 'formato' }, 400, origin);
   await env.DB.prepare('DELETE FROM avisos WHERE endpoint = ?').bind(b.endpoint).run();
+  await env.DB.prepare('DELETE FROM avisos_id WHERE endpoint = ?').bind(b.endpoint).run();
   return json({ ok: true }, 200, origin);
 }
 async function avisosJogou(req, env, origin) {
@@ -177,7 +183,10 @@ async function mandarPara(lista, msgDe, env) {
   for (const s of lista) {
     let st = 0;
     try { st = await enviarPush(s, msgDe(s), env); } catch (e) { st = 0; }
-    if (st === 404 || st === 410) await env.DB.prepare('DELETE FROM avisos WHERE id = ?').bind(s.id).run();
+    if (st === 404 || st === 410) {
+      await env.DB.prepare('DELETE FROM avisos WHERE id = ?').bind(s.id).run();
+      await env.DB.prepare('DELETE FROM avisos_id WHERE endpoint = ?').bind(s.endpoint).run();
+    }
     if (st >= 200 && st < 300) {
       ok++;
       await env.DB.prepare('UPDATE avisos SET ultimo_envio = ?, envios = envios + 1 WHERE id = ?').bind(Date.now(), s.id).run();
@@ -196,6 +205,19 @@ async function lembretesDoDia(env) {
     .bind(agora - 2 * DIA, agora - 3 * DIA).all();
   const dia = Math.floor(agora / DIA);
   return mandarPara(results || [], s => Object.assign({ url: '/' }, LEMBRETES[(dia + s.id) % LEMBRETES.length]), env);
+}
+// Plano Apoiador acabando (até 3 dias antes): um aviso por vencimento, só para quem ligou os lembretes.
+const diaMes = ms => { const d = new Date(ms - 4 * 3600000); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0'); };
+async function lembretesPlano(env) {
+  if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return { ok: 0, falhas: 0, motivo: 'sem-chaves' };
+  const agora = Date.now();
+  const { results } = await env.DB.prepare(`SELECT a.id, a.endpoint, a.p256dh, a.auth, p.aparelho, p.ate FROM planos p
+    JOIN avisos_id i ON i.aparelho = p.aparelho JOIN avisos a ON a.endpoint = i.endpoint
+    WHERE p.ate > ? AND p.ate <= ? AND NOT EXISTS (SELECT 1 FROM lembretes_plano l WHERE l.aparelho = p.aparelho AND l.ate = p.ate)
+    ORDER BY p.ate LIMIT 8`).bind(agora, agora + 3 * DIA).all();
+  const lista = results || [];
+  for (const s of lista) await env.DB.prepare('INSERT OR IGNORE INTO lembretes_plano (aparelho, ate, enviado_em) VALUES (?, ?, ?)').bind(s.aparelho, s.ate, agora).run();
+  return mandarPara(lista, s => ({ titulo: 'Seu Plano Apoiador está acabando', texto: `Ele vale até ${diaMes(s.ate)}. Toque para renovar e continuar com os seus extras.`, url: '/?apoio=renovar' }), env);
 }
 async function donoAvisos(req, env, origin) {
   if (!(await ehDono(req, env))) return json({ erro: 'nao-autorizado' }, 401, origin);
@@ -273,7 +295,7 @@ export default {
   },
   // Agendado (Cron do Cloudflare): lembretes no fim da tarde de Manaus.
   async scheduled(evento, env, ctx) {
-    ctx.waitUntil(lembretesDoDia(env));
+    ctx.waitUntil((async () => { try { await lembretesPlano(env); } catch (e) {} await lembretesDoDia(env); })());
   }
 };
-export { lembretesDoDia };
+export { lembretesDoDia, lembretesPlano };
