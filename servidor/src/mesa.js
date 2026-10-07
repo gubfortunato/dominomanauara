@@ -12,14 +12,15 @@ const TEMPO = {
   ausente: 25000,    // pessoa sem conexão: o robô joga por ela depois disso
   conferir: 60000    // vez de uma pessoa conectada: confere de novo se ela continua lá
 };
-const SILENCIO = 50000;              // sem sinal do celular há 50 s: conta como desconectado
+const SILENCIO = 50000;
+const REACAO = { intervalo: 2000, porMinuto: 8, maior: 23 };   // reações: só o número de uma frase pronta, nunca texto              // sem sinal do celular há 50 s: conta como desconectado
 const VIDA = 24 * 60 * 60 * 1000;    // a mesa some 24 h depois da última ação
 
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 
 export class Mesa {
   constructor(ctx, env) {
-    this.ctx = ctx; this.env = env; this.m = null;
+    this.ctx = ctx; this.env = env; this.m = null; this.reacoes = {};
     // TEMPO_FATOR só existe no teste local (acelera os robôs); no Cloudflare vale 1
     const f = Number(env && env.TEMPO_FATOR) || 1;
     this.T = Object.fromEntries(Object.entries(TEMPO).map(([k, v]) => [k, v * f]));
@@ -86,6 +87,7 @@ export class Mesa {
       case 'jogar': if (p >= 0) return this.jogar(ws, p, msg); return;
       case 'proxima': if (p >= 0) return this.proxima(msg); return;
       case 'sair': if (p >= 0) return this.sair(ws, p); return;
+      case 'reacao': if (p >= 0) return this.reagir(p, msg.k); return;
     }
   }
   async webSocketClose(ws) { await this.mudouConexao(ws); }
@@ -190,6 +192,19 @@ export class Mesa {
     m.ultimo = Date.now();
     if (m.fase === 'jogo') this.agendar();
     await this.salvar(); this.espalhar();
+  }
+
+  // Reação rápida: frase pronta (o celular sabe o texto pelo número). Sem gravar nada; com limite por pessoa.
+  reagir(p, k) {
+    if (this.m.fase !== 'jogo' || !Number.isInteger(k) || k < 0 || k > REACAO.maior) return;
+    const agora = Date.now();
+    const h = (this.reacoes[p] || []).filter(t => agora - t < 60000);
+    if ((h.length && agora - h[h.length - 1] < REACAO.intervalo) || h.length >= REACAO.porMinuto) return;
+    h.push(agora); this.reacoes[p] = h;
+    for (const ws of this.ctx.getWebSockets()) {
+      const a = ws.deserializeAttachment() || {};
+      if (a.id) this.enviar(ws, { t: 'reacao', p, k });
+    }
   }
 
   // ---------- Relógio: robôs, passe automático e quem caiu ----------
