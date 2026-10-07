@@ -1579,6 +1579,7 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
     </div>
     <a class="secondary dn-full" id="dnFull" href="#" target="_blank" rel="noopener">Abrir o painel completo do Umami</a>
     <label class="dn-sw"><input type="checkbox" id="dnSemContar"><span><b>Não contar meus acessos</b><small>Seus testes neste aparelho ficam fora dos números.</small></span></label>
+    <label class="dn-sw"><input type="checkbox" id="dnTestePag"><span><b>Testar doação e planos neste celular</b><small>Só você vê os botões. Para os jogadores, continua desligado até ajustarmos o Asaas.</small></span></label>
     <button type="button" class="linkbtn" id="dnKeyTrocar">Tenho o plano Pro do Umami: colar a chave</button>
     <button type="button" class="linkbtn" id="dnSair">Sair da Área do administrador neste aparelho</button>
     <p class="note dn-tela" id="dnTela"></p>
@@ -3013,6 +3014,7 @@ function renderDono() {
   $('#dnKey').hidden = true; $('#dnErr').hidden = true;
   $('#dnKeyTrocar').textContent = temChave ? 'Trocar a chave do Umami' : 'Tenho o plano Pro do Umami: colar a chave';
   $('#dnSemContar').checked = !!dono.semContar;
+  $('#dnTestePag').checked = !!dono.testePagamentos;
   $$('#dnRange button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.r === dnRange)));
   dnAoVivo(); dnCarregar();
   clearInterval(dnTimer);
@@ -3112,6 +3114,13 @@ $('#dnRange').addEventListener('click', e => {
   dnRange = b.dataset.r;
   $$('#dnRange button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
   dnCarregar();
+});
+$('#dnTestePag').addEventListener('change', e => {
+  if (!dono) return;
+  dono.testePagamentos = e.target.checked; donoSalvar();
+  if (typeof aplicarPlano === 'function') aplicarPlano();
+  renderDono();
+  toast(e.target.checked ? 'Doação e planos aparecem só neste celular, para você testar.' : 'Doação e planos escondidos de novo.');
 });
 $('#dnSemContar').addEventListener('change', e => {
   dono.semContar = e.target.checked; donoSalvar();
@@ -4227,7 +4236,8 @@ const CORES_MESA = [
 ];
 const PRECO = { mensal: 'R$ 4,90 · 30 dias', anual: 'R$ 39,90 · 1 ano', doacao5: 'R$ 5', doacao10: 'R$ 10', doacao20: 'R$ 20' };
 let apoioVolta = 'home';
-function pagamentosAtivos() { return !!CONFIG.api && (CONFIG.pagamentos || (typeof dono !== 'undefined' && !!dono)); }
+// Doação e planos: desligados para todos até ajustar o Asaas. O administrador pode ligar só no celular dele para testar.
+function pagamentosAtivos() { return !!CONFIG.api && (CONFIG.pagamentos || (typeof dono !== 'undefined' && !!dono && !!dono.testePagamentos)); }
 function planoLocal() { try { return JSON.parse(store.get(PLKEY) || 'null'); } catch (e) { return null; } }
 function temPlano() { const p = planoLocal(); return !!(p && p.ate > Date.now()); }
 const dataBR = ms => new Date(ms).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Manaus' });
