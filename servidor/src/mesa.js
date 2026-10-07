@@ -4,6 +4,7 @@
 // e, se demorar na vez dele, um robô joga por ele até voltar.
 import { newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, tkey, nomeOfensivo, BOT_NAMES } from './motor.js';
 import { nivelDoador } from './pagamentos.js';
+import { fotoPublica } from './fotos.js';
 
 const TEMPO = {
   jogada: 4500,      // robô: espera antes de jogar (igual ao jogo offline)
@@ -69,7 +70,9 @@ export class Mesa {
     let nome = limpa(b.nome, 16);
     if (nome.length < 2 || nomeOfensivo(nome)) nome = 'Jogador';
     const av = /^[a-z0-9_-]{1,16}$/i.test(String(b.av || '')) ? String(b.av) : null;
-    return { id, nome, av, bot: false, saiu: false };
+    let bairro = limpa(b.bairro, 28);
+    if (bairro.length < 2 || nomeOfensivo(bairro)) bairro = null;
+    return { id, nome, av, bairro, bot: false, saiu: false };
   }
 
   // ---------- Mensagens dos celulares ----------
@@ -105,8 +108,9 @@ export class Mesa {
     try {
       const p = await this.env.DB.prepare('SELECT ate FROM planos WHERE aparelho = ?').bind(id).first();
       const d = await this.env.DB.prepare("SELECT COALESCE(SUM(valor), 0) AS t FROM pedidos WHERE aparelho = ? AND status = 'pago' AND produto LIKE 'doacao%'").bind(id).first();
-      return { apoiador: !!(p && p.ate > Date.now()), doador: nivelDoador((d && d.t) || 0) };
-    } catch (e) { return { apoiador: false, doador: 0 }; }
+      let foto = null; try { foto = await fotoPublica(this.env, id); } catch (e) {}
+      return { apoiador: !!(p && p.ate > Date.now()), doador: nivelDoador((d && d.t) || 0), foto };
+    } catch (e) { return { apoiador: false, doador: 0, foto: null }; }
   }
   async entrar(ws, att, msg) {
     const m = this.m;
@@ -117,8 +121,8 @@ export class Mesa {
     if (p >= 0) {
       // voltou (ou abriu em outro aparelho): retoma a cadeira; se tinha saído, volta a jogar
       const c = m.cad[p];
-      if (m.fase === 'espera') { c.nome = quem.nome; c.av = quem.av; }
-      c.apoiador = quem.apoiador; c.doador = quem.doador;
+      if (m.fase === 'espera') { c.nome = quem.nome; c.av = quem.av; c.bairro = quem.bairro; }
+      c.apoiador = quem.apoiador; c.doador = quem.doador; c.foto = quem.foto;
       if (c.saiu) { c.saiu = false; c.bot = false; }
     } else if (m.fase === 'espera') {
       p = [1, 2, 3, 0].find(k => !m.cad[k]);
@@ -285,7 +289,7 @@ export class Mesa {
       });
     }
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
-      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, doador: c.saiu ? 0 : (c.doador || 0), on: c.bot ? true : this.conectado(p) } : null),
+      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot ? null : (c.foto || null), on: c.bot ? true : this.conectado(p) } : null),
       jogo, agora: Date.now() };
   }
   enviar(ws, obj) { try { ws.send(JSON.stringify(obj)); } catch (e) {} }

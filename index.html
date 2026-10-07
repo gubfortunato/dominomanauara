@@ -894,6 +894,26 @@ body{touch-action:manipulation}
 html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 @media (prefers-reduced-motion: reduce){.back.saindo,.back.saindo .sheet,.sheet.troca,.toast.entrando,.sumindo{animation:none!important}}
 
+/* Primeiro passo: instalar o app */
+.inst .inst-topo{display:flex;align-items:center;gap:14px}
+.inst-icone{width:72px;height:72px;border-radius:18px;flex:none;box-shadow:0 8px 18px -8px var(--shadow)}
+.inst-passos{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.inst-passos li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:start;font-size:17px;line-height:1.55;padding:14px;border-radius:16px;background:var(--bg-2);border:1.5px solid var(--line)}
+.inst-n{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--nos);color:var(--bg);font-weight:800;font-size:17px}
+.inst-dentro{border-color:var(--alert)!important}
+.inst-dentro .inst-n{background:var(--alert)}
+.inst-chip{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;padding:3px 10px;margin:1px 2px;border-radius:10px;background:var(--bg);border:1.5px solid var(--line);font-size:15px;line-height:1.4;white-space:nowrap}
+.inst-chip svg{width:19px;height:19px;flex:none;color:#2f7cf6}
+.inst-chip .ios-share{width:19px;height:19px}
+.inst-pontos{font-size:13px;letter-spacing:1px;font-weight:900;color:#2f7cf6}
+.inst-pontos.v{font-size:19px;letter-spacing:0}
+.inst-aviso{margin:0;font-size:15px;line-height:1.5;padding:12px 14px;border-radius:14px;border:1.5px dashed var(--nos)}
+.inst-pular{width:100%}
+
+/* Bairro no perfil e na sala */
+.bairro-sel{width:100%;min-width:0;font:inherit;font-size:17px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);appearance:auto}
+.sala-cad small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
 .sala-entrada,.sala-espera{display:grid;gap:14px}
@@ -1043,7 +1063,11 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
   background:repeating-linear-gradient(92deg, rgba(255,235,205,.025) 0 2px, transparent 2px 7px), radial-gradient(120% 90% at 50% 45%, transparent 35%, rgba(0,0,0,.4)), linear-gradient(105deg, #1a1f24 0 46%, #3b3125 50%, #7a5c36 54% 100%)}
 /* Área do dono: pagamentos */
 .dn-paglista{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-.dn-paglista li{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:baseline;font-size:15px;color:var(--wood-ink);padding:6px 0;border-bottom:1px solid rgba(239,226,204,.15)}
+.dn-paglista li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;font-size:15px;color:var(--wood-ink);padding:6px 0;border-bottom:1px solid rgba(239,226,204,.15)}
+.dn-paglista li span small{display:block}
+.dn-paglista li.devolvido b{text-decoration:line-through;opacity:.6}
+.dn-paglista em{font-style:normal;font-size:13px;opacity:.75}
+.dn-paglista .dn-devolver{font-size:14px;padding:4px 0}
 .dn-paglista small{opacity:.75}
 .dn-pagaviso{margin:0;font-size:14.5px;color:var(--alert)}
 .ap-trazer[open]{grid-template-columns:minmax(0,1fr)}
@@ -1084,6 +1108,25 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
 .obg-ponte{padding-top:10px;border-top:1px solid var(--line)}
 .sc-heart{font-style:normal;color:#c2453a}
 .seat .sn[data-selo]::after{content:attr(data-selo);color:#f0b45e}
+
+/* Foto na mesa online */
+.foto-online{cursor:pointer;object-fit:cover}
+.foto-grande{display:block;width:min(240px,70vw);aspect-ratio:1;object-fit:cover;border-radius:18px;margin:6px auto 14px;box-shadow:0 10px 24px -12px var(--shadow)}
+.foto-denunciar{display:block;margin:12px auto 0;color:var(--alert)}
+.foto-online-box,.foto-online{min-width:0}
+#fotoOnline{margin-top:10px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg-2)}
+#fotoOnline small{font-size:14px;line-height:1.4;color:var(--muted)}
+.foto-plano{margin-top:6px;font-size:15px;text-align:left}
+.dn-fotolista{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.dn-fotolista li{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:12px;align-items:center;color:var(--wood-ink)}
+.dn-fotolista img{width:64px;height:64px;border-radius:12px;object-fit:cover}
+.dn-fotolista span{display:grid;gap:2px;min-width:0}
+.dn-fotolista small{opacity:.75}
+.dn-den{color:#ff8a7a}
+.dn-fotobt{display:grid;gap:4px;justify-items:end}
+.dn-fotobt .primary{width:auto;padding:9px 14px;font-size:15px}
+.dn-fotobt .linkbtn{font-size:14px}
+.dn-fotolista span b{font-family:inherit;font-size:16px;font-weight:800;line-height:1.3}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -1142,6 +1185,7 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
 .sheet h2{padding-right:44px}
 /* Estrela dos extras do plano: selo escuro para aparecer em qualquer fundo */
 .av-star,.ap-cor i,.ap-av i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#2a1a08;color:#f0b45e;font-size:12px;line-height:1;text-shadow:none;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.wood .dn-msglista .m-acoes button.perigo{color:#ff9c8a;border-color:#ff9c8a}
 </style>
 </head>
 <body>
@@ -1173,6 +1217,18 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
     <div class="train go" id="train" role="button" tabindex="0" aria-label="Derrubar as pedras de novo"></div>
   </section>
 
+  <section class="screen panel inst" id="scrInstalar" hidden>
+    <div class="inst-topo">
+      <img class="inst-icone" src="icons/icon-192.png" alt="" width="72" height="72">
+      <div><p class="kicker">Primeiro passo</p><h2 class="brand" style="font-size:30px">Instale o jogo no celular</h2></div>
+    </div>
+    <p class="sala-lead">O Dominó Manauara fica com ícone na tela de início, abre em tela cheia, funciona até sem internet e se atualiza sozinho. Leva menos de um minuto.</p>
+    <ol class="inst-passos" id="instPassos"></ol>
+    <p class="inst-aviso" id="instAviso" hidden></p>
+    <button type="button" class="primary" id="instBtn" hidden>Instalar agora</button>
+    <button type="button" class="secondary inst-pular" id="instPular">Jogar sem instalar</button>
+  </section>
+
   <section class="screen panel" id="scrProfile" hidden>
     <button type="button" class="backbtn" id="profileBack">← Voltar</button>
     <div><p class="kicker">Seu perfil</p><h2 class="brand" style="font-size:30px">Quem vai pra mesa?</h2></div>
@@ -1187,11 +1243,20 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
       </div>
       <p class="note">Guardamos só a faixa, não a data de nascimento, e ela fica neste aparelho.</p>
     </div>
+    <div class="field" id="bairroField">
+      <label for="bairroSel">Seu bairro <small>· se quiser</small></label>
+      <select id="bairroSel" class="bairro-sel"></select>
+      <p class="note">Aparece na mesa online para quem está jogando com você. Fica guardado só neste celular.</p>
+    </div>
     <div class="field">
       <span class="flabel">Sua cara na mesa</span>
       <div class="avatars" id="avatarGrid" role="radiogroup" aria-label="Escolha sua foto ou um avatar"></div>
       <div class="links" id="photoTools" hidden><button type="button" class="linkbtn" id="photoChange">Trocar foto</button><button type="button" class="linkbtn" id="photoRemove">Remover foto</button></div>
       <input type="file" id="photoInput" accept="image/*" hidden>
+      <div class="foto-online" id="fotoOnline" hidden>
+        <label class="dn-sw"><input type="checkbox" id="fotoOnlineSw"><span><b>Mostrar minha foto na mesa online</b><small id="fotoOnlineTx"></small></span></label>
+      </div>
+      <button type="button" class="linkbtn foto-plano" id="fotoPlano" hidden>Com o Plano Apoiador, sua foto aparece na mesa online ›</button>
       <p class="note" id="fotoNota">Com foto, os outros jogadores veem que você é gente de verdade: ela vai aparecer na mesa online, que está chegando. Não quer aparecer? Escolha um avatar.</p>
     </div>
     <div class="perfil-avisos" id="perfilAvisos" hidden><span>🔔 Lembretes para jogar estão ligados.</span><button type="button" class="linkbtn" id="perfilAvisosOff">Desligar</button></div>
@@ -1216,7 +1281,7 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
       <span class="cd" id="resumeD"></span>
     </button>
     <button type="button" class="card wood" id="goOffline">
-      <span class="ck">Jogo offline</span><span class="ct">Você contra a turma do bairro</span>
+      <span class="ck" id="offlineK">Jogo offline</span><span class="ct">Você contra a turma do bairro</span>
       <span class="cd">Você e um parceiro contra dois adversários, todos no mesmo nível e sem pressa. Funciona até sem internet.</span>
     </button>
     <button type="button" class="card wood mesa-volta" id="goMesa" hidden>
@@ -1363,6 +1428,7 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
       <ul class="ap-lista">
         <li><span class="ap-ic" aria-hidden="true">★</span><span><b>Selo de apoiador</b> ao lado do seu nome na mesa online</span></li>
         <li><span class="ap-ic" aria-hidden="true">✓</span><span><b>Jogo sem anúncios</b></span></li>
+        <li><span class="ap-ic" aria-hidden="true">◉</span><span><b>Sua foto na mesa online</b>, depois de aprovada</span></li>
         <li><span class="ap-ic" aria-hidden="true">☺</span><span><b>Avatares exclusivos</b>: coroa, óculos escuros, bonés vermelho e azul de Parintins</span></li>
         <li><span class="ap-ic" aria-hidden="true">◼</span><span><b>Cores de mesa</b>: Garantido, Caprichoso, Encontro das Águas, Rio Negro, açaí, tucumã e feltro verde</span></li>
       </ul>
@@ -1481,6 +1547,11 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
       <ul id="dnMsgLista" class="dn-msglista"></ul>
     </div>
     <button type="button" class="dn-patro-card" id="dnPatroCard" hidden><span class="ck">Patrocinadores</span><b id="dnPatroTx">Cadastrar e ver os números</b><span class="rc-go" aria-hidden="true">›</span></button>
+    <div class="dn-list wood dn-fotos" id="dnFotos" hidden>
+      <span class="ck">Fotos da mesa online</span>
+      <p class="dn-avn" id="dnFotosTx"></p>
+      <ul class="dn-fotolista" id="dnFotosLista"></ul>
+    </div>
     <div class="dn-list wood dn-pag" id="dnPag" hidden>
       <span class="ck">Apoios e planos</span>
       <div class="mt-nums dn-3"><div><b id="dnPagMes">R$ 0</b><small>este mês</small></div><div><b id="dnPagAtivos">0</b><small>planos ativos</small></div><div><b id="dnPagTotal">R$ 0</b><small>desde o início</small></div></div>
@@ -1949,6 +2020,11 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '2.7', data: '07/10/2026', itens: [
+    'Instalar o app agora é o primeiro passo, com o passo a passo para iPhone e Android (dá para pular).',
+    'Escolha o seu bairro no perfil: ele aparece na mesa online, para quem joga com você.',
+    'Avatares novos: torcedor do Garantido e torcedora do Caprichoso.'
+  ] },
   { v: '2.6', data: '07/10/2026', itens: [
     'A mesa fica parada: o zoom não vai e volta mais a cada jogada. Ela só se afasta quando a fileira precisa de espaço.',
     'Janelas, avisos, a festa de fim de partida e a mesa ampliada agora fecham suave.',
@@ -2059,6 +2135,11 @@ function shade(hex, k) {
   return '#' + [n >> 16, (n >> 8) & 255, n & 255]
     .map(v => Math.max(0, Math.min(255, Math.round(k < 0 ? v * (1 + k) : v + (255 - v) * k))).toString(16).padStart(2, '0')).join('');
 }
+function estrelaD(R, r) {
+  let d = '';
+  for (let k = 0; k < 10; k++) { const ang = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r : R; d += (k ? 'L' : 'M') + (rr * Math.cos(ang)).toFixed(2) + ' ' + (rr * Math.sin(ang)).toFixed(2); }
+  return d + 'Z';
+}
 function avatarSVG(a) {
   const skin = a.skin, dk = shade(skin, -0.16), hc = a.hc || HAIR.preto, ink = '#2a1a10';
   let back = '', hair = '', top = '';
@@ -2101,6 +2182,8 @@ function avatarSVG(a) {
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><clipPath id="c"><circle cx="50" cy="50" r="50"/></clipPath></defs>'
     + `<g clip-path="url(#c)"><rect width="100" height="100" fill="${a.bg}"/>${back}`
     + `<path d="M12 104C14 80 30 71 50 71S86 80 88 104Z" fill="${a.shirt}"/><path d="M43 62H57V72Q50 78 43 72Z" fill="${dk}"/><path d="M42.5 71.5L50 79.5L57.5 71.5Z" fill="${dk}"/>`
+    + (a.emblema === 'coracao' ? '<path transform="translate(50 92) scale(1.9)" d="M0 4C-1.5 2.6-5 .2-5-2.6C-5-4.4-3.7-5.6-2.3-5.6C-1.2-5.6-.4-5 0-4.2C.4-5 1.2-5.6 2.3-5.6C3.7-5.6 5-4.4 5-2.6C5 .2 1.5 2.6 0 4Z" fill="#fff"/>' : '')
+    + (a.emblema === 'estrela' ? '<path transform="translate(50 91.5)" d="' + estrelaD(8.6, 3.6) + '" fill="#fff"/>' : '')
     + (a.coracao ? '<path transform="translate(63.5 89) scale(1.25)" d="M0 4C-1.5 2.6-5 .2-5-2.6C-5-4.4-3.7-5.6-2.3-5.6C-1.2-5.6-.4-5 0-4.2C.4-5 1.2-5.6 2.3-5.6C3.7-5.6 5-4.4 5-2.6C5 .2 1.5 2.6 0 4Z" fill="#e23b3b" stroke="#fff" stroke-width="1"/>' : '')
     + `<circle cx="32.8" cy="47.5" r="4.4" fill="${dk}"/><circle cx="67.2" cy="47.5" r="4.4" fill="${dk}"/><ellipse cx="50" cy="45" rx="17" ry="20" fill="${skin}"/>`
     + `${hair}${face}${top}</g></svg>`;
@@ -2122,7 +2205,10 @@ const AVATARS = [
   { id: 'a8', bg: '#e58a6c', skin: SKIN.escuro, style: 'cacheado', hc: HAIR.preto, barba: HAIR.preto, shirt: '#e5a650' },
   { id: 'a9', bg: '#a7c97a', skin: SKIN.claro, style: 'curto', hc: HAIR.castanho, shirt: '#7d4e7a' },
   { id: 'a10', bg: '#7d9fc2', skin: SKIN.medio, style: 'bone', cap: '#1f4e79', hc: HAIR.castanho, barba: HAIR.castanho, shirt: '#e9c46a' },
-  { id: 'a11', bg: '#f0b98b', skin: SKIN.escuro, style: 'cacheado', hc: HAIR.preto, shirt: '#245e6a' }
+  { id: 'a11', bg: '#f0b98b', skin: SKIN.escuro, style: 'cacheado', hc: HAIR.preto, shirt: '#245e6a' },
+  // Parintins: os dois bois, sempre juntos (cores e símbolo, sem logotipo de ninguém)
+  { id: 'a12', nome: 'Torcedor do Garantido', bg: '#f3d29b', skin: SKIN.jambo, style: 'curto', hc: HAIR.preto, bigode: HAIR.preto, shirt: '#c8102e', emblema: 'coracao' },
+  { id: 'a13', nome: 'Torcedora do Caprichoso', bg: '#bcd3ee', skin: SKIN.moreno, style: 'longo', hc: HAIR.preto, shirt: '#0b3d91', emblema: 'estrela' }
 ];
 // Avatares do Plano Apoiador: aparecem para todo mundo, mas só quem tem o plano escolhe.
 AVATARS.push(
@@ -2159,6 +2245,19 @@ const BOTS = [
   { name: 'Juca', av: { bg: '#e8c07d', skin: SKIN.escuro, style: 'curto', hc: HAIR.preto, barba: HAIR.preto, shirt: '#245e6a' } }
 ];
 const BOT_NAMES = BOTS.map(b => b.name);
+
+// ---- Bairros de Manaus (os 63 oficiais) + quem é de fora ----
+const BAIRROS = ['Adrianópolis', 'Aleixo', 'Alvorada', 'Armando Mendes', 'Betânia', 'Cachoeirinha', 'Centro', 'Chapada', 'Cidade de Deus',
+  'Cidade Nova', 'Colônia Antônio Aleixo', 'Colônia Oliveira Machado', 'Colônia Santo Antônio', 'Colônia Terra Nova', 'Compensa', 'Coroado',
+  'Crespo', 'Da Paz', 'Distrito Industrial I', 'Distrito Industrial II', 'Dom Pedro', 'Educandos', 'Flores', 'Gilberto Mestrinho', 'Glória',
+  'Japiim', 'Jorge Teixeira', 'Lago Azul', 'Lírio do Vale', 'Mauazinho', 'Monte das Oliveiras', 'Morro da Liberdade', 'Nossa Senhora Aparecida',
+  'Nossa Senhora das Graças', 'Nova Cidade', 'Nova Esperança', 'Novo Aleixo', 'Novo Israel', 'Parque 10 de Novembro', 'Petrópolis', 'Planalto',
+  'Ponta Negra', 'Praça 14 de Janeiro', 'Presidente Vargas', 'Puraquequara', 'Raiz', 'Redenção', 'Santa Etelvina', 'Santa Luzia', 'Santo Agostinho',
+  'Santo Antônio', 'São Francisco', 'São Geraldo', 'São Jorge', 'São José Operário', 'São Lázaro', 'São Raimundo', 'Tancredo Neves', 'Tarumã',
+  'Tarumã-Açu', 'Vila Buriti', 'Vila da Prata', 'Zumbi dos Palmares'];
+const BAIRROS_FORA = ['Interior do Amazonas', 'Outro lugar'];
+// Bairro que aparece para os outros: menor de idade nunca mostra
+function meuBairro() { return profile && profile.idade !== 'menor' && profile.bairro && (BAIRROS.includes(profile.bairro) || BAIRROS_FORA.includes(profile.bairro)) ? profile.bairro : null; }
 
 // ---- Perfil: nome e foto ficam só neste celular ----
 const PKEY = 'dmz-perfil', FKEY = 'dmz-foto', GKEY = 'dmz-jogo', HKEY = 'dmz-historico';
@@ -2220,7 +2319,7 @@ function toast(msg) {
   clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 4200);
 }
 // Troca de tela com fade: a tela atual some suave e a próxima aparece suave.
-const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Anuncie', 'Apoio', 'Patro'];
+const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Anuncie', 'Apoio', 'Patro', 'Instalar'];
 let showTimer = null;
 function show(name) {
   if (window.__reloadWhenFree && name !== 'game') { recarregar(name); return; }
@@ -2242,6 +2341,7 @@ function show(name) {
     if (name === 'anuncie') renderAnuncie();
     if (name === 'apoio') renderApoioTela();
     if (name === 'patro') renderPatroTela();
+    if (name === 'instalar') renderInstalar();
     if (name === 'game' && G) render();
   };
   if (!cur || reduce) { finish(); return; }
@@ -2280,18 +2380,23 @@ function renderEntry() {
 }
 $('#roundTable').addEventListener('click', e => { if (e.target.closest('#meSeat')) openProfile('who'); });
 $('#enterBtn').addEventListener('click', () => {
+  // quem está no navegador do celular instala primeiro (dá para pular)
+  if (typeof deveMostrarInstalar === 'function' && deveMostrarInstalar()) { abrirInstalar(); return; }
+  entrarNoJogo();
+});
+function entrarNoJogo() {
   if (!profile) { openProfile('who'); return; }
   // Perfis de antes da pergunta de idade: falta só ela.
   if (!profile.idade) { openProfile('who'); toast('Falta só uma coisa: escolha a sua faixa de idade.'); return; }
   show('home');
-});
+}
 $$('[data-go="home"]').forEach(b => b.addEventListener('click', () => show('home')));
 
 // ---- Perfil ----
 let draft = { name: '', av: null, photo: null, idade: null }, profileFrom = 'who';
 function openProfile(from) {
   profileFrom = from || 'who';
-  draft = { name: profile ? profile.name : '', av: profile ? profile.av : null, photo, idade: profile ? profile.idade || null : null };
+  draft = { name: profile ? profile.name : '', av: profile ? profile.av : null, photo, idade: profile ? profile.idade || null : null, bairro: profile ? profile.bairro || '' : '' };
   if (draft.av === 'foto' && !draft.photo) draft.av = null;
   $('#nameInput').value = draft.name;
   show('profile');
@@ -2300,7 +2405,7 @@ const CAM = '<svg viewBox="0 0 24 24" class="cam" aria-hidden="true"><path d="M3
 const FOTO_NOTA = 'A foto fica só neste celular, para você se ver na mesa. Na mesa online, os outros veem um avatar.';
 function avatarBtn(a, i) {
   const exclusivo = a.premium || a.doador, trancado = exclusivo && !avatarLivre(a);
-  const rotulo = a.doador ? 'Avatar do doador' : a.premium ? 'Avatar exclusivo do Plano Apoiador' : 'Avatar ' + (i + 1);
+  const rotulo = a.doador ? 'Avatar do doador' : a.premium ? 'Avatar exclusivo do Plano Apoiador' : a.nome || 'Avatar ' + (i + 1);
   const selo = trancado ? '<i class="av-lock" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg></i>'
     : a.doador ? '<i class="av-star av-heart" aria-hidden="true">♥</i>' : a.premium ? '<i class="av-star" aria-hidden="true">★</i>' : '';
   return `<button type="button" class="avbtn${exclusivo ? ' premium' : ''}${a.doador ? ' doador' : ''}${trancado ? ' trancado' : ''}" role="radio" aria-checked="${draft.av === a.id}" data-av="${a.id}" aria-label="${rotulo}${trancado ? ', trancado' : ''}"><span class="face">${selo}<img src="${avatarURI(a)}" alt=""></span></button>`;
@@ -2317,6 +2422,11 @@ function renderProfile() {
   const menor = draft.idade === 'menor';
   if (menor && (draft.photo || draft.av === 'foto')) { draft.photo = null; if (draft.av === 'foto') draft.av = null; }
   $('#fotoNota').textContent = menor ? 'Menores de 18 anos jogam com avatar, sem foto. Escolha o seu.' : FOTO_NOTA;
+  // bairro: só para maiores de 18 (menor não diz onde mora para estranhos)
+  $('#bairroField').hidden = menor;
+  const sel = $('#bairroSel');
+  if (!sel.options.length) sel.innerHTML = '<option value="">Prefiro não dizer</option><optgroup label="Manaus">' + BAIRROS.map(b => `<option>${esc(b)}</option>`).join('') + '</optgroup><optgroup label="Fora de Manaus">' + BAIRROS_FORA.map(b => `<option>${esc(b)}</option>`).join('') + '</optgroup>';
+  sel.value = menor ? '' : (draft.bairro || '');
   const ph = draft.photo;
   $('#avatarGrid').innerHTML =
     (menor ? '' : `<button type="button" class="avbtn photo${ph ? ' has' : ''}" role="radio" aria-checked="${draft.av === 'foto'}" data-av="foto"><span class="face">${ph ? `<img src="${ph}" alt="">` : CAM}</span><span>${ph ? 'Sua foto' : 'Pôr foto'}</span></button>`)
@@ -2327,6 +2437,7 @@ function renderProfile() {
   $('#photoTools').hidden = !ph;
   renderPerfilAvisos();
 }
+$('#bairroSel').addEventListener('change', e => { draft.bairro = e.target.value; });
 $('#idadeSeg').addEventListener('click', e => {
   const b = e.target.closest('button[data-i]'); if (!b) return;
   draft.idade = b.dataset.i; renderProfile();
@@ -2383,6 +2494,7 @@ $('#saveProfile').addEventListener('click', () => {
   }
   if (av === 'foto' && !photo) av = 'a1';
   profile = { name, av, idade: draft.idade }; me = name;
+  if (draft.idade !== 'menor' && draft.bairro) profile.bairro = draft.bairro;
   if (draft.idade === 'menor' && avisosLigados()) desligarAvisos(true);
   store.set(PKEY, JSON.stringify(profile));
   show('home');
@@ -2395,6 +2507,7 @@ function renderHome() {
   renderResume(); renderMyTreino(); renderInstall(); renderSponsor(); readySlides();
   $('#fbCard').hidden = !(CONFIG.api || CONFIG.whats);
   renderApoio(); renderDonoCard(); renderAvisos();
+  $('#offlineK').textContent = 'Jogo offline' + (meuBairro() && BAIRROS.includes(meuBairro()) ? ' · ' + meuBairro() : '');
   const nv = typeof nivelDoador === 'function' ? nivelDoador() : 0;
   $('#homeName').innerHTML = esc(me) + (isApoiador() ? `<span class="apoiador">Apoiador${nv ? ' ' + '♥'.repeat(nv) : ''}</span>` : '');
 }
@@ -3580,7 +3693,7 @@ function conectar(cod) {
   ON.ws = ws;
   ws.onopen = () => {
     ON.tent = 0;
-    ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv() }));
+    ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv(), bairro: meuBairro() }));
     clearInterval(ON.pingT);
     ON.pingT = setInterval(() => { try { if (ws.readyState === 1) ws.send('ping'); } catch (e) {} }, 25000);
     statusOnline();
@@ -3644,6 +3757,12 @@ function mostrarReacao(pos, txt) {
   const el = $(`.seat[data-pos="${pos}"] .bubble`); if (!el) return;
   el.textContent = txt; el.classList.remove('galo'); el.classList.add('show', 'reacao');
   clearTimeout(bubbleTimers[pos]); bubbleTimers[pos] = setTimeout(() => el.classList.remove('show', 'reacao'), FALA_MS);
+}
+// Linha de baixo de cada cadeira na sala: bairro e se está conectado ("Compensa · na mesa")
+function salaSub(c, pos) {
+  const b = pos === 0 ? meuBairro() : c.bairro, est = pos === 0 ? '' : c.on ? 'na mesa' : 'sem conexão';
+  const t = [b, est].filter(Boolean).join(' · ');
+  return t ? t[0].toUpperCase() + t.slice(1) : '';
 }
 function abrirReacoes() {
   if (mode !== 'on') return;
@@ -3869,7 +3988,7 @@ async function criarMesa() {
   const b = $('#salaCriar'); b.disabled = true; b.textContent = 'Criando…';
   try {
     const r = await fetch(CONFIG.api + '/mesa/nova', { method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv() }) });
+      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro() }) });
     const j = await r.json().catch(() => ({}));
     if (r.status === 201 && j.codigo) { track('mesa-online-criada'); ON.vista = null; conectar(j.codigo); renderSala(); return; }
     toast(r.status === 429 ? 'Muitas mesas criadas agora. Tente de novo daqui a pouco.' : 'Não deu para criar a mesa. Tente de novo.');
@@ -3917,8 +4036,8 @@ function renderSala() {
     const p = (pos + v.minha) % 4, c = v.cad[p];
     const tag = `<span class="sc-tag ${pos === 2 ? 'par' : pos === 0 ? 'eu' : 'adv'}">${NOME_POS[pos]}</span>`;
     if (!c) return `<button type="button" class="sala-cad vazia ${POS_CLASS[pos]}" data-p="${p}">${tag}<span class="sc-face sc-vazia" aria-hidden="true">+</span><b>Cadeira vazia</b><small>Toque para sentar aqui</small></button>`;
-    const face = pos === 0 ? faceImg(myFaceURI(), 'sc-img') : (AVATARS.find(a => a.id === c.av) ? faceImg(avatarURI(AVATARS.find(a => a.id === c.av)), 'sc-img') : `<span class="sc-letra">${esc(c.nome[0] || '?')}</span>`);
-    return `<div class="sala-cad ${POS_CLASS[pos]}${c.on ? '' : ' fora'}">${tag}<span class="sc-face">${face}<i class="sc-on${c.on ? ' ok' : ''}" aria-hidden="true"></i></span><b>${esc(pos === 0 ? 'Você' : c.nome)}${c.apoiador ? ' <i class="sc-star" title="Apoiador">★</i>' : ''}${c.doador ? ` <i class="sc-heart" title="Doador">${'♥'.repeat(c.doador)}</i>` : ''}</b><small>${pos === 0 ? '' : c.on ? 'Na mesa' : 'Sem conexão'}</small></div>`;
+    const face = pos === 0 ? faceImg(myFaceURI(), 'sc-img') : c.foto && !fotoEscondida(c.foto) ? fotoOnlineImg(c, 'sc-img') : (AVATARS.find(a => a.id === c.av) ? faceImg(avatarURI(AVATARS.find(a => a.id === c.av)), 'sc-img') : `<span class="sc-letra">${esc(c.nome[0] || '?')}</span>`);
+    return `<div class="sala-cad ${POS_CLASS[pos]}${c.on ? '' : ' fora'}">${tag}<span class="sc-face">${face}<i class="sc-on${c.on ? ' ok' : ''}" aria-hidden="true"></i></span><b>${esc(pos === 0 ? 'Você' : c.nome)}${c.apoiador ? ' <i class="sc-star" title="Apoiador">★</i>' : ''}${c.doador ? ` <i class="sc-heart" title="Doador">${'♥'.repeat(c.doador)}</i>` : ''}</b><small>${esc(salaSub(c, pos))}</small></div>`;
   }).join('') + '<div class="sala-centro" aria-hidden="true"></div>';
   $$('#salaMesa .vazia').forEach(b => b.addEventListener('click', () => mandar({ t: 'sentar', cadeira: Number(b.dataset.p) })));
   const vazias = v.cad.filter(c => !c).length;
@@ -4396,10 +4515,22 @@ async function dnPagCarregar() {
     $('#dnPagAtivos').textContent = j.planosAtivos || 0;
     $('#dnPagTotal').textContent = reais(j.tudo && j.tudo.soma);
     $('#dnPagAviso').hidden = !!j.ligado;
-    $('#dnPagLista').innerHTML = (j.ultimos || []).map(u => `<li><span>${esc(NOME_PRODUTO[u.produto] || u.produto)}</span><b>${reais(u.valor)}</b><small>${dataBR(u.pago_em)}</small></li>`).join('')
+    $('#dnPagLista').innerHTML = (j.ultimos || []).map(u => `<li class="${u.status === 'devolvido' ? 'devolvido' : ''}"><span>${esc(NOME_PRODUTO[u.produto] || u.produto)}<small>${dataBR(u.pago_em)}</small></span><b>${reais(u.valor)}</b>`
+      + (u.status === 'devolvido' ? '<em>devolvido</em>' : `<button type="button" class="linkbtn dn-devolver" data-id="${esc(u.id)}">Devolvido?</button>`) + '</li>').join('')
       || '<li class="dn-empty"><span>Nenhum pagamento ainda.</span></li>';
   } catch (e) { box.hidden = true; }
 }
+// Devolveu o dinheiro no Asaas? Marca aqui: sai o selo ♥ e os dias de plano daquele pagamento.
+$('#dnPagLista').addEventListener('click', async e => {
+  const b = e.target.closest('.dn-devolver'); if (!b || !dono || !dono.admin) return;
+  if (!confirm('Marcar este pagamento como devolvido?\n\nFaça a devolução no Asaas antes. Aqui só tiramos o selo de doador e os dias de plano que esse pagamento deu.')) return;
+  b.disabled = true;
+  try {
+    const r = await fetch(CONFIG.api + '/dono/pagamentos/' + b.dataset.id + '/devolver', { method: 'POST', headers: { 'x-admin-key': dono.admin } });
+    toast(r.ok ? 'Marcado como devolvido.' : 'Não deu agora. Tente de novo.');
+  } catch (err) { toast('Sem internet agora.'); }
+  dnPagCarregar();
+});
 const renderDonoBase = renderDono;
 renderDono = function () { renderDonoBase(); dnPagCarregar(); };
 
@@ -4919,6 +5050,199 @@ function telaInicial() {
   if (!v || !profile || Date.now() - v.t > 60000) return 'who';
   return ['apoio', 'anuncie', 'fale', 'dono', 'patro'].includes(v.tela) ? v.tela : 'home';
 }
+
+// ===== Instalar o app: o primeiro passo de quem abre o jogo pelo navegador do celular =====
+// Aparece ao tocar em "Começar"/"Entrar", uma vez por visita, até instalar. Dá para pular ("Jogar sem instalar").
+// Quem chegou por convite de mesa entra direto (o convite não sobrevive à instalação).
+const INSTPULO = 'dmz-instalar-pulou';
+function plataformaInstalar() {
+  if (isStandalone()) return null;
+  if (isIOS()) return 'ios';
+  if (installEvt) return 'android';
+  if (/android/i.test(navigator.userAgent)) return 'android-menu';
+  return null;   // computador: não precisa
+}
+function deveMostrarInstalar() {
+  if (!plataformaInstalar()) return false;
+  try { if (sessionStorage.getItem(INSTPULO)) return false; } catch (e) {}
+  if (store.get(CONVITE)) return false;
+  return true;
+}
+function abrirInstalar() { track('instalar-aberto'); show('instalar'); }
+const MAIS_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+const chip = (t, ic) => `<span class="inst-chip">${ic || ''}${t ? `<b>${t}</b>` : ''}</span>`;
+function renderInstalar() {
+  const pl = plataformaInstalar(), lista = $('#instPassos'), aviso = $('#instAviso');
+  $('#instBtn').hidden = pl !== 'android';
+  let passos = [];
+  if (pl === 'ios') {
+    passos = [
+      `No Safari, toque em ${chip('', '<span class="inst-pontos">•••</span>')} no canto de baixo e depois em ${chip('Compartilhar', SHARE_ICON)}. Se o botão Compartilhar já estiver na barra, toque direto nele.`,
+      `Role a lista e toque em ${chip('Adicionar à Tela de Início', MAIS_ICON)}. Se não aparecer, toque antes em <b>Ver mais</b>.`,
+      `Deixe ligado <b>Abrir como App Web</b> e toque em ${chip('Adicionar')}.`,
+      'Pronto! Feche o Safari e abra o <b>Dominó Manauara</b> pelo ícone na tela de início.'
+    ];
+  } else if (pl === 'android') {
+    passos = ['Toque em <b>Instalar agora</b>, aqui embaixo.', 'Confirme em <b>Instalar</b>.', 'Abra o <b>Dominó Manauara</b> pelo ícone na tela inicial.'];
+  } else if (pl === 'android-menu') {
+    passos = [`No Chrome, toque em ${chip('', '<span class="inst-pontos v">⋮</span>')} no canto de cima.`,
+      `Toque em ${chip('Instalar app')} ou ${chip('Adicionar à tela inicial')}.`, 'Abra o <b>Dominó Manauara</b> pelo ícone na tela inicial.'];
+  }
+  if (pl === 'ios' && /CriOS|FxiOS|EdgiOS/i.test(navigator.userAgent)) passos[0] = passos[0].replace('No Safari,', 'No navegador,');
+  lista.innerHTML = passos.map((p, i) => `<li><span class="inst-n">${i + 1}</span><span>${p}</span></li>`).join('');
+  // No iPhone, o app instalado começa do zero (o Safari não passa o que está guardado nele)
+  const temCoisa = profile || (typeof loadHist === 'function' && (loadHist().jogos || loadHist().partidas));
+  aviso.hidden = !(pl === 'ios' && temCoisa);
+  aviso.innerHTML = 'No iPhone, o app instalado começa do zero: você cria o perfil de novo lá. Se tiver Plano Apoiador ou selo de doador, use o código em "Apoie o jogo" para levar junto.';
+  if (pl === 'ios' && /FBAN|FBAV|Instagram|Line\//i.test(navigator.userAgent))
+    lista.insertAdjacentHTML('afterbegin', '<li class="inst-dentro"><span class="inst-n">!</span><span>Você abriu o jogo dentro de outro app. Toque nos três pontinhos e escolha <b>Abrir no navegador</b> (Safari) primeiro.</span></li>');
+}
+$('#instBtn').addEventListener('click', async () => {
+  if (!installEvt) { renderInstalar(); return; }
+  const ev = installEvt; installEvt = null;
+  try { ev.prompt(); const r = await ev.userChoice; if (r && r.outcome === 'accepted') { track('instalou'); toast('Instalado! Abra o Dominó Manauara pelo ícone na tela inicial.'); } } catch (e) {}
+  renderInstalar();
+});
+$('#instPular').addEventListener('click', () => {
+  try { sessionStorage.setItem(INSTPULO, '1'); } catch (e) {}
+  track('instalar-pulou');
+  entrarNoJogo();
+});
+
+// ===== Foto na mesa online (Plano Apoiador) =====
+// Só com o plano em dia, só para maiores de 18, e só aparece para os outros depois que o administrador aprova.
+// Qualquer jogador pode denunciar: a foto sai da mesa na hora e volta para revisão.
+const FOTOON = 'dmz-foto-online', FOTOENV = 'dmz-foto-enviada', FOTOESC = 'dmz-fotos-escondidas';
+let fotoStatus = null;
+function fotoOnlineLigada() { return store.get(FOTOON) === '1'; }
+const fotoMarca = f => f ? f.length + ':' + f.slice(-40) : '';
+function fotoOnlineURL(pub) { return CONFIG.api + '/foto/' + pub; }
+function fotoEscondida(pub) { try { return (JSON.parse(sessionStorage.getItem(FOTOESC) || '[]')).includes(pub); } catch (e) { return false; } }
+function fotoOnlineImg(c, cls) {
+  return `<img class="${cls || ''} foto-online" src="${esc(fotoOnlineURL(c.foto))}" data-pub="${esc(c.foto)}" data-nome="${esc(c.nome)}" alt="Foto de ${esc(c.nome)}">`;
+}
+async function fotoConferir() {
+  if (!CONFIG.api || !fotoOnlineLigada()) { fotoStatus = null; return; }
+  try {
+    const r = await fetch(CONFIG.api + '/foto/status?aparelho=' + encodeURIComponent(meuId()));
+    if (r.ok) { fotoStatus = (await r.json()).status; if (screen === 'profile') renderFotoOnline(); }
+  } catch (e) {}
+}
+async function fotoEnviar() {
+  try {
+    const r = await fetch(CONFIG.api + '/foto', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ aparelho: meuId(), dados: photo }) });
+    if (r.status === 201) { fotoStatus = 'pendente'; store.set(FOTOON, '1'); store.set(FOTOENV, fotoMarca(photo)); toast('Foto enviada. Ela aparece na mesa online depois de aprovada.'); track('foto-online-enviada'); return; }
+    toast(r.status === 403 ? 'A foto na mesa online é do Plano Apoiador.' : r.status === 429 ? 'Muitas fotos hoje. Tente amanhã.' : 'Não deu para mandar a foto agora. Tente de novo.');
+  } catch (e) { toast('Sem internet agora. A foto vai quando você salvar o perfil de novo.'); }
+}
+async function fotoApagar() {
+  store.del(FOTOON); store.del(FOTOENV); fotoStatus = null;
+  try { await fetch(CONFIG.api + '/foto/apagar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ aparelho: meuId() }) }); } catch (e) {}
+}
+const FOTO_TX = {
+  pendente: 'Enviada. Aparece na mesa online depois que o administrador aprovar.',
+  aprovada: 'Aprovada: quem joga com você vê a sua foto.',
+  recusada: 'Não aprovada. Use uma foto só do seu rosto, sem outras pessoas, texto ou propaganda.',
+  denunciada: 'Em revisão: alguém denunciou a foto. Enquanto isso, aparece o seu avatar.'
+};
+// No perfil: a chave aparece com foto + plano; sem plano, um link discreto para conhecer
+function renderFotoOnline() {
+  const box = $('#fotoOnline'), link = $('#fotoPlano');
+  const base = typeof pagamentosAtivos === 'function' && pagamentosAtivos() && draft.idade !== 'menor' && !!draft.photo;
+  box.hidden = !(base && temPlano());
+  link.hidden = !(base && !temPlano());
+  if (box.hidden) return;
+  $('#fotoOnlineSw').checked = !!draft.fotoOnline;
+  const mudou = fotoMarca(draft.photo) !== store.get(FOTOENV);
+  $('#fotoOnlineTx').textContent = !draft.fotoOnline ? 'Os outros veem o seu avatar. Ligue para mandar a foto para aprovação.'
+    : mudou || !fotoStatus ? 'Ao salvar, a foto vai para aprovação. Depois de aprovada, aparece na mesa online.'
+    : FOTO_TX[fotoStatus] || FOTO_TX.pendente;
+}
+const openProfileFoto = openProfile;
+openProfile = function (from) {
+  draft.fotoOnline = false;
+  openProfileFoto(from);
+  draft.fotoOnline = fotoOnlineLigada();
+  renderFotoOnline(); fotoConferir();
+};
+const renderProfileFoto = renderProfile;
+renderProfile = function () {
+  renderProfileFoto();
+  if (typeof pagamentosAtivos === 'function' && pagamentosAtivos() && draft.idade !== 'menor')
+    $('#fotoNota').textContent = 'A foto fica neste celular. Na mesa online, os outros veem o seu avatar, ou a sua foto se você tiver o Plano Apoiador.';
+  renderFotoOnline();
+};
+$('#fotoOnlineSw').addEventListener('change', e => { draft.fotoOnline = e.target.checked; renderFotoOnline(); });
+$('#fotoPlano').addEventListener('click', () => abrirApoio('profile', 'plano'));
+// Depois de salvar o perfil (o "Salvar" do perfil leva para o início): manda, troca ou apaga a foto da mesa online
+$('#saveProfile').addEventListener('click', () => {
+  if (screen !== 'home' || !CONFIG.api) return;
+  const quer = !!draft.fotoOnline && !!photo && profile && profile.idade !== 'menor' && temPlano() && pagamentosAtivos();
+  if (quer && (!fotoOnlineLigada() || fotoMarca(photo) !== store.get(FOTOENV))) fotoEnviar();
+  else if (!quer && fotoOnlineLigada()) fotoApagar();
+});
+
+// ---- Na mesa online: a foto dos outros (tocar abre, com "Denunciar") ----
+const seatFaceFoto = seatFace;
+seatFace = function (p, cls) {
+  if (mode === 'on' && typeof ON !== 'undefined' && ON.vista && p !== 0) {
+    const c = cadDe(p);
+    if (c && c.foto && !c.bot && !fotoEscondida(c.foto)) return fotoOnlineImg(c, cls);
+  }
+  return seatFaceFoto(p, cls);
+};
+document.addEventListener('click', e => {
+  const im = e.target.closest && e.target.closest('img.foto-online');
+  if (!im) return;
+  e.stopPropagation();
+  const pub = im.dataset.pub, nome = im.dataset.nome;
+  openSheet('info', `<p class="eyebrow">Mesa online</p><h2 id="sheetTitle">${esc(nome)}</h2>
+    <img class="foto-grande" src="${esc(fotoOnlineURL(pub))}" alt="Foto de ${esc(nome)}">
+    <button type="button" class="secondary" id="fotoFechar" style="width:100%">Fechar</button>
+    <button type="button" class="linkbtn foto-denunciar" id="fotoDenunciar">Denunciar esta foto</button>
+    <p class="note">Foto ofensiva, de outra pessoa ou com propaganda? Denuncie: ela sai da mesa na hora e o administrador revisa.</p>`);
+  $('#fotoFechar').addEventListener('click', closeSheet);
+  $('#fotoDenunciar').addEventListener('click', async () => {
+    try { await fetch(CONFIG.api + '/foto/denunciar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ pub }) }); } catch (err) {}
+    try { const l = JSON.parse(sessionStorage.getItem(FOTOESC) || '[]'); l.push(pub); sessionStorage.setItem(FOTOESC, JSON.stringify(l)); } catch (err) {}
+    track('foto-denunciada');
+    closeSheet(); toast('Obrigado. A foto saiu da mesa e vai ser revisada.');
+    if (screen === 'game' && G) render(); else if (screen === 'sala') renderSala();
+  });
+}, true);
+// Foto que não abre (foi denunciada ou recusada nesse meio-tempo): volta a inicial do nome
+document.addEventListener('error', e => {
+  const im = e.target;
+  if (!im || !im.matches || !im.matches('img.foto-online')) return;
+  const sp = document.createElement('span'); sp.className = 'sc-letra'; sp.textContent = (im.dataset.nome || '?')[0];
+  im.replaceWith(sp);
+}, true);
+
+// ---- Área do administrador: aprovar ou recusar ----
+async function dnFotosCarregar() {
+  const box = $('#dnFotos');
+  box.hidden = !pagamentosAtivos() || !dono || !dono.admin;
+  if (box.hidden) return;
+  try {
+    const r = await fetch(CONFIG.api + '/dono/fotos', { headers: { 'x-admin-key': dono.admin } });
+    if (!r.ok) { box.hidden = true; return; }
+    const j = await r.json(), l = j.fotos || [];
+    $('#dnFotosTx').textContent = (l.length ? `${l.length} ${l.length === 1 ? 'foto esperando' : 'fotos esperando'} você.` : 'Nenhuma foto esperando.') + ` ${j.aprovadas} ${j.aprovadas === 1 ? 'aprovada' : 'aprovadas'} no ar.`;
+    $('#dnFotosLista').innerHTML = l.map(f => `<li><img src="${esc(f.img)}" alt=""><span>${f.status === 'denunciada' ? `<b class="dn-den">Denunciada${f.denuncias > 1 ? ` ${f.denuncias} vezes` : ''}</b>` : '<b>Nova</b>'}<small>${dataBR(f.criado_em)}</small></span>
+      <span class="dn-fotobt"><button type="button" class="primary" data-pub="${esc(f.pub)}" data-a="aprovar">Aprovar</button><button type="button" class="linkbtn" data-pub="${esc(f.pub)}" data-a="recusar">Recusar</button></span></li>`).join('');
+  } catch (e) { box.hidden = true; }
+}
+$('#dnFotosLista').addEventListener('click', async e => {
+  const b = e.target.closest('[data-a]'); if (!b || !dono || !dono.admin) return;
+  b.disabled = true;
+  try {
+    const r = await fetch(CONFIG.api + '/dono/fotos/' + b.dataset.pub, { method: 'POST', headers: { 'content-type': 'application/json', 'x-admin-key': dono.admin }, body: JSON.stringify({ acao: b.dataset.a }) });
+    toast(r.ok ? (b.dataset.a === 'aprovar' ? 'Foto aprovada.' : 'Foto recusada.') : 'Não deu agora. Tente de novo.');
+  } catch (err) { toast('Sem internet agora.'); }
+  dnFotosCarregar();
+});
+const renderDonoFoto = renderDono;
+renderDono = function () { renderDonoFoto(); dnFotosCarregar(); };
 
 
 // ---- Desenho das peças ----

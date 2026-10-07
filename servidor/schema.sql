@@ -44,6 +44,9 @@ CREATE INDEX IF NOT EXISTS pedidos_aparelho ON pedidos (aparelho, status);
 -- Lembrete de renovação: qual inscrição de aviso é de qual aparelho, e quais avisos de "seu plano está acabando" já foram
 CREATE TABLE IF NOT EXISTS avisos_id (endpoint TEXT PRIMARY KEY, aparelho TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS avisos_id_aparelho ON avisos_id (aparelho);
+-- Foto na mesa online (Plano Apoiador): uma por aparelho; "pub" é o código público da foto (o do aparelho nunca aparece)
+CREATE TABLE IF NOT EXISTS fotos (aparelho TEXT PRIMARY KEY, pub TEXT NOT NULL UNIQUE, mime TEXT NOT NULL, dados TEXT NOT NULL, status TEXT NOT NULL, criado_em INTEGER NOT NULL, revisado_em INTEGER, denuncias INTEGER NOT NULL DEFAULT 0);
+CREATE INDEX IF NOT EXISTS fotos_status ON fotos (status, criado_em);
 CREATE TABLE IF NOT EXISTS lembretes_plano (aparelho TEXT NOT NULL, ate INTEGER NOT NULL, enviado_em INTEGER NOT NULL, PRIMARY KEY (aparelho, ate));
 
 -- Patrocinadores (cadastrados pelo dono) e quantas vezes cada espaço apareceu / foi tocado por dia

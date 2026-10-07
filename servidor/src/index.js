@@ -2,8 +2,9 @@
 // Caixa de mensagens "Fale com a gente", lembretes para jogar (Web Push), painel do dono e mesa online por convite.
 import { enviarPush } from './webpush.js';
 import { Mesa } from './mesa.js';
-import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos } from './pagamentos.js';
+import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolver } from './pagamentos.js';
 import { atuais, imagem, contar, donoLista, donoImagem, donoSalvar, donoApagar } from './patrocinadores.js';
+import * as fotos from './fotos.js';
 export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
@@ -268,6 +269,18 @@ export default {
       if (url.pathname === '/plano/trazer' && req.method === 'POST') return await trazerPlano(req, env, origin, H);
       if (url.pathname === '/asaas/webhook' && req.method === 'POST') return await webhook(req, env, origin, H);
       if (url.pathname === '/dono/pagamentos' && req.method === 'GET') return await donoPagamentos(req, env, origin, H);
+      const dv = url.pathname.match(/^\/dono\/pagamentos\/([0-9a-f]{20})\/devolver$/);
+      if (dv && req.method === 'POST') return await donoDevolver(req, env, origin, H, dv[1]);
+      // Foto na mesa online (Plano Apoiador)
+      if (url.pathname === '/foto' && req.method === 'POST') return await fotos.enviar(req, env, origin, H);
+      if (url.pathname === '/foto/status' && req.method === 'GET') return await fotos.status(env, origin, H, url);
+      if (url.pathname === '/foto/apagar' && req.method === 'POST') return await fotos.apagar(req, env, origin, H);
+      if (url.pathname === '/foto/denunciar' && req.method === 'POST') return await fotos.denunciar(req, env, origin, H);
+      const fi = url.pathname.match(/^\/foto\/([0-9a-f]{16})$/);
+      if (fi && req.method === 'GET') return await fotos.imagem(env, fi[1]);
+      if (url.pathname === '/dono/fotos' && req.method === 'GET') return await fotos.donoLista(req, env, origin, H);
+      const fd = url.pathname.match(/^\/dono\/fotos\/([0-9a-f]{16})$/);
+      if (fd && req.method === 'POST') return await fotos.donoDecidir(req, env, origin, H, fd[1]);
       // Patrocinadores
       const HP = { json, ehDono, limpa };
       if (url.pathname === '/patrocinio/atual' && req.method === 'GET') return await atuais(req, env, origin, HP);

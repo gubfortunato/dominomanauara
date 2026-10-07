@@ -5,8 +5,8 @@
 // quem paga preenche tudo na página do Asaas. Aqui fica só o código do aparelho, o produto, o valor e as datas.
 const DIA = 86400000;
 export const PRODUTOS = {
-  mensal: { nome: 'Plano Apoiador · 30 dias', desc: 'Dominó Manauara: selo de apoiador, jogo sem anúncios, avatares e mesas exclusivos por 30 dias.', valor: 4.90, dias: 31 },
-  anual: { nome: 'Plano Apoiador · 1 ano', desc: 'Dominó Manauara: selo de apoiador, jogo sem anúncios, avatares e mesas exclusivos por 1 ano.', valor: 39.90, dias: 366 },
+  mensal: { nome: 'Plano Apoiador · 30 dias', desc: 'Dominó Manauara: selo de apoiador, jogo sem anúncios, foto na mesa online, avatares e mesas exclusivos por 30 dias.', valor: 4.90, dias: 31 },
+  anual: { nome: 'Plano Apoiador · 1 ano', desc: 'Dominó Manauara: selo de apoiador, jogo sem anúncios, foto na mesa online, avatares e mesas exclusivos por 1 ano.', valor: 39.90, dias: 366 },
   doacao5: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter o jogo de graça.', valor: 5 },
   doacao10: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter o jogo de graça.', valor: 10 },
   doacao20: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter o jogo de graça. De presente: 30 dias de Plano Apoiador.', valor: 20, brinde: 31 }
@@ -129,6 +129,11 @@ export async function trazerPlano(req, env, origin, h) {
     await env.DB.prepare('UPDATE planos SET aparelho = ?, ate = ? WHERE codigo = ?').bind(b.aparelho, ate, codigo).run();
     // as doações vêm junto (o selo ♥ e o avatar do doador acompanham o código)
     await env.DB.prepare('UPDATE pedidos SET aparelho = ? WHERE aparelho = ?').bind(b.aparelho, p.aparelho).run();
+    // e a foto da mesa online também
+    if (await env.DB.prepare('SELECT 1 FROM fotos WHERE aparelho = ?').bind(p.aparelho).first()) {
+      await env.DB.prepare('DELETE FROM fotos WHERE aparelho = ?').bind(b.aparelho).run();
+      await env.DB.prepare('UPDATE fotos SET aparelho = ? WHERE aparelho = ?').bind(b.aparelho, p.aparelho).run();
+    }
   }
   return h.json(await contaDe(env, b.aparelho), 200, origin);
 }
@@ -161,6 +166,21 @@ export async function webhook(req, env, origin, h) {
   return new Response('ok');
 }
 
+// POST /dono/pagamentos/:id/devolver -> o dono devolveu o dinheiro no Asaas: tira o selo de doador e os dias de plano desse pagamento
+export async function donoDevolver(req, env, origin, h, id) {
+  if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
+  const p = await env.DB.prepare('SELECT id, aparelho, produto, status FROM pedidos WHERE id = ?').bind(id).first();
+  if (!p) return h.json({ erro: 'nao-encontrado' }, 404, origin);
+  if (p.status !== 'pago') return h.json({ erro: 'nao-pago', status: p.status }, 409, origin);
+  await env.DB.prepare("UPDATE pedidos SET status = 'devolvido' WHERE id = ?").bind(id).run();
+  const prod = PRODUTOS[p.produto] || {}, dias = prod.dias || prod.brinde || 0;
+  if (dias && p.aparelho) {
+    const pl = await planoDe(env, p.aparelho);
+    if (pl && pl.ate) await env.DB.prepare('UPDATE planos SET ate = ? WHERE aparelho = ?').bind(Math.max(0, pl.ate - dias * DIA), p.aparelho).run();
+  }
+  return h.json({ ok: true }, 200, origin);
+}
+
 // GET /dono/pagamentos -> resumo para a Área do dono (sem dados de quem pagou)
 export async function donoPagamentos(req, env, origin, h) {
   if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
@@ -168,6 +188,6 @@ export async function donoPagamentos(req, env, origin, h) {
   const mes = await env.DB.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(valor), 0) AS soma FROM pedidos WHERE status = 'pago' AND pago_em >= ?").bind(inicioMes).first();
   const tudo = await env.DB.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(valor), 0) AS soma FROM pedidos WHERE status = 'pago'").first();
   const ativos = await env.DB.prepare('SELECT COUNT(*) AS n FROM planos WHERE ate > ?').bind(Date.now()).first();
-  const { results } = await env.DB.prepare("SELECT produto, valor, pago_em FROM pedidos WHERE status = 'pago' ORDER BY pago_em DESC LIMIT 15").all();
+  const { results } = await env.DB.prepare("SELECT id, produto, valor, pago_em, status FROM pedidos WHERE status IN ('pago', 'devolvido') ORDER BY pago_em DESC LIMIT 20").all();
   return h.json({ mes, tudo, planosAtivos: (ativos && ativos.n) || 0, ultimos: results || [], ligado: !!env.ASAAS_API_KEY }, 200, origin);
 }
