@@ -613,7 +613,7 @@ body{touch-action:manipulation}
 .meta .sr{font-size:17px}
 /* Pedras da mão: o maior tamanho que cabe 7 lado a lado.
    70px = margens da tela (32) + 6 espaços entre pedras (24) + borda de "sua vez" (12) + folga. */
-:root{--tw:clamp(40px,calc((min(100vw,720px) - 70px) / 7),66px)}
+:root{--tw:clamp(34px,calc((min(100vw,720px) - 70px) / 7),66px)}
 .hand{gap:4px}
 /* A mão nunca alarga a tela: se faltar espaço, as pedras encolhem um pouco em vez de empurrar a mesa para a direita */
 .game>*,.me>*{min-width:0}
@@ -869,6 +869,30 @@ body{touch-action:manipulation}
 
 /* Balão da entrada que chegou para dentro: a ponta continua no amigo */
 .friend .fala::after{left:calc(50% - var(--ponta, 0px))}
+
+/* Mesa parada: o quadro da mesa não muda de tamanho durante a mão (o texto das jogadas, o aviso de vez e a mão
+   têm altura fixa), senão o zoom da mesa ia e voltava a cada jogada */
+#scrGame .tablefoot{height:46px;min-height:46px;overflow:hidden}
+#scrGame .feed{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+#scrGame .me-txt{min-width:0}
+#scrGame #prompt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#scrGame .hand{flex-wrap:nowrap;height:calc(var(--tw)*2 + 16px)}
+#scrGame #prompt{height:38px;box-sizing:border-box}
+#scrGame #prompt:not(.you){display:flex;align-items:center}
+#scrGame #prompt.you{display:flex;align-items:center;width:fit-content;max-width:100%}
+
+/* Transições suaves ao fechar */
+@keyframes sumir{to{opacity:0}}
+@keyframes folhaDesce{to{transform:translateY(40px);opacity:0}}
+@keyframes folhaTroca{from{opacity:.25}to{opacity:1}}
+@keyframes toastEntra{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translateX(-50%)}}
+.sumindo{animation:sumir .22s ease-in both!important}
+.back.saindo{animation:sumir .21s ease-in both}
+.back.saindo .sheet{animation:folhaDesce .21s ease-in both}
+.sheet.troca{animation:folhaTroca .2s ease-out}
+.toast.entrando{animation:toastEntra .25s ease-out}
+html.recarregando body{opacity:0;transition:opacity .25s ease-in}
+@media (prefers-reduced-motion: reduce){.back.saindo,.back.saindo .sheet,.sheet.troca,.toast.entrando,.sumindo{animation:none!important}}
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
@@ -1925,6 +1949,13 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '2.6', data: '07/10/2026', itens: [
+    'A mesa fica parada: o zoom não vai e volta mais a cada jogada. Ela só se afasta quando a fileira precisa de espaço.',
+    'Janelas, avisos, a festa de fim de partida e a mesa ampliada agora fecham suave.',
+    'Quando sai versão nova, o app troca sem piscar e volta para a tela em que você estava.',
+    'Balões da turma na entrada com termos de Manaus, sempre dentro da tela.',
+    'O banner do patrocinador voltou para o fim da tela inicial.'
+  ] },
   { v: '2.5', data: '07/10/2026', itens: [
     'A turma do bairro agora fala do jeito de Manaus: "Iapois, passo", "Chibata, bati!", "Tá de bubuia?".',
     'Mesa online: novas reações, como Iapois!, Chibata!, Tu é leso?, Tá de bubuia? e Bora um tacacá?',
@@ -2192,7 +2223,7 @@ function toast(msg) {
 const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Anuncie', 'Apoio', 'Patro'];
 let showTimer = null;
 function show(name) {
-  if (window.__reloadWhenFree && name !== 'game') { saveGame(); location.reload(); return; }
+  if (window.__reloadWhenFree && name !== 'game') { recarregar(name); return; }
   screen = name;
   const next = $('#scr' + name[0].toUpperCase() + name.slice(1));
   const cur = SCREENS.map(s => $('#scr' + s)).find(el => !el.hidden && el !== next && !el.classList.contains('fade-out'));
@@ -3155,9 +3186,9 @@ function zoomDesenhar() {
 }
 function zoomAbrir() {
   if (!G || !G.chain.length || drag) return;
-  $('#zoom').hidden = false; zs = 1; zx = 0; zy = 0; zoomDesenhar(); zoomAplicar();
+  $('#zoom').classList.remove('sumindo'); $('#zoom').hidden = false; zs = 1; zx = 0; zy = 0; zoomDesenhar(); zoomAplicar();
 }
-function zoomFechar() { $('#zoom').hidden = true; zPtr.clear(); zGesto = null; }
+function zoomFechar() { sumir($('#zoom'), 200); zPtr.clear(); zGesto = null; }
 $('#lupa').addEventListener('click', e => { e.stopPropagation(); zoomAbrir(); });
 $('#boardWrap').addEventListener('click', e => { if (!e.target.closest('.lupa')) zoomAbrir(); });
 $('#zoomFechar').addEventListener('click', zoomFechar);
@@ -3277,7 +3308,7 @@ function festa(r, depois) {
   $('#festaT').textContent = jogo ? (nos ? 'Vocês ganharam o jogo!' : 'Eles ganharam o jogo') : (nos ? 'Vocês venceram a partida!' : 'Eles venceram a partida');
   $('#festaN').textContent = nomes + ' · ' + (nos ? sorteia(['Chibata!', 'Chibata, é nós!', 'Tá pocando!']) : sorteia(['bora virar na próxima!', 'leseira… bora virar na próxima!', 'fica pra próxima.']));
   $('#festaP').innerHTML = `<span class="nos">Nós <b>${r.score[L]}</b></span> <i>×</i> <span class="eles"><b>${r.score[R]}</b> Eles</span>`;
-  const el = $('#festa'); el.classList.toggle('deles', !nos); el.classList.toggle('jogo', jogo);
+  const el = $('#festa'); el.classList.remove('sumindo'); el.classList.toggle('deles', !nos); el.classList.toggle('jogo', jogo);
   el.hidden = false;
   const corDupla = nos ? ['#f0b45e', '#e5a650', '#ffd27a'] : ['#8fc7cf', '#5fa3ad', '#bfe3e8'];
   confete(corDupla.concat(['#f6eedf', '#e58a6c', '#86c98f']), jogo ? 7000 : 4500);
@@ -3285,7 +3316,7 @@ function festa(r, depois) {
   track(nos ? 'partida-ganha' : 'partida-perdida');
   const ok = $('#festaOk');
   ok.textContent = jogo ? 'Ver o resultado' : 'Continuar';
-  ok.onclick = () => { el.hidden = true; cancelAnimationFrame(confeteRAF); depois(); };
+  ok.onclick = () => { if (el.classList.contains('sumindo')) return; cancelAnimationFrame(confeteRAF); sumir(el, 260); depois(); };
   setTimeout(() => ok.focus({ preventScroll: true }), 50);
 }
 // Antes do resumo da mão que decidiu a partida, a festa
@@ -3335,6 +3366,38 @@ function mostrarFala(b, t) {
     f.style.setProperty('--ponta', Math.round(ponta) + 'px');
   }
   return f;
+}
+
+
+// ---- Câmera da mesa: parada enquanto a fileira cabe; só afasta quando precisa de espaço, e nunca volta a aproximar na mesma mão ----
+// (antes ela recentralizava e mudava o zoom a cada jogada, e o vai e vem deixava o jogador tonto)
+let camMesa = null;
+function cameraMesa(minX, maxX, minY, maxY, Xmax, a) {
+  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  let vw = Math.max(Math.min(2 * Xmax + 2.4, 13), maxX - minX + 1.4), vh = Math.max(vw / a, maxY - minY + 1.4);
+  if (vw / vh < a) vw = vh * a; else vh = vw / a;
+  const c = camMesa, n = G && G.chain ? G.chain.length : 0;
+  // recomeça na mão nova, ao girar o celular (proporção muda muito) ou se a largura da fileira mudou
+  if (!c || n <= 1 || Math.abs(c.a - a) / a > 0.08 || Math.abs(c.Xmax - Xmax) / Xmax > 0.05) {
+    camMesa = { x: cx - vw / 2, y: cy - vh / 2, w: vw, h: vh, a, Xmax };
+    return camMesa;
+  }
+  // diferença pequena de proporção (1 ou 2 pixels): só completa o lado que falta, sem aproximar
+  if (Math.abs(c.a - a) > 1e-6) {
+    if (c.w / c.h < a) { const nw = c.h * a; c.x -= (nw - c.w) / 2; c.w = nw; } else { const nh = c.w / a; c.y -= (nh - c.h) / 2; c.h = nh; }
+    c.a = a;
+  }
+  const m = 0.7, x0n = minX - m, x1n = maxX + m, y0n = minY - m, y1n = maxY + m;
+  if (x0n >= c.x && x1n <= c.x + c.w && y0n >= c.y && y1n <= c.y + c.h) return c;   // cabe: a mesa não mexe
+  // não cabe: abre o que falta (junta a vista atual com o que precisa), mantendo a proporção da tela
+  // (com uma folga de meia pedra no lado que estourou, para não precisar afastar de novo na jogada seguinte)
+  const f = 1.1;
+  let x0 = Math.min(c.x, x0n < c.x ? x0n - f : x0n), x1 = Math.max(c.x + c.w, x1n > c.x + c.w ? x1n + f : x1n);
+  let y0 = Math.min(c.y, y0n < c.y ? y0n - f : y0n), y1 = Math.max(c.y + c.h, y1n > c.y + c.h ? y1n + f : y1n);
+  let w = x1 - x0, h = y1 - y0;
+  if (w / h < a) { const nw = h * a; x0 -= (nw - w) / 2; w = nw; } else { const nh = w / a; y0 -= (nh - h) / 2; h = nh; }
+  Object.assign(c, { x: x0, y: y0, w, h });
+  return c;
 }
 
 // ---- Lembretes para jogar (notificações push) ----
@@ -4418,7 +4481,7 @@ function fecharConvite() {
   if (t === 'renovar') store.set(RENOVAKEY, box.dataset.chave);
   else if (t === 'volta') { store.set(VOLTAKEY, box.dataset.chave); guardarPedido(0); }
   else guardarPedido(Number(box.dataset.marco));
-  box.hidden = true;
+  sumir(box, 220);
   return t;
 }
 $('#apConviteSim').addEventListener('click', () => { const t = fecharConvite(); abrirApoio('home', t === 'renovar' ? 'plano' : null); });
@@ -4783,7 +4846,7 @@ openSheet = function (kind, html) {
     sh.style.transition = 'transform .22s ease-out';
     if (puxando && (dy > 110 || rapido)) {
       sh.style.transform = 'translateY(100%)';
-      setTimeout(() => { sh.style.transition = ''; sh.style.transform = ''; fecharFolha(); }, 200);
+      setTimeout(() => { fecharSemAnim = true; fecharFolha(); fecharSemAnim = false; sh.style.transition = ''; sh.style.transform = ''; }, 200);
     } else {
       sh.style.transform = '';
       setTimeout(() => { sh.style.transition = ''; }, 230);
@@ -4798,6 +4861,64 @@ $('#back').addEventListener('click', e => {
   if (e.target.id !== 'back' || !sheetKind || sheetKind === 'result') return;
   if (sheetKind !== 'info' && sheetKind !== 'fb' && sheetKind !== 'rules' && sheetKind !== 'reacao') closeSheet();
 });
+
+// ===== Transições suaves: fechar janelas, festa, mesa ampliada, avisos rápidos e troca de versão =====
+// (abrir já era suave; agora fechar também é. Quem pediu "reduzir movimento" no aparelho vê tudo na hora.)
+function reduzMov() { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+// Some com fade e só depois esconde
+function sumir(el, ms) {
+  if (!el || el.hidden) return;
+  if (reduzMov() || document.visibilityState !== 'visible') { el.hidden = true; return; }
+  el.classList.add('sumindo');
+  clearTimeout(el.__sumir);
+  el.__sumir = setTimeout(() => { el.classList.remove('sumindo'); el.hidden = true; }, ms || 220);
+}
+// Enquanto algo está sumindo, um segundo toque não passa para o que está embaixo nem repete o botão
+document.addEventListener('click', e => {
+  if (e.target.closest && e.target.closest('.sumindo, .saindo')) { e.stopPropagation(); e.preventDefault(); }
+}, true);
+// Janelas que sobem de baixo: descem suave ao fechar; trocar de uma para outra (menu → regras) faz um fade rápido
+var fecharSemAnim = false;
+const closeSheetSeco = closeSheet;
+closeSheet = function () {
+  const back = $('#back');
+  sheetKind = null;
+  clearTimeout(closeSheet.t);
+  if (back.hidden || fecharSemAnim || reduzMov() || document.visibilityState !== 'visible') { back.classList.remove('saindo'); closeSheetSeco(); return; }
+  back.classList.add('saindo');
+  closeSheet.t = setTimeout(() => { back.classList.remove('saindo'); if (!sheetKind) closeSheetSeco(); }, 210);
+};
+const openSheetSuave = openSheet;
+openSheet = function (kind, html) {
+  const back = $('#back'), trocando = !back.hidden && !back.classList.contains('saindo');
+  clearTimeout(closeSheet.t); back.classList.remove('saindo');
+  openSheetSuave(kind, html);
+  const sh = $('#sheet');
+  if (trocando && !reduzMov()) { sh.classList.remove('troca'); void sh.offsetWidth; sh.classList.add('troca'); }
+};
+// Avisos rápidos (toast): entram e saem com fade
+toast = function (msg) {
+  const el = $('#toast');
+  clearTimeout(toast.t); clearTimeout(el.__sumir); el.classList.remove('sumindo');
+  el.textContent = msg;
+  if (el.hidden) { el.hidden = false; el.classList.remove('entrando'); void el.offsetWidth; el.classList.add('entrando'); }
+  toast.t = setTimeout(() => sumir(el, 220), 4200);
+};
+// Versão nova: em vez de piscar a tela e voltar para a entrada, apaga suave e volta para a mesma tela
+function recarregar(destino) {
+  saveGame();
+  const ir = destino || screen;
+  try { if (profile) sessionStorage.setItem('dmz-voltar', JSON.stringify({ tela: ir, t: Date.now() })); } catch (e) {}
+  if (reduzMov() || document.visibilityState !== 'visible') { location.reload(); return; }
+  document.documentElement.classList.add('recarregando');
+  setTimeout(() => location.reload(), 260);
+}
+function telaInicial() {
+  let v = null;
+  try { v = JSON.parse(sessionStorage.getItem('dmz-voltar') || 'null'); sessionStorage.removeItem('dmz-voltar'); } catch (e) {}
+  if (!v || !profile || Date.now() - v.t > 60000) return 'who';
+  return ['apoio', 'anuncie', 'fale', 'dono', 'patro'].includes(v.tela) ? v.tela : 'home';
+}
 
 
 // ---- Desenho das peças ----
@@ -4914,7 +5035,7 @@ function renderPrompt() {
       you = true;
       const mv = legalMoves(G, seatMe);
       if (dealing) txt = dealPhase;
-      else if (!G.chain.length) txt = G.openMode === 'sena' ? 'Arraste a carroça de sena para a mesa' : G.openMode === 'carroca' ? 'Arraste uma carroça para a mesa' : 'Arraste qualquer pedra para a mesa';
+      else if (!G.chain.length) txt = G.openMode === 'sena' ? 'Comece com a carroça de sena' : G.openMode === 'carroca' ? 'Comece com uma carroça' : 'Comece com qualquer pedra';
       else txt = mv.length ? 'Sua vez de jogar!' : 'Nenhuma pedra sua encaixa';
     } else txt = dealing ? dealPhase : `Vez de ${who(G.turn)}`;
   } else if (G.phase === 'handEnd') txt = 'Fim da mão';
@@ -4961,10 +5082,8 @@ function renderBoard() {
   const grow = p => { const w = p.o === 'h' ? 1 : .5, h = p.o === 'h' ? .5 : 1; minX = Math.min(minX, p.x - w); maxX = Math.max(maxX, p.x + w); minY = Math.min(minY, p.y - h); maxY = Math.max(maxY, p.y + h); };
   pos.forEach(grow); bTiles.forEach(b => grow(b.pos)); zones.forEach(z => grow(z.pos));
   if (!isFinite(minX)) { minX = -1; maxX = 1; minY = -1; maxY = 1; }
-  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
-  let vw = Math.max(Math.min(2 * Xmax + 2.4, 13), maxX - minX + 1.4), vh = Math.max(vw / a, maxY - minY + 1.4);
-  if (vw / vh < a) vw = vh * a; else vh = vw / a;
-  svg.setAttribute('viewBox', `${f2(cx - vw / 2)} ${f2(cy - vh / 2)} ${f2(vw)} ${f2(vh)}`);
+  const vb = cameraMesa(minX, maxX, minY, maxY, Xmax, a);
+  svg.setAttribute('viewBox', `${f2(vb.x)} ${f2(vb.y)} ${f2(vb.w)} ${f2(vb.h)}`);
   let html = '';
   if (!G.chain.length && !showZones && !dealing) {
     const ev = (G.events || []).find(e => e.type === 'start');
@@ -5362,11 +5481,11 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!hadController) { hadController = true; return; }
     if (screen === 'game' || screen === 'sala' || screen === 'profile' || sheetKind) { window.__reloadWhenFree = true; return; }
-    saveGame(); location.reload();
+    recarregar();
   });
   // Saiu do app com uma versão nova esperando (e fora da mesa): troca sem ninguém ver.
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden' && window.__reloadWhenFree && screen !== 'game') { saveGame(); location.reload(); }
+    if (document.visibilityState === 'hidden' && window.__reloadWhenFree && screen !== 'game') recarregar();
   });
 }
 // Versão: mostra no início e avisa quando o app acabou de se atualizar.
@@ -5398,7 +5517,7 @@ function loadUmami() {
   setInterval(() => { if (document.visibilityState === 'visible') track('online', { tela: screen === 'game' ? 'mesa' : 'menus' }); }, 4 * 60 * 1000);
 }
 loadUmami();
-show('who');
+show(telaInicial());
 if (pedirDono) openDonoLogin();
 addEventListener('hashchange', () => {
   if (!/^#dono\b/i.test(location.hash)) return;
