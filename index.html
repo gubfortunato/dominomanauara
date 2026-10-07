@@ -1957,8 +1957,8 @@ const NOVIDADES = [
     'O banner do patrocinador voltou para o fim da tela inicial.'
   ] },
   { v: '2.5', data: '07/10/2026', itens: [
-    'A turma do bairro agora fala do jeito de Manaus: "Iapois, passo", "Chibata, bati!", "Tá de bubuia?".',
-    'Mesa online: novas reações, como Iapois!, Chibata!, Tu é leso?, Tá de bubuia? e Bora um tacacá?',
+    'A turma do bairro agora fala do jeito de Manaus: "Vixi, passo", "Chibata, bati!", "Tá de bubuia?".',
+    'Mesa online: novas reações, como Vixi!, Chibata!, Tu é leso?, Tá de bubuia? e Bora um tacacá?',
     'Mesas novas no Plano Apoiador: Garantido, Caprichoso, Encontro das Águas e Tucumã.',
     'Regras ficam logo no começo da tela inicial.'
   ] },
@@ -3296,7 +3296,7 @@ function confete(cores, ms) {
 // A turma do bairro fala do jeito de Manaus (de vez em quando, para não virar caricatura)
 const sorteia = l => l[Math.floor(Math.random() * l.length)];
 // (na mesa online quem está do outro lado é gente: aí o balão fica neutro)
-function falaPasse(p) { return mode !== 'on' && p !== seatMe && Math.random() < 0.35 ? 'Iapois, passo' : 'Passo'; }
+function falaPasse(p) { return mode !== 'on' && p !== seatMe && Math.random() < 0.35 ? 'Vixi, passo' : 'Passo'; }
 function falaBati(p) { return mode === 'on' || p === seatMe ? 'Bati!' : sorteia(['Bati!', 'Chibata, bati!', 'Bati, caboco!']); }
 function festa(r, depois) {
   const eu = seatMe == null ? 0 : seatMe, nos = TEAM(eu) === r.matchWinner, w = r.matchWinner;
@@ -3338,8 +3338,8 @@ renderEntry = function () {
   const s = $('#scrWho'); s.classList.remove('entra'); void s.offsetWidth; s.classList.add('entra');
 };
 // Falas da turma na entrada: metade com termos de Manaus (só do Amazonas), intercaladas e curtas para o balão caber na tela
-const FALAS = ['Bora, %!', 'Iapois, passei!', '10 pontos!', 'Chibata, bati!', 'Senta aí, %!', 'Chibata!', 'Quem sai?', 'Tá de bubuia?',
-  'Passei!', 'Leseira, passei!', 'Mais 5!', 'Vô mermo!', 'Joga, %!', 'Tu é leso, é?', '20 pontos!', 'Iapois, %!',
+const FALAS = ['Bora, %!', 'Vixi, passei!', '10 pontos!', 'Chibata, bati!', 'Senta aí, %!', 'Chibata!', 'Quem sai?', 'Tá de bubuia?',
+  'Passei!', 'Leseira, passei!', 'Mais 5!', 'Vô mermo!', 'Joga, %!', 'Tu é leso, é?', '20 pontos!', 'Vixi, %!',
   'Bati!', 'Leseira baré!', 'Fechou!', 'Joga logo, caboco!', 'Carroça!', 'Tô brocado!', '15 pontos!', 'Bora uma partida?'];
 let falaIdx = Math.floor(Math.random() * FALAS.length);
 setInterval(() => {
@@ -3630,7 +3630,7 @@ const ERROS_MESA = {
 };
 // Reações rápidas: a ordem nunca muda (o servidor manda só o número). Para acrescentar, ponha no fim.
 const REACOES = ['Boa, parceiro!', 'Vô mermo!', 'Leseira baré!', 'Bate logo!', 'Segura essa!', 'Tá fácil!', 'Hoje tem galo!', 'Bora, bora!', '👏', '😂', '😮', '🔥',
-  'Iapois!', 'Chibata!', 'Tu é leso?', 'Tá de bubuia?', 'Joga logo, caboco!', 'Bora um tacacá?'];
+  'Vixi!', 'Chibata!', 'Tu é leso?', 'Tá de bubuia?', 'Joga logo, caboco!', 'Bora um tacacá?'];
 const FALA_MS = 2800;
 let falaMinhaT = null, reagiuEm = 0;
 function mostrarReacao(pos, txt) {
