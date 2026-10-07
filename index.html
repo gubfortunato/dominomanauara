@@ -800,6 +800,8 @@ body{touch-action:manipulation}
 .menu-actions .secondary,.menu-row .secondary{font-size:17px}
 .sheet .secondary{font-size:17px}
 .rc-tx b{font-size:24px}
+/* Campo em foco: o destaque fica por dentro da borda, sem passar da tela */
+.field input[type=text]:focus,.fale-texto:focus,.fale-contato:focus,.dn-pw:focus,.field select:focus,.field select:focus-visible{outline:none;border-color:var(--glow);box-shadow:inset 0 0 0 2px var(--glow)}
 </style>
 </head>
 <body>
@@ -1451,6 +1453,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.8.1', data: '06/10/2026', itens: ['O campo do nome não passa mais da borda da tela.'] },
   { v: '1.8', data: '06/10/2026', itens: [
     'Fim de partida com festa: a dupla vencedora aparece grande na tela, com confete.',
     '"Você passou" fica 4 segundos e meio na tela.',
