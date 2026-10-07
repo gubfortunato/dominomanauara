@@ -13,3 +13,17 @@ CREATE TABLE IF NOT EXISTS mensagens (
 );
 CREATE INDEX IF NOT EXISTS mensagens_status ON mensagens (status, criado_em);
 CREATE INDEX IF NOT EXISTS mensagens_marca ON mensagens (marca, criado_em);
+
+-- Lembretes para jogar (Web Push)
+CREATE TABLE IF NOT EXISTS avisos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  endpoint TEXT NOT NULL UNIQUE,
+  p256dh TEXT NOT NULL,
+  auth TEXT NOT NULL,
+  aparelho TEXT,
+  criado_em INTEGER NOT NULL,
+  ultimo_jogo INTEGER,
+  ultimo_envio INTEGER,
+  envios INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS avisos_envio ON avisos (ultimo_envio);

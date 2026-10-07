@@ -60,10 +60,21 @@ jobs:
           out=$(wrangler deploy 2>&1); rc=$?
           log "publicar: código $rc"
           echo "$out" | grep -E 'https://|Error|error|✘|Uploaded|Deployed' | head -10 | tee -a "$ST"
+          # Chaves dos lembretes (VAPID): criadas uma vez e guardadas só no Cloudflare, como segredo do Worker
+          if [ "$rc" = "0" ] && ! wrangler secret list 2>/dev/null | grep -q VAPID_PRIVATE_JWK; then
+            node -e "const c=require('crypto');const k=c.generateKeyPairSync('ec',{namedCurve:'prime256v1'});process.stdout.write(JSON.stringify({jwk:k.privateKey.export({format:'jwk'}),pub:k.publicKey.export({format:'der',type:'spki'}).subarray(-65).toString('base64url')}))" > /tmp/v.json
+            jq -c .jwk /tmp/v.json | wrangler secret put VAPID_PRIVATE_JWK > /dev/null 2>&1; r1=$?
+            jq -r .pub /tmp/v.json | tr -d '\n' | wrangler secret put VAPID_PUBLIC > /dev/null 2>&1; r2=$?
+            rm -f /tmp/v.json
+            log "chaves dos lembretes: criadas agora (códigos $r1 $r2)"
+          else
+            log "chaves dos lembretes: $(wrangler secret list 2>/dev/null | grep -c VAPID) segredos já guardados"
+          fi
           url="https://api.$sub.workers.dev"
           for i in 1 2 3 4 5 6; do s=$(curl -s "$url/saude"); [ -n "$s" ] && break; sleep 5; done
           log "saúde: $s"
           log "mensagem de teste: $(curl -s -X POST -H 'content-type: application/json' --data '{"tipo":"outro","texto":"Teste automático: a caixa de mensagens está funcionando.","nome":"Servidor"}' "$url/mensagens")"
+          log "lembretes: $(curl -s "$url/avisos/chave" | jq -c '{chave_publica: (.chave != null)}')"
           log "url: $url"
       - name: Guardar o resultado
         if: always()
