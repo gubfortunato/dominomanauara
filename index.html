@@ -3785,10 +3785,11 @@ function mostrarReacao(pos, txt) {
   clearTimeout(bubbleTimers[pos]); bubbleTimers[pos] = setTimeout(() => el.classList.remove('show', 'reacao'), FALA_MS);
 }
 // Linha de baixo de cada cadeira na sala: bairro e se está conectado ("Compensa · na mesa")
+// (o bairro cabe inteiro: "na mesa" já está no pontinho verde; sem conexão sempre aparece)
 function salaSub(c, pos) {
-  const b = pos === 0 ? meuBairro() : c.bairro, est = pos === 0 ? '' : c.on ? 'na mesa' : 'sem conexão';
-  const t = [b, est].filter(Boolean).join(' · ');
-  return t ? t[0].toUpperCase() + t.slice(1) : '';
+  if (pos === 0) return meuBairro() || '';
+  if (!c.on) return 'Sem conexão';
+  return c.bairro || 'Na mesa';
 }
 function abrirReacoes() {
   if (mode !== 'on') return;
