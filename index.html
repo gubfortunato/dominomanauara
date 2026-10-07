@@ -853,6 +853,10 @@ body{touch-action:manipulation}
 .iosapp,.iosapp body{height:100lvh}
 .iosapp .back,.iosapp .zoom,.iosapp .festa,.iosapp .deal-layer{bottom:auto;height:100lvh}
 }
+
+/* Histórico: nota sobre partida e jogo */
+.mytreino .mt-nota{margin:0;font-size:14.5px;line-height:1.4;color:var(--wood-ink);opacity:.85;text-align:center}
+.mt-nums small{line-height:1.2;display:block;margin-top:3px}
 </style>
 </head>
 <body>
@@ -941,9 +945,10 @@ body{touch-action:manipulation}
     <div class="mytreino wood" id="myTreino" hidden>
       <span class="ck">Seu histórico neste celular</span>
       <div class="mt-nums">
-        <div><b id="mtV">0</b><small>vitórias</small></div><div><b id="mtJ">0</b><small>jogos</small></div>
+        <div><b id="mtP">0</b><small>partidas ganhas</small></div><div><b id="mtV">0</b><small>jogos ganhos</small></div>
         <div><b id="mtB">0</b><small>batidas</small></div><div><b id="mtG">0</b><small>galos</small></div>
       </div>
+      <p class="mt-nota" id="mtNota"></p>
       <a class="mt-share" id="mtShare" href="https://wa.me/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.3 14.8L2.3 21.8l4.9-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-3-.4-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1l-.5-.3Z"/></svg><span>Mandar meu histórico no WhatsApp</span></a>
     </div>
     <div class="avisos-card wood" id="avisosCard" hidden>
@@ -1505,6 +1510,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.9.3', data: '07/10/2026', itens: ['Seu histórico agora mostra as partidas de 200 que você ganhou, além dos jogos completos (melhor de 3 partidas).'] },
   { v: '1.9.2', data: '07/10/2026', itens: [
     'Mesa, placar e mão centralizados na tela: as 7 pedras da mão agora cabem sem empurrar tudo para a direita.',
     '"Você passou" aparece e some devagar, sem sumir de repente.'
@@ -1993,8 +1999,12 @@ const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`;
 function renderMyTreino() {
   const t = loadHist(), box = $('#myTreino');
   box.hidden = !(t.jogos || t.maos);
-  $('#mtV').textContent = t.vitorias; $('#mtJ').textContent = t.jogos; $('#mtB').textContent = t.batidas; $('#mtG').textContent = t.galos;
-  const txt = `📊 Meu histórico no *Dominó Manauara*: ${plural(t.vitorias, 'vitória', 'vitórias')} em ${plural(t.jogos, 'jogo', 'jogos')}, ${plural(t.batidas, 'batida', 'batidas')} e ${plural(t.galos, 'galo', 'galos')} contra ${TURMA}.\nDuvido você fazer melhor: ${SITE_URL}`;
+  [['#mtP', t.partidasVencidas, 'partida ganha', 'partidas ganhas'], ['#mtV', t.vitorias, 'jogo ganho', 'jogos ganhos'],
+   ['#mtB', t.batidas, 'batida', 'batidas'], ['#mtG', t.galos, 'galo', 'galos']].forEach(([id, n, um, varios]) => {
+    $(id).textContent = n; $(id).nextElementSibling.textContent = n === 1 ? um : varios;
+  });
+  $('#mtNota').textContent = `${plural(t.partidas, 'partida jogada', 'partidas jogadas')} até 200 pontos. O jogo completo é melhor de 3 partidas.`;
+  const txt = `📊 Meu histórico no *Dominó Manauara*: ${plural(t.partidasVencidas, 'partida ganha', 'partidas ganhas')}, ${plural(t.vitorias, 'jogo ganho', 'jogos ganhos')}, ${plural(t.batidas, 'batida', 'batidas')} e ${plural(t.galos, 'galo', 'galos')} contra ${TURMA}.\nDuvido você fazer melhor: ${SITE_URL}`;
   $('#mtShare').href = 'https://wa.me/?text=' + encodeURIComponent(txt);
 }
 function gameShare() {
