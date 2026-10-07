@@ -56,7 +56,7 @@ jobs:
             id=$(wrangler d1 list --json 2>/dev/null | jq -r '.[] | select(.name=="dominomanauara") | .uuid')
           fi
           log "banco: ${id:-NENHUM}"
-          sed "s/__D1_ID__/$id/" wrangler.template.toml > wrangler.toml
+          sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/${GITHUB_SHA::7}/" wrangler.template.toml > wrangler.toml
           out=$(wrangler d1 execute dominomanauara --remote --file=schema.sql 2>&1); rc=$?
           log "tabelas: código $rc $(echo "$out" | grep -iE 'success|error|✘|executed' | head -3 | tr '\n' ' ')"
           out=$(wrangler deploy 2>&1); rc=$?
@@ -74,7 +74,7 @@ jobs:
           fi
           url="https://api.$sub.workers.dev"
           # espera a versão nova chegar (a saúde passa a dizer "mesa")
-          for i in $(seq 1 12); do s=$(curl -s "$url/saude"); echo "$s" | grep -q '"mesa":true' && break; sleep 5; done
+          for i in $(seq 1 18); do s=$(curl -s "$url/saude"); echo "$s" | grep -q "\"versao\":\"${GITHUB_SHA::7}\"" && break; sleep 5; done
           log "saúde: $s"
           log "mesa online: $(node teste_publicado.mjs "$url" 2>&1 | tail -1)"
           for i in 1 2 3 4 5 6; do k=$(curl -s "$url/avisos/chave" | jq -c '{chave_publica: (.chave != null)}'); echo "$k" | grep -q true && break; sleep 10; done

@@ -6,6 +6,7 @@ workers_dev = true
 
 [vars]
 # Resumo (SHA-256) da chave do dono. A chave em si nunca fica aqui.
+VERSAO = "__VERSAO__"
 ADMIN_HASH = "e57e78a3bb0d8127b02226822dbc4fe943bb5ddd711696f032bcf36adf28589c"
 
 # Lembretes para jogar: 17h, 18h e 19h em Manaus (21h, 22h e 23h UTC)
