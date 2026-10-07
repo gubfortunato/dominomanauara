@@ -923,6 +923,14 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .insta-link i{font-style:normal;font-size:22px;color:var(--muted)}
 .insta-link:active{transform:scale(.99)}
 
+/* "Agora não" nos cartões: mesmo formato e altura do botão principal ao lado (contorno, sem fundo) */
+.install .row,.avisos-card .row,.ap-convite-bt{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+.install .row .primary,.avisos-card .row .primary,.ap-convite-bt .primary{width:auto;margin:0;padding:12px 20px;font-size:15.5px;line-height:1.25;border-radius:14px}
+.install .row .linkbtn,.avisos-card .row .linkbtn,.ap-convite-bt .linkbtn{align-self:stretch;margin:0;padding:11px 20px;font-size:15.5px;font-weight:700;line-height:1.25;border-radius:14px;border:1px solid rgba(239,226,204,.35);background:transparent;color:var(--wood-ink)}
+.ap-convite-bt .linkbtn{border-color:var(--line);color:var(--fg)}
+.ap-convite .ap-convite-bt .primary{padding:12px 20px;font-size:15.5px;line-height:1.25}
+.ap-convite .ap-convite-bt .linkbtn{padding:11px 20px;font-size:15.5px}
+
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
 .sala-entrada,.sala-espera{display:grid;gap:14px}
