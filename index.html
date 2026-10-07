@@ -858,6 +858,14 @@ body{touch-action:manipulation}
 /* Histórico: nota sobre partida e jogo */
 .mytreino .mt-nota{margin:0;font-size:14.5px;line-height:1.4;color:var(--wood-ink);opacity:.85;text-align:center}
 .mt-nums small{line-height:1.2;display:block;margin-top:3px}
+/* Celular bem estreito (320 px): fileira de dominós menor para caber inteira */
+@media (orientation: portrait) and (max-width: 340px){
+  .train{--g:12px;padding-right:44px}
+  .dom{width:22px}
+  .train.go .dom{animation-name:toppleP}
+}
+/* inclinação para pedra de 44 de altura com vão de 12: asen(12 / 44) */
+@keyframes toppleP{to{transform:rotate(15.8deg)}}
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
@@ -1007,6 +1015,82 @@ html[data-mesa="acai"] .table.wood{--wood-1:#4f2449;--wood-2:#26101f;--wood-edge
 .dn-paglista li{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:baseline;font-size:15px;color:var(--wood-ink);padding:6px 0;border-bottom:1px solid rgba(239,226,204,.15)}
 .dn-paglista small{opacity:.75}
 .dn-pagaviso{margin:0;font-size:14.5px;color:var(--alert)}
+.ap-trazer[open]{grid-template-columns:minmax(0,1fr)}
+.ap-trazer .sala-cod input{min-width:0;width:100%;font-size:22px;letter-spacing:.1em}
+
+/* Convite gentil no início (marcos de partidas ganhas) */
+.ap-convite{display:grid;gap:10px;padding:14px 16px;border-radius:16px;border:1.5px dashed var(--nos);background:transparent}
+.ap-convite p{margin:0;font-size:16px;line-height:1.45}
+.ap-convite-bt{display:flex;align-items:center;gap:12px}
+.ap-convite-bt .primary{width:auto;padding:11px 18px}
+.ap-convite-bt .linkbtn{font-size:15.5px}
+.ap-plano{display:grid;gap:12px;padding-top:6px}
+.ap-ir + .ap-ir{margin-top:8px}
+.ap-ir2{background:transparent}
+
+/* Perfil: exclusivos separados e com cadeado */
+.av-sec{grid-column:1/-1;margin:8px 0 0;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.avbtn.trancado img{filter:grayscale(.55);opacity:.55}
+.av-lock{position:absolute;right:-2px;top:-2px;z-index:1;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#2a1a08;color:#f0b45e;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.av-lock svg{width:13px;height:13px}
+
+/* ===== Patrocinadores: espaços e painel do dono ===== */
+/* Banner no alto do início: tamanho contido no celular deitado e no tablet */
+#scrHome .sponsor{max-width:560px;width:100%;justify-self:center;margin-inline:auto}
+.sala-patro{margin-top:6px}
+.sala-patro .sponsor{max-width:560px;margin-inline:auto}
+.dn-patro-card{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;width:100%;padding:16px 18px;border-radius:18px;border:1.5px solid var(--nos);background:transparent;color:var(--fg);font:inherit;cursor:pointer}
+.dn-patro-card .ck{grid-column:1;font-size:12.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--nos)}
+.dn-patro-card b{grid-column:1;font-size:17px}
+.dn-patro-card .rc-go{grid-column:2;grid-row:1 / span 2;font-size:26px;color:var(--muted)}
+.pt-ajuda{font-size:15px;line-height:1.45;margin:0}
+.pt-lista{display:grid;gap:12px}
+.pt-vazio{text-align:center;padding:12px}
+.pt-card{display:grid;gap:10px;padding:16px}
+.pt-top{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:center}
+.pt-top img,.pt-semlogo{width:52px;height:52px;border-radius:12px;object-fit:cover;background:#fff}
+.pt-semlogo{display:grid;place-items:center;background:rgba(243,192,99,.18);color:var(--glow);font-size:22px}
+.pt-top b{display:block;font-size:18px;color:var(--wood-ink)}
+.pt-sit{display:inline-block;margin-top:3px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(239,226,204,.15);color:var(--wood-ink)}
+.pt-sit.noar{background:#4cc36b;color:#0b2e17}
+.pt-sit.agendado{background:#8fc7cf;color:#10262a}
+.pt-sit.vencido,.pt-sit.pausado{background:rgba(239,226,204,.18)}
+.pt-esp{margin:0;font-size:14.5px;color:var(--wood-ink);opacity:.85}
+.pt-nums{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.pt-nums li{display:grid;gap:1px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.18)}
+.pt-nums span{font-size:12.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--glow)}
+.pt-nums b{font-size:15.5px;font-weight:700;color:var(--wood-ink)}
+.pt-acoes{display:flex;flex-wrap:wrap;gap:8px}
+.pt-acoes button{flex:1 1 auto;font:inherit;font-size:15px;font-weight:800;padding:10px 12px;border-radius:12px;border:1px solid rgba(239,226,204,.35);background:transparent;color:var(--wood-ink);cursor:pointer}
+.pt-form{display:grid;gap:14px}
+.pt-ftit{margin:0;font-family:var(--font-display);font-weight:400;font-size:24px}
+.pt-form input[type=text],.pt-form input[type=date]{width:100%;font:inherit;font-size:17px;font-weight:600;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg)}
+.pt-form .field label,.pt-form .flabel{font-size:16.5px}
+.pt-form .field label small,.pt-form .flabel small{font-weight:600;color:var(--muted)}
+.pt-form .secondary{width:100%}
+.pt-logo{display:flex;align-items:center;gap:12px;margin:6px 0 8px}
+.pt-logo img{width:72px;height:72px;border-radius:14px;object-fit:cover;background:#fff;box-shadow:0 0 0 1px var(--line)}
+.pt-banners{display:grid;gap:8px;margin:6px 0 8px}
+.pt-ban{position:relative}
+.pt-ban img{width:100%;aspect-ratio:5/2;object-fit:cover;border-radius:12px;display:block;box-shadow:0 0 0 1px var(--line)}
+.pt-logo button,.pt-ban button{font:inherit;font-size:14px;font-weight:800;padding:7px 12px;border-radius:999px;border:0;background:rgba(21,16,12,.8);color:#f6eedf;cursor:pointer}
+.pt-ban button{position:absolute;right:8px;top:8px}
+.pt-datas{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pt-apagar{color:var(--alert);justify-self:center}
+#scrPatro > *,.pt-form > *,.pt-form .field{min-width:0}
+.pt-datas{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.pt-form input[type=date]{min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;min-height:48px}
+
+/* Botões de link dentro de cartões de madeira: texto claro (no tema claro ficava escuro sobre madeira) */
+.wood .linkbtn,.wood .dn-anuncie{color:var(--wood-ink);border-color:rgba(239,226,204,.4)}
+/* Folhas: alça e × para fechar */
+.sheet{position:relative}
+.folha-alca{width:44px;height:5px;border-radius:999px;background:var(--line);margin:-8px auto 10px}
+.folha-x{position:absolute;top:10px;right:12px;width:40px;height:40px;border-radius:50%;border:0;background:var(--bg);color:var(--fg);font:inherit;font-size:28px;line-height:1;font-weight:500;display:grid;place-items:center;cursor:pointer;box-shadow:0 0 0 1px var(--line);z-index:2}
+.folha-x:active{transform:scale(.94)}
+.sheet h2{padding-right:44px}
+/* Estrela dos extras do plano: selo escuro para aparecer em qualquer fundo */
+.av-star,.ap-cor i,.ap-av i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#2a1a08;color:#f0b45e;font-size:12px;line-height:1;text-shadow:none;box-shadow:0 1px 3px rgba(0,0,0,.4)}
 </style>
 </head>
 <body>
@@ -1070,11 +1154,8 @@ html[data-mesa="acai"] .table.wood{--wood-1:#4f2449;--wood-2:#26101f;--wood-edge
       <button type="button" class="mechip" id="meChip" aria-label="Editar perfil: nome e foto"><span class="face" id="meChipFace"></span><span class="edit" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span></button>
     </div>
     <p class="lead">Fala, <b id="homeName"></b>. Bora pra mesa?</p>
-    <button type="button" class="rulescard" id="howBtn">
-      <span class="rc-ic" id="rulesTile" aria-hidden="true"></span>
-      <span class="rc-tx"><b>Regras</b><small>Bucho, garagem, passe e galo, explicados</small></span>
-      <span class="rc-go" aria-hidden="true">›</span>
-    </button>
+    <!-- Banner do patrocinador: primeira coisa da tela inicial -->
+    <a class="sponsor" id="sponsor" target="_blank" rel="noopener" hidden></a>
     <button type="button" class="card wood" id="goResume" hidden>
       <span class="ck">Jogo em andamento</span><span class="ct">Continuar de onde parou</span>
       <span class="cd" id="resumeD"></span>
@@ -1091,11 +1172,20 @@ html[data-mesa="acai"] .table.wood{--wood-1:#4f2449;--wood-2:#26101f;--wood-edge
       <span class="ck">Mesa online</span><span class="ct">Jogar com os amigos</span>
       <span class="cd">Cada um no seu celular. Crie a mesa e chame a turma pelo WhatsApp, ou entre com o número que um amigo mandou.</span>
     </button>
-    <button type="button" class="donocard" id="donoCard" hidden>
-      <span class="dc-live" aria-hidden="true"></span>
-      <span class="dc-tx"><b>Área do dono</b><small id="donoCardTx">Os números do jogo</small></span>
+    <button type="button" class="rulescard" id="howBtn">
+      <span class="rc-ic" id="rulesTile" aria-hidden="true"></span>
+      <span class="rc-tx"><b>Regras</b><small>Bucho, garagem, passe e galo, explicados</small></span>
       <span class="rc-go" aria-hidden="true">›</span>
     </button>
+    <button type="button" class="donocard" id="donoCard" hidden>
+      <span class="dc-live" aria-hidden="true"></span>
+      <span class="dc-tx"><b>Área do administrador</b><small id="donoCardTx">Os números do jogo</small></span>
+      <span class="rc-go" aria-hidden="true">›</span>
+    </button>
+    <div class="ap-convite" id="apConvite" hidden>
+      <p id="apConviteTx"></p>
+      <div class="ap-convite-bt"><button type="button" class="primary" id="apConviteSim">Apoiar o jogo</button><button type="button" class="linkbtn" id="apConviteNao">Agora não</button></div>
+    </div>
     <div class="mytreino wood" id="myTreino" hidden>
       <span class="ck">Seu histórico neste celular</span>
       <div class="mt-nums">
@@ -1126,9 +1216,8 @@ html[data-mesa="acai"] .table.wood{--wood-1:#4f2449;--wood-2:#26101f;--wood-edge
       <b>Achou um erro ou tem uma ideia?</b>
       <span>O jogo está começando e cada opinião ajuda a deixar ele do jeito da nossa mesa.</span>
     </button>
-    <a class="sponsor" id="sponsor" target="_blank" rel="noopener" hidden></a>
-    <button type="button" class="anuncie-link" id="anuncieLink" hidden><span>Quer ver a sua empresa aqui?</span><b>Anuncie no Dominó Manauara ›</b></button>
-    <p class="note foot"><span id="footBrand">Dominó Manauara</span> · <button type="button" class="verlink" id="verBtn">Versão <span class="appver"></span></button> · <a href="termos.html">Termos</a> · <a href="privacidade.html">Privacidade</a> · <button type="button" class="verlink" id="footAnuncie" hidden>Anuncie</button></p>
+    <button type="button" class="anuncie-link" id="anuncieLink" hidden><span>Quer ver a sua empresa no jogo?</span><b>Anuncie no Dominó Manauara ›</b></button>
+    <p class="note foot"><span id="footBrand">Dominó Manauara</span> · <button type="button" class="verlink" id="verBtn">Versão <span class="appver"></span></button> · <a href="termos.html">Termos</a> · <a href="privacidade.html">Privacidade</a> · <button type="button" class="verlink" id="footAnuncie" hidden>Anuncie</button><span id="footApoioSep" hidden> · </span><button type="button" class="verlink" id="footApoio" hidden>Apoie o jogo</button></p>
   </section>
 
   <section class="screen panel" id="scrSetup" hidden>
@@ -1165,40 +1254,70 @@ html[data-mesa="acai"] .table.wood{--wood-1:#4f2449;--wood-2:#26101f;--wood-edge
       <button type="button" class="secondary" id="salaSair">Sair da mesa</button>
     </div>
     <p class="sala-st" id="salaSt" role="status" hidden></p>
+    <div class="sala-patro" id="salaPatro"></div>
+  </section>
+
+  <section class="screen panel" id="scrPatro" hidden>
+    <button type="button" class="backbtn" id="ptBack">← Voltar</button>
+    <div><p class="kicker">Área do administrador</p><h2 class="brand" style="font-size:30px">Patrocinadores</h2></div>
+    <p class="note pt-ajuda">Quem está no ar aparece nos espaços escolhidos. Se mais de um dividir o mesmo espaço, eles se revezam. Espaço sem patrocinador mostra o alug+. Quem tem o Plano Apoiador não vê anúncio.</p>
+    <div class="dn-seg" id="ptDias" role="group" aria-label="Período dos números"><button type="button" data-d="7" aria-pressed="false">7 dias</button><button type="button" data-d="30" aria-pressed="true">30 dias</button><button type="button" data-d="90" aria-pressed="false">90 dias</button></div>
+    <button type="button" class="primary" id="ptNovo">+ Novo patrocinador</button>
+    <div class="pt-lista" id="ptLista"></div>
+    <div class="pt-form" id="ptForm" hidden>
+      <h3 class="pt-ftit" id="ptfTitulo">Novo patrocinador</h3>
+      <div class="field"><label for="ptfNome">Nome da empresa</label><input type="text" id="ptfNome" maxlength="40"></div>
+      <div class="field"><label for="ptfTexto">Frase curta <small>· aparece quando não há banner</small></label><input type="text" id="ptfTexto" maxlength="80" placeholder="Ex.: Peça pelo WhatsApp"></div>
+      <div class="field"><label for="ptfLink">Para onde vai quem tocar</label><input type="text" id="ptfLink" maxlength="300" placeholder="Site, @instagram ou WhatsApp com DDD" autocapitalize="off" spellcheck="false"></div>
+      <div class="field"><span class="flabel">Logo <small>· quadrado</small></span><div class="pt-logo" id="ptfLogo"></div><button type="button" class="secondary" id="ptfLogoBtn">Escolher logo</button><input type="file" id="ptfLogoIn" accept="image/*" hidden></div>
+      <div class="field"><span class="flabel">Banners <small>· até 3, imagem deitada; a gente corta no formato 5 × 2</small></span><div class="pt-banners" id="ptfBanners"></div><button type="button" class="secondary" id="ptfAddBanner">Adicionar banner</button><input type="file" id="ptfBannerIn" accept="image/*" hidden></div>
+      <div class="field"><span class="flabel">Onde aparece</span>
+        <div class="patro-chips" id="ptfEspacos" role="group" aria-label="Espaços">
+          <button type="button" data-e="inicio" aria-pressed="false">Banner no início</button><button type="button" data-e="mesa" aria-pressed="false">Mesa com a marca</button><button type="button" data-e="fim" aria-pressed="false">Fim de partida</button><button type="button" data-e="montar" aria-pressed="false">Telas antes de jogar</button>
+        </div></div>
+      <div class="pt-datas"><div class="field"><label for="ptfInicio">Começa em <small>· opcional</small></label><input type="date" id="ptfInicio"></div><div class="field"><label for="ptfFim">Termina em <small>· opcional</small></label><input type="date" id="ptfFim"></div></div>
+      <label class="patro-aceite"><input type="checkbox" id="ptfAtivo" checked><span>No ar</span></label>
+      <button type="button" class="primary" id="ptfSalvar">Salvar</button>
+      <button type="button" class="secondary" id="ptfCancelar">Cancelar</button>
+      <button type="button" class="linkbtn pt-apagar" id="ptfApagar" hidden>Apagar patrocinador</button>
+    </div>
   </section>
 
   <section class="screen panel" id="scrApoio" hidden>
     <button type="button" class="backbtn" id="apoioBack">← Voltar</button>
-    <div><p class="kicker">Apoie o jogo</p><h2 class="brand" style="font-size:30px">Plano Apoiador</h2></div>
+    <div><p class="kicker">Apoie o jogo</p><h2 class="brand" style="font-size:30px">Ajude a manter a mesa de pé</h2></div>
     <div class="ap-ativo wood" id="apAtivo" hidden>
       <span class="ck">Você é Apoiador ★</span>
       <p class="ap-ate" id="apAte"></p>
       <p class="ap-cod">Código do seu plano: <b id="apCod"></b><small>Guarde. No celular novo, ele leva o plano junto.</small></p>
     </div>
-    <p class="sala-lead" id="apLead">O jogo continua de graça para todo mundo. Quem apoia ajuda a manter a mesa de pé e ganha uns mimos:</p>
-    <ul class="ap-lista">
-      <li><span class="ap-ic" aria-hidden="true">★</span><span><b>Selo de apoiador</b> ao lado do seu nome na mesa online</span></li>
-      <li><span class="ap-ic" aria-hidden="true">✓</span><span><b>Jogo sem anúncios</b></span></li>
-      <li><span class="ap-ic" aria-hidden="true">☺</span><span><b>Avatares exclusivos</b>: coroa, óculos escuros, bonés vermelho e azul de Parintins</span></li>
-      <li><span class="ap-ic" aria-hidden="true">◼</span><span><b>Cores de mesa</b>: feltro verde, Rio Negro e açaí</span></li>
-    </ul>
-    <div class="ap-precos" id="apPrecos">
-      <button type="button" class="ap-preco" data-p="mensal"><b>R$ 4,90</b><span>30 dias</span></button>
-      <button type="button" class="ap-preco destaque" data-p="anual"><em>Mais em conta</em><b>R$ 39,90</b><span>1 ano · sai por R$ 3,33 por mês</span></button>
+    <p class="sala-lead" id="apLead">O Dominó Manauara é de graça e quer continuar assim, para a turma toda. Se o jogo está valendo a pena para você, ajude com o valor que der.</p>
+    <div class="ap-doacao">
+      <span class="ap-k">Faça uma doação</span>
+      <div class="ap-doa" id="apDoa">
+        <button type="button" data-p="doacao5"><b>R$ 5</b><span>Um cafezinho</span></button><button type="button" data-p="doacao10"><b>R$ 10</b><span>Uma tapioca</span></button><button type="button" data-p="doacao20"><b>R$ 20</b><span>Um X-caboquinho</span></button>
+      </div>
+      <p class="note ap-nota">Pix ou cartão, na página segura do Asaas. Nada muda no jogo: é só um obrigado.</p>
     </div>
-    <p class="note ap-nota">Pix ou cartão, na página segura do Asaas. Não renova sozinho: quando acabar, você escolhe se continua.</p>
+    <div class="ap-plano" id="apPlano">
+      <span class="ap-k">Quer uns extras? Plano Apoiador</span>
+      <ul class="ap-lista">
+        <li><span class="ap-ic" aria-hidden="true">★</span><span><b>Selo de apoiador</b> ao lado do seu nome na mesa online</span></li>
+        <li><span class="ap-ic" aria-hidden="true">✓</span><span><b>Jogo sem anúncios</b></span></li>
+        <li><span class="ap-ic" aria-hidden="true">☺</span><span><b>Avatares exclusivos</b>: coroa, óculos escuros, bonés vermelho e azul de Parintins</span></li>
+        <li><span class="ap-ic" aria-hidden="true">◼</span><span><b>Cores de mesa</b>: feltro verde, Rio Negro e açaí</span></li>
+      </ul>
+      <div class="ap-precos" id="apPrecos">
+        <button type="button" class="ap-preco" data-p="mensal"><b>R$ 4,90</b><span>30 dias</span></button>
+        <button type="button" class="ap-preco destaque" data-p="anual"><em>Mais em conta</em><b>R$ 39,90</b><span>1 ano · sai por R$ 3,33 por mês</span></button>
+      </div>
+      <p class="note ap-nota">O plano também ajuda a manter o jogo de graça. Não renova sozinho: quando acabar, você escolhe se continua.</p>
+    </div>
     <div class="ap-perso">
       <span class="ap-k">Cor da mesa</span>
       <div class="ap-cores" id="apCores" role="radiogroup" aria-label="Cor da mesa"></div>
       <span class="ap-k">Avatares exclusivos</span>
       <div class="ap-avs" id="apAvs"></div>
-    </div>
-    <div class="ap-doacao">
-      <span class="ap-k">Prefere só ajudar?</span>
-      <p>Faça uma doação, do tamanho que der:</p>
-      <div class="ap-doa" id="apDoa">
-        <button type="button" data-p="doacao5"><b>R$ 5</b><span>Um cafezinho</span></button><button type="button" data-p="doacao10"><b>R$ 10</b><span>Uma tapioca</span></button><button type="button" data-p="doacao20"><b>R$ 20</b><span>Um X-caboquinho</span></button>
-      </div>
     </div>
     <details class="ap-trazer" id="apTrazerBox">
       <summary>Já tenho o plano em outro celular</summary>
@@ -1215,7 +1334,7 @@ html[data-mesa="acai"] .table.wood{--wood-1:#4f2449;--wood-2:#26101f;--wood-edge
       <ul class="patro-onde">
         <li><b>Banner no início</b><span>A primeira coisa que o jogador vê ao abrir o jogo.</span></li>
         <li><b>Mesa com a sua marca</b><span>"Mesa oferecida por" no meio da mesa, a partida inteira.</span></li>
-        <li><b>Fim de jogo</b><span>O seu anúncio na tela do resultado, quando todo mundo está olhando.</span></li>
+        <li><b>Fim de partida</b><span>O seu anúncio na tela do resultado de cada partida, quando todo mundo está olhando.</span></li>
       </ul>
       <div class="field"><label for="pfEmpresa">Nome da empresa</label><input type="text" id="pfEmpresa" maxlength="60" autocomplete="organization"><small class="patro-erro" id="peEmpresa" hidden>Escreva o nome da empresa.</small></div>
       <div class="field"><label for="pfNome">Seu nome</label><input type="text" id="pfNome" maxlength="40" autocomplete="name"><small class="patro-erro" id="peNome" hidden>Escreva o seu nome.</small></div>
@@ -1225,7 +1344,7 @@ html[data-mesa="acai"] .table.wood{--wood-1:#4f2449;--wood-2:#26101f;--wood-edge
       <div class="field"><label for="pfRamo">Ramo do negócio <small>· se quiser</small></label><input type="text" id="pfRamo" maxlength="60" placeholder="Ex.: restaurante, açaí, oficina, loja"></div>
       <div class="field"><span class="flabel patro-lbl">O que te interessa?</span>
         <div class="patro-chips" id="pfInteresse" role="group" aria-label="O que te interessa">
-          <button type="button" data-i="banner" aria-pressed="false">Banner no início</button><button type="button" data-i="mesa" aria-pressed="false">Mesa com a marca</button><button type="button" data-i="fim" aria-pressed="false">Fim de jogo</button><button type="button" data-i="naosei" aria-pressed="false">Ainda não sei</button>
+          <button type="button" data-i="banner" aria-pressed="false">Banner no início</button><button type="button" data-i="mesa" aria-pressed="false">Mesa com a marca</button><button type="button" data-i="fim" aria-pressed="false">Fim de partida</button><button type="button" data-i="naosei" aria-pressed="false">Ainda não sei</button>
         </div></div>
       <div class="field"><label for="pfMsg">Mensagem <small>· se quiser</small></label><textarea id="pfMsg" rows="3" maxlength="600" placeholder="Conte um pouco do seu negócio ou o que você imagina."></textarea></div>
       <label class="patro-aceite"><input type="checkbox" id="pfAceite"><span>Autorizo o Dominó Manauara a me chamar no WhatsApp ou e-mail para falar de patrocínio. Veja a <a href="privacidade.html">Privacidade</a>.</span></label>
@@ -1268,7 +1387,7 @@ html[data-mesa="acai"] .table.wood{--wood-1:#4f2449;--wood-2:#26101f;--wood-edge
 
   <section class="screen panel" id="scrDono" hidden>
     <button type="button" class="backbtn" id="donoBack">← Voltar</button>
-    <div><p class="kicker">Área do dono</p><h2 class="brand" style="font-size:30px">Como está a mesa</h2></div>
+    <div><p class="kicker">Área do administrador</p><h2 class="brand" style="font-size:30px">Como está a mesa</h2></div>
     <a class="dn-open wood" id="dnOpen" href="#" target="_blank" rel="noopener" hidden>
       <span class="ck">Números do jogo</span>
       <b>Ver quem está online e o movimento</b>
@@ -1302,6 +1421,7 @@ html[data-mesa="acai"] .table.wood{--wood-1:#4f2449;--wood-2:#26101f;--wood-edge
       <button type="button" class="primary" id="dnMsgSenha" hidden>Digite a senha de novo para ver as mensagens</button>
       <ul id="dnMsgLista" class="dn-msglista"></ul>
     </div>
+    <button type="button" class="dn-patro-card" id="dnPatroCard" hidden><span class="ck">Patrocinadores</span><b id="dnPatroTx">Cadastrar e ver os números</b><span class="rc-go" aria-hidden="true">›</span></button>
     <div class="dn-list wood dn-pag" id="dnPag" hidden>
       <span class="ck">Apoios e planos</span>
       <div class="mt-nums dn-3"><div><b id="dnPagMes">R$ 0</b><small>este mês</small></div><div><b id="dnPagAtivos">0</b><small>planos ativos</small></div><div><b id="dnPagTotal">R$ 0</b><small>desde o início</small></div></div>
@@ -1330,7 +1450,7 @@ html[data-mesa="acai"] .table.wood{--wood-1:#4f2449;--wood-2:#26101f;--wood-edge
     <a class="secondary dn-full" id="dnFull" href="#" target="_blank" rel="noopener">Abrir o painel completo do Umami</a>
     <label class="dn-sw"><input type="checkbox" id="dnSemContar"><span><b>Não contar meus acessos</b><small>Seus testes neste aparelho ficam fora dos números.</small></span></label>
     <button type="button" class="linkbtn" id="dnKeyTrocar">Tenho o plano Pro do Umami: colar a chave</button>
-    <button type="button" class="linkbtn" id="dnSair">Sair da Área do dono neste aparelho</button>
+    <button type="button" class="linkbtn" id="dnSair">Sair da Área do administrador neste aparelho</button>
     <p class="note dn-tela" id="dnTela"></p>
   </section>
   <section class="screen game" id="scrGame" hidden>
@@ -1770,6 +1890,13 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '2.4', data: '07/10/2026', itens: [
+    'Telas que sobem de baixo (regras, menu, reações) agora têm × para fechar, e dá para fechar arrastando para baixo.',
+    'Regras: texto de quem sai em cada mão corrigido (depois de jogo fechado, sai a carroça de sena).',
+    'O banner do patrocinador fica no alto da tela inicial; o anúncio aparece no fim de cada partida e na tela da mesa online.',
+    'Vários patrocinadores ao mesmo tempo, revezando nos espaços.',
+    'Ajustes de tela: nada passa da borda em celular pequeno, e textos claros nos cartões escuros.'
+  ] },
   { v: '2.3', data: '07/10/2026', itens: [
     'Plano Apoiador: selo na mesa online, jogo sem anúncios, avatares e cores de mesa exclusivos. R$ 4,90 por 30 dias ou R$ 39,90 por 1 ano, por Pix ou cartão, sem renovação automática.',
     'Doação de R$ 5, R$ 10 ou R$ 20 para ajudar a manter o jogo de graça.'
@@ -2013,7 +2140,7 @@ function toast(msg) {
   clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 4200);
 }
 // Troca de tela com fade: a tela atual some suave e a próxima aparece suave.
-const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Anuncie', 'Apoio'];
+const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Anuncie', 'Apoio', 'Patro'];
 let showTimer = null;
 function show(name) {
   if (window.__reloadWhenFree && name !== 'game') { saveGame(); location.reload(); return; }
@@ -2034,6 +2161,7 @@ function show(name) {
     if (name === 'sala') renderSala();
     if (name === 'anuncie') renderAnuncie();
     if (name === 'apoio') renderApoioTela();
+    if (name === 'patro') renderPatroTela();
     if (name === 'game' && G) render();
   };
   if (!cur || reduce) { finish(); return; }
@@ -2089,7 +2217,11 @@ function openProfile(from) {
   show('profile');
 }
 const CAM = '<svg viewBox="0 0 24 24" class="cam" aria-hidden="true"><path d="M3.5 8.5h3.4l1.7-2.6h6.8l1.7 2.6h3.4v10.6h-17z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="13.4" r="3.5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>';
-const FOTO_NOTA = 'Com foto, os outros jogadores veem que você é gente de verdade: ela vai aparecer na mesa online, que está chegando. Não quer aparecer? Escolha um avatar.';
+const FOTO_NOTA = 'A foto fica só neste celular, para você se ver na mesa. Na mesa online, os outros veem um avatar.';
+function avatarBtn(a, i) {
+  const trancado = a.premium && !avatarLivre(a);
+  return `<button type="button" class="avbtn${a.premium ? ' premium' : ''}${trancado ? ' trancado' : ''}" role="radio" aria-checked="${draft.av === a.id}" data-av="${a.id}" aria-label="${a.premium ? (trancado ? 'Avatar exclusivo do Plano Apoiador, trancado' : 'Avatar exclusivo') : 'Avatar ' + (i + 1)}"><span class="face">${trancado ? '<i class="av-lock" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg></i>' : a.premium ? '<i class="av-star" aria-hidden="true">★</i>' : ''}<img src="${avatarURI(a)}" alt=""></span></button>`;
+}
 function renderProfile() {
   $('#profileBack').hidden = !profile || !profile.idade;
   $$('#idadeSeg button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.i === draft.idade)));
@@ -2100,7 +2232,10 @@ function renderProfile() {
   const ph = draft.photo;
   $('#avatarGrid').innerHTML =
     (menor ? '' : `<button type="button" class="avbtn photo${ph ? ' has' : ''}" role="radio" aria-checked="${draft.av === 'foto'}" data-av="foto"><span class="face">${ph ? `<img src="${ph}" alt="">` : CAM}</span><span>${ph ? 'Sua foto' : 'Pôr foto'}</span></button>`)
-    + AVATARS.map((a, i) => `<button type="button" class="avbtn${a.premium ? ' premium' : ''}${a.premium && !avatarLivre(a) ? ' trancado' : ''}" role="radio" aria-checked="${draft.av === a.id}" data-av="${a.id}" aria-label="${a.premium ? 'Avatar do Plano Apoiador' : 'Avatar ' + (i + 1)}"><span class="face">${a.premium ? '<i class="av-star" aria-hidden="true">★</i>' : ''}<img src="${avatarURI(a)}" alt=""></span></button>`).join('');
+    + AVATARS.filter(a => !a.premium).map((a, i) => avatarBtn(a, i)).join('')
+    // exclusivos do Plano Apoiador: só aparecem quando o plano existe para comprar (ou para quem já tem)
+    + (AVATARS.some(a => a.premium) && ((typeof pagamentosAtivos === 'function' && pagamentosAtivos()) || (typeof temPlano === 'function' && temPlano()))
+      ? `<p class="av-sec">${typeof temPlano === 'function' && temPlano() ? '★ Seus avatares de Apoiador' : '🔒 Exclusivos do Plano Apoiador'}</p>` + AVATARS.filter(a => a.premium).map((a, i) => avatarBtn(a, i)).join('') : '');
   $('#photoTools').hidden = !ph;
   renderPerfilAvisos();
 }
@@ -2262,8 +2397,7 @@ $('#shuffleBtn').addEventListener('click', () => {
 });
 $('#goOffline').addEventListener('click', () => {
   setupFill();
-  const p = CONFIG.patrocinio, box = $('#setupPatro');
-  box.innerHTML = p && p.nome ? `<a class="sponsor${p.banner ? ' has-banner' : ''}" href="${esc(p.link || SITE_URL)}" target="_blank" rel="noopener"><span class="sp-k">Patrocínio</span>${p.banner ? bannerSlides(p) : `<b>${esc(p.nome)}</b><span>${esc(p.texto || '')}</span>`}</a>` : '';
+  $('#setupPatro').innerHTML = htmlPatroMontar();   // patrocinador do espaço "telas antes de jogar" (patro.js)
   show('setup'); readySlides();
 });
 
@@ -2475,7 +2609,7 @@ document.addEventListener('error', e => {
 
 $('#rulesTile').innerHTML = `<svg viewBox="-0.04 -0.04 1.08 2.08">${tileSVG({ x: .5, y: 1, o: 'v', v1: 5, v2: 5 }, '', false)}</svg>`;
 
-// ---- Área do dono ----
+// ---- Área do administrador ----
 // Só abre com a senha. O link do painel fica cifrado no código; a senha nunca fica no site.
 // Entradas: dominomanauara.com.br/#dono, ou 5 toques em "Dominó Manauara" no rodapé do início.
 const DKEY = 'dmz-dono';
@@ -2501,11 +2635,11 @@ function donoSalvar() { if (dono) store.set(DKEY, JSON.stringify(dono)); else st
 function openDonoLogin(deNovo) {
   if (!CONFIG.dono) return;
   if (dono && !deNovo) { show('dono'); return; }
-  openSheet('info', `<p class="eyebrow">Área do dono</p><h2 id="sheetTitle">Digite a senha</h2>
+  openSheet('info', `<p class="eyebrow">Área do administrador</p><h2 id="sheetTitle">Digite a senha</h2>
     <form id="donoForm" class="dn-form" autocomplete="on">
       <input type="text" name="username" value="dono" autocomplete="username" hidden>
       <input id="donoPw" class="dn-pw" type="password" name="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="Senha" aria-label="Senha">
-      <p class="note" id="donoMsg">Depois de entrar, a Área do dono fica no início, só neste aparelho.</p>
+      <p class="note" id="donoMsg">Depois de entrar, a Área do administrador fica no início, só neste aparelho.</p>
       <button type="submit" class="primary" id="donoGo">Entrar</button>
     </form>`);
   setTimeout(() => { const i = $('#donoPw'); if (i) i.focus(); }, 60);
@@ -2789,7 +2923,7 @@ $('#dnSair').addEventListener('click', () => {
   dono = null; dnSes = null; donoSalvar(); clearInterval(dnTimer);
   loadUmami();
   show(profile ? 'home' : 'who');
-  toast('Você saiu da Área do dono neste aparelho.');
+  toast('Você saiu da Área do administrador neste aparelho.');
 });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && screen === 'dono') dnAoVivo();
@@ -3927,11 +4061,12 @@ function conferirPendente() {
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { conferirPendente(); conferirPlano(); } });
 
 // ---------- Tela do plano ----------
-function abrirApoio(deOnde) {
+function abrirApoio(deOnde, rolarPara) {
   if (!pagamentosAtivos()) return;
   apoioVolta = deOnde || 'home';
   track('apoio-aberto');
   show('apoio');
+  if (rolarPara === 'plano') setTimeout(() => { const el = $('#apPlano'); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 320);
 }
 function renderApoioTela() {
   const on = temPlano(), p = planoLocal();
@@ -3943,6 +4078,7 @@ function renderApoioTela() {
     $('#apCod').closest('.ap-cod').hidden = !p.codigo;
   }
   $('#apLead').hidden = on;
+  $('#apPlano').querySelector('.ap-k').textContent = on ? 'Renovar o Plano Apoiador' : 'Quer uns extras? Plano Apoiador';
   $$('#apPrecos .ap-preco span').forEach(s => { if (on && !s.dataset.orig) s.dataset.orig = s.textContent; });
   $('#apPrecos').classList.toggle('renovar', on);
   const cor = store.get(MCKEY) || 'madeira';
@@ -3999,18 +4135,26 @@ renderApoio = function () {
     $('#apoioK').textContent = 'Plano Apoiador ★';
     $('#apoioTxt').textContent = dias <= 5 ? `Seu plano acaba em ${dias} ${dias === 1 ? 'dia' : 'dias'}. Renove para continuar com os extras.` : `Obrigado por apoiar! Seu plano vale até ${dataBR(p.ate)}.`;
     $('#apoioVals').innerHTML = `<button type="button" class="ap-ir" data-ir="apoio">${dias <= 5 ? 'Renovar o plano' : 'Cor da mesa e avatar'}</button>`;
+  } else if (isApoiador()) {
+    $('#apoioK').textContent = 'Obrigado pelo apoio!';
+    $('#apoioTxt').textContent = 'Sua doação ajuda a manter o Dominó Manauara de graça. Quer uns extras? Conheça o Plano Apoiador.';
+    $('#apoioVals').innerHTML = '<button type="button" class="ap-ir" data-ir="plano">Conhecer o Plano Apoiador</button>';
   } else {
     $('#apoioK').textContent = 'Apoie o jogo';
-    $('#apoioTxt').textContent = 'Plano Apoiador: selo na mesa, jogo sem anúncios, avatares e cores de mesa exclusivos. A partir de R$ 3,33 por mês. Ou faça uma doação.';
-    $('#apoioVals').innerHTML = '<button type="button" class="ap-ir" data-ir="apoio">Ver o plano e a doação</button>';
+    $('#apoioTxt').textContent = 'O Dominó Manauara é de graça e quer continuar assim. Com o valor que der, você ajuda a manter a mesa de pé. Quer extras? O Plano Apoiador dá selo na mesa, jogo sem anúncios, avatares e cores de mesa exclusivos.';
+    $('#apoioVals').innerHTML = '<button type="button" class="ap-ir" data-ir="apoio">Doar a partir de R$ 5</button><button type="button" class="ap-ir ap-ir2" data-ir="plano">Conhecer o Plano Apoiador</button>';
   }
+  if (menorDeIdade()) card.hidden = true;
 };
-$('#apoioVals').addEventListener('click', e => { if (e.target.closest('[data-ir="apoio"]')) abrirApoio('home'); });
+$('#apoioVals').addEventListener('click', e => {
+  const b = e.target.closest('[data-ir]'); if (!b) return;
+  abrirApoio('home', b.dataset.ir === 'plano' ? 'plano' : null);
+});
 // Convite leve no fim do jogo (a cada 3 jogos, para quem ainda não apoia)
 const apoioInviteBase = apoioInvite;
 apoioInvite = function () {
   if (!pagamentosAtivos()) return apoioInviteBase();
-  if (temPlano()) return '';
+  if (!podePedirApoio(true)) return '';
   const t = loadHist();
   return t.jogos > 0 && t.jogos % 3 === 1 ? '<button type="button" class="res-apoio" id="resApoio">Curtiu? Apoie o Dominó Manauara</button>' : '';
 };
@@ -4040,6 +4184,409 @@ renderDono = function () { renderDonoBase(); dnPagCarregar(); };
 
 aplicarPlano();
 setTimeout(() => { conferirPlano(true); conferirPendente(); }, 1500);
+
+// ---------- Pedir apoio sem incomodar ----------
+// Nunca no meio da mão, nunca para menor de 18, nunca para quem tem plano ou doou há menos de 60 dias,
+// e no máximo um convite a cada 7 dias (o link discreto no menu e no rodapé sempre fica).
+const PEDIDOKEY = 'dmz-apoio-pedido';
+const MARCOS = [5, 20, 50, 100, 200];
+function menorDeIdade() { return !!(profile && profile.idade === 'menor'); }
+function doouRecente() { const d = store.get(AKEY); return !!d && (Date.now() - Date.parse(d)) < 60 * 86400000; }
+function podePedirApoio(discreto) {
+  if (!pagamentosAtivos() || menorDeIdade() || temPlano()) return false;
+  if (discreto) return true;
+  if (doouRecente()) return false;
+  let r = {}; try { r = JSON.parse(store.get(PEDIDOKEY) || '{}') || {}; } catch (e) {}
+  return !r.ultimo || Date.now() - r.ultimo > 7 * 86400000;
+}
+function marcoAtual() {
+  const n = loadHist().partidasVencidas || 0;
+  let r = {}; try { r = JSON.parse(store.get(PEDIDOKEY) || '{}') || {}; } catch (e) {}
+  const vistos = r.marcos || [];
+  return MARCOS.filter(m => n >= m && !vistos.includes(m)).pop() || null;
+}
+function guardarPedido(marco) {
+  let r = {}; try { r = JSON.parse(store.get(PEDIDOKEY) || '{}') || {}; } catch (e) {}
+  r.ultimo = Date.now(); r.marcos = Array.from(new Set([].concat(r.marcos || [], MARCOS.filter(m => m <= marco))));
+  store.set(PEDIDOKEY, JSON.stringify(r));
+}
+function renderConvite() {
+  const box = $('#apConvite'), m = podePedirApoio(false) ? marcoAtual() : null;
+  box.hidden = !m;
+  if (!m) return;
+  box.dataset.marco = m;
+  $('#apConviteTx').innerHTML = `<b>${m} partidas ganhas!</b> Se o jogo está valendo a pena, ajude a manter o Dominó Manauara de graça para a turma toda.`;
+}
+$('#apConviteSim').addEventListener('click', () => { guardarPedido(Number($('#apConvite').dataset.marco)); $('#apConvite').hidden = true; abrirApoio('home'); });
+$('#apConviteNao').addEventListener('click', () => { guardarPedido(Number($('#apConvite').dataset.marco)); $('#apConvite').hidden = true; });
+$('#footApoio').addEventListener('click', () => abrirApoio('home'));
+const renderHomeApoio = renderHome;
+renderHome = function () {
+  renderHomeApoio();
+  renderConvite();
+  const ver = podePedirApoio(true);
+  $('#footApoio').hidden = !ver; $('#footApoioSep').hidden = !ver;
+};
+
+// ===== Patrocinadores cadastrados pelo dono (servidor) =====
+// Cada espaço (início, mesa, fim de partida, Monte a mesa) mostra um patrocinador no ar para aquele espaço;
+// se houver mais de um, revezam. Sem nenhum, aparece o anúncio da casa (CONFIG.patrocinio).
+// Vistas e toques são contados no celular e enviados em lote (quem tem Plano Apoiador não vê anúncio e não conta).
+const PTKEY = 'dmz-patros', CONTKEY = 'dmz-patro-cont';
+const ESPACO_NOME = { inicio: 'Banner no início', mesa: 'Mesa com a marca', fim: 'Fim de partida', montar: 'Telas antes de jogar' };
+let PATROS = (() => { try { const j = JSON.parse(store.get(PTKEY) || 'null'); return j && Array.isArray(j.lista) ? j : { quando: 0, lista: [] }; } catch (e) { return { quando: 0, lista: [] }; } })();
+async function buscarPatros(agora) {
+  if (!CONFIG.api || navigator.onLine === false) return;
+  if (!agora && Date.now() - PATROS.quando < 15 * 60000) return;
+  try {
+    const r = await fetch(CONFIG.api + '/patrocinio/atual', agora ? { cache: 'no-cache' } : undefined);
+    if (!r.ok) return;
+    const j = await r.json();
+    const antes = JSON.stringify(PATROS.lista);
+    PATROS = { quando: Date.now(), lista: j.patrocinadores || [] };
+    store.set(PTKEY, JSON.stringify(PATROS));
+    if (antes !== JSON.stringify(PATROS.lista)) { if (screen === 'home') renderSponsor(); marcaDaMesa(false); }
+  } catch (e) {}
+}
+const rodizio = {};
+function patroPara(espaco) {
+  const lista = PATROS.lista.filter(p => (p.espacos || []).includes(espaco));
+  if (!lista.length) return CONFIG.patrocinio && CONFIG.patrocinio.nome ? Object.assign({ casa: true }, CONFIG.patrocinio) : null;
+  rodizio[espaco] = rodizio[espaco] == null ? Math.floor(Math.random() * lista.length) : (rodizio[espaco] + 1) % lista.length;
+  const p = lista[rodizio[espaco]];
+  return Object.assign({}, p, { banner: p.banners && p.banners[0] ? p.banners[0].src : null });
+}
+const temBanner = p => !!(p && ((p.banners && p.banners.length) || p.banner));
+const atrPatro = (p, espaco) => p && p.id && !p.casa ? ` data-patro="${p.id}" data-espaco="${espaco}"` : '';
+
+// ---------- Contagem ----------
+let contagem = (() => { try { return JSON.parse(store.get(CONTKEY) || '{}') || {}; } catch (e) { return {}; } })();
+function contarPatro(id, espaco, clique) {
+  if (!id || !ESPACO_NOME[espaco] || (typeof temPlano === 'function' && temPlano())) return;
+  const k = id + '|' + espaco, c = contagem[k] || (contagem[k] = { v: 0, c: 0 });
+  if (clique) c.c++; else c.v++;
+  store.set(CONTKEY, JSON.stringify(contagem));
+}
+async function enviarContagem() {
+  if (!CONFIG.api || navigator.onLine === false) return;
+  const itens = Object.entries(contagem).map(([k, x]) => { const [p, e] = k.split('|'); return { p: Number(p), e, v: Math.min(200, x.v), c: Math.min(50, x.c) }; })
+    .filter(x => x.v || x.c).slice(0, 20);
+  if (!itens.length) return;
+  try {
+    // texto simples: o navegador manda sem pergunta prévia (e dá para mandar ao fechar o app)
+    const r = await fetch(CONFIG.api + '/patro/contar', { method: 'POST', headers: { 'content-type': 'text/plain' }, body: JSON.stringify({ itens }), keepalive: true });
+    if (!r.ok) return;
+    for (const it of itens) {
+      const k = it.p + '|' + it.e, x = contagem[k]; if (!x) continue;
+      x.v = Math.max(0, x.v - it.v); x.c = Math.max(0, x.c - it.c);
+      if (!x.v && !x.c) delete contagem[k];
+    }
+    store.set(CONTKEY, JSON.stringify(contagem));
+  } catch (e) {}
+}
+setInterval(enviarContagem, 120000);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') enviarContagem(); else buscarPatros();
+});
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-patro]');
+  if (a) contarPatro(Number(a.dataset.patro), a.dataset.espaco, true);
+});
+
+// ---------- Espaços ----------
+let vistaInicioEm = 0;
+renderSponsor = function (semBanner) {
+  const el = $('#sponsor'), p = patroPara('inicio');
+  el.onclick = null; delete el.dataset.patro; delete el.dataset.espaco;
+  if (!p) { el.hidden = true; return; }
+  el.hidden = false; el.setAttribute('role', 'link');
+  if (p.link) { el.href = p.link; el.target = '_blank'; } else el.removeAttribute('href');
+  if (p.id && !p.casa) { el.dataset.patro = p.id; el.dataset.espaco = 'inicio'; }
+  const banner = !semBanner && temBanner(p);
+  el.classList.toggle('has-banner', banner);
+  el.innerHTML = banner ? `<span class="sp-k">Patrocínio</span>${bannerSlides(p)}`
+    : `<span class="sp-k">Patrocínio</span>${p.logo ? `<img class="sp-logo" src="${esc(p.logo)}" alt="">` : ''}<b>${esc(p.nome)}</b><span>${esc(p.texto || '')}</span>`;
+  if (!p.casa && Date.now() - vistaInicioEm > 30000) { vistaInicioEm = Date.now(); contarPatro(p.id, 'inicio'); }
+};
+// Mesa: "Mesa oferecida por" — escolhido a cada mão distribuída (cada mão conta uma vista)
+function marcaDaMesa(contar) {
+  const p = patroPara('mesa');
+  let el = $('.mesa-patro');
+  if (!p) { if (el) el.remove(); return; }
+  if (!el) { $('#boardWrap').insertAdjacentHTML('afterbegin', '<div class="mesa-patro" aria-hidden="true"></div>'); el = $('.mesa-patro'); }
+  el.innerHTML = `${p.logo ? `<img src="${esc(p.logo)}" alt="">` : ''}<span>Mesa oferecida por <b>${esc(p.nome)}</b></span>`;
+  if (contar && !p.casa) contarPatro(p.id, 'mesa');
+}
+const runDealPatro = runDeal;
+runDeal = function (after) { marcaDaMesa(true); return runDealPatro(after); };
+// Fim de partida (o resultado chama sponsorResult quando uma partida de 200 termina)
+const vistosFim = new WeakSet();
+sponsorResult = function () {
+  const p = patroPara('fim'); if (!p) return '';
+  if (!p.casa && G && G.result && !vistosFim.has(G.result)) { vistosFim.add(G.result); contarPatro(p.id, 'fim'); }
+  const href = p.link ? ` href="${esc(p.link)}" target="_blank" rel="noopener"` : '';
+  if (temBanner(p)) return `<a class="res-patro has-banner"${href}${atrPatro(p, 'fim')}><span class="sp-k">Oferecimento</span>${bannerSlides(p)}</a>`;
+  return `<a class="res-patro"${href}${atrPatro(p, 'fim')}>${p.logo ? `<img src="${esc(p.logo)}" alt="">` : ''}<span>Oferecimento <b>${esc(p.nome)}</b>${p.texto ? ` · ${esc(p.texto)}` : ''}</span></a>`;
+};
+// Tela "Monte a mesa"
+function htmlPatroMontar() {
+  const p = patroPara('montar'); if (!p) return '';
+  if (!p.casa) contarPatro(p.id, 'montar');
+  const href = p.link ? ` href="${esc(p.link)}" target="_blank" rel="noopener"` : '';
+  return `<a class="sponsor${temBanner(p) ? ' has-banner' : ''}"${href}${atrPatro(p, 'montar')}><span class="sp-k">Patrocínio</span>${temBanner(p) ? bannerSlides(p) : `<b>${esc(p.nome)}</b><span>${esc(p.texto || '')}</span>`}</a>`;
+}
+// Mesa online: patrocinador no fim da tela (mesmo espaço do "Monte a mesa")
+const showPatro = show;
+show = function (name) {
+  showPatro(name);
+  if (name === 'sala') { $('#salaPatro').innerHTML = htmlPatroMontar(); readySlides(); }
+};
+marcaDaMesa(false);
+setTimeout(() => buscarPatros(true), 1200);
+
+// ===== Painel de patrocinadores (Área do administrador) =====
+let ptDias = 30, ptLista = [], ptEdit = null, ptApagarArmado = false;
+const fmt = n => Number(n || 0).toLocaleString('pt-BR');
+const dataBRp = ms => ms ? new Date(ms).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Manaus' }) : '';
+async function ptPedir(path, opts) {
+  const o = Object.assign({}, opts || {});
+  o.headers = Object.assign({ 'x-admin-key': dono && dono.admin }, o.headers || {});
+  const r = await fetch(CONFIG.api + path, o);
+  if (r.status === 401) throw new Error('senha');
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(j.erro || 'http-' + r.status); e.cod = j.erro; throw e; }
+  return j;
+}
+function situacao(p) {
+  const agora = Date.now();
+  if (!p.ativo) return ['Pausado', 'pausado'];
+  if (p.inicio && p.inicio > agora) return [`Começa em ${dataBRp(p.inicio)}`, 'agendado'];
+  if (p.fim && p.fim < agora) return ['Período acabou', 'vencido'];
+  return ['No ar', 'noar'];
+}
+function linhaNumeros(e, n) {
+  if (e === 'mesa') return `${fmt(n.vistas)} ${n.vistas === 1 ? 'mão jogada' : 'mãos jogadas'} com a marca`;
+  const taxa = n.vistas ? ` (${(100 * n.cliques / n.vistas).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%)` : '';
+  return `${fmt(n.vistas)} ${n.vistas === 1 ? 'vez' : 'vezes'} na tela · ${fmt(n.cliques)} ${n.cliques === 1 ? 'toque' : 'toques'}${n.cliques ? taxa : ''}`;
+}
+function relatorioTexto(p) {
+  const hoje = dataBRp(Date.now());
+  const linhas = p.espacos.map(e => `• ${ESPACO_NOME[e]}: ${linhaNumeros(e, p.numeros[e])}`);
+  const vistas = p.espacos.reduce((s, e) => s + (p.numeros[e].vistas || 0), 0), toques = p.espacos.reduce((s, e) => s + (p.numeros[e].cliques || 0), 0);
+  return `📊 *Dominó Manauara* · relatório de patrocínio\n*${p.nome}* · últimos ${ptDias} dias (até ${hoje})\n${linhas.join('\n')}\nTotal: ${fmt(vistas)} ${vistas === 1 ? 'aparição' : 'aparições'} e ${fmt(toques)} ${toques === 1 ? 'toque' : 'toques'}.`;
+}
+async function ptCarregar() {
+  $('#ptLista').innerHTML = '<p class="note">Carregando…</p>';
+  try {
+    const j = await ptPedir('/dono/patrocinadores?dias=' + ptDias);
+    ptLista = j.patrocinadores || [];
+    $('#ptLista').innerHTML = ptLista.length ? ptLista.map(p => {
+      const [sit, cls] = situacao(p);
+      return `<article class="pt-card wood" data-id="${p.id}">
+        <div class="pt-top">${p.logo ? `<img src="${esc(p.logo)}" alt="">` : '<span class="pt-semlogo" aria-hidden="true">★</span>'}
+          <div><b>${esc(p.nome)}</b><span class="pt-sit ${cls}">${sit}</span></div></div>
+        <p class="pt-esp">${p.espacos.map(e => ESPACO_NOME[e]).join(' · ')}${p.fim ? ` · até ${dataBRp(p.fim)}` : ''}</p>
+        <ul class="pt-nums">${p.espacos.map(e => `<li><span>${ESPACO_NOME[e]}</span><b>${linhaNumeros(e, p.numeros[e])}</b></li>`).join('')}</ul>
+        <div class="pt-acoes"><button type="button" data-a="editar">Editar</button><button type="button" data-a="pausar">${p.ativo ? 'Pausar' : 'Pôr no ar'}</button><button type="button" data-a="relatorio">Copiar relatório</button></div>
+      </article>`;
+    }).join('') : '<p class="note pt-vazio">Nenhum patrocinador ainda. Enquanto isso, os espaços mostram o alug+.</p>';
+    const noar = ptLista.filter(p => situacao(p)[1] === 'noar').length;
+    $('#dnPatroTx').textContent = noar ? `${noar} no ar · ver números e cadastrar` : 'Cadastrar e ver os números';
+  } catch (e) {
+    $('#ptLista').innerHTML = `<p class="note">${e.message === 'senha' ? 'Digite a senha da Área do administrador de novo.' : 'Não deu para carregar agora. Confira a internet.'}</p>`;
+  }
+}
+function renderPatroTela() {
+  $('#ptForm').hidden = true; $('#ptNovo').hidden = false; $('#ptLista').hidden = false;
+  $$('#ptDias button').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.d) === ptDias)));
+  ptCarregar();
+}
+$('#ptDias').addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (!b) return; ptDias = Number(b.dataset.d); renderPatroTela(); });
+$('#ptBack').addEventListener('click', () => show('dono'));
+$('#dnPatroCard').addEventListener('click', () => show('patro'));
+$('#ptLista').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-a]'); if (!b) return;
+  const p = ptLista.find(x => x.id === Number(b.closest('[data-id]').dataset.id)); if (!p) return;
+  if (b.dataset.a === 'editar') abrirFormPatro(p);
+  if (b.dataset.a === 'relatorio') {
+    const txt = relatorioTexto(p);
+    try { await navigator.clipboard.writeText(txt); toast('Relatório copiado. É só colar no WhatsApp do patrocinador.'); }
+    catch (x) { window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener'); }
+  }
+  if (b.dataset.a === 'pausar') {
+    b.disabled = true;
+    try { await ptPedir('/dono/patrocinadores', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(paraSalvar(p, { ativo: !p.ativo })) }); toast(p.ativo ? 'Pausado: saiu do ar.' : 'No ar!'); buscarPatros(true); }
+    catch (x) { toast('Não deu agora. Tente de novo.'); }
+    ptCarregar();
+  }
+});
+function paraSalvar(p, extra) {
+  return Object.assign({ id: p.id, nome: p.nome, texto: p.texto, link: p.link, logo: p.logoId || null,
+    banners: (p.banners || []).map(b => ({ img: b.img, ms: b.ms })), espacos: p.espacos, inicio: p.inicio, fim: p.fim, ativo: p.ativo }, extra || {});
+}
+
+// ---------- Formulário: cadastrar / editar ----------
+const ptDataInput = ms => ms ? new Date(ms - 4 * 3600000).toISOString().slice(0, 10) : '';
+const ptDataMs = (v, fimDoDia) => v ? Date.parse(v + (fimDoDia ? 'T23:59:59-04:00' : 'T00:00:00-04:00')) : null;
+function abrirFormPatro(p) {
+  ptEdit = p ? { id: p.id, logo: p.logoId ? { id: p.logoId, url: p.logo } : null, banners: (p.banners || []).map(b => ({ id: b.img, url: b.src, ms: b.ms })) }
+    : { id: null, logo: null, banners: [] };
+  ptApagarArmado = false;
+  $('#ptfTitulo').textContent = p ? 'Editar patrocinador' : 'Novo patrocinador';
+  $('#ptfNome').value = p ? p.nome : ''; $('#ptfTexto').value = p ? p.texto : ''; $('#ptfLink').value = p ? p.link : '';
+  $('#ptfInicio').value = p ? ptDataInput(p.inicio) : ''; $('#ptfFim').value = p ? ptDataInput(p.fim) : '';
+  $('#ptfAtivo').checked = p ? !!p.ativo : true;
+  $$('#ptfEspacos button').forEach(b => b.setAttribute('aria-pressed', String(p ? p.espacos.includes(b.dataset.e) : ['inicio', 'mesa', 'fim'].includes(b.dataset.e))));
+  $('#ptfApagar').hidden = !p; $('#ptfApagar').textContent = 'Apagar patrocinador';
+  ptRenderImgs();
+  $('#ptForm').hidden = false; $('#ptNovo').hidden = true; $('#ptLista').hidden = true;
+  $('#scrPatro').scrollTop = 0;
+}
+function ptRenderImgs() {
+  $('#ptfLogo').innerHTML = ptEdit.logo ? `<img src="${esc(ptEdit.logo.url)}" alt="Logo"><button type="button" data-tira="logo">Tirar</button>` : '<span class="note">Sem logo</span>';
+  $('#ptfBanners').innerHTML = ptEdit.banners.map((b, i) => `<div class="pt-ban"><img src="${esc(b.url)}" alt="Banner ${i + 1}"><button type="button" data-tira="${i}">Tirar</button></div>`).join('')
+    || '<span class="note">Sem banner: no início aparece o logo com o nome e o texto.</span>';
+  $('#ptfAddBanner').hidden = ptEdit.banners.length >= 3;
+}
+// Lê a foto do celular, corta no formato certo e reduz (banner 5×2 em 1000×400; logo quadrado 256×256)
+function prepararImagem(file, w, h) {
+  return new Promise((ok, falhou) => {
+    const fr = new FileReader();
+    fr.onerror = falhou;
+    fr.onload = () => {
+      const im = new Image();
+      im.onerror = falhou;
+      im.onload = () => {
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        const cx = cv.getContext('2d');
+        const k = Math.max(w / im.width, h / im.height), dw = im.width * k, dh = im.height * k;
+        cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, w, h);
+        cx.drawImage(im, (w - dw) / 2, (h - dh) / 2, dw, dh);
+        const url = cv.toDataURL('image/jpeg', 0.84);
+        ok({ url, dados: url.split(',')[1], mime: 'image/jpeg' });
+      };
+      im.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+async function subirImagem(input, tipo) {
+  const f = input.files && input.files[0]; input.value = '';
+  if (!f) return;
+  const [w, h] = tipo === 'logo' ? [256, 256] : [1000, 400];
+  toast('Enviando a imagem…');
+  try {
+    const img = await prepararImagem(f, w, h);
+    const j = await ptPedir('/dono/patro-img', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ dados: img.dados, mime: img.mime }) });
+    if (tipo === 'logo') ptEdit.logo = { id: j.id, url: img.url };
+    else ptEdit.banners.push({ id: j.id, url: img.url, ms: 4500 });
+    ptRenderImgs(); toast('Imagem pronta.');
+  } catch (e) { toast('Não deu para enviar essa imagem. Tente outra.'); }
+}
+$('#ptfLogoBtn').addEventListener('click', () => $('#ptfLogoIn').click());
+$('#ptfAddBanner').addEventListener('click', () => $('#ptfBannerIn').click());
+$('#ptfLogoIn').addEventListener('change', e => subirImagem(e.target, 'logo'));
+$('#ptfBannerIn').addEventListener('change', e => subirImagem(e.target, 'banner'));
+$('#ptForm').addEventListener('click', e => {
+  const t = e.target.closest('[data-tira]'); if (!t) return;
+  if (t.dataset.tira === 'logo') ptEdit.logo = null; else ptEdit.banners.splice(Number(t.dataset.tira), 1);
+  ptRenderImgs();
+});
+$('#ptfEspacos').addEventListener('click', e => {
+  const b = e.target.closest('[data-e]'); if (!b) return;
+  b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+});
+$('#ptNovo').addEventListener('click', () => abrirFormPatro(null));
+$('#ptfCancelar').addEventListener('click', renderPatroTela);
+$('#ptfSalvar').addEventListener('click', async () => {
+  const espacos = $$('#ptfEspacos button').filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.dataset.e);
+  const nome = $('#ptfNome').value.trim();
+  if (nome.length < 2) { toast('Escreva o nome da empresa.'); $('#ptfNome').focus(); return; }
+  if (!espacos.length) { toast('Escolha pelo menos um espaço.'); return; }
+  const inicio = ptDataMs($('#ptfInicio').value), fim = ptDataMs($('#ptfFim').value, true);
+  if (inicio && fim && fim < inicio) { toast('O fim do período está antes do começo.'); return; }
+  const corpo = { id: ptEdit.id, nome, texto: $('#ptfTexto').value.trim(), link: $('#ptfLink').value.trim(), logo: ptEdit.logo ? ptEdit.logo.id : null,
+    banners: ptEdit.banners.map(b => ({ img: b.id, ms: b.ms })), espacos, inicio, fim, ativo: $('#ptfAtivo').checked };
+  const b = $('#ptfSalvar'); b.disabled = true; b.textContent = 'Salvando…';
+  try {
+    await ptPedir('/dono/patrocinadores', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) });
+    toast(ptEdit.id ? 'Patrocinador atualizado.' : 'Patrocinador cadastrado.');
+    buscarPatros(true); renderPatroTela();
+  } catch (e) {
+    toast(e.cod === 'link' ? 'Esse link não parece certo. Use o site, o @ do Instagram ou o WhatsApp com DDD.' : e.message === 'senha' ? 'Digite a senha da Área do administrador de novo.' : 'Não deu para salvar agora. Tente de novo.');
+  } finally { b.disabled = false; b.textContent = 'Salvar'; }
+});
+$('#ptfApagar').addEventListener('click', async () => {
+  const b = $('#ptfApagar');
+  if (!ptApagarArmado) { ptApagarArmado = true; b.textContent = 'Toque de novo para apagar (os números somem junto)'; return; }
+  try { await ptPedir(`/dono/patrocinadores/${ptEdit.id}/apagar`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }); toast('Patrocinador apagado.'); buscarPatros(true); }
+  catch (e) { toast('Não deu para apagar agora.'); }
+  renderPatroTela();
+});
+// Cartão na Área do administrador
+const renderDonoPatro = renderDono;
+renderDono = function () {
+  renderDonoPatro();
+  const c = $('#dnPatroCard');
+  c.hidden = !CONFIG.api || !dono || !dono.admin;
+};
+
+// ===== Folhas que sobem de baixo (regras, menu, reações, avisos): × no alto e arrastar para baixo para fechar =====
+// O resultado da mão não ganha ×: ele tem os próprios botões (fechar deixaria a mesa parada).
+function fecharFolha() {
+  if (sheetKind === 'rules') resumeAfterMenu();
+  else if (sheetKind === 'fb' && typeof closeFeedback === 'function') closeFeedback();
+  else closeSheet();
+}
+const openSheetFolha = openSheet;
+openSheet = function (kind, html) {
+  openSheetFolha(kind, html);
+  if (kind === 'result') return;
+  const sh = $('#sheet');
+  sh.insertAdjacentHTML('afterbegin', '<div class="folha-alca" aria-hidden="true"></div><button type="button" class="folha-x" aria-label="Fechar">×</button>');
+  sh.querySelector('.folha-x').addEventListener('click', fecharFolha);
+  sh.scrollTop = 0;
+};
+// Arrastar para baixo (só quando a folha está no topo da rolagem, para não brigar com a rolagem do texto)
+(function () {
+  const sh = $('#sheet');
+  let y0 = null, dy = 0, t0 = 0, puxando = false;
+  sh.addEventListener('touchstart', e => {
+    if (!sheetKind || sheetKind === 'result' || e.touches.length !== 1) return;
+    if (sh.scrollTop > 0 && !e.target.closest('.folha-alca')) { y0 = null; return; }
+    y0 = e.touches[0].clientY; dy = 0; t0 = Date.now(); puxando = false;
+  }, { passive: true });
+  sh.addEventListener('touchmove', e => {
+    if (y0 == null) return;
+    dy = e.touches[0].clientY - y0;
+    if (dy <= 0) { if (puxando) { sh.style.transform = ''; puxando = false; } return; }
+    if (sh.scrollTop > 0) { y0 = null; return; }
+    puxando = true;
+    sh.style.transition = 'none';
+    sh.style.transform = `translateY(${dy}px)`;
+    if (e.cancelable) e.preventDefault();
+  }, { passive: false });
+  const solta = () => {
+    if (y0 == null) return;
+    const rapido = dy > 40 && (Date.now() - t0) < 250;
+    sh.style.transition = 'transform .22s ease-out';
+    if (puxando && (dy > 110 || rapido)) {
+      sh.style.transform = 'translateY(100%)';
+      setTimeout(() => { sh.style.transition = ''; sh.style.transform = ''; fecharFolha(); }, 200);
+    } else {
+      sh.style.transform = '';
+      setTimeout(() => { sh.style.transition = ''; }, 230);
+    }
+    y0 = null; puxando = false;
+  };
+  sh.addEventListener('touchend', solta);
+  sh.addEventListener('touchcancel', solta);
+})();
+// Fundo escuro fora da folha também fecha (inclusive reações e avisos)
+$('#back').addEventListener('click', e => {
+  if (e.target.id !== 'back' || !sheetKind || sheetKind === 'result') return;
+  if (sheetKind !== 'info' && sheetKind !== 'fb' && sheetKind !== 'rules' && sheetKind !== 'reacao') closeSheet();
+});
 
 
 // ---- Desenho das peças ----
@@ -4499,7 +5046,7 @@ function showResult() {
     ${rows ? `<div class="reveal">${rows}</div>` : ''}</div><div class="res-side">
     <div class="tally"><div class="L"><span>${esc(teamName(L))}</span><b>${r.score[L]}</b></div><div class="R"><span>${esc(teamName(R))}</span><b>${r.score[R]}</b></div></div>
     ${win}${sh ? `<a class="share-wa" href="${sh}" target="_blank" rel="noopener">Mandar resultado no WhatsApp</a>` : ''}<button type="button" class="primary" id="nextBtn">${btn}</button><button type="button" class="secondary" id="resHome" style="width:100%;margin-top:10px">Voltar ao início</button>
-    ${r.gameWinner != null ? sponsorResult() + apoioInvite() : ''}</div></div>`);
+    ${r.matchWinner != null ? sponsorResult() : ''}${r.gameWinner != null ? apoioInvite() : ''}</div></div>`);
   const ra = $('#resApoio'); if (ra) ra.addEventListener('click', () => openApoioSheet(true));
   readySlides();
   $('#resHome').addEventListener('click', () => {
@@ -4514,7 +5061,7 @@ function showResult() {
 const RULES_HTML = `  <p class="eyebrow">Como se joga</p><h2 id="sheetTitle">Regras</h2>
   <ol class="rules">
     <li>Duas duplas, parceiros um de frente para o outro. Sete pedras para cada, sem monte. A vez gira pela esquerda.</li>
-    <li>Todo <b>jogo novo</b> começa com quem tem a <b>carroça de sena</b> (6|6). Nas outras mãos, inclusive na troca de partida, sai <b>quem jogou a última pedra</b> da mão anterior, com qualquer carroça. Sem carroça, perde a vez e dá <b>20</b> aos adversários.</li>
+    <li>Todo <b>jogo novo</b> começa com quem tem a <b>carroça de sena</b> (6|6). Nas outras mãos, inclusive na troca de partida, sai <b>quem bateu</b> na mão anterior, com qualquer carroça; sem carroça, perde a vez e dá <b>20</b> aos adversários. Depois de <b>jogo fechado</b>, sai de novo quem tem a carroça de sena.</li>
     <li><b>Pontos na mesa:</b> se a soma das pontas (incluindo o bucho) der múltiplo de 5, a dupla de quem jogou marca a soma. Carroça na ponta conta dobrado.</li>
     <li><b>Bucho:</b> a carroça de saída abre os dois lados depois que as duas pontas dela já têm pedra. Cada lado do bucho entra na soma das pontas assim que recebe a primeira pedra.</li>
     <li><b>Passe:</b> vale 20 para a dupla de quem jogou por último. Se quem passa é o parceiro de quem jogou, ninguém marca.</li>
@@ -4536,7 +5083,10 @@ function showMenu() {
   <div style="margin-top:22px">${RULES_HTML}</div>
   <button type="button" class="secondary" id="closeMenu2" style="width:100%;margin-top:6px">Voltar à mesa</button>
   ${CONFIG.api || CONFIG.whats ? '<button type="button" class="menu-fb" id="menuFb">Achou um erro? Fale com a gente</button>' : ''}
+  ${typeof podePedirApoio === 'function' && podePedirApoio(true) ? '<button type="button" class="menu-fb" id="menuApoio">♥ Gosta do jogo? Ajude a manter de graça</button>' : ''}
   <p class="note menu-ver">Dominó Manauara · versão ${APP_VERSION}</p>`);
+  const ma = $('#menuApoio');
+  if (ma) ma.addEventListener('click', () => { closeSheet(); leaveGame(); abrirApoio('home'); toast('Jogo guardado. Para voltar, toque em "Continuar de onde parou".'); });
   const mf = $('#menuFb');
   if (mf) mf.addEventListener('click', () => abrirFale('game'));
   $('#homeBtn').addEventListener('click', () => {
