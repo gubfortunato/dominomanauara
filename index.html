@@ -747,9 +747,11 @@ body{touch-action:manipulation}
 .meta .sr{order:1}
 .meta .menubtn{order:2}
 /* Sua vez: aviso bem visível acima da mão, e a mão ganha um brilho */
-.prompt.you{justify-self:start;display:inline-block;font-size:17.5px;font-weight:800;line-height:1.3;color:#2a1a08;background:var(--glow);padding:7px 14px;border-radius:14px;box-shadow:0 0 0 0 rgba(243,192,99,.6);animation:suaVez 1.6s ease-out infinite}
-@keyframes suaVez{0%{box-shadow:0 0 0 0 rgba(243,192,99,.65)}100%{box-shadow:0 0 0 14px rgba(243,192,99,0)}}
-.me:has(.prompt.you) .hand{border-radius:16px;box-shadow:0 0 0 3px var(--glow),0 0 24px rgba(243,192,99,.4);padding:6px 4px}
+.prompt.you{justify-self:start;display:inline-block;width:auto;font-size:18px;font-weight:800;line-height:1.25;color:#2a1a08;background:var(--glow);padding:7px 16px;border-radius:999px;animation:suaVez 1.4s ease-in-out infinite alternate}
+@keyframes suaVez{from{filter:brightness(1)}to{filter:brightness(1.18)}}
+.me{gap:12px}
+.me-head{gap:10px;min-height:0}
+.me:has(.prompt.you) .hand{border-radius:16px;box-shadow:0 0 0 2.5px var(--glow),0 0 16px rgba(243,192,99,.28);padding:8px 6px}
 @media (prefers-reduced-motion:reduce){.prompt.you{animation:none}}
 /* "Você passou": dá para tocar e seguir na hora */
 .aviso.toca{pointer-events:auto;cursor:pointer}
@@ -770,6 +772,34 @@ body{touch-action:manipulation}
 @keyframes toppleG{to{transform:rotate(17.9deg)}}
 @media (max-width: 389px){ .friend .fn{font-size:13px;padding:3px 9px} }
 @media (max-width: 400px){ .sn{font-size:14.5px;letter-spacing:-.1px} }
+/* Festa de fim de partida */
+.festa{position:fixed;inset:0;z-index:28;display:grid;place-items:center;padding:24px 16px;background:radial-gradient(ellipse at 50% 40%,rgba(74,47,30,.97) 0%,rgba(21,16,12,.98) 70%);animation:backIn .3s ease-out}
+.festa canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.festa-card{position:relative;display:grid;justify-items:center;gap:8px;text-align:center;max-width:460px;width:100%;animation:festaIn .6s cubic-bezier(.2,1.4,.4,1)}
+@keyframes festaIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.festa-trofeu{font-size:clamp(76px,24vw,120px);line-height:1;filter:drop-shadow(0 10px 24px rgba(240,180,94,.45));animation:trofeu 1.8s ease-in-out infinite}
+@keyframes trofeu{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-8px) rotate(4deg)}}
+.festa-k{margin:6px 0 0;font-size:14px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#d9c7a8}
+.festa-t{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(36px,11vw,56px);line-height:1.05;color:#f0b45e;text-wrap:balance;text-shadow:0 4px 20px rgba(240,180,94,.35)}
+.festa.deles .festa-t{color:#8fc7cf;text-shadow:0 4px 20px rgba(143,199,207,.3)}
+.festa-n{margin:0;font-size:20px;font-weight:700;color:#f2e7d5}
+.festa-p{margin:10px 0 6px;display:flex;align-items:baseline;gap:14px;font-size:18px;font-weight:700;color:#d9c7a8}
+.festa-p b{font-family:var(--font-display);font-weight:400;font-size:44px;line-height:1}
+.festa-p .nos b{color:#f0b45e} .festa-p .eles b{color:#8fc7cf}
+.festa-p i{font-style:normal;font-size:26px;opacity:.7}
+.festa .primary{margin-top:14px;max-width:340px;font-size:18px;padding:17px}
+@media (prefers-reduced-motion:reduce){.festa-trofeu,.festa-card{animation:none}}
+/* Sem barra de rolagem aparecendo na lateral */
+.panel,.sheet,.zoom-area{scrollbar-width:none;-ms-overflow-style:none}
+.panel::-webkit-scrollbar,.sheet::-webkit-scrollbar{display:none;width:0;height:0}
+/* Regras, botões de voltar e textos longos ainda maiores */
+.rules,.rules li{font-size:17.5px;line-height:1.55}
+.sheet p{font-size:17px}
+.sheet h2{font-size:28px}
+.backbtn{font-size:18px;font-weight:700;padding:8px 2px;min-height:44px;color:var(--fg)}
+.menu-actions .secondary,.menu-row .secondary{font-size:17px}
+.sheet .secondary{font-size:17px}
+.rc-tx b{font-size:24px}
 </style>
 </head>
 <body>
@@ -1421,6 +1451,13 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.8', data: '06/10/2026', itens: [
+    'Fim de partida com festa: a dupla vencedora aparece grande na tela, com confete.',
+    '"Você passou" fica 4 segundos e meio na tela.',
+    'Aviso de "Sua vez de jogar!" mais limpo.',
+    'Regras, termos, privacidade e botões de voltar com letras maiores.',
+    'Sem a barra de rolagem na lateral.'
+  ] },
   { v: '1.7.1', data: '06/10/2026', itens: ['Ajustes na mesa ampliada e nos nomes dos jogadores.'] },
   { v: '1.7', data: '06/10/2026', itens: [
     'Letras maiores no app inteiro.',
@@ -2487,7 +2524,7 @@ $('#aviso').addEventListener('click', () => { if (avisoAcao) avisoFechar(); });
 function autoPassMe() {
   if (!G || mode !== 'off' || dealing || G.phase !== 'play' || G.turn !== 0 || !G.chain.length || legalMoves(G, 0).length) return;
   clearTimeout(timer);
-  aviso('Você passou', 'Nenhuma pedra sua encaixa nas pontas', 3200, () => {
+  aviso('Você passou', 'Nenhuma pedra sua encaixa nas pontas', 4500, () => {
     if (!G || G.phase !== 'play' || G.turn !== 0 || legalMoves(G, 0).length || sheetKind) return;
     applyPass(G, 0); announce(); proceed();
   });
@@ -2594,6 +2631,79 @@ function mudarLaterais(on) {
   if (on) store.set('dmz-laterais', '1'); else store.del('dmz-laterais');
   requestAnimationFrame(() => { if (G && screen === 'game') render(); });
 }
+
+// ---- Fim de partida: a dupla vencedora em tela cheia, com festa ----
+(function () {
+  document.body.insertAdjacentHTML('beforeend', `<div class="festa" id="festa" hidden role="dialog" aria-modal="true" aria-labelledby="festaT">
+    <canvas id="confete" aria-hidden="true"></canvas>
+    <div class="festa-card" id="festaCard">
+      <div class="festa-trofeu" aria-hidden="true">🏆</div>
+      <p class="festa-k" id="festaK"></p>
+      <h2 class="festa-t" id="festaT"></h2>
+      <p class="festa-n" id="festaN"></p>
+      <p class="festa-p" id="festaP"></p>
+      <button type="button" class="primary" id="festaOk">Continuar</button>
+    </div></div>`);
+})();
+let confeteRAF = null;
+function confete(cores, ms) {
+  const cv = $('#confete'), cx = cv.getContext('2d');
+  const W = cv.width = innerWidth * devicePixelRatio, H = cv.height = innerHeight * devicePixelRatio;
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { cx.clearRect(0, 0, W, H); return; }
+  const dpr = devicePixelRatio, N = Math.min(180, Math.round(innerWidth / 2.2));
+  const ps = Array.from({ length: N }, () => ({
+    x: Math.random() * W, y: -Math.random() * H * 0.8, vx: (Math.random() - .5) * 2.2 * dpr, vy: (2 + Math.random() * 3.5) * dpr,
+    r: (5 + Math.random() * 7) * dpr, a: Math.random() * Math.PI, va: (Math.random() - .5) * .25, c: cores[Math.floor(Math.random() * cores.length)], q: Math.random() < .35
+  }));
+  const fim = performance.now() + (ms || 5000);
+  cancelAnimationFrame(confeteRAF);
+  const passo = t => {
+    cx.clearRect(0, 0, W, H);
+    let vivos = 0;
+    for (const p of ps) {
+      p.x += p.vx; p.y += p.vy; p.a += p.va; p.vx += Math.sin(p.a) * .03 * dpr;
+      if (p.y > H + 20 && t < fim) { p.y = -20; p.x = Math.random() * W; }
+      if (p.y <= H + 20) vivos++;
+      cx.save(); cx.translate(p.x, p.y); cx.rotate(p.a); cx.fillStyle = p.c;
+      if (p.q) cx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r); else cx.fillRect(-p.r / 2, -p.r / 5, p.r, p.r / 2.5);
+      cx.restore();
+    }
+    if (vivos && !$('#festa').hidden) confeteRAF = requestAnimationFrame(passo); else cx.clearRect(0, 0, W, H);
+  };
+  confeteRAF = requestAnimationFrame(passo);
+}
+function festa(r, depois) {
+  const eu = seatMe == null ? 0 : seatMe, nos = TEAM(eu) === r.matchWinner, w = r.matchWinner;
+  const jogo = r.gameWinner != null;
+  const membros = [0, 1, 2, 3].filter(p => TEAM(p) === w);
+  const nomes = nos ? `Você e ${G.names[(eu + 2) % 4]}` : membros.map(p => G.names[p]).join(' e ');
+  const L = TEAM(eu), R = 1 - L;
+  $('#festaK').textContent = jogo ? `Fim do jogo · série ${r.series[L]} × ${r.series[R]}` : `Fim da partida ${r.partida}`;
+  $('#festaT').textContent = jogo ? (nos ? 'Vocês ganharam o jogo!' : 'Eles ganharam o jogo') : (nos ? 'Vocês venceram a partida!' : 'Eles venceram a partida');
+  $('#festaN').textContent = nomes + (nos ? '' : ' · bora virar na próxima!');
+  $('#festaP').innerHTML = `<span class="nos">Nós <b>${r.score[L]}</b></span> <i>×</i> <span class="eles"><b>${r.score[R]}</b> Eles</span>`;
+  const el = $('#festa'); el.classList.toggle('deles', !nos); el.classList.toggle('jogo', jogo);
+  el.hidden = false;
+  const corDupla = nos ? ['#f0b45e', '#e5a650', '#ffd27a'] : ['#8fc7cf', '#5fa3ad', '#bfe3e8'];
+  confete(corDupla.concat(['#f6eedf', '#e58a6c', '#86c98f']), jogo ? 7000 : 4500);
+  if (navigator.vibrate) try { navigator.vibrate(nos ? [90, 60, 90, 60, 160] : 60); } catch (e) {}
+  track(nos ? 'partida-ganha' : 'partida-perdida');
+  const ok = $('#festaOk');
+  ok.textContent = jogo ? 'Ver o resultado' : 'Continuar';
+  ok.onclick = () => { el.hidden = true; cancelAnimationFrame(confeteRAF); depois(); };
+  setTimeout(() => ok.focus({ preventScroll: true }), 50);
+}
+// Antes do resumo da mão que decidiu a partida, a festa
+const resumoDaMao = showResult;
+showResult = function () {
+  const r = G && G.phase === 'handEnd' && G.result;
+  if (r && r.matchWinner != null && !r.festaVista && sheetKind !== 'rules') {
+    r.festaVista = true; saveGame();
+    festa(r, () => resumoDaMao());
+    return;
+  }
+  resumoDaMao();
+};
 
 // ---- Lembretes para jogar (notificações push) ----
 // Só para maiores de 18 que pedirem. No iPhone, só com o app instalado na tela de início.
@@ -2824,7 +2934,7 @@ function renderPrompt() {
       const mv = legalMoves(G, seatMe);
       if (dealing) txt = dealPhase;
       else if (!G.chain.length) txt = G.openMode === 'sena' ? 'Arraste a carroça de sena para a mesa' : G.openMode === 'carroca' ? 'Arraste uma carroça para a mesa' : 'Arraste qualquer pedra para a mesa';
-      else txt = mv.length ? 'Sua vez de jogar! Arraste uma pedra até a ponta' : 'Nenhuma pedra sua encaixa';
+      else txt = mv.length ? 'Sua vez de jogar!' : 'Nenhuma pedra sua encaixa';
     } else txt = dealing ? dealPhase : `Vez de ${who(G.turn)}`;
   } else if (G.phase === 'handEnd') txt = 'Fim da mão';
   if (dealing) you = false;
