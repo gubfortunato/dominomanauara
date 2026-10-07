@@ -15,7 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      # O Account ID não é senha (aparece no endereço do painel); o token continua só nos segredos do GitHub.
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || 'c5f546c10d461c0d2e3e1d54f83fba39' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
