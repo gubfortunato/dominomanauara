@@ -1291,11 +1291,11 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.5.1', data: '06/10/2026', itens: ['Os adversários voltam para cima da mesa, que deixa as pedras da mesa maiores.'] },
   { v: '1.5', data: '06/10/2026', itens: [
     'Quando nenhuma pedra sua encaixa, aparece "Você passou" bem grande e o jogo passa sozinho.',
     'Pedras da mão, nomes dos jogadores e avisos maiores.',
     'Toque na mesa (ou em "Ampliar") para ver as pedras grandes.',
-    'No menu da mesa: opção de colocar os adversários nas laterais.',
     'Para editar o perfil, toque na sua foto no canto do início.'
   ] },
   { v: '1.4', data: '06/10/2026', itens: [
@@ -2362,7 +2362,8 @@ new MutationObserver(() => {
 }).observe($('#board'), { childList: true });
 
 // ---- Opção: adversários nas laterais da mesa (fica guardada neste aparelho) ----
-document.body.classList.toggle('laterais', store.get('dmz-laterais') === '1');
+// Opção retirada na 1.5.1 (as pedras da mesa ficavam pequenas demais): os adversários voltam sempre para cima.
+store.del('dmz-laterais'); document.body.classList.remove('laterais');
 function mudarLaterais(on) {
   document.body.classList.toggle('laterais', on);
   if (on) store.set('dmz-laterais', '1'); else store.del('dmz-laterais');
@@ -2861,12 +2862,10 @@ function showMenu() {
     <button type="button" class="primary" id="closeMenu">Voltar à mesa</button>
     <div class="menu-row"><button type="button" class="secondary" id="homeBtn">Voltar ao início</button><button type="button" class="secondary" id="resetBtn">Recomeçar jogo</button><button type="button" class="secondary danger" id="quitBtn">Desistir do jogo</button></div>
   </div>
-  <label class="menu-opt"><input type="checkbox" id="optLaterais"${document.body.classList.contains('laterais') ? ' checked' : ''}><span><b>Adversários nas laterais da mesa</b><small>Parceiro em cima e um adversário de cada lado. As pedras da mesa ficam um pouco menores.</small></span></label>
   <div style="margin-top:22px">${RULES_HTML}</div>
   <button type="button" class="secondary" id="closeMenu2" style="width:100%;margin-top:6px">Voltar à mesa</button>
   ${CONFIG.api || CONFIG.whats ? '<button type="button" class="menu-fb" id="menuFb">Achou um erro? Fale com a gente</button>' : ''}
   <p class="note menu-ver">Dominó Manauara · versão ${APP_VERSION}</p>`);
-  $('#optLaterais').addEventListener('change', e => mudarLaterais(e.target.checked));
   const mf = $('#menuFb');
   if (mf) mf.addEventListener('click', () => abrirFale('game'));
   $('#homeBtn').addEventListener('click', () => {
