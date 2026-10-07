@@ -2281,6 +2281,7 @@ function loadProfile() {
     const pr = { name: p.name.trim().slice(0, 14), av: typeof p.av === 'string' ? p.av : 'a1' };
     if (p.idade === 'maior' || p.idade === 'menor') pr.idade = p.idade;
     if (pr.idade === 'menor' && pr.av === 'foto') pr.av = 'a1';   // menor joga só com avatar
+    if (pr.idade !== 'menor' && typeof p.bairro === 'string' && p.bairro.length <= 40) pr.bairro = p.bairro;   // menor não mostra bairro
     return pr;
   } catch (e) { return null; }
 }
