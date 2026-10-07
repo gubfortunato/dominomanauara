@@ -648,7 +648,7 @@ body{touch-action:manipulation}
 .lupa:active{transform:scale(.96)}
 .zoom{position:fixed;inset:0;z-index:25;display:grid;grid-template-rows:minmax(0,1fr) auto auto;gap:8px;background:radial-gradient(ellipse at center,#4a2f1e 0%,#24170f 75%);padding:calc(env(safe-area-inset-top,0px) + 12px) 10px calc(env(safe-area-inset-bottom,0px) + 10px);animation:backIn .2s ease-out}
 .zoom-area{position:relative;overflow:hidden;touch-action:none;border-radius:14px;min-height:0;cursor:zoom-in}
-.zoom svg{position:absolute;left:0;top:0;width:100%;height:100%;display:block;transform-origin:0 0;will-change:transform}
+#zoomSvg{position:absolute;left:0;top:0;width:100%;height:100%;display:block;transform-origin:0 0;will-change:transform}
 .zoom-bar{display:grid;grid-template-columns:auto 1fr auto;gap:10px}
 .zoom-btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:0 18px;border-radius:14px;border:1.5px solid rgba(239,226,204,.35);background:rgba(0,0,0,.3);color:#f2e7d5;font:inherit;font-size:18px;font-weight:800;cursor:pointer}
 .zoom-btn svg{width:24px;height:24px}
@@ -769,6 +769,7 @@ body{touch-action:manipulation}
 /* inclinação em que cada pedra encosta na seguinte: asen(16 / 52) */
 @keyframes toppleG{to{transform:rotate(17.9deg)}}
 @media (max-width: 389px){ .friend .fn{font-size:13px;padding:3px 9px} }
+@media (max-width: 400px){ .sn{font-size:14.5px;letter-spacing:-.1px} }
 </style>
 </head>
 <body>
@@ -1420,6 +1421,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.7.1', data: '06/10/2026', itens: ['Ajustes na mesa ampliada e nos nomes dos jogadores.'] },
   { v: '1.7', data: '06/10/2026', itens: [
     'Letras maiores no app inteiro.',
     'Quando é a sua vez, aparece um aviso amarelo bem visível e a sua mão fica iluminada.',
