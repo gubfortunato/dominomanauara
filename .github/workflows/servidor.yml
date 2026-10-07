@@ -72,7 +72,8 @@ jobs:
             log "chaves dos lembretes: $(wrangler secret list 2>/dev/null | grep -c VAPID) segredos já guardados"
           fi
           url="https://api.$sub.workers.dev"
-          for i in 1 2 3 4 5 6; do s=$(curl -s "$url/saude"); [ -n "$s" ] && break; sleep 5; done
+          # espera a versão nova chegar (a saúde passa a dizer "mesa")
+          for i in $(seq 1 12); do s=$(curl -s "$url/saude"); echo "$s" | grep -q '"mesa":true' && break; sleep 5; done
           log "saúde: $s"
           log "mesa online: $(node teste_publicado.mjs "$url" 2>&1 | tail -1)"
           for i in 1 2 3 4 5 6; do k=$(curl -s "$url/avisos/chave" | jq -c '{chave_publica: (.chave != null)}'); echo "$k" | grep -q true && break; sleep 10; done
