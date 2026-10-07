@@ -6,6 +6,7 @@ export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
 const TIPOS = ['problema', 'ideia', 'elogio', 'outro'];
+const INTERESSES = { banner: 'Banner no início', mesa: 'Mesa com a marca', fim: 'Fim de jogo', naosei: 'Ainda não sei' };
 const STATUS = ['novo', 'lido', 'resolvido'];
 const LIMITE_POR_HORA = 6;
 const MESAS_POR_HORA = 20;
@@ -78,6 +79,28 @@ async function rotaMesa(req, env, origin, codigo, ws) {
   return json(await r.json(), 200, origin);
 }
 
+// ---- Anuncie no jogo: formulário de quem quer patrocinar (cai na caixa do dono como "patrocinio") ----
+async function receberPatrocinio(req, env, origin) {
+  let b;
+  try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
+  const empresa = limpa(b.empresa, 60), nome = limpa(b.nome, 40), cidade = limpa(b.cidade, 40), ramo = limpa(b.ramo, 60);
+  const zap = limpa(b.whatsapp, 24), dig = zap.replace(/\D/g, ''), email = limpa(b.email, 80), msg = limpa(b.mensagem, 600);
+  const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+  if (empresa.length < 2 || nome.length < 2) return json({ erro: 'dados' }, 400, origin);
+  if ((dig.length < 10 || dig.length > 13) && !emailOk) return json({ erro: 'contato' }, 400, origin);
+  if (b.aceite !== true) return json({ erro: 'aceite' }, 400, origin);
+  const interesses = (Array.isArray(b.interesse) ? b.interesse : []).filter(x => INTERESSES[x]).slice(0, 4).map(x => INTERESSES[x]);
+  const marca = await marcaDoDia(req, env);
+  const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM mensagens WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();
+  if (r && r.n >= LIMITE_POR_HORA) return json({ erro: 'muitas' }, 429, origin);
+  const texto = [`Empresa: ${empresa}`, ramo && `Ramo: ${ramo}`, cidade && `Cidade: ${cidade}`, interesses.length && `Interesse: ${interesses.join(', ')}`,
+    dig.length >= 10 && `WhatsApp: ${zap}`, emailOk && `E-mail: ${email}`, msg && `Mensagem: ${msg}`].filter(Boolean).join('\n');
+  await env.DB.prepare(
+    'INSERT INTO mensagens (criado_em, tipo, texto, nome, contato, versao, aparelho, marca, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(Date.now(), 'patrocinio', texto, nome, dig.length >= 10 ? zap : email, limpa(b.versao, 12), limpa(b.aparelho, 80), marca, 'novo').run();
+  return json({ ok: true }, 201, origin);
+}
+
 async function receberMensagem(req, env, origin) {
   let b;
   try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
@@ -97,12 +120,16 @@ async function receberMensagem(req, env, origin) {
 async function listarMensagens(req, env, origin, url) {
   if (!(await ehDono(req, env))) return json({ erro: 'nao-autorizado' }, 401, origin);
   const filtro = url.searchParams.get('status');
-  const q = filtro && STATUS.includes(filtro)
-    ? env.DB.prepare('SELECT id, criado_em, tipo, texto, nome, contato, versao, aparelho, status FROM mensagens WHERE status = ? ORDER BY criado_em DESC LIMIT 200').bind(filtro)
-    : env.DB.prepare("SELECT id, criado_em, tipo, texto, nome, contato, versao, aparelho, status FROM mensagens WHERE status != 'apagado' ORDER BY criado_em DESC LIMIT 200");
+  const CAMPOS = 'SELECT id, criado_em, tipo, texto, nome, contato, versao, aparelho, status FROM mensagens';
+  const q = filtro === 'patrocinio'
+    ? env.DB.prepare(`${CAMPOS} WHERE tipo = 'patrocinio' AND status != 'apagado' ORDER BY criado_em DESC LIMIT 200`)
+    : filtro && STATUS.includes(filtro)
+    ? env.DB.prepare(`${CAMPOS} WHERE status = ? ORDER BY criado_em DESC LIMIT 200`).bind(filtro)
+    : env.DB.prepare(`${CAMPOS} WHERE status != 'apagado' ORDER BY criado_em DESC LIMIT 200`);
   const { results } = await q.all();
   const novas = await env.DB.prepare("SELECT COUNT(*) AS n FROM mensagens WHERE status = 'novo'").first();
-  return json({ mensagens: results || [], novas: (novas && novas.n) || 0 }, 200, origin);
+  const patro = await env.DB.prepare("SELECT COUNT(*) AS n FROM mensagens WHERE status = 'novo' AND tipo = 'patrocinio'").first();
+  return json({ mensagens: results || [], novas: (novas && novas.n) || 0, patrocinios: (patro && patro.n) || 0 }, 200, origin);
 }
 
 // ---- Lembretes para jogar (Web Push) ----
@@ -207,6 +234,7 @@ export default {
       const mc = url.pathname.match(/^\/mesa\/(\d{5})(\/ws)?$/);
       if (mc && req.method === 'GET') return await rotaMesa(req, env, origin, mc[1], !!mc[2]);
       if (url.pathname === '/mensagens' && req.method === 'POST') return await receberMensagem(req, env, origin);
+      if (url.pathname === '/patrocinio' && req.method === 'POST') return await receberPatrocinio(req, env, origin);
       if (url.pathname === '/avisos/chave' && req.method === 'GET') return json({ chave: env.VAPID_PUBLIC || null }, env.VAPID_PUBLIC ? 200 : 503, origin);
       if (url.pathname === '/avisos/inscrever' && req.method === 'POST') return await avisosInscrever(req, env, origin);
       if (url.pathname === '/avisos/cancelar' && req.method === 'POST') return await avisosCancelar(req, env, origin);
