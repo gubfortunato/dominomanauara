@@ -807,6 +807,40 @@ body{touch-action:manipulation}
 .sortear svg{width:24px;height:24px}
 .sortear.gira svg{animation:dado .5s ease-out}
 @keyframes dado{from{transform:rotate(0) scale(1)}50%{transform:rotate(200deg) scale(1.15)}to{transform:rotate(360deg) scale(1)}}
+/* Montar a mesa: rótulos maiores */
+.field label{font-size:17px}
+.field label small{font-size:15.5px;color:var(--fg);opacity:.72;font-weight:500}
+/* ===== Tela de entrada animada ===== */
+.entra .kicker{animation:entKicker .5s ease-out both}
+.entra .entry-title{animation:entTitulo .7s cubic-bezier(.2,1.3,.4,1) .08s both}
+.entra .entry-title span{display:inline-block;animation:entManauara .7s cubic-bezier(.2,1.3,.4,1) .3s both}
+.entra .rt{animation:entMesa .6s ease-out .35s both}
+.entra .friend{animation:entAvatar .55s cubic-bezier(.2,1.5,.4,1) calc(.55s + var(--i) * .12s) both}
+.entra #rtCenter > *{animation:entPedra .45s cubic-bezier(.2,1.4,.4,1) both;transform-box:fill-box;transform-origin:center}
+.entra #rtCenter > :nth-child(1){animation-delay:1.25s} .entra #rtCenter > :nth-child(2){animation-delay:1.05s}
+.entra #rtCenter > :nth-child(3){animation-delay:1.45s} .entra #rtCenter > :nth-child(4){animation-delay:1.65s}
+.entra #rtCenter > :nth-child(n+5){animation-delay:1.7s}
+.entra .entry-actions{animation:entBotao .5s ease-out 1.5s both}
+@keyframes entKicker{from{opacity:0;transform:translateY(-10px);letter-spacing:.4em}to{opacity:1;transform:none}}
+@keyframes entTitulo{from{opacity:0;transform:translateY(-40px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes entManauara{from{opacity:0;transform:translateY(30px) scale(.8)}to{opacity:1;transform:none}}
+@keyframes entMesa{from{opacity:0;transform:scale(.8) rotate(-20deg)}to{opacity:1;transform:none}}
+@keyframes entAvatar{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}70%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes entPedra{from{opacity:0;transform:translateY(-30px) scale(1.6) rotate(25deg)}to{opacity:1;transform:none}}
+@keyframes entBotao{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+/* avatares "respirando" e o botão com um brilho que passa de tempos em tempos */
+.friend .fp,.friend .fi{animation:respira 3.6s ease-in-out calc(var(--i) * -.6s) infinite}
+@keyframes respira{0%,100%{translate:0 0}50%{translate:0 -4px}}
+#enterBtn{position:relative;overflow:hidden}
+#enterBtn::after{content:'';position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-18deg);animation:brilho 4.5s ease-in-out 2.4s infinite;pointer-events:none}
+@keyframes brilho{0%{left:-60%}22%,100%{left:130%}}
+/* falas da turma em volta da mesa */
+.friend .fala{position:absolute;bottom:calc(100% - 4px);left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--tile);color:var(--pip);font-size:14px;font-weight:800;padding:6px 11px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,.35);pointer-events:none;animation:fala 2.6s ease both;z-index:3}
+.friend .fala::after{content:'';position:absolute;left:50%;top:100%;margin-left:-6px;border:6px solid transparent;border-top-color:var(--tile)}
+@keyframes fala{0%{opacity:0;transform:translateX(-50%) translateY(6px) scale(.8)}12%,82%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(-6px)}}
+@media (prefers-reduced-motion:reduce){.entra *,.friend .fp,.friend .fi,#enterBtn::after{animation:none!important}}
+/* Teste do dono: tela inteira no iPhone com o app instalado */
+.telacheia,.telacheia body{height:var(--appH,100%)}
 </style>
 </head>
 <body>
@@ -1021,6 +1055,7 @@ body{touch-action:manipulation}
     <label class="dn-sw"><input type="checkbox" id="dnSemContar"><span><b>Não contar meus acessos</b><small>Seus testes neste aparelho ficam fora dos números.</small></span></label>
     <button type="button" class="linkbtn" id="dnKeyTrocar">Tenho o plano Pro do Umami: colar a chave</button>
     <button type="button" class="linkbtn" id="dnSair">Sair da Área do dono neste aparelho</button>
+    <label class="dn-sw"><input type="checkbox" id="dnTelaCheia"><span><b>Teste: tela inteira no iPhone</b><small>Só neste aparelho e só com o app instalado. Liga, volta para o início e veja se a faixa vazia de baixo sumiu.</small></span></label>
     <p class="note dn-tela" id="dnTela"></p>
   </section>
   <section class="screen game" id="scrGame" hidden>
@@ -1458,6 +1493,10 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.9', data: '06/10/2026', itens: [
+    'Tela de entrada animada: título, mesa, jogadores e pedras chegam em sequência, e a turma puxa conversa.',
+    'Rótulos de "Monte a mesa" maiores.'
+  ] },
   { v: '1.8.2', data: '06/10/2026', itens: ['Botão "Sortear outra mesa" novo, no padrão do app.'] },
   { v: '1.8.1', data: '06/10/2026', itens: ['O campo do nome não passa mais da borda da tela.'] },
   { v: '1.8', data: '06/10/2026', itens: [
@@ -2304,6 +2343,7 @@ function renderDono() {
   $('#dnKey').hidden = true; $('#dnErr').hidden = true;
   $('#dnKeyTrocar').textContent = temChave ? 'Trocar a chave do Umami' : 'Tenho o plano Pro do Umami: colar a chave';
   $('#dnSemContar').checked = !!dono.semContar;
+  $('#dnTelaCheia').checked = store.get('dmz-telacheia') === '1';
   $$('#dnRange button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.r === dnRange)));
   dnAoVivo(); dnCarregar();
   clearInterval(dnTimer);
@@ -2427,6 +2467,12 @@ $('#dnSair').addEventListener('click', () => {
 });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && screen === 'dono') dnAoVivo();
+});
+
+$('#dnTelaCheia').addEventListener('change', e => {
+  if (e.target.checked) store.set('dmz-telacheia', '1'); else store.del('dmz-telacheia');
+  telaCheia(); dnTela();
+  toast(e.target.checked ? 'Teste ligado. Volte para o início e veja o fim da tela.' : 'Teste desligado.');
 });
 
 // ---- Fale com a gente: a mensagem vai para o servidor e aparece na Área do dono ----
@@ -2716,6 +2762,42 @@ showResult = function () {
   }
   resumoDaMao();
 };
+
+// ---- Tela de entrada animada: tudo chega em sequência, e a turma puxa conversa ----
+const entrarOriginal = renderEntry;
+renderEntry = function () {
+  entrarOriginal();
+  const s = $('#scrWho'); s.classList.remove('entra'); void s.offsetWidth; s.classList.add('entra');
+};
+const FALAS = ['Bora, %!', 'Hoje tem galo!', 'Embaralha aí!', 'Senta aí, %!', 'Tô com a sena!', 'Quem dá a saída?', 'Bucho!', 'Faltou um!', 'Bora uma partida?', 'Hoje eu bato!'];
+let falaIdx = Math.floor(Math.random() * FALAS.length);
+setInterval(() => {
+  if (screen !== 'who' || document.visibilityState !== 'visible') return;
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const outros = $$('#roundTable .friend').filter(b => !b.classList.contains('me'));
+  if (!outros.length) return;
+  const b = outros[Math.floor(Math.random() * outros.length)];
+  if (b.querySelector('.fala')) return;
+  falaIdx = (falaIdx + 1 + Math.floor(Math.random() * 3)) % FALAS.length;
+  const t = FALAS[falaIdx].replace('%', me || 'parceiro');
+  b.insertAdjacentHTML('beforeend', `<span class="fala" aria-hidden="true">${esc(t)}</span>`);
+  setTimeout(() => { const f = b.querySelector('.fala'); if (f) f.remove(); }, 2700);
+}, 3200);
+
+// ---- Teste do dono: usar a tela inteira no iPhone com o app instalado (a faixa vazia de baixo) ----
+function telaCheia() {
+  const r = document.documentElement;
+  const ligado = store.get('dmz-telacheia') === '1' && navigator.standalone === true;
+  r.classList.toggle('telacheia', ligado);
+  if (!ligado) { r.style.removeProperty('--appH'); return; }
+  const land = window.matchMedia && matchMedia('(orientation: landscape)').matches;
+  const sw = window.screen.width, sh = window.screen.height;   // window.screen: "screen" é a tela do jogo
+  const full = land ? Math.min(sw, sh) : Math.max(sw, sh);
+  if (full > 200) r.style.setProperty('--appH', Math.max(full, window.innerHeight) + 'px');
+}
+telaCheia();
+addEventListener('resize', telaCheia);
+addEventListener('orientationchange', () => setTimeout(telaCheia, 300));
 
 // ---- Lembretes para jogar (notificações push) ----
 // Só para maiores de 18 que pedirem. No iPhone, só com o app instalado na tela de início.
