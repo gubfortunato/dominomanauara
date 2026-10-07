@@ -5,6 +5,6 @@ Cloudflare Workers + D1 (plano grátis). Publicado automaticamente pelo GitHub A
 
 Segredos no GitHub (Settings → Secrets and variables → Actions):
 - `CLOUDFLARE_API_TOKEN`: token com Workers Scripts (edit) e D1 (edit)
-- `CLOUDFLARE_ACCOUNT_ID`: ID da conta
+- `CLOUDFLARE_ACCOUNT_ID`: ID da conta (também já está no fluxo `.github/workflows/servidor.yml`, porque não é senha)
 
 O resultado de cada publicação fica no ramo `servidor-status` (arquivo `status.txt`).
