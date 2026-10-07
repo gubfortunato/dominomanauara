@@ -1319,7 +1319,7 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
     <div class="install wood" id="installCard" hidden>
       <span class="ck">Deixe na tela de início</span>
       <p id="installTxt"></p>
-      <div class="row"><button type="button" class="primary" id="installBtn" hidden>Instalar o app</button><button type="button" class="linkbtn" id="installNo">Agora não</button></div>
+      <div class="row"><button type="button" class="primary" id="installBtn" hidden>Instalar o app</button><button type="button" class="primary" id="installVer" hidden>Ver como instalar</button><button type="button" class="linkbtn" id="installNo">Agora não</button></div>
     </div>
     <div class="apoio wood" id="apoioCard" hidden>
       <span class="ck" id="apoioK">Apoie o jogo</span>
@@ -1333,7 +1333,7 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
     </button>
     <a class="sponsor" id="sponsor" target="_blank" rel="noopener" hidden></a>
     <button type="button" class="anuncie-link" id="anuncieLink" hidden><span>Quer ver a sua empresa no jogo?</span><b>Anuncie no Dominó Manauara ›</b></button>
-    <p class="note foot"><span id="footBrand">Dominó Manauara</span> · <button type="button" class="verlink" id="verBtn">Versão <span class="appver"></span></button> · <a href="termos.html">Termos</a> · <a href="privacidade.html">Privacidade</a> · <button type="button" class="verlink" id="footAnuncie" hidden>Anuncie</button><span id="footApoioSep" hidden> · </span><button type="button" class="verlink" id="footApoio" hidden>Apoie o jogo</button></p>
+    <p class="note foot"><span id="footBrand">Dominó Manauara</span> · <button type="button" class="verlink" id="verBtn">Versão <span class="appver"></span></button> · <a href="termos.html">Termos</a> · <a href="privacidade.html">Privacidade</a> · <button type="button" class="verlink" id="footAnuncie" hidden>Anuncie</button><span id="footApoioSep" hidden> · </span><button type="button" class="verlink" id="footApoio" hidden>Apoie o jogo</button><span id="footInstSep" hidden> · </span><button type="button" class="verlink" id="footInstalar" hidden>Como instalar o app</button></p>
   </section>
 
   <section class="screen panel" id="scrSetup" hidden>
@@ -2544,13 +2544,15 @@ const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.
 const SHARE_ICON = '<svg class="ios-share" viewBox="0 0 24 24" aria-label="Compartilhar"><path d="M12 3v12M7.5 7.5L12 3l4.5 4.5M6 11H5v10h14V11h-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function renderInstall() {
   const box = $('#installCard');
-  if (isStandalone() || store.get('dmz-sem-instalar') === '1') { box.hidden = true; return; }
+  const naoAte = Number(store.get('dmz-sem-instalar')) || 0;   // "Agora não" vale por 7 dias
+  if (isStandalone() || Date.now() - naoAte < 7 * 86400000) { box.hidden = true; return; }
+  $('#installVer').hidden = true;
   if (installEvt) {
     $('#installTxt').textContent = 'Instale o Dominó Manauara: ele abre direto da tela inicial, como app, até sem internet.';
     $('#installBtn').hidden = false; box.hidden = false;
   } else if (isIOS()) {
-    $('#installTxt').innerHTML = `Toque em <b>Compartilhar</b> ${SHARE_ICON} e depois em <b>Adicionar à Tela de Início</b>. O jogo passa a abrir como app, até sem internet.`;
-    $('#installBtn').hidden = true; box.hidden = false;
+    $('#installTxt').innerHTML = 'Instale o Dominó Manauara: ele abre direto da tela de início, em tela cheia, até sem internet.';
+    $('#installBtn').hidden = true; $('#installVer').hidden = false; box.hidden = false;
   } else box.hidden = true;
 }
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if (screen === 'home') renderInstall(); });
@@ -2561,7 +2563,7 @@ $('#installBtn').addEventListener('click', async () => {
   try { ev.prompt(); await ev.userChoice; } catch (e) {}
   renderInstall();
 });
-$('#installNo').addEventListener('click', () => { store.set('dmz-sem-instalar', '1'); renderInstall(); });
+$('#installNo').addEventListener('click', () => { store.set('dmz-sem-instalar', String(Date.now())); renderInstall(); });
 
 // ---- Jogo guardado: dá para sair e continuar depois ----
 function saveGame() { if (mode === 'off' && G && G === offSt) store.set(GKEY, JSON.stringify(G)); }
@@ -5052,9 +5054,11 @@ function telaInicial() {
 }
 
 // ===== Instalar o app: o primeiro passo de quem abre o jogo pelo navegador do celular =====
-// Aparece ao tocar em "Começar"/"Entrar", uma vez por visita, até instalar. Dá para pular ("Jogar sem instalar").
+// A tela inteira aparece ao tocar em "Começar"/"Entrar" na primeira vez e, enquanto não instalar, no máximo uma vez a cada 7 dias
+// (no iPhone o Safari não sabe se o app já foi instalado; assim quem abre um link pelo WhatsApp não vê toda vez).
+// No início ficam o cartão "Deixe na tela de início" e o link "Como instalar o app" no rodapé, para abrir quando quiser.
 // Quem chegou por convite de mesa entra direto (o convite não sobrevive à instalação).
-const INSTPULO = 'dmz-instalar-pulou';
+const INSTVISTO = 'dmz-instalar-visto';
 function plataformaInstalar() {
   if (isStandalone()) return null;
   if (isIOS()) return 'ios';
@@ -5064,11 +5068,18 @@ function plataformaInstalar() {
 }
 function deveMostrarInstalar() {
   if (!plataformaInstalar()) return false;
-  try { if (sessionStorage.getItem(INSTPULO)) return false; } catch (e) {}
+  if (Date.now() - (Number(store.get(INSTVISTO)) || 0) < 7 * 86400000) return false;
   if (store.get(CONVITE)) return false;
   return true;
 }
-function abrirInstalar() { track('instalar-aberto'); show('instalar'); }
+let instalarDoInicio = false;
+function abrirInstalar(doInicio) {
+  instalarDoInicio = !!doInicio;
+  if (!doInicio) store.set(INSTVISTO, String(Date.now()));
+  $('#instPular').textContent = doInicio ? 'Voltar ao início' : 'Jogar sem instalar';
+  track(doInicio ? 'instalar-aberto-inicio' : 'instalar-aberto');
+  show('instalar');
+}
 const MAIS_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
 const chip = (t, ic) => `<span class="inst-chip">${ic || ''}${t ? `<b>${t}</b>` : ''}</span>`;
 function renderInstalar() {
@@ -5104,10 +5115,19 @@ $('#instBtn').addEventListener('click', async () => {
   renderInstalar();
 });
 $('#instPular').addEventListener('click', () => {
-  try { sessionStorage.setItem(INSTPULO, '1'); } catch (e) {}
+  if (instalarDoInicio) { show('home'); return; }
   track('instalar-pulou');
   entrarNoJogo();
 });
+// No início: cartão (iPhone) e link do rodapé abrem o passo a passo
+$('#installVer').addEventListener('click', () => abrirInstalar(true));
+$('#footInstalar').addEventListener('click', () => abrirInstalar(true));
+const renderHomeInst = renderHome;
+renderHome = function () {
+  renderHomeInst();
+  const pode = !!plataformaInstalar();
+  $('#footInstalar').hidden = !pode; $('#footInstSep').hidden = !pode;
+};
 
 // ===== Foto na mesa online (Plano Apoiador) =====
 // Só com o plano em dia, só para maiores de 18, e só aparece para os outros depois que o administrador aprova.
