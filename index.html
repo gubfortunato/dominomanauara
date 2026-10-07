@@ -904,6 +904,19 @@ body{touch-action:manipulation}
 .seat.semnet .av{filter:grayscale(.85);opacity:.65}
 .nota-todos{text-align:center;margin:10px 0 0;font-size:14.5px}
 @media (max-width:360px){ .sala-num b{font-size:40px} .sala-cad b{font-size:15px} .sc-face{width:46px;height:46px} }
+/* Reações rápidas */
+.me-head{position:relative}
+.reagir{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;font-size:15.5px;font-weight:800;cursor:pointer;white-space:nowrap}
+.reagir svg{width:20px;height:20px;flex:none}
+.reagir:active{transform:scale(.97)}
+.reacoes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.reacoes.emojis{grid-template-columns:repeat(4,1fr);margin-top:10px}
+.reacao-btn{font:inherit;font-size:17px;font-weight:800;padding:14px 10px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);cursor:pointer;line-height:1.2}
+.reacoes.emojis .reacao-btn{font-size:30px;padding:8px 0}
+.reacao-btn:active{transform:scale(.97);border-color:var(--glow)}
+.bubble.reacao{z-index:4}
+.minha-fala{position:absolute;left:0;bottom:calc(100% + 8px);z-index:5;max-width:90%;background:var(--tile);color:var(--pip);font-size:18px;font-weight:800;padding:7px 14px;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.35);opacity:0;transform:translateY(6px) scale(.9);transition:opacity .2s, transform .2s;pointer-events:none;white-space:nowrap}
+.minha-fala.show{opacity:1;transform:none}
 </style>
 </head>
 <body>
@@ -1586,6 +1599,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '2.1', data: '07/10/2026', itens: ['Mesa online: botão "Reagir" com frases prontas ("Égua!", "Bate logo!", "Boa, parceiro!"…) e emojis, que aparecem no balão de quem falou.'] },
   { v: '2.0', data: '07/10/2026', itens: [
     'Mesa online com os amigos: crie a mesa, mande o convite no WhatsApp e cada um joga no seu celular.',
     'Só entra quem tem o número da mesa. Sem chat; cadeira vazia fica com a turma do bairro.',
@@ -3137,7 +3151,48 @@ const ERROS_MESA = {
   'cheia': 'Essa mesa já está cheia.',
   'dados': 'Não deu para entrar na mesa. Confira o seu nome no perfil.'
 };
+// Reações rápidas: a ordem nunca muda (o servidor manda só o número). Para acrescentar, ponha no fim.
+const REACOES = ['Boa, parceiro!', 'Égua!', 'Vixe!', 'Bate logo!', 'Segura essa!', 'Tá fácil!', 'Hoje tem galo!', 'Bora, bora!', '👏', '😂', '😮', '🔥'];
+const FALA_MS = 2800;
+let falaMinhaT = null, reagiuEm = 0;
+function mostrarReacao(pos, txt) {
+  if (screen !== 'game' || mode !== 'on') return;
+  if (pos === 0) {
+    const el = $('#minhaFala'); if (!el) return;
+    el.textContent = txt; el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+    clearTimeout(falaMinhaT); falaMinhaT = setTimeout(() => el.classList.remove('show'), FALA_MS);
+    return;
+  }
+  const el = $(`.seat[data-pos="${pos}"] .bubble`); if (!el) return;
+  el.textContent = txt; el.classList.remove('galo'); el.classList.add('show', 'reacao');
+  clearTimeout(bubbleTimers[pos]); bubbleTimers[pos] = setTimeout(() => el.classList.remove('show', 'reacao'), FALA_MS);
+}
+function abrirReacoes() {
+  if (mode !== 'on') return;
+  const frases = REACOES.map((t, k) => ({ t, k })).filter(x => !/^\p{Extended_Pictographic}/u.test(x.t));
+  const emojis = REACOES.map((t, k) => ({ t, k })).filter(x => /^\p{Extended_Pictographic}/u.test(x.t));
+  openSheet('reacao', `<p class="eyebrow">Mesa online</p><h2 id="sheetTitle">Falar com a mesa</h2>
+    <div class="reacoes">${frases.map(x => `<button type="button" class="reacao-btn" data-k="${x.k}">${esc(x.t)}</button>`).join('')}</div>
+    <div class="reacoes emojis">${emojis.map(x => `<button type="button" class="reacao-btn" data-k="${x.k}" aria-label="${esc(x.t)}">${x.t}</button>`).join('')}</div>
+    <button type="button" class="secondary" id="reacaoFechar" style="width:100%;margin-top:12px">Fechar</button>`);
+  $$('#sheet .reacao-btn').forEach(b => b.addEventListener('click', () => {
+    const agora = Date.now();
+    if (agora - reagiuEm < 2000) { toast('Calma: uma fala de cada vez.'); return; }
+    reagiuEm = agora;
+    if (mandar({ t: 'reacao', k: Number(b.dataset.k) })) track('mesa-online-reacao');
+    closeSheet();
+  }));
+  $('#reacaoFechar').addEventListener('click', closeSheet);
+}
+$('#back').addEventListener('click', e => { if (e.target.id === 'back' && sheetKind === 'reacao') closeSheet(); });
+(function () {
+  const head = $('.me-head'); if (!head) return;
+  head.insertAdjacentHTML('beforeend', `<button type="button" class="reagir" id="reagirBtn" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v10H9.5L5 19.5v-4H4z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>Reagir</button><span class="minha-fala" id="minhaFala" aria-live="polite"></span>`);
+  $('#reagirBtn').addEventListener('click', abrirReacoes);
+})();
+
 function receberOnline(m) {
+  if (m.t === 'reacao') { if (ON.vista && REACOES[m.k]) mostrarReacao(posDe(m.p), REACOES[m.k]); return; }
   if (m.t === 'erro') {
     if (ERROS_MESA[m.cod]) {
       sairDaMesa(); toast(ERROS_MESA[m.cod]);
@@ -3259,6 +3314,7 @@ seatFace = function (p, cls) {
 const renderBase = render;
 render = function () {
   renderBase();
+  const rb = $('#reagirBtn'); if (rb) rb.hidden = mode !== 'on';
   if (mode !== 'on' || !ON.vista || !G) return;
   for (const pos of [1, 2, 3]) {
     const c = cadDe(pos), el = $(`.seat[data-pos="${pos}"]`);
