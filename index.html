@@ -857,6 +857,53 @@ body{touch-action:manipulation}
 /* Histórico: nota sobre partida e jogo */
 .mytreino .mt-nota{margin:0;font-size:14.5px;line-height:1.4;color:var(--wood-ink);opacity:.85;text-align:center}
 .mt-nums small{line-height:1.2;display:block;margin-top:3px}
+
+/* ===== Mesa online: sala de espera, convite e conexão ===== */
+.sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
+.sala-entrada,.sala-espera{display:grid;gap:14px}
+.sala-campo label{font-size:17px}
+.sala-cod{display:flex;gap:10px;align-items:stretch}
+.sala-cod input{flex:1;min-width:0;font:inherit;font-family:var(--font-display);font-size:30px;letter-spacing:.18em;text-align:center;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg)}
+.sala-cod input::placeholder{color:var(--muted);opacity:.45}
+.sala-cod input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--glow)}
+.sala-cod .secondary{flex:none;font-size:17px;font-weight:800;padding:0 20px;border-radius:14px}
+.sala-seguro{font-size:15px;line-height:1.45}
+.sala-num{display:grid;justify-items:center;gap:2px;padding:12px;border-radius:16px;border:1.5px dashed var(--line)}
+.sala-num span{font-size:12.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.sala-num b{font-family:var(--font-display);font-weight:400;font-size:48px;line-height:1.05;letter-spacing:.14em;color:var(--nos);font-variant-numeric:tabular-nums}
+.sala-mesa{display:grid;grid-template-columns:1fr minmax(84px,1.05fr) 1fr;grid-template-areas:". cima ." "esq centro dir" ". baixo .";gap:10px 8px;align-items:center;justify-items:stretch}
+.sala-centro{grid-area:centro;aspect-ratio:1;border-radius:50%;
+  background:repeating-radial-gradient(circle at 50% 50%, rgba(255,235,205,.03) 0 2px, transparent 2px 9px), radial-gradient(circle at 42% 38%, var(--wood-1), var(--wood-2) 75%);
+  box-shadow:inset 0 0 0 5px var(--wood-edge), inset 0 0 30px rgba(0,0,0,.45), 0 14px 26px -14px var(--shadow)}
+.sala-cad{position:relative;display:grid;justify-items:center;gap:4px;text-align:center;padding:18px 6px 10px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;min-width:0}
+.sala-cad.cima{grid-area:cima}.sala-cad.esq{grid-area:esq}.sala-cad.dir{grid-area:dir}.sala-cad.baixo{grid-area:baixo}
+.sala-cad b{font-size:16px;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sala-cad small{font-size:13.5px;color:var(--muted);line-height:1.25}
+.sala-cad.vazia{border-style:dashed;background:transparent;cursor:pointer}
+.sala-cad.vazia:active{transform:scale(.98)}
+.sala-cad.vazia b{color:var(--muted)}
+.sala-cad.fora .sc-face{filter:grayscale(.8);opacity:.7}
+.sc-tag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1;padding:4px 8px 3px;border-radius:999px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.sc-tag.adv{color:#10262a;background:#8fc7cf}
+.sc-tag.par{color:#2a1a08;background:#f0b45e}
+.sc-tag.eu{color:#2a1a08;background:#f6eedf}
+.sc-face{position:relative;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--bg);box-shadow:0 0 0 2px var(--line)}
+.sc-face .sc-img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.sc-letra{font-family:var(--font-display);font-size:24px;color:var(--fg)}
+.sc-vazia{font-size:28px;font-weight:700;color:var(--muted);background:transparent;box-shadow:inset 0 0 0 2px var(--line)}
+.sc-on{position:absolute;right:-1px;bottom:1px;width:14px;height:14px;border-radius:50%;background:#8a7a68;box-shadow:0 0 0 2.5px var(--bg-2)}
+.sc-on.ok{background:#4cc36b}
+.sala-dica{font-size:15px;line-height:1.45;text-align:center;margin:0}
+.sala-convite{display:flex;align-items:center;justify-content:center;gap:10px;margin:0;font-weight:800;font-size:17px;box-shadow:0 6px 16px -10px rgba(0,0,0,.6)}
+.sala-convite svg{width:24px;height:24px;flex:none}
+.sala-faltam{font-size:15px;line-height:1.45;text-align:center;margin:-4px 0 0}
+.sala-st{margin:0;text-align:center;font-size:16px;font-weight:700;color:var(--muted)}
+.mesa-volta{box-shadow:inset 0 0 0 2px var(--glow),inset 0 0 40px rgba(0,0,0,.35),0 10px 30px -14px var(--shadow)}
+/* Mesa: aviso de conexão e quem está sem internet */
+.on-st{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);transform:translateX(-50%);z-index:35;max-width:92vw;padding:9px 16px;border-radius:999px;background:#e58a6c;color:#2a120a;font-size:15px;font-weight:800;line-height:1.25;text-align:center;box-shadow:0 8px 22px -8px rgba(0,0,0,.6);pointer-events:none}
+.seat.semnet .av{filter:grayscale(.85);opacity:.65}
+.nota-todos{text-align:center;margin:10px 0 0;font-size:14.5px}
+@media (max-width:360px){ .sala-num b{font-size:40px} .sala-cad b{font-size:15px} .sc-face{width:46px;height:46px} }
 </style>
 </head>
 <body>
@@ -933,9 +980,13 @@ body{touch-action:manipulation}
       <span class="ck">Jogo offline</span><span class="ct">Você contra a turma do bairro</span>
       <span class="cd">Você e um parceiro contra dois adversários, todos no mesmo nível e sem pressa. Funciona até sem internet.</span>
     </button>
-    <button type="button" class="card wood card-off" id="goOnline" disabled aria-disabled="true">
-      <span class="ck">Mesa online · em breve</span><span class="ct">Jogar com os amigos</span>
-      <span class="cd">Quatro pessoas de verdade na mesma mesa, cada uma no seu celular e com sua foto. Está chegando.</span>
+    <button type="button" class="card wood mesa-volta" id="goMesa" hidden>
+      <span class="ck">Mesa online · <span id="goMesaNum"></span></span><span class="ct">Voltar para a mesa</span>
+      <span class="cd" id="goMesaD">Seu lugar está guardado.</span>
+    </button>
+    <button type="button" class="card wood" id="goOnline">
+      <span class="ck">Mesa online</span><span class="ct">Jogar com os amigos</span>
+      <span class="cd">Cada um no seu celular. Crie a mesa e chame a turma pelo WhatsApp, ou entre com o número que um amigo mandou.</span>
     </button>
     <button type="button" class="donocard" id="donoCard" hidden>
       <span class="dc-live" aria-hidden="true"></span>
@@ -985,6 +1036,31 @@ body{touch-action:manipulation}
     <button type="button" class="menubtn sortear" id="shuffleBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.6" fill="currentColor"/></svg>Sortear outra mesa</button>
     <button type="button" class="primary" id="startOffline">Começar</button>
     <div id="setupPatro"></div>
+  </section>
+
+  <section class="screen panel" id="scrSala" hidden>
+    <button type="button" class="backbtn" id="salaBack">← Voltar</button>
+    <div><p class="kicker">Mesa online</p><h2 class="brand" style="font-size:30px" id="salaTitulo">Jogar com os amigos</h2></div>
+    <div class="sala-entrada" id="salaEntrada">
+      <p class="sala-lead">Cada um joga no seu celular. Crie a mesa e mande o convite no WhatsApp, ou entre com o número que um amigo mandou.</p>
+      <button type="button" class="primary" id="salaCriar">Criar uma mesa</button>
+      <div class="field sala-campo">
+        <label for="salaCodigo">Tenho o número da mesa</label>
+        <div class="sala-cod"><input type="text" id="salaCodigo" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="off" placeholder="00000" aria-describedby="salaCodDica"><button type="button" class="secondary" id="salaEntrar">Entrar</button></div>
+        <small class="note" id="salaCodDica">São 5 números.</small>
+      </div>
+      <p class="note sala-seguro">Sem chat e sem desconhecidos: só entra quem tem o número da mesa. Cadeira vazia fica com a turma do bairro.</p>
+    </div>
+    <div class="sala-espera" id="salaEspera" hidden>
+      <div class="sala-num"><span>Número da mesa</span><b id="salaNum">00000</b></div>
+      <div class="sala-mesa" id="salaMesa"></div>
+      <p class="note sala-dica" id="salaDica">Toque numa cadeira vazia para trocar de lugar. Quem senta na sua frente é o seu parceiro.</p>
+      <a class="share-wa sala-convite" id="salaConvite" href="https://wa.me/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.3 14.8L2.3 21.8l4.9-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-3-.4-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.1 11.1 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3Z"/></svg>Chamar os amigos no WhatsApp</a>
+      <button type="button" class="primary" id="salaComecar">Começar</button>
+      <p class="note sala-faltam" id="salaFaltam"></p>
+      <button type="button" class="secondary" id="salaSair">Sair da mesa</button>
+    </div>
+    <p class="sala-st" id="salaSt" role="status" hidden></p>
   </section>
 
   <section class="screen panel" id="scrFale" hidden>
@@ -1510,6 +1586,11 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '2.0', data: '07/10/2026', itens: [
+    'Mesa online com os amigos: crie a mesa, mande o convite no WhatsApp e cada um joga no seu celular.',
+    'Só entra quem tem o número da mesa. Sem chat; cadeira vazia fica com a turma do bairro.',
+    'Se a internet cair, o seu lugar fica guardado e um robô joga por você até você voltar.'
+  ] },
   { v: '1.10', data: '07/10/2026', itens: [
     'Fale com a gente: mande um problema, uma ideia ou um elogio direto pelo app (no início ou no menu da mesa).',
     'Lembretes para jogar, para maiores de 18: ligue no cartão do início ou no seu perfil. No máximo um a cada 3 dias.'
@@ -1727,7 +1808,7 @@ function toast(msg) {
   clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 4200);
 }
 // Troca de tela com fade: a tela atual some suave e a próxima aparece suave.
-const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Game', 'Dono', 'Fale'];
+const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale'];
 let showTimer = null;
 function show(name) {
   if (window.__reloadWhenFree && name !== 'game') { saveGame(); location.reload(); return; }
@@ -1745,6 +1826,7 @@ function show(name) {
     if (name === 'profile') renderProfile();
     if (name === 'dono') renderDono();
     if (name === 'fale') renderFale();
+    if (name === 'sala') renderSala();
     if (name === 'game' && G) render();
   };
   if (!cur || reduce) { finish(); return; }
@@ -2505,7 +2587,7 @@ document.addEventListener('visibilitychange', () => {
 
 // ---- Fale com a gente: a mensagem vai para o servidor e aparece na Área do dono ----
 const SAIDA = 'dmz-saida';   // mensagens esperando internet
-let faleTipo = 'problema', faleVolta = 'home';
+let faleTipo = 'problema', faleVolta = 'home', faleDoOnline = false;
 const FALE_DICA = {
   problema: 'O que aconteceu? Se foi na mesa, diga em que momento.',
   ideia: 'O que deixaria o jogo melhor?',
@@ -2515,6 +2597,7 @@ function faleAtivo() { return !!CONFIG.api; }
 function abrirFale(deOnde) {
   if (!faleAtivo()) { openFeedback(deOnde === 'game'); return; }
   faleVolta = deOnde || 'home';
+  faleDoOnline = deOnde === 'game' && mode === 'on';
   if (deOnde === 'game') { closeSheet(); leaveGame(); }
   show('fale');
 }
@@ -2526,6 +2609,7 @@ function renderFale() {
 }
 function faleConta() { $('#faleConta').textContent = `${$('#faleTexto').value.length}/1000`; }
 function faleSair() {
+  if (faleVolta === 'game' && faleDoOnline && mesaGuardada()) { voltarMesa(); return; }
   if (faleVolta === 'game' && loadSavedGame()) { $('#goResume').click(); return; }
   show(profile ? 'home' : 'who');
 }
@@ -2939,6 +3023,422 @@ $('#dnAvEnviar').addEventListener('click', async () => {
   b.disabled = false; b.textContent = 'Mandar para todos';
   dnAvisosCarregar();
 });
+
+// ===== Mesa online por convite =====
+// O servidor (Cloudflare) guarda as pedras e aplica as regras. Cada celular recebe só a própria mão;
+// aqui a mesa é "girada" para que você seja sempre a cadeira 0 — assim a mesa, as animações,
+// a festa e o histórico funcionam igual ao jogo offline.
+const MKEY = 'dmz-mesa';           // mesa em que você está sentado (para voltar depois)
+const CONVITE = 'dmz-convite';     // número que chegou por link, esperando você entrar
+const ON = { cod: null, ws: null, ativo: false, vista: null, seq: -1, tent: 0, reT: null, pingT: null, otimista: null,
+  depoisDoDeal: null, armado: false, ultimoAviso: 0 };
+
+function onlineAtivo() { return !!CONFIG.api && typeof WebSocket === 'function'; }
+function meuId() {
+  let id = store.get('dmz-id');
+  if (!id || !/^[a-z0-9-]{8,40}$/i.test(id)) {
+    id = (crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join(''));
+    store.set('dmz-id', id);
+  }
+  return id;
+}
+// Foto não sai do celular: na mesa online os outros veem o seu avatar desenhado.
+function meuAv() { return profile && profile.av && profile.av !== 'foto' ? profile.av : null; }
+function mesaGuardada() { return (store.get(MKEY) || '').match(/^\d{5}$/) ? store.get(MKEY) : null; }
+
+// ---------- Girar a mesa do servidor para o seu ponto de vista ----------
+function girar(J, s) {
+  const P = p => (p == null || p < 0) ? p : (p - s + 4) % 4;
+  const odd = s % 2 === 1;
+  const T = t => t == null ? t : (odd ? 1 - t : t);
+  const TA = a => a && (odd ? [a[1], a[0]] : a.slice());
+  const rot = a => a && [0, 1, 2, 3].map(k => a[(k + s) % 4]);
+  const ev = e => { const o = Object.assign({}, e); if ('p' in o) o.p = P(o.p); if ('team' in o) o.team = T(o.team); if (o.sums) o.sums = TA(o.sums); return o; };
+  const G2 = JSON.parse(JSON.stringify(J));
+  G2.names = rot(J.names); G2.hands = rot(J.hands); G2.lacks = rot(J.lacks);
+  G2.turn = P(J.turn); G2.lastPlayer = P(J.lastPlayer);
+  G2.score = TA(J.score); G2.series = TA(J.series);
+  if (J.nextStart && J.nextStart.player != null) G2.nextStart = Object.assign({}, J.nextStart, { player: P(J.nextStart.player) });
+  G2.passStreak = (J.passStreak || []).map(ev);
+  G2.events = (J.events || []).map(ev);
+  if (J.result) {
+    const r = ev(J.result);
+    r.hands = rot(J.result.hands); r.score = TA(J.result.score);
+    if (J.result.series) r.series = TA(J.result.series);
+    if (J.result.matchWinner != null) r.matchWinner = T(J.result.matchWinner);
+    if (J.result.gameWinner != null) r.gameWinner = T(J.result.gameWinner);
+    if (J.result.hi != null) r.hi = T(J.result.hi);
+    G2.result = r;
+  }
+  return G2;
+}
+// cadeira do servidor -> posição na sua mesa, e o contrário
+const posDe = p => ON.vista ? (p - ON.vista.minha + 4) % 4 : p;
+const cadDe = pos => ON.vista ? ON.vista.cad[(pos + ON.vista.minha) % 4] : null;
+
+// ---------- Conexão ----------
+function wsURL(cod) { return CONFIG.api.replace(/^http/, 'ws') + '/mesa/' + cod + '/ws'; }
+function conectar(cod) {
+  ON.cod = cod; ON.ativo = true; store.set(MKEY, cod);
+  try { sessionStorage.setItem('dmz-mesa-viva', cod); } catch (e) {}
+  clearTimeout(ON.reT);
+  if (ON.ws && ON.ws.readyState <= 1) return;
+  statusOnline();
+  let ws;
+  try { ws = new WebSocket(wsURL(cod)); } catch (e) { reconectarDepois(); return; }
+  ON.ws = ws;
+  ws.onopen = () => {
+    ON.tent = 0;
+    ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv() }));
+    clearInterval(ON.pingT);
+    ON.pingT = setInterval(() => { try { if (ws.readyState === 1) ws.send('ping'); } catch (e) {} }, 25000);
+    statusOnline();
+  };
+  ws.onmessage = e => { if (e.data === 'pong') return; let m; try { m = JSON.parse(e.data); } catch (x) { return; } receberOnline(m); };
+  ws.onclose = () => {
+    clearInterval(ON.pingT);
+    if (ON.ws === ws) ON.ws = null;
+    statusOnline();
+    if (ON.ativo) reconectarDepois();
+  };
+  ws.onerror = () => {};
+}
+function reconectarDepois() {
+  clearTimeout(ON.reT);
+  const ms = Math.min(10000, 800 * Math.pow(2, ON.tent++));
+  ON.reT = setTimeout(() => { if (ON.ativo && ON.cod) conectar(ON.cod); }, ms);
+}
+// Para de conversar com a mesa, mas guarda o lugar (dá para voltar pelo início).
+function pausarOnline() {
+  try { sessionStorage.removeItem('dmz-mesa-viva'); } catch (e) {}
+  ON.ativo = false; clearTimeout(ON.reT); clearInterval(ON.pingT);
+  const ws = ON.ws; ON.ws = null;
+  if (ws) { ws.onclose = null; try { ws.close(1000, 'pausa'); } catch (e) {} }
+  ON.vista = null; ON.seq = -1; ON.otimista = null; ON.depoisDoDeal = null;
+  statusOnline();
+}
+// Sai de vez: avisa o servidor e esquece a mesa.
+function sairDaMesa() {
+  if (ON.ws && ON.ws.readyState === 1) { try { ON.ws.send(JSON.stringify({ t: 'sair' })); } catch (e) {} }
+  pausarOnline(); ON.cod = null; store.del(MKEY);
+}
+function mandar(o) {
+  if (!ON.ws || ON.ws.readyState !== 1) { toast('Sem conexão com a mesa. Confira a internet: o jogo tenta de novo sozinho.'); return false; }
+  try { ON.ws.send(JSON.stringify(o)); return true; } catch (e) { return false; }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && ON.ativo && ON.cod && (!ON.ws || ON.ws.readyState > 1)) { ON.tent = 0; conectar(ON.cod); }
+});
+addEventListener('online', () => { if (ON.ativo && ON.cod && (!ON.ws || ON.ws.readyState > 1)) { ON.tent = 0; conectar(ON.cod); } });
+
+const ERROS_MESA = {
+  'nao-existe': 'Essa mesa não existe mais. Confira o número ou crie uma nova.',
+  'encerrada': 'A mesa foi encerrada.',
+  'cheia': 'Essa mesa já está cheia.',
+  'dados': 'Não deu para entrar na mesa. Confira o seu nome no perfil.'
+};
+function receberOnline(m) {
+  if (m.t === 'erro') {
+    if (ERROS_MESA[m.cod]) {
+      sairDaMesa(); toast(ERROS_MESA[m.cod]);
+      if (screen === 'game') { leaveGameBase(); show('sala'); } else if (screen === 'sala') renderSala();
+      else if (screen === 'home') renderHome();
+      return;
+    }
+    if (m.cod === 'mudou' || m.cod === 'jogada' || m.cod === 'vez') {
+      ON.otimista = null;
+      if (ON.vista && ON.vista.jogo) { G = girar(ON.vista.jogo, ON.vista.minha); render(); }
+      toast('A mesa mudou antes da sua jogada. Confira e jogue de novo.');
+    }
+    return;
+  }
+  if (m.t !== 'mesa') return;
+  if (m.minha < 0) { sairDaMesa(); toast('Você não está mais nessa mesa.'); if (screen === 'sala') renderSala(); return; }
+  const antes = ON.vista;
+  ON.vista = m;
+  statusOnline();
+  if (m.fase === 'espera') {
+    if (screen === 'game') { leaveGameBase(); show('sala'); }
+    else if (screen === 'sala') renderSala();
+    else if (screen === 'home') renderHome();
+    return;
+  }
+  // jogando offline enquanto a mesa online começou: não tira a pessoa do jogo dela; solta a cadeira para o robô
+  if (screen === 'game' && mode !== 'on') {
+    if (!antes || antes.fase === 'espera') { pausarOnline(); toast(`A mesa ${m.codigo} começou. Para jogar lá, volte ao início e toque em "Voltar para a mesa".`); }
+    return;
+  }
+  // começou o jogo: quem está na sala ou no início vai para a mesa
+  if (screen !== 'game') {
+    if (screen === 'sala' || screen === 'home' || screen === 'who') entrarNoJogoOnline(m, !antes || antes.fase === 'espera');
+    return;
+  }
+  aplicarJogo(m);
+}
+
+// ---------- Jogo ----------
+function entrarNoJogoOnline(m, comecou) {
+  mode = 'on'; seatMe = 0; offSt = null;
+  G = girar(m.jogo, m.minha); ON.seq = m.seq;
+  endDrag(); closeSheet();
+  if (comecou) { track('mesa-online-jogo'); avisosJogou(); }
+  const novaMao = G.phase === 'play' && !G.chain.length;
+  if (novaMao) prepDeal();
+  show('game'); setFeed();
+  const g0 = G;
+  if (G.phase === 'handEnd') schedule(showResult, 700);
+  else if (novaMao) setTimeout(() => { if (G === g0) runDeal(depoisDoDeal); }, 460);
+}
+function depoisDoDeal() {
+  announce(); render();
+  if (ON.depoisDoDeal) { const m = ON.depoisDoDeal; ON.depoisDoDeal = null; aplicarJogo(m); }
+}
+function aplicarJogo(m) {
+  if (mode !== 'on' || !G) { entrarNoJogoOnline(m, false); return; }
+  if (dealing) { ON.depoisDoDeal = m; return; }
+  const ant = G, novo = girar(m.jogo, m.minha);
+  if (m.seq === ON.seq) {   // nada mudou no jogo (só quem está conectado)
+    render(); return;
+  }
+  const pulou = ON.seq >= 0 && m.seq > ON.seq + 1;
+  ON.seq = m.seq;
+  // a festa de fim de partida aparece uma vez só
+  if (ant.result && novo.result && ant.result.festaVista && ant.result.handNo === novo.result.handNo && ant.result.partida === novo.result.partida) novo.result.festaVista = true;
+  const novaMao = novo.handNo !== ant.handNo || novo.partida !== ant.partida || (ant.phase === 'handEnd' && novo.phase === 'play');
+  G = novo;
+  if (novaMao) {
+    clearTimeout(timer); closeSheet(); endDrag(); ON.otimista = null;
+    const f = $('#festa'); if (f && !f.hidden) { f.hidden = true; cancelAnimationFrame(confeteRAF); }
+    if (pulou && novo.chain.length) { setFeed(); render(); return; }
+    runDeal(depoisDoDeal);
+    return;
+  }
+  if (pulou) { ON.otimista = null; setFeed(); render(); }
+  else {
+    announce(); render();
+    trackOffline();   // histórico neste celular (você é sempre a cadeira 0)
+    if (G.events.some(e => e.type === 'pass' && e.p === 0)) aviso('Você passou', 'Nenhuma pedra sua encaixa nas pontas', 3500);
+    if (m.porRobo != null) {
+      const pos = posDe(m.porRobo);
+      toast(pos === 0 ? 'Você ficou sem conexão e um robô jogou por você.' : `${G.names[pos]} está sem conexão: um robô jogou no lugar.`);
+    }
+  }
+  if (G.phase === 'handEnd') schedule(showResult, pulou ? 700 : SPEEDS[speed].end);
+}
+// Sua jogada: aparece na hora na mesa e vai para o servidor, que confere e manda para todos.
+function jogarOnline(mv) {
+  const t = G.hands[0][mv.i];
+  if (!mandar({ t: 'jogar', seq: ON.seq, pedra: t.slice(), lado: mv.side })) { render(); return; }
+  const k = tkey(t);
+  G.hands[0].splice(mv.i, 1); place(G, t, mv.side); G.openMode = null; G.turn = 1;
+  const placed = findPlaced(k);
+  freshKey = k; ON.otimista = k;
+  if (placed) pendingFly = { key: k, p: 0, v1: placed[0], v2: placed[1] };
+  render();
+}
+
+// ---------- Ganchos no jogo (offline continua igual) ----------
+const humanPlayBase = humanPlay;
+humanPlay = function (mv) { if (mode === 'on') { clearTimeout(timer); jogarOnline(mv); return; } humanPlayBase(mv); };
+const announceBase = announce;
+announce = function () {
+  announceBase();
+  // a sua pedra já voou quando você jogou: não voa de novo quando o servidor confirma
+  if (mode === 'on' && ON.otimista && pendingFly && pendingFly.p === 0 && pendingFly.key === ON.otimista) pendingFly = null;
+  if (mode === 'on') ON.otimista = null;
+};
+const seatFaceBase = seatFace;
+seatFace = function (p, cls) {
+  if (mode !== 'on' || !ON.vista || p === 0) return seatFaceBase(p, cls);
+  const c = cadDe(p);
+  if (!c) return seatFaceBase(p, cls);
+  if (c.bot && !c.saiu) return faceImg(botFaceURI(c.nome), cls);
+  const a = AVATARS.find(x => x.id === c.av);
+  return a ? faceImg(avatarURI(a), cls) : '';
+};
+const renderBase = render;
+render = function () {
+  renderBase();
+  if (mode !== 'on' || !ON.vista || !G) return;
+  for (const pos of [1, 2, 3]) {
+    const c = cadDe(pos), el = $(`.seat[data-pos="${pos}"]`);
+    if (!c || !el) continue;
+    const fora = !c.bot && !c.on;
+    el.classList.toggle('semnet', fora);
+    const sc = el.querySelector('.sc');
+    if (fora) sc.textContent = 'sem internet';
+    else if (c.saiu) sc.textContent = 'robô no lugar';
+  }
+};
+const leaveGameBase = leaveGame;
+leaveGame = function () { if (mode === 'on') pausarOnline(); leaveGameBase(); };
+const openSheetBase = openSheet;
+openSheet = function (kind, html) {
+  openSheetBase(kind, html);
+  if (mode !== 'on') return;
+  // depois que o jogo montar os botões, troca o que muda na mesa online
+  if (kind === 'result') queueMicrotask(resultadoOnline);
+  if (kind === 'rules') queueMicrotask(menuOnline);
+};
+function trocarBotao(id, txt, fn) {
+  const b = $('#' + id); if (!b) return null;
+  const n = b.cloneNode(false); n.textContent = txt; b.replaceWith(n); n.addEventListener('click', fn); return n;
+}
+function resultadoOnline() {
+  if (sheetKind !== 'result') return;
+  $$('#sheet .share-wa').forEach(a => a.remove());
+  const nb = $('#nextBtn');
+  const rotulo = nb ? nb.textContent : 'Próxima mão';
+  const btn = trocarBotao('nextBtn', rotulo, () => {
+    if (mandar({ t: 'proxima', seq: ON.seq })) { btn.disabled = true; btn.textContent = 'Começando…'; }
+  });
+  if (btn && !$('#sheet .nota-todos')) btn.insertAdjacentHTML('afterend', '<p class="note nota-todos">Qualquer um dos quatro pode tocar para seguir.</p>');
+  trocarBotao('resHome', 'Voltar ao início', () => {
+    closeSheet(); leaveGame(); show('home');
+    toast('Seu lugar na mesa está guardado. Para voltar, toque em "Voltar para a mesa".');
+  });
+}
+function menuOnline() {
+  if (sheetKind !== 'rules') return;
+  const rb = $('#resetBtn'); if (rb) rb.remove();
+  trocarBotao('homeBtn', 'Voltar ao início', () => {
+    closeSheet(); leaveGame(); show('home');
+    toast('Seu lugar na mesa está guardado. Para voltar, toque em "Voltar para a mesa".');
+  });
+  let armado = false;
+  const qb = trocarBotao('quitBtn', 'Sair da mesa', () => {
+    if (!armado) { armado = true; qb.textContent = 'Toque de novo para sair'; return; }
+    sairDaMesa(); closeSheet(); leaveGameBase(); show('home');
+    toast('Você saiu da mesa. A turma do bairro joga no seu lugar.');
+  });
+}
+
+// ---------- Status da conexão (aparece na mesa e na sala) ----------
+document.body.insertAdjacentHTML('beforeend', '<div class="on-st" id="onSt" role="status" hidden></div>');
+function statusOnline() {
+  const caiu = ON.ativo && (!ON.ws || ON.ws.readyState !== 1);
+  const el = $('#onSt');
+  el.hidden = !(caiu && ((screen === 'game' && mode === 'on') || screen === 'sala'));
+  el.textContent = ON.ws && ON.ws.readyState === 0 && ON.tent === 0 ? 'Conectando à mesa…' : 'Sem conexão com a mesa. Tentando de novo…';
+  if (screen === 'sala') {
+    const st = $('#salaSt');
+    st.hidden = !(ON.ativo && !ON.vista);
+    st.textContent = 'Conectando à mesa…';
+  }
+}
+
+// ---------- Sala: criar, entrar, esperar a turma ----------
+async function criarMesa() {
+  const b = $('#salaCriar'); b.disabled = true; b.textContent = 'Criando…';
+  try {
+    const r = await fetch(CONFIG.api + '/mesa/nova', { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv() }) });
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 201 && j.codigo) { track('mesa-online-criada'); ON.vista = null; conectar(j.codigo); renderSala(); return; }
+    toast(r.status === 429 ? 'Muitas mesas criadas agora. Tente de novo daqui a pouco.' : 'Não deu para criar a mesa. Tente de novo.');
+  } catch (e) { toast('Sem internet agora. A mesa online precisa de conexão.'); }
+  finally { b.disabled = false; b.textContent = 'Criar uma mesa'; }
+}
+async function entrarMesa(cod) {
+  cod = String(cod || '').replace(/\D/g, '');
+  if (!/^\d{5}$/.test(cod)) { toast('O número da mesa tem 5 algarismos.'); $('#salaCodigo').focus(); return; }
+  const b = $('#salaEntrar'); b.disabled = true;
+  try {
+    const r = await fetch(CONFIG.api + '/mesa/' + cod);
+    const j = await r.json().catch(() => ({}));
+    if (!j.existe) { toast('Não achei a mesa ' + cod + '. Confira o número com quem te convidou.'); return; }
+    if (j.fase === 'jogo' && !j.livres && mesaGuardada() !== cod) { toast('Essa mesa já começou e está cheia.'); return; }
+    ON.vista = null; conectar(cod); renderSala();
+  } catch (e) { toast('Sem internet agora. A mesa online precisa de conexão.'); }
+  finally { b.disabled = false; }
+}
+function voltarMesa() {
+  const cod = mesaGuardada(); if (!cod) return;
+  if (ON.ativo && ON.cod === cod && ON.ws && ON.ws.readyState === 1 && ON.vista) {
+    if (ON.vista.fase === 'jogo') entrarNoJogoOnline(ON.vista, false); else show('sala');
+    return;
+  }
+  ON.vista = null; conectar(cod); show('sala');
+}
+function conviteTexto(cod) {
+  return `🁫 Bora jogar dominó comigo? Entra na minha mesa no Dominó Manauara:\n${SITE_URL}#mesa=${cod}\n\nOu abra o app e digite o número da mesa: *${cod}*`;
+}
+const NOME_POS = ['Você', 'Adversário', 'Parceiro', 'Adversário'];
+function renderSala() {
+  if (screen !== 'sala') return;
+  const v = ON.vista, naMesa = ON.ativo && ON.cod;
+  $('#salaEntrada').hidden = !!naMesa;
+  $('#salaEspera').hidden = !(naMesa && v && v.fase === 'espera');
+  $('#salaTitulo').textContent = naMesa ? 'Esperando a turma' : 'Jogar com os amigos';
+  statusOnline();
+  if (!naMesa) { $('#salaCodigo').value = store.get(CONVITE) || $('#salaCodigo').value; return; }
+  if (!v || v.fase !== 'espera') return;
+  $('#salaNum').textContent = v.codigo;
+  $('#salaConvite').href = 'https://wa.me/?text=' + encodeURIComponent(conviteTexto(v.codigo));
+  const POS_CLASS = ['baixo', 'esq', 'cima', 'dir'];
+  $('#salaMesa').innerHTML = [2, 1, 3, 0].map(pos => {
+    const p = (pos + v.minha) % 4, c = v.cad[p];
+    const tag = `<span class="sc-tag ${pos === 2 ? 'par' : pos === 0 ? 'eu' : 'adv'}">${NOME_POS[pos]}</span>`;
+    if (!c) return `<button type="button" class="sala-cad vazia ${POS_CLASS[pos]}" data-p="${p}">${tag}<span class="sc-face sc-vazia" aria-hidden="true">+</span><b>Cadeira vazia</b><small>Toque para sentar aqui</small></button>`;
+    const face = pos === 0 ? faceImg(myFaceURI(), 'sc-img') : (AVATARS.find(a => a.id === c.av) ? faceImg(avatarURI(AVATARS.find(a => a.id === c.av)), 'sc-img') : `<span class="sc-letra">${esc(c.nome[0] || '?')}</span>`);
+    return `<div class="sala-cad ${POS_CLASS[pos]}${c.on ? '' : ' fora'}">${tag}<span class="sc-face">${face}<i class="sc-on${c.on ? ' ok' : ''}" aria-hidden="true"></i></span><b>${esc(pos === 0 ? 'Você' : c.nome)}</b><small>${pos === 0 ? '' : c.on ? 'Na mesa' : 'Sem conexão'}</small></div>`;
+  }).join('') + '<div class="sala-centro" aria-hidden="true"></div>';
+  $$('#salaMesa .vazia').forEach(b => b.addEventListener('click', () => mandar({ t: 'sentar', cadeira: Number(b.dataset.p) })));
+  const vazias = v.cad.filter(c => !c).length;
+  $('#salaFaltam').textContent = vazias ? `Faltam ${vazias === 1 ? '1 pessoa' : vazias + ' pessoas'}. Se começar agora, a turma do bairro joga nas cadeiras vazias.` : 'Mesa completa! Pode começar.';
+  if (!vazias) ON.armado = false;
+  $('#salaComecar').textContent = ON.armado ? 'Toque de novo: começar com a turma' : 'Começar';
+}
+$('#goOnline').addEventListener('click', () => { if (!onlineAtivo()) { toast('A mesa online precisa de internet.'); return; } if (mesaGuardada() && !ON.ativo) { voltarMesa(); return; } show('sala'); });
+$('#goMesa').addEventListener('click', voltarMesa);
+$('#salaCriar').addEventListener('click', criarMesa);
+$('#salaEntrar').addEventListener('click', () => entrarMesa($('#salaCodigo').value));
+$('#salaCodigo').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 5); });
+$('#salaCodigo').addEventListener('keydown', e => { if (e.key === 'Enter') entrarMesa(e.target.value); });
+$('#salaComecar').addEventListener('click', () => {
+  const v = ON.vista; if (!v) return;
+  if (v.cad.some(c => !c) && !ON.armado) { ON.armado = true; renderSala(); return; }
+  ON.armado = false;
+  mandar({ t: 'comecar' });
+});
+$('#salaSair').addEventListener('click', () => { sairDaMesa(); show('home'); toast('Você saiu da mesa.'); });
+$('#salaBack').addEventListener('click', () => show('home'));   // continua sentado; volta pelo cartão "Voltar para a mesa"
+$('#salaConvite').addEventListener('click', () => track('mesa-online-convite'));
+
+// Início: cartão para voltar à mesa e convite que chegou por link
+const renderHomeBase = renderHome;
+renderHome = function () {
+  renderHomeBase();
+  const cod = mesaGuardada(), card = $('#goMesa');
+  card.hidden = !cod || !onlineAtivo();
+  if (cod) {
+    $('#goMesaNum').textContent = cod;
+    $('#goMesaD').textContent = ON.ativo && ON.vista && ON.vista.fase === 'espera' ? 'Esperando a turma chegar.' : 'Seu lugar está guardado. Toque para voltar.';
+  }
+  $('#goOnline').hidden = !onlineAtivo();
+  const conv = store.get(CONVITE);
+  if (conv && onlineAtivo()) { store.del(CONVITE); setTimeout(() => { show('sala'); entrarMesa(conv); }, 250); }
+};
+(function lerConvite() {
+  const m = location.hash.match(/^#mesa=(\d{5})\b/);
+  if (!m) return;
+  store.set(CONVITE, m[1]);
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+})();
+addEventListener('hashchange', () => {
+  const m = location.hash.match(/^#mesa=(\d{5})\b/); if (!m) return;
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  if (profile) { show('sala'); entrarMesa(m[1]); } else store.set(CONVITE, m[1]);
+});
+
+// Telas: o aviso de conexão acompanha a troca de tela; a sala se desenha ao abrir.
+const showBase = show;
+show = function (name) { showBase(name); statusOnline(); };
+// Recarregou no meio da mesa (versão nova do app): volta sozinho para ela.
+(function () {
+  let viva = null; try { viva = sessionStorage.getItem('dmz-mesa-viva'); } catch (e) {}
+  if (viva && viva === mesaGuardada() && profile && onlineAtivo()) setTimeout(voltarMesa, 400);
+})();
 
 
 // ---- Desenho das peças ----
@@ -3498,7 +3998,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   let hadController = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!hadController) { hadController = true; return; }
-    if (screen === 'game' || screen === 'profile' || sheetKind) { window.__reloadWhenFree = true; return; }
+    if (screen === 'game' || screen === 'sala' || screen === 'profile' || sheetKind) { window.__reloadWhenFree = true; return; }
     saveGame(); location.reload();
   });
   // Saiu do app com uma versão nova esperando (e fora da mesa): troca sem ninguém ver.
