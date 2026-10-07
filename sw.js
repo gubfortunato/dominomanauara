@@ -1,6 +1,6 @@
 // Dominó Manauara: guarda o jogo no celular para abrir rápido e funcionar sem internet.
 // Ao publicar uma versão nova, troque o número abaixo para os celulares baixarem tudo de novo.
-const CACHE = 'dominomanauara-1.6-6aec6086';
+const CACHE = 'dominomanauara-1.7-5d2af5dd';
 const FILES = [
   './',
   './index.html',
@@ -55,4 +55,28 @@ self.addEventListener('fetch', e => {
 
   // Fontes, ícones e o resto: o que já está guardado abre na hora.
   e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => putInCache(req, res))));
+});
+
+// Lembretes para jogar: mostra a notificação que o servidor mandou.
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) { d = { texto: e.data ? e.data.text() : '' }; }
+  e.waitUntil(self.registration.showNotification(d.titulo || 'Dominó Manauara', {
+    body: d.texto || 'A mesa tá montada. Bora uma partida?',
+    icon: './icons/icon-192.png',
+    badge: './icons/icon-192.png',
+    tag: 'dominomanauara',
+    data: { url: d.url || './' }
+  }));
+});
+// Tocou na notificação: abre o jogo (ou traz para a frente se já estiver aberto).
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const alvo = new URL((e.notification.data && e.notification.data.url) || './', self.registration.scope);
+  alvo.searchParams.set('origem', 'lembrete');
+  e.waitUntil((async () => {
+    const abertas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of abertas) { if ('focus' in c) { await c.focus(); return; } }
+    await self.clients.openWindow(alvo.href);
+  })());
 });

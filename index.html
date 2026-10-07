@@ -646,9 +646,17 @@ body{touch-action:manipulation}
 .lupa{flex:none;display:flex;align-items:center;gap:5px;border:1px solid rgba(239,226,204,.3);background:rgba(0,0,0,.22);color:var(--wood-ink);border-radius:999px;padding:5px 11px 5px 8px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
 .lupa svg{width:18px;height:18px}
 .lupa:active{transform:scale(.96)}
-.zoom{position:fixed;inset:0;z-index:25;display:grid;grid-template-rows:minmax(0,1fr) auto;background:radial-gradient(ellipse at center,#4a2f1e 0%,#24170f 75%);padding:calc(env(safe-area-inset-top,0px) + 12px) 10px calc(env(safe-area-inset-bottom,0px) + 10px);cursor:zoom-out;animation:backIn .2s ease-out}
-.zoom svg{width:100%;height:100%;display:block}
-.zoom-tx{margin:6px 0 0;text-align:center;color:#d9c7a8;font-size:15px;font-weight:600}
+.zoom{position:fixed;inset:0;z-index:25;display:grid;grid-template-rows:minmax(0,1fr) auto auto;gap:8px;background:radial-gradient(ellipse at center,#4a2f1e 0%,#24170f 75%);padding:calc(env(safe-area-inset-top,0px) + 12px) 10px calc(env(safe-area-inset-bottom,0px) + 10px);animation:backIn .2s ease-out}
+.zoom-area{position:relative;overflow:hidden;touch-action:none;border-radius:14px;min-height:0;cursor:zoom-in}
+.zoom svg{position:absolute;left:0;top:0;width:100%;height:100%;display:block;transform-origin:0 0;will-change:transform}
+.zoom-bar{display:grid;grid-template-columns:auto 1fr auto;gap:10px}
+.zoom-btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:0 18px;border-radius:14px;border:1.5px solid rgba(239,226,204,.35);background:rgba(0,0,0,.3);color:#f2e7d5;font:inherit;font-size:18px;font-weight:800;cursor:pointer}
+.zoom-btn svg{width:24px;height:24px}
+#zoomMenos{font-size:30px;line-height:1;min-width:58px;padding:0}
+.zoom-btn.lupa-mais{background:var(--glow);border-color:var(--glow);color:#2a1a08}
+.zoom-btn.fechar{background:#f2e7d5;color:#2a1a08;border-color:#f2e7d5}
+.zoom-btn:disabled{opacity:.35}
+.zoom-btn:active{transform:scale(.97)}
 .menu-opt{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;margin-top:18px;padding:14px;border:1px solid var(--line);border-radius:14px;cursor:pointer}
 .menu-opt input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--nos)}
 .menu-opt b{display:block;font-size:15.5px}
@@ -681,6 +689,86 @@ body{touch-action:manipulation}
 .mytreino .mt-share{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:4px;padding:12px 14px;border:0;border-radius:14px;background:#25d366;color:#0b2e17;font-weight:800;font-size:15.5px;line-height:1.2;text-decoration:none;box-shadow:0 6px 16px -10px rgba(0,0,0,.6)}
 .mytreino .mt-share svg{flex:none;width:24px;height:24px}
 .mytreino .mt-share:active{transform:scale(.99);filter:brightness(.95)}
+/* Lembretes */
+.avisos-card{display:grid;gap:10px;padding:16px 18px}
+.avisos-card .ck{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+.avisos-card p{margin:0;font-size:14.5px;line-height:1.45;color:var(--wood-ink)}
+.avisos-card .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.avisos-card .primary{width:auto;padding:12px 18px}
+.avisos-card .linkbtn{color:var(--wood-ink);border-color:rgba(239,226,204,.3);align-self:auto}
+.perfil-avisos{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14.5px;padding:12px 14px;border:1px solid var(--line);border-radius:12px}
+.perfil-avisos .linkbtn{align-self:auto}
+.dn-avisos{gap:10px}
+.dn-avn{margin:0;font-size:14px;color:var(--wood-muted)}
+.dn-avtexto{resize:vertical;min-height:80px;line-height:1.4}
+.dn-avisos .dn-pw{background:rgba(0,0,0,.25);color:var(--wood-ink);border-color:rgba(239,226,204,.3);font-size:16px}
+/* ===== Letras maiores no app inteiro (1.7): muitos jogadores são mais velhos ===== */
+.kicker{font-size:13px}
+.note{font-size:14.5px;line-height:1.5}
+.lead{font-size:17.5px}
+.field label,.flabel{font-size:15px}
+.field small{font-size:13.5px}
+.field select{font-size:17px}
+.avbtn{font-size:14px}
+.idade button{font-size:15.5px}
+.friend .fn{font-size:14px;padding:4px 11px}
+.card .ck,.mytreino .ck,.dn-list .ck,.install .ck,.apoio .ck,.avisos-card .ck,.fale-ok .ck,.dn-key .ck,.dn-open .ck{font-size:12.5px}
+.card .cd{font-size:15.5px;line-height:1.45}
+.mt-nums small{font-size:13px}
+.sp-k,.sponsor .sp-k,.fbcard .sp-k{font-size:12px}
+.foot{font-size:14.5px}
+.secondary{font-size:16px}
+.backbtn{font-size:16px}
+.linkbtn{font-size:14.5px}
+.toast{font-size:16px;line-height:1.4}
+.sheet p{font-size:16.5px}
+.rules{font-size:16.5px;line-height:1.5}
+.rules li{font-size:16.5px}
+.sheet .eyebrow,.eyebrow{font-size:13px}
+.novidades li{font-size:16px}
+.novidades h3{font-size:16.5px}
+.rc-tx small{font-size:14.5px}
+.invite small{font-size:14px}
+.fbcard span:last-child{font-size:15px}
+.dn-list li{font-size:16px}
+.dn-msglista .m-meta,.dn-msglista .m-top{font-size:13.5px}
+/* mesa */
+.tlabel{font-size:14px}
+.sc{font-size:14px}
+.sn{font-size:15.5px}
+.me-name{font-size:17px}
+.me-name small{font-size:14.5px}
+.feed{font-size:16px}
+.menubtn{font-size:16px}
+.lupa,.ends{font-size:14.5px}
+.mesa-patro{font-size:12.5px}
+/* Placar: "Partida 1 · até 200" desce para baixo do Menu, maior e mais forte */
+.meta .pt{order:3;font-size:15px;font-weight:700;color:var(--fg);opacity:.85;letter-spacing:.02em}
+.meta .sr{order:1}
+.meta .menubtn{order:2}
+/* Sua vez: aviso bem visível acima da mão, e a mão ganha um brilho */
+.prompt.you{justify-self:start;display:inline-block;font-size:17.5px;font-weight:800;line-height:1.3;color:#2a1a08;background:var(--glow);padding:7px 14px;border-radius:14px;box-shadow:0 0 0 0 rgba(243,192,99,.6);animation:suaVez 1.6s ease-out infinite}
+@keyframes suaVez{0%{box-shadow:0 0 0 0 rgba(243,192,99,.65)}100%{box-shadow:0 0 0 14px rgba(243,192,99,0)}}
+.me:has(.prompt.you) .hand{border-radius:16px;box-shadow:0 0 0 3px var(--glow),0 0 24px rgba(243,192,99,.4);padding:6px 4px}
+@media (prefers-reduced-motion:reduce){.prompt.you{animation:none}}
+/* "Você passou": dá para tocar e seguir na hora */
+.aviso.toca{pointer-events:auto;cursor:pointer}
+.aviso .aviso-toque{font-size:13.5px;opacity:.75;margin-top:4px}
+/* Histórico: botão de mandar no WhatsApp fica guardado por enquanto */
+#mtShare{display:none!important}
+.zoom-tx{margin:0;text-align:center;color:#d9c7a8;font-size:15.5px;font-weight:600}
+/* Tela de entrada: dominós da fileira maiores e botão um pouco mais abaixo */
+@media (orientation: portrait){
+  .train{--g:16px;height:58px;padding-right:54px;margin-top:26px}
+  .dom{width:26px}
+  .train.go .dom{animation-name:toppleG}
+  .train.go .dom:last-child{animation-name:toppleLast}
+  .rt-center{width:60%}
+  .entry-actions{margin-top:18px}
+}
+/* inclinação em que cada pedra encosta na seguinte: asen(16 / 52) */
+@keyframes toppleG{to{transform:rotate(17.9deg)}}
+@media (max-width: 389px){ .friend .fn{font-size:13px;padding:3px 9px} }
 </style>
 </head>
 <body>
@@ -733,6 +821,7 @@ body{touch-action:manipulation}
       <input type="file" id="photoInput" accept="image/*" hidden>
       <p class="note" id="fotoNota">Com foto, os outros jogadores veem que você é gente de verdade: ela vai aparecer na mesa online, que está chegando. Não quer aparecer? Escolha um avatar.</p>
     </div>
+    <div class="perfil-avisos" id="perfilAvisos" hidden><span>🔔 Lembretes para jogar estão ligados.</span><button type="button" class="linkbtn" id="perfilAvisosOff">Desligar</button></div>
     <button type="button" class="primary" id="saveProfile">Salvar e entrar</button>
     <p class="note aceite">Ao salvar, você aceita os <a href="termos.html">Termos de uso</a> e a <a href="privacidade.html">Privacidade</a>.</p>
   </section>
@@ -772,6 +861,11 @@ body{touch-action:manipulation}
         <div><b id="mtB">0</b><small>batidas</small></div><div><b id="mtG">0</b><small>galos</small></div>
       </div>
       <a class="mt-share" id="mtShare" href="https://wa.me/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.3 14.8L2.3 21.8l4.9-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-3-.4-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1l-.5-.3Z"/></svg><span>Mandar meu histórico no WhatsApp</span></a>
+    </div>
+    <div class="avisos-card wood" id="avisosCard" hidden>
+      <span class="ck">Lembretes para jogar</span>
+      <p id="avisosTx"></p>
+      <div class="row"><button type="button" class="primary" id="avisosSim">Quero lembretes</button><button type="button" class="linkbtn" id="avisosNao">Agora não</button></div>
     </div>
     <button type="button" class="invite" id="shareApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.3 14.8L2.3 21.8l4.9-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-3-.4-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1l-.5-.3Z"/></svg><span><b>Chamar os amigos pro dominó</b><small>Mande o jogo no WhatsApp para a turma</small></span></button>
     <div class="install wood" id="installCard" hidden>
@@ -865,6 +959,13 @@ body{touch-action:manipulation}
       </div>
       <button type="button" class="primary" id="dnMsgSenha" hidden>Digite a senha de novo para ver as mensagens</button>
       <ul id="dnMsgLista" class="dn-msglista"></ul>
+    </div>
+    <div class="dn-list wood dn-avisos" id="dnAvisos" hidden>
+      <span class="ck">Lembretes para jogar</span>
+      <p class="dn-avn" id="dnAvN"></p>
+      <input id="dnAvTitulo" class="dn-pw" type="text" maxlength="60" placeholder="Título (ex.: Novidade no jogo)">
+      <textarea id="dnAvTexto" class="dn-pw dn-avtexto" rows="3" maxlength="180" placeholder="Mensagem para todo mundo que ligou os lembretes"></textarea>
+      <button type="button" class="primary" id="dnAvEnviar">Mandar para todos</button>
     </div>
     <p class="dn-err" id="dnErr" role="status" hidden></p>
     <div class="dn-key wood" id="dnKey" hidden>
@@ -1319,6 +1420,13 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.7', data: '06/10/2026', itens: [
+    'Letras maiores no app inteiro.',
+    'Quando é a sua vez, aparece um aviso amarelo bem visível e a sua mão fica iluminada.',
+    '"Você passou" fica mais tempo na tela, e o próximo só joga depois. Dá para tocar no aviso para seguir.',
+    'Mesa ampliada com lupa: toque numa pedra para ver de perto, arraste para mover ou use dois dedos.',
+    'O placar mostra "Partida 1 · até 200" maior, embaixo do Menu.'
+  ] },
   { v: '1.6', data: '06/10/2026', itens: [
     'Na mesa, cada jogador tem a etiqueta Parceiro ou Adversário, com a cor da dupla.',
     'Balões de fala dos jogadores maiores.',
@@ -1587,6 +1695,7 @@ function renderProfile() {
     (menor ? '' : `<button type="button" class="avbtn photo${ph ? ' has' : ''}" role="radio" aria-checked="${draft.av === 'foto'}" data-av="foto"><span class="face">${ph ? `<img src="${ph}" alt="">` : CAM}</span><span>${ph ? 'Sua foto' : 'Pôr foto'}</span></button>`)
     + AVATARS.map((a, i) => `<button type="button" class="avbtn" role="radio" aria-checked="${draft.av === a.id}" data-av="${a.id}" aria-label="Avatar ${i + 1}"><span class="face"><img src="${avatarURI(a)}" alt=""></span></button>`).join('');
   $('#photoTools').hidden = !ph;
+  renderPerfilAvisos();
 }
 $('#idadeSeg').addEventListener('click', e => {
   const b = e.target.closest('button[data-i]'); if (!b) return;
@@ -1638,6 +1747,7 @@ $('#saveProfile').addEventListener('click', () => {
   }
   if (av === 'foto' && !photo) av = 'a1';
   profile = { name, av, idade: draft.idade }; me = name;
+  if (draft.idade === 'menor' && avisosLigados()) desligarAvisos(true);
   store.set(PKEY, JSON.stringify(profile));
   show('home');
 });
@@ -1648,7 +1758,7 @@ function renderHome() {
   $('#meChipFace').innerHTML = faceImg(myFaceURI(), 'chipface');
   renderResume(); renderMyTreino(); renderInstall(); renderSponsor(); readySlides();
   $('#fbCard').hidden = !(CONFIG.api || CONFIG.whats);
-  renderApoio(); renderDonoCard();
+  renderApoio(); renderDonoCard(); renderAvisos();
   $('#homeName').innerHTML = esc(me) + (isApoiador() ? '<span class="apoiador">Apoiador</span>' : '');
 }
 $('#meChip').addEventListener('click', () => openProfile('home'));
@@ -1719,7 +1829,7 @@ function renderResume() {
 $('#goResume').addEventListener('click', () => {
   const g = loadSavedGame(); if (!g) { renderResume(); return; }
   g.names[0] = me; mode = 'off'; seatMe = 0; offSt = g; G = g;
-  endDrag(); closeSheet(); show('game'); setFeed();
+  endDrag(); closeSheet(); show('game'); setFeed(); avisosJogou();
   if (G.phase === 'handEnd') schedule(showResult, 600); else proceed();
 });
 
@@ -1787,7 +1897,7 @@ $('#startOffline').addEventListener('click', () => {
   const [partner, left, right] = SEL.map(id => $(id).value);
   mode = 'off'; seatMe = 0;
   offSt = newGame([me, left, partner, right]); startHand(offSt); G = offSt;
-  saveGame(); track('jogo-novo');
+  saveGame(); track('jogo-novo'); avisosJogou();
   endDrag(); closeSheet(); prepDeal(); show('game');
   const g0 = G; setTimeout(() => { if (G === g0) runDeal(() => { announce(); proceed(); }); }, 460);
 });
@@ -2137,7 +2247,7 @@ function renderDono() {
   // Plano grátis do Umami: sem API, então os números abrem no painel compartilhado.
   // Com a chave do plano Pro, os números aparecem aqui mesmo.
   const temChave = !!dono.key;
-  $('#dnFull').href = $('#dnOpen').href = dono.share; dnTela(); dnMsgCarregar();
+  $('#dnFull').href = $('#dnOpen').href = dono.share; dnTela(); dnMsgCarregar(); dnAvisosCarregar();
   $('#dnOpen').hidden = temChave; $('#dnFull').hidden = !temChave;
   $('#dnLive').hidden = $('#dnBody').hidden = $('#dnRange').hidden = !temChave;
   $('#dnKey').hidden = true; $('#dnErr').hidden = true;
@@ -2354,30 +2464,63 @@ $('#faleEnviar').addEventListener('click', async () => {
 (function () {
   $('.table').insertAdjacentHTML('beforeend', '<div class="aviso" id="aviso" role="status" aria-live="assertive" hidden><b id="avisoT"></b><small id="avisoS"></small></div>');
 })();
-let avisoTimer = null;
-function aviso(titulo, sub, ms) {
+let avisoTimer = null, avisoAcao = null;
+function aviso(titulo, sub, ms, acao) {
   const el = $('#aviso'); if (!el) return;
   $('#avisoT').textContent = titulo; $('#avisoS').textContent = sub || '';
+  avisoAcao = acao || null;
+  el.classList.toggle('toca', !!acao);
+  el.querySelector('.aviso-toque') && el.querySelector('.aviso-toque').remove();
+  if (acao) el.insertAdjacentHTML('beforeend', '<span class="aviso-toque">Toque para continuar</span>');
   el.hidden = false; el.classList.remove('go'); void el.offsetWidth; el.classList.add('go');
-  clearTimeout(avisoTimer); avisoTimer = setTimeout(() => { el.hidden = true; }, ms || 1700);
+  clearTimeout(avisoTimer); avisoTimer = setTimeout(avisoFechar, ms || 1700);
 }
-// Sem pedra que encaixe: o jogo avisa grande e passa sozinho.
+function avisoFechar() {
+  clearTimeout(avisoTimer);
+  const el = $('#aviso'); if (el) el.hidden = true;
+  const a = avisoAcao; avisoAcao = null; if (a) a();
+}
+$('#aviso').addEventListener('click', () => { if (avisoAcao) avisoFechar(); });
+// Sem pedra que encaixe: o jogo avisa grande, dá tempo de ler, e só depois passa a vez.
 function autoPassMe() {
   if (!G || mode !== 'off' || dealing || G.phase !== 'play' || G.turn !== 0 || !G.chain.length || legalMoves(G, 0).length) return;
-  aviso('Você passou', 'Nenhuma pedra sua encaixa nas pontas', 1800);
-  schedule(() => {
-    if (!G || G.phase !== 'play' || G.turn !== 0 || legalMoves(G, 0).length) return;
+  clearTimeout(timer);
+  aviso('Você passou', 'Nenhuma pedra sua encaixa nas pontas', 3200, () => {
+    if (!G || G.phase !== 'play' || G.turn !== 0 || legalMoves(G, 0).length || sheetKind) return;
     applyPass(G, 0); announce(); proceed();
-  }, 1900);
+  });
 }
 
-// ---- Mesa ampliada: toque na mesa para ver as pedras grandes ----
+// ---- Mesa ampliada, com lupa: toque numa pedra para aumentar ali, arraste para mover, dois dedos para zoom ----
 (function () {
   document.body.insertAdjacentHTML('beforeend', `<div class="zoom" id="zoom" hidden role="dialog" aria-label="Mesa ampliada">
-    <svg id="zoomSvg" preserveAspectRatio="xMidYMid meet"></svg>
-    <p class="zoom-tx">Toque em qualquer lugar para voltar</p></div>`);
+    <div class="zoom-area" id="zoomArea"><svg id="zoomSvg" preserveAspectRatio="xMidYMid meet"></svg></div>
+    <div class="zoom-bar">
+      <button type="button" class="zoom-btn" id="zoomMenos" aria-label="Diminuir">−</button>
+      <button type="button" class="zoom-btn lupa-mais" id="zoomMais"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M15.5 15.5 21 21M10.5 7.5v6M7.5 10.5h6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>Aumentar</button>
+      <button type="button" class="zoom-btn fechar" id="zoomFechar">Fechar</button>
+    </div>
+    <p class="zoom-tx" id="zoomTx">Toque numa pedra para ver de perto</p></div>`);
   $('#ends').insertAdjacentHTML('beforebegin', '<button type="button" class="lupa" id="lupa" aria-label="Ver a mesa grande"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M15.5 15.5 21 21M10.5 7.5v6M7.5 10.5h6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>Ampliar</button>');
 })();
+const ZMAX = 5;
+let zs = 1, zx = 0, zy = 0;               // escala e deslocamento da lupa (px)
+const zPtr = new Map(); let zGesto = null;
+function zoomAplicar() {
+  const a = $('#zoomArea'), W = a.clientWidth, H = a.clientHeight;
+  zs = Math.min(ZMAX, Math.max(1, zs));
+  if (zs === 1) { zx = 0; zy = 0; }
+  zx = Math.min(0, Math.max(W - W * zs, zx)); zy = Math.min(0, Math.max(H - H * zs, zy));
+  $('#zoomSvg').style.transform = `translate(${zx}px, ${zy}px) scale(${zs})`;
+  $('#zoomMenos').disabled = zs <= 1; $('#zoomMais').disabled = zs >= ZMAX;
+  $('#zoomTx').textContent = zs > 1 ? 'Arraste para mover · toque de novo para aumentar mais' : 'Toque numa pedra para ver de perto';
+}
+// Aumenta (ou diminui) mantendo parado o ponto (px, py) da tela
+function zoomEm(fator, px, py) {
+  const novo = Math.min(ZMAX, Math.max(1, zs * fator)), k = novo / zs;
+  zx = px - (px - zx) * k; zy = py - (py - zy) * k; zs = novo; zoomAplicar();
+}
+function zoomCentro(fator) { const a = $('#zoomArea'); zoomEm(fator, a.clientWidth / 2, a.clientHeight / 2); }
 function zoomDesenhar() {
   const src = $('#board'), dst = $('#zoomSvg');
   dst.innerHTML = src.innerHTML;
@@ -2390,12 +2533,49 @@ function zoomDesenhar() {
 }
 function zoomAbrir() {
   if (!G || !G.chain.length || drag) return;
-  $('#zoom').hidden = false; zoomDesenhar();
+  $('#zoom').hidden = false; zs = 1; zx = 0; zy = 0; zoomDesenhar(); zoomAplicar();
 }
-function zoomFechar() { $('#zoom').hidden = true; }
+function zoomFechar() { $('#zoom').hidden = true; zPtr.clear(); zGesto = null; }
 $('#lupa').addEventListener('click', e => { e.stopPropagation(); zoomAbrir(); });
 $('#boardWrap').addEventListener('click', e => { if (!e.target.closest('.lupa')) zoomAbrir(); });
-$('#zoom').addEventListener('click', zoomFechar);
+$('#zoomFechar').addEventListener('click', zoomFechar);
+$('#zoomMais').addEventListener('click', () => zoomCentro(2));
+$('#zoomMenos').addEventListener('click', () => zoomCentro(0.5));
+// Toque, arraste e pinça na área da mesa ampliada
+const zArea = $('#zoomArea');
+const zLocal = e => { const r = zArea.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+zArea.addEventListener('pointerdown', e => {
+  zArea.setPointerCapture(e.pointerId);
+  zPtr.set(e.pointerId, zLocal(e));
+  if (zPtr.size === 1) zGesto = { tipo: 'toque', x0: e.clientX, y0: e.clientY, mx: zx, my: zy, t: Date.now() };
+  if (zPtr.size === 2) {
+    const [a, b] = [...zPtr.values()];
+    zGesto = { tipo: 'pinca', d0: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, s0: zs, cx: (a[0] + b[0]) / 2, cy: (a[1] + b[1]) / 2, mx: zx, my: zy };
+  }
+});
+zArea.addEventListener('pointermove', e => {
+  if (!zPtr.has(e.pointerId) || !zGesto) return;
+  zPtr.set(e.pointerId, zLocal(e));
+  if (zGesto.tipo === 'pinca' && zPtr.size === 2) {
+    const [a, b] = [...zPtr.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    const novo = Math.min(ZMAX, Math.max(1, zGesto.s0 * d / zGesto.d0)), k = novo / zGesto.s0;
+    zs = novo; zx = zGesto.cx - (zGesto.cx - zGesto.mx) * k; zy = zGesto.cy - (zGesto.cy - zGesto.my) * k; zoomAplicar();
+    return;
+  }
+  const dx = e.clientX - zGesto.x0, dy = e.clientY - zGesto.y0;
+  if (zGesto.tipo === 'toque' && Math.hypot(dx, dy) > 8) zGesto.tipo = 'arraste';
+  if (zGesto.tipo === 'arraste' && zs > 1) { zx = zGesto.mx + dx; zy = zGesto.my + dy; zoomAplicar(); }
+});
+function zFim(e) {
+  if (!zPtr.has(e.pointerId)) return;
+  const [px, py] = zPtr.get(e.pointerId);
+  zPtr.delete(e.pointerId);
+  if (zGesto && zGesto.tipo === 'toque' && zPtr.size === 0 && e.type === 'pointerup') zoomEm(zs >= ZMAX ? 1 / zs : 2, px, py);
+  if (zPtr.size === 0) zGesto = null;
+}
+zArea.addEventListener('pointerup', zFim);
+zArea.addEventListener('pointercancel', zFim);
+window.addEventListener('resize', () => { if (!$('#zoom').hidden) zoomAplicar(); });
 // A mesa ampliada acompanha as jogadas; fecha sozinha quando chega a sua vez de jogar ou a mão acaba.
 new MutationObserver(() => {
   $('#lupa').hidden = !G || !G.chain.length;
@@ -2412,6 +2592,120 @@ function mudarLaterais(on) {
   if (on) store.set('dmz-laterais', '1'); else store.del('dmz-laterais');
   requestAnimationFrame(() => { if (G && screen === 'game') render(); });
 }
+
+// ---- Lembretes para jogar (notificações push) ----
+// Só para maiores de 18 que pedirem. No iPhone, só com o app instalado na tela de início.
+const AVKEY = 'dmz-avisos', AVNAO = 'dmz-avisos-nao';
+const ehIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+function avisosSuporta() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+function avisosPode() { return !!CONFIG.api && !!profile && profile.idade === 'maior'; }
+function avisosLigados() { return !!store.get(AVKEY); }
+const b64uBytes = s => { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return Uint8Array.from(atob(s), c => c.charCodeAt(0)); };
+async function avisosApi(caminho, corpo) {
+  return fetch(CONFIG.api + caminho, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) });
+}
+function renderAvisos() {
+  const card = $('#avisosCard');
+  let mostrar = false, modo = '';
+  if (avisosPode() && !avisosLigados()) {
+    const nao = Number(store.get(AVNAO) || 0);
+    const recente = Date.now() - nao < 14 * 864e5;
+    if (avisosSuporta() && Notification.permission !== 'denied' && !recente) { mostrar = true; modo = 'ligar'; }
+    else if (!avisosSuporta() && ehIOS() && !isStandalone() && !recente && $('#installCard').hidden) { mostrar = true; modo = 'instalar'; }
+  }
+  card.hidden = !mostrar;
+  if (!mostrar) return;
+  $('#avisosTx').textContent = modo === 'ligar'
+    ? 'Quer que a gente te chame para jogar? No máximo um lembrete a cada 3 dias, no fim da tarde, e só se você não jogou.'
+    : 'No iPhone, os lembretes funcionam com o app na tela de início: toque em Compartilhar e depois em "Adicionar à Tela de Início".';
+  $('#avisosSim').hidden = modo !== 'ligar';
+}
+async function ligarAvisos() {
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { toast('Sem a sua permissão o aparelho não deixa mandar lembretes. Dá para ligar depois nos ajustes.'); renderAvisos(); return; }
+    const reg = await navigator.serviceWorker.ready;
+    const ch = await (await fetch(CONFIG.api + '/avisos/chave', { cache: 'no-store' })).json();
+    if (!ch.chave) throw new Error('sem-chave');
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uBytes(ch.chave) });
+    const r = await avisosApi('/avisos/inscrever', { sub: sub.toJSON(), aparelho: deviceInfo() });
+    if (!r.ok) throw new Error('http-' + r.status);
+    store.set(AVKEY, sub.endpoint); track('lembretes-ligados');
+    toast('Pronto! De vez em quando a gente te chama para uma partida.');
+  } catch (e) {
+    toast('Não deu para ligar os lembretes agora. Tente de novo mais tarde.');
+  }
+  renderAvisos(); renderPerfilAvisos();
+}
+async function desligarAvisos(silencioso) {
+  const ep = store.get(AVKEY);
+  store.del(AVKEY);
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) await sub.unsubscribe();
+  } catch (e) {}
+  if (ep && CONFIG.api) avisosApi('/avisos/cancelar', { endpoint: ep }).catch(() => {});
+  if (!silencioso) toast('Lembretes desligados.');
+  renderAvisos(); renderPerfilAvisos();
+}
+// Avisa o servidor que você jogou (assim ninguém recebe lembrete no dia em que jogou).
+function avisosJogou() {
+  const ep = store.get(AVKEY);
+  if (ep && CONFIG.api && navigator.onLine !== false) avisosApi('/avisos/jogou', { endpoint: ep }).catch(() => {});
+}
+// No perfil: mostra se estão ligados e deixa desligar.
+function renderPerfilAvisos() {
+  const el = $('#perfilAvisos'); if (!el) return;
+  el.hidden = !avisosLigados();
+}
+$('#avisosSim').addEventListener('click', ligarAvisos);
+$('#avisosNao').addEventListener('click', () => { store.set(AVNAO, String(Date.now())); renderAvisos(); });
+$('#perfilAvisosOff').addEventListener('click', () => desligarAvisos(false));
+// Ao abrir: se o navegador trocou o endereço da inscrição, atualiza no servidor; se apagou, esquece.
+setTimeout(async () => {
+  if (!avisosLigados() || !avisosSuporta() || !CONFIG.api) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (!sub || Notification.permission !== 'granted') { store.del(AVKEY); renderAvisos(); renderPerfilAvisos(); return; }
+    if (sub.endpoint !== store.get(AVKEY)) {
+      await avisosApi('/avisos/inscrever', { sub: sub.toJSON(), aparelho: deviceInfo() });
+      store.set(AVKEY, sub.endpoint);
+    }
+  } catch (e) {}
+}, 5000);
+
+// ---- Área do dono: lembretes ----
+async function dnAvisosCarregar() {
+  const box = $('#dnAvisos');
+  box.hidden = !CONFIG.api || !dono || !dono.admin;
+  if (box.hidden) return;
+  try {
+    const j = await dnMsgPedir('/dono/avisos');
+    $('#dnAvN').textContent = j.pronto
+      ? `${j.inscritos} ${j.inscritos === 1 ? 'pessoa com lembretes ligados' : 'pessoas com lembretes ligados'} · ${j.envios || 0} enviados até agora`
+      : 'O servidor ainda está preparando as chaves dos lembretes.';
+  } catch (e) { $('#dnAvN').textContent = 'Não deu para carregar agora.'; }
+}
+$('#dnAvEnviar').addEventListener('click', async () => {
+  const b = $('#dnAvEnviar'), titulo = $('#dnAvTitulo').value.trim(), texto = $('#dnAvTexto').value.trim();
+  if (!titulo || !texto) { toast('Escreva o título e a mensagem.'); return; }
+  if (!b.dataset.armado) { b.dataset.armado = '1'; b.textContent = 'Toque de novo para mandar para todos'; return; }
+  delete b.dataset.armado; b.disabled = true; b.textContent = 'Enviando…';
+  let depois = 0, total = 0, voltas = 0;
+  try {
+    do {
+      const j = await dnMsgPedir('/dono/avisos/enviar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ titulo, texto, depois }) });
+      total += j.ok || 0; depois = j.proximo; voltas++;
+    } while (depois && voltas < 200);
+    toast(`Mensagem enviada para ${total} ${total === 1 ? 'pessoa' : 'pessoas'}.`);
+    $('#dnAvTitulo').value = ''; $('#dnAvTexto').value = '';
+  } catch (e) { toast('Não deu para mandar agora.'); }
+  b.disabled = false; b.textContent = 'Mandar para todos';
+  dnAvisosCarregar();
+});
 
 
 // ---- Desenho das peças ----
@@ -2528,7 +2822,7 @@ function renderPrompt() {
       const mv = legalMoves(G, seatMe);
       if (dealing) txt = dealPhase;
       else if (!G.chain.length) txt = G.openMode === 'sena' ? 'Arraste a carroça de sena para a mesa' : G.openMode === 'carroca' ? 'Arraste uma carroça para a mesa' : 'Arraste qualquer pedra para a mesa';
-      else txt = mv.length ? 'Sua vez: arraste a pedra para uma ponta' : 'Nenhuma pedra sua encaixa';
+      else txt = mv.length ? 'Sua vez de jogar! Arraste uma pedra até a ponta' : 'Nenhuma pedra sua encaixa';
     } else txt = dealing ? dealPhase : `Vez de ${who(G.turn)}`;
   } else if (G.phase === 'handEnd') txt = 'Fim da mão';
   if (dealing) you = false;
