@@ -2381,8 +2381,10 @@ function renderEntry() {
 $('#roundTable').addEventListener('click', e => { if (e.target.closest('#meSeat')) openProfile('who'); });
 $('#enterBtn').addEventListener('click', () => {
   // quem está no navegador do celular instala primeiro (dá para pular)
-  if (typeof deveMostrarInstalar === 'function' && deveMostrarInstalar()) { abrirInstalar(); return; }
+  const perguntar = typeof deveMostrarInstalar === 'function' && deveMostrarInstalar();
   entrarNoJogo();
+  // quem voltou ao jogo e ainda joga pelo navegador: uma pergunta rápida no início (no máximo 1 vez por semana)
+  if (perguntar) setTimeout(() => { if (screen === 'home' && !sheetKind) perguntarInstalar(); }, 700);
 });
 function entrarNoJogo() {
   if (!profile) { openProfile('who'); return; }
@@ -2545,7 +2547,7 @@ const SHARE_ICON = '<svg class="ios-share" viewBox="0 0 24 24" aria-label="Compa
 function renderInstall() {
   const box = $('#installCard');
   const naoAte = Number(store.get('dmz-sem-instalar')) || 0;   // "Agora não" vale por 7 dias
-  if (isStandalone() || Date.now() - naoAte < 7 * 86400000) { box.hidden = true; return; }
+  if (isStandalone() || Date.now() - naoAte < 7 * 86400000 || (typeof voltouAoJogo === 'function' && !voltouAoJogo())) { box.hidden = true; return; }
   $('#installVer').hidden = true;
   if (installEvt) {
     $('#installTxt').textContent = 'Instale o Dominó Manauara: ele abre direto da tela inicial, como app, até sem internet.';
@@ -5053,12 +5055,25 @@ function telaInicial() {
   return ['apoio', 'anuncie', 'fale', 'dono', 'patro'].includes(v.tela) ? v.tela : 'home';
 }
 
-// ===== Instalar o app: o primeiro passo de quem abre o jogo pelo navegador do celular =====
-// A tela inteira aparece ao tocar em "Começar"/"Entrar" na primeira vez e, enquanto não instalar, no máximo uma vez a cada 7 dias
+// ===== Instalar o app: para quem joga pelo navegador do celular =====
+// Na primeira visita, nada: a pessoa joga primeiro. Quando ela volta ao jogo, chega no início e aparece uma pergunta
+// ("Está gostando? Instale no celular"). Sim → passo a passo. Mais tarde → diz onde achar as instruções.
+// Enquanto não instalar, a pergunta volta no máximo uma vez a cada 7 dias
 // (no iPhone o Safari não sabe se o app já foi instalado; assim quem abre um link pelo WhatsApp não vê toda vez).
 // No início ficam o cartão "Deixe na tela de início" e o link "Como instalar o app" no rodapé, para abrir quando quiser.
 // Quem chegou por convite de mesa entra direto (o convite não sobrevive à instalação).
-const INSTVISTO = 'dmz-instalar-visto';
+const INSTVISTO = 'dmz-instalar-visto', VISITAS = 'dmz-visitas';
+// Conta as visitas (uma por vez que o jogo é aberto). Quem já tinha perfil de antes conta como quem voltou.
+(function contarVisita() {
+  try {
+    if (sessionStorage.getItem('dmz-visita-contada')) return;
+    sessionStorage.setItem('dmz-visita-contada', '1');
+    let n = (Number(store.get(VISITAS)) || 0) + 1;
+    if (profile && n < 2) n = 2;
+    store.set(VISITAS, String(n));
+  } catch (e) {}
+})();
+function voltouAoJogo() { return (Number(store.get(VISITAS)) || 0) >= 2; }
 function plataformaInstalar() {
   if (isStandalone()) return null;
   if (isIOS()) return 'ios';
@@ -5067,12 +5082,37 @@ function plataformaInstalar() {
   return null;   // computador: não precisa
 }
 function deveMostrarInstalar() {
-  if (!plataformaInstalar()) return false;
+  if (!plataformaInstalar() || !voltouAoJogo()) return false;
   if (Date.now() - (Number(store.get(INSTVISTO)) || 0) < 7 * 86400000) return false;
   if (store.get(CONVITE)) return false;
   return true;
 }
 let instalarDoInicio = false;
+function perguntarInstalar() {
+  store.set(INSTVISTO, String(Date.now()));
+  track('instalar-pergunta');
+  openSheet('info', `<p class="eyebrow">Dominó Manauara</p><h2 id="sheetTitle">Está gostando de jogar?</h2>
+    <p>Instale o Dominó Manauara no seu celular: ele fica com ícone na tela de início, abre em tela cheia e funciona até sem internet.</p>
+    <button type="button" class="primary" id="instSim">Sim, instalar agora</button>
+    <button type="button" class="secondary" id="instDepois" style="width:100%;margin-top:10px">Deixar para mais tarde</button>`);
+  $('#instSim').addEventListener('click', async () => {
+    track('instalar-sim');
+    // Android com o pedido do navegador pronto: instala direto; senão, o passo a passo
+    if (installEvt) {
+      const ev = installEvt; installEvt = null; closeSheet();
+      try { ev.prompt(); const r = await ev.userChoice; if (r && r.outcome === 'accepted') { track('instalou'); toast('Instalado! Abra o Dominó Manauara pelo ícone na tela inicial.'); return; } } catch (e) {}
+      abrirInstalar(true); return;
+    }
+    closeSheet(); abrirInstalar(true);
+  });
+  $('#instDepois').addEventListener('click', () => {
+    track('instalar-depois');
+    openSheet('info', `<p class="eyebrow">Sem problema</p><h2 id="sheetTitle">Fica para depois</h2>
+      <p>Quando quiser instalar, toque em <b>Como instalar o app</b>, no fim da tela inicial. O passo a passo está lá.</p>
+      <button type="button" class="primary" id="instEntendi">Entendi</button>`);
+    $('#instEntendi').addEventListener('click', closeSheet);
+  });
+}
 function abrirInstalar(doInicio) {
   instalarDoInicio = !!doInicio;
   if (!doInicio) store.set(INSTVISTO, String(Date.now()));
