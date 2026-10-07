@@ -802,6 +802,11 @@ body{touch-action:manipulation}
 .rc-tx b{font-size:24px}
 /* Campo em foco: o destaque fica por dentro da borda, sem passar da tela */
 .field input[type=text]:focus,.fale-texto:focus,.fale-contato:focus,.dn-pw:focus,.field select:focus,.field select:focus-visible{outline:none;border-color:var(--glow);box-shadow:inset 0 0 0 2px var(--glow)}
+/* Montar a mesa: botão de sortear no padrão do app (pílula com ícone) */
+.sortear{justify-self:center;align-self:center;min-height:50px;padding:10px 24px 10px 18px;font-size:17px}
+.sortear svg{width:24px;height:24px}
+.sortear.gira svg{animation:dado .5s ease-out}
+@keyframes dado{from{transform:rotate(0) scale(1)}50%{transform:rotate(200deg) scale(1.15)}to{transform:rotate(360deg) scale(1)}}
 </style>
 </head>
 <body>
@@ -926,7 +931,7 @@ body{touch-action:manipulation}
     <div class="field nos"><label for="selPartner">Seu parceiro <small>· senta na sua frente</small></label><select id="selPartner"></select></div>
     <div class="field"><label for="selLeft">Adversário à esquerda <small>· joga depois de você</small></label><select id="selLeft"></select></div>
     <div class="field"><label for="selRight">Adversário à direita <small>· joga antes de você</small></label><select id="selRight"></select></div>
-    <div class="row"><button type="button" class="secondary" id="shuffleBtn">Sortear a mesa</button></div>
+    <button type="button" class="menubtn sortear" id="shuffleBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.6" fill="currentColor"/></svg>Sortear outra mesa</button>
     <button type="button" class="primary" id="startOffline">Começar</button>
     <div id="setupPatro"></div>
   </section>
@@ -1453,6 +1458,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '1.8.2', data: '06/10/2026', itens: ['Botão "Sortear outra mesa" novo, no padrão do app.'] },
   { v: '1.8.1', data: '06/10/2026', itens: ['O campo do nome não passa mais da borda da tela.'] },
   { v: '1.8', data: '06/10/2026', itens: [
     'Fim de partida com festa: a dupla vencedora aparece grande na tela, com confete.',
@@ -1889,7 +1895,10 @@ SEL.forEach(id => $(id).addEventListener('change', e => {
   SEL.forEach(o => { if (o !== id && $(o).value === v) { $(o).value = prev; $(o).dataset.prev = prev; } });
   el.dataset.prev = v;
 }));
-$('#shuffleBtn').addEventListener('click', () => setupFill());
+$('#shuffleBtn').addEventListener('click', () => {
+  setupFill();
+  const b = $('#shuffleBtn'); b.classList.remove('gira'); void b.offsetWidth; b.classList.add('gira');
+});
 $('#goOffline').addEventListener('click', () => {
   setupFill();
   const p = CONFIG.patrocinio, box = $('#setupPatro');
