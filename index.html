@@ -516,6 +516,7 @@ body{touch-action:manipulation}
 .dn-msglista .m-tipo.problema{color:var(--alert)}
 .dn-msglista .m-tipo.ideia{color:var(--glow)}
 .dn-msglista .m-tipo.elogio{color:var(--ok)}
+.dn-msglista .m-tipo.patrocinio{color:#f0b45e}
 .dn-msglista .m-txt{font-size:15px;line-height:1.45;white-space:pre-wrap;word-break:break-word;color:var(--wood-ink)}
 .dn-msglista .m-meta{font-size:12px;color:var(--wood-muted);word-break:break-word}
 .dn-msglista .m-acoes{display:flex;gap:8px;flex-wrap:wrap}
@@ -917,6 +918,95 @@ body{touch-action:manipulation}
 .bubble.reacao{z-index:4}
 .minha-fala{position:absolute;left:0;bottom:calc(100% + 8px);z-index:5;max-width:90%;background:var(--tile);color:var(--pip);font-size:18px;font-weight:800;padding:7px 14px;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.35);opacity:0;transform:translateY(6px) scale(.9);transition:opacity .2s, transform .2s;pointer-events:none;white-space:nowrap}
 .minha-fala.show{opacity:1;transform:none}
+
+/* ===== Anuncie: formulário de patrocínio ===== */
+.anuncie-link{display:grid;gap:2px;justify-items:center;text-align:center;width:100%;margin-top:-4px;padding:12px 14px;border:0;border-radius:14px;background:transparent;color:var(--fg);font:inherit;cursor:pointer}
+.anuncie-link span{font-size:14.5px;color:var(--muted)}
+.anuncie-link b{font-size:16px;color:var(--nos);text-decoration:underline;text-underline-offset:3px}
+.patro-form{display:grid;gap:14px}
+.patro-onde{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.patro-onde li{display:grid;gap:2px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg-2)}
+.patro-onde b{font-size:16.5px}
+.patro-onde span{font-size:14.5px;line-height:1.4;color:var(--muted)}
+.patro-form .field label,.patro-lbl{font-size:17px}
+.patro-form .field label small{font-weight:600;color:var(--muted)}
+.patro-form input[type=text],.patro-form input[type=tel],.patro-form input[type=email],.patro-form textarea{width:100%;font:inherit;font-size:17px;font-weight:600;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg)}
+.patro-form textarea{font-weight:500;resize:vertical;min-height:84px;line-height:1.4}
+.patro-form input:focus,.patro-form textarea:focus{outline:none;box-shadow:inset 0 0 0 2px var(--glow)}
+.patro-form .erro{box-shadow:inset 0 0 0 2px var(--alert)}
+.patro-erro{display:block;color:var(--alert);font-size:14.5px;font-weight:700;margin-top:6px}
+.patro-chips{display:flex;flex-wrap:wrap;gap:8px}
+.patro-chips button{font:inherit;font-size:15.5px;font-weight:700;padding:10px 14px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--fg);cursor:pointer}
+.patro-chips button[aria-pressed="true"]{background:var(--nos);border-color:var(--nos);color:var(--bg)}
+.patro-aceite{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;font-size:15.5px;line-height:1.45;cursor:pointer}
+.patro-aceite input{width:26px;height:26px;margin:1px 0 0;accent-color:var(--nos)}
+.patro-aceite a{color:var(--nos)}
+.patro-ok{display:grid;gap:12px;padding:20px 18px}
+.patro-ok .ck{font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+.patro-ok p{margin:0;font-size:17px;line-height:1.5;color:var(--wood-ink)}
+.dn-anuncie{justify-self:start;font-size:15px}
+.dn-msglista li:has(.m-tipo.patrocinio){box-shadow:inset 3px 0 0 #f0b45e}
+
+/* ===== Plano Apoiador e doação ===== */
+.ap-ativo{display:grid;gap:8px;padding:18px}
+.ap-ativo .ck{font-size:12.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+.ap-ate{margin:0;font-size:17px;line-height:1.45;color:var(--wood-ink)}
+.ap-cod{margin:0;display:grid;gap:2px;font-size:15.5px;color:var(--wood-ink)}
+.ap-cod b{font-family:var(--font-display);font-weight:400;font-size:24px;letter-spacing:.1em;color:var(--glow)}
+.ap-cod small{font-size:14px;opacity:.85}
+.ap-lista{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.ap-lista li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;font-size:16.5px;line-height:1.35}
+.ap-ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--bg-2);border:1.5px solid var(--line);color:var(--nos);font-weight:800;font-size:17px}
+.ap-precos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ap-preco{position:relative;display:grid;gap:2px;justify-items:center;text-align:center;padding:16px 8px 14px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;cursor:pointer}
+.ap-preco b{font-family:var(--font-display);font-weight:400;font-size:26px;line-height:1.1;color:var(--nos)}
+.ap-preco span{font-size:14.5px;line-height:1.3;color:var(--muted);font-weight:700}
+.ap-preco.destaque{border:2px solid var(--nos);box-shadow:0 8px 20px -12px var(--shadow)}
+.ap-preco em{position:absolute;top:-11px;left:50%;transform:translateX(-50%);white-space:nowrap;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px 3px;border-radius:999px;background:var(--nos);color:var(--bg)}
+.ap-preco:active,.ap-doa button:active{transform:scale(.98)}
+.ap-preco:disabled,.ap-doa button:disabled{opacity:.7}
+.ap-nota{font-size:14.5px;line-height:1.45;margin:-4px 0 0;text-align:center}
+.ap-perso,.ap-doacao{display:grid;gap:10px;padding-top:6px}
+.ap-k{font-size:12.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.ap-doacao p{margin:0;font-size:16px}
+.ap-cores{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ap-cor{position:relative;display:grid;justify-items:center;gap:6px;padding:8px 2px;border-radius:14px;border:1.5px solid var(--line);background:transparent;color:var(--fg);font:inherit;font-size:13px;font-weight:700;cursor:pointer;line-height:1.2}
+.ap-cor[aria-checked="true"]{border-color:var(--nos);box-shadow:inset 0 0 0 1.5px var(--nos)}
+.ap-sw{width:44px;height:44px;border-radius:50%;box-shadow:inset 0 0 0 3px rgba(0,0,0,.25),0 4px 10px -4px var(--shadow)}
+.ap-cor i,.ap-av i{position:absolute;top:4px;right:6px;font-style:normal;color:#f0b45e;font-size:14px}
+.ap-cor.trancado .ap-sw,.ap-av.trancado img{filter:saturate(.6);opacity:.75}
+.ap-avs{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.ap-av{position:relative;padding:0;border:0;background:none;border-radius:50%;cursor:pointer;aspect-ratio:1}
+.ap-av img{width:100%;height:100%;border-radius:50%;display:block;box-shadow:0 0 0 2px var(--line)}
+.ap-av[aria-pressed="true"] img{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--glow)}
+.ap-doa{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ap-doa button{display:grid;gap:2px;justify-items:center;padding:12px 4px;border-radius:14px;border:1.5px solid var(--line);background:transparent;color:var(--fg);font:inherit;cursor:pointer}
+.ap-doa b{font-family:var(--font-display);font-weight:400;font-size:22px;color:var(--nos)}
+.ap-doa span{font-size:13px;color:var(--muted);font-weight:700;line-height:1.2;text-align:center}
+.ap-trazer{border-top:1px solid var(--line);padding-top:12px}
+.ap-trazer summary{font-size:16px;font-weight:700;cursor:pointer;color:var(--nos)}
+.ap-trazer[open]{display:grid;gap:10px}
+.ap-trazer .sala-cod input{font-size:24px}
+.ap-ir{width:100%;padding:13px 14px;border-radius:12px;border:1px solid rgba(239,226,204,.35);background:rgba(243,192,99,.14);color:var(--wood-ink);font:inherit;font-size:16px;font-weight:800;cursor:pointer}
+#apoioVals:has(.ap-ir){display:block}
+/* Avatares do plano no perfil */
+.avbtn.premium .face{position:relative}
+.av-star{position:absolute;right:-2px;top:-2px;z-index:1;font-style:normal;font-size:15px;color:#f0b45e;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.avbtn.trancado img{filter:saturate(.6);opacity:.7}
+/* Selo de apoiador */
+.seat.apoiador .sn::after{content:' ★';color:#f0b45e}
+.sc-star{font-style:normal;color:#f0b45e}
+/* Sem anúncios para quem tem o plano */
+html.plano .sponsor,html.plano .mesa-patro,html.plano .res-patro,html.plano #setupPatro,html.plano .anuncie-link{display:none!important}
+/* Cores de mesa do plano */
+html[data-mesa="feltro"] .table.wood{--wood-1:#2f6b4c;--wood-2:#163a29;--wood-edge:#6b4a2a}
+html[data-mesa="rionegro"] .table.wood{--wood-1:#24364a;--wood-2:#0e1620;--wood-edge:#4d5d6b}
+html[data-mesa="acai"] .table.wood{--wood-1:#4f2449;--wood-2:#26101f;--wood-edge:#74405f}
+/* Área do dono: pagamentos */
+.dn-paglista{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.dn-paglista li{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:baseline;font-size:15px;color:var(--wood-ink);padding:6px 0;border-bottom:1px solid rgba(239,226,204,.15)}
+.dn-paglista small{opacity:.75}
+.dn-pagaviso{margin:0;font-size:14.5px;color:var(--alert)}
 </style>
 </head>
 <body>
@@ -1037,7 +1127,8 @@ body{touch-action:manipulation}
       <span>O jogo está começando e cada opinião ajuda a deixar ele do jeito da nossa mesa.</span>
     </button>
     <a class="sponsor" id="sponsor" target="_blank" rel="noopener" hidden></a>
-    <p class="note foot"><span id="footBrand">Dominó Manauara</span> · <button type="button" class="verlink" id="verBtn">Versão <span class="appver"></span></button> · <a href="termos.html">Termos</a> · <a href="privacidade.html">Privacidade</a></p>
+    <button type="button" class="anuncie-link" id="anuncieLink" hidden><span>Quer ver a sua empresa aqui?</span><b>Anuncie no Dominó Manauara ›</b></button>
+    <p class="note foot"><span id="footBrand">Dominó Manauara</span> · <button type="button" class="verlink" id="verBtn">Versão <span class="appver"></span></button> · <a href="termos.html">Termos</a> · <a href="privacidade.html">Privacidade</a> · <button type="button" class="verlink" id="footAnuncie" hidden>Anuncie</button></p>
   </section>
 
   <section class="screen panel" id="scrSetup" hidden>
@@ -1074,6 +1165,78 @@ body{touch-action:manipulation}
       <button type="button" class="secondary" id="salaSair">Sair da mesa</button>
     </div>
     <p class="sala-st" id="salaSt" role="status" hidden></p>
+  </section>
+
+  <section class="screen panel" id="scrApoio" hidden>
+    <button type="button" class="backbtn" id="apoioBack">← Voltar</button>
+    <div><p class="kicker">Apoie o jogo</p><h2 class="brand" style="font-size:30px">Plano Apoiador</h2></div>
+    <div class="ap-ativo wood" id="apAtivo" hidden>
+      <span class="ck">Você é Apoiador ★</span>
+      <p class="ap-ate" id="apAte"></p>
+      <p class="ap-cod">Código do seu plano: <b id="apCod"></b><small>Guarde. No celular novo, ele leva o plano junto.</small></p>
+    </div>
+    <p class="sala-lead" id="apLead">O jogo continua de graça para todo mundo. Quem apoia ajuda a manter a mesa de pé e ganha uns mimos:</p>
+    <ul class="ap-lista">
+      <li><span class="ap-ic" aria-hidden="true">★</span><span><b>Selo de apoiador</b> ao lado do seu nome na mesa online</span></li>
+      <li><span class="ap-ic" aria-hidden="true">✓</span><span><b>Jogo sem anúncios</b></span></li>
+      <li><span class="ap-ic" aria-hidden="true">☺</span><span><b>Avatares exclusivos</b>: coroa, óculos escuros, bonés vermelho e azul de Parintins</span></li>
+      <li><span class="ap-ic" aria-hidden="true">◼</span><span><b>Cores de mesa</b>: feltro verde, Rio Negro e açaí</span></li>
+    </ul>
+    <div class="ap-precos" id="apPrecos">
+      <button type="button" class="ap-preco" data-p="mensal"><b>R$ 4,90</b><span>30 dias</span></button>
+      <button type="button" class="ap-preco destaque" data-p="anual"><em>Mais em conta</em><b>R$ 39,90</b><span>1 ano · sai por R$ 3,33 por mês</span></button>
+    </div>
+    <p class="note ap-nota">Pix ou cartão, na página segura do Asaas. Não renova sozinho: quando acabar, você escolhe se continua.</p>
+    <div class="ap-perso">
+      <span class="ap-k">Cor da mesa</span>
+      <div class="ap-cores" id="apCores" role="radiogroup" aria-label="Cor da mesa"></div>
+      <span class="ap-k">Avatares exclusivos</span>
+      <div class="ap-avs" id="apAvs"></div>
+    </div>
+    <div class="ap-doacao">
+      <span class="ap-k">Prefere só ajudar?</span>
+      <p>Faça uma doação, do tamanho que der:</p>
+      <div class="ap-doa" id="apDoa">
+        <button type="button" data-p="doacao5"><b>R$ 5</b><span>Um cafezinho</span></button><button type="button" data-p="doacao10"><b>R$ 10</b><span>Uma tapioca</span></button><button type="button" data-p="doacao20"><b>R$ 20</b><span>Um X-caboquinho</span></button>
+      </div>
+    </div>
+    <details class="ap-trazer" id="apTrazerBox">
+      <summary>Já tenho o plano em outro celular</summary>
+      <p class="note">Digite o código do plano que aparece no outro celular, em "Apoie o jogo".</p>
+      <div class="sala-cod"><input type="text" id="apTrazerCod" maxlength="9" placeholder="ABCD-1234" autocomplete="off" autocapitalize="characters" spellcheck="false"><button type="button" class="secondary" id="apTrazer">Trazer</button></div>
+    </details>
+  </section>
+
+  <section class="screen panel" id="scrAnuncie" hidden>
+    <button type="button" class="backbtn" id="anuncieBack">← Voltar</button>
+    <div><p class="kicker">Patrocínio</p><h2 class="brand" style="font-size:30px">Sua empresa no Dominó Manauara</h2></div>
+    <div class="patro-form" id="patroForm">
+      <p class="sala-lead">A turma joga todo dia, no celular. A sua empresa pode aparecer para essa gente toda. Deixe o contato que a gente chama você para mostrar os formatos e os valores.</p>
+      <ul class="patro-onde">
+        <li><b>Banner no início</b><span>A primeira coisa que o jogador vê ao abrir o jogo.</span></li>
+        <li><b>Mesa com a sua marca</b><span>"Mesa oferecida por" no meio da mesa, a partida inteira.</span></li>
+        <li><b>Fim de jogo</b><span>O seu anúncio na tela do resultado, quando todo mundo está olhando.</span></li>
+      </ul>
+      <div class="field"><label for="pfEmpresa">Nome da empresa</label><input type="text" id="pfEmpresa" maxlength="60" autocomplete="organization"><small class="patro-erro" id="peEmpresa" hidden>Escreva o nome da empresa.</small></div>
+      <div class="field"><label for="pfNome">Seu nome</label><input type="text" id="pfNome" maxlength="40" autocomplete="name"><small class="patro-erro" id="peNome" hidden>Escreva o seu nome.</small></div>
+      <div class="field"><label for="pfZap">WhatsApp</label><input type="tel" id="pfZap" maxlength="20" inputmode="tel" autocomplete="tel" placeholder="(92) 9 9999-9999"><small class="patro-erro" id="peZap" hidden>Coloque o WhatsApp com DDD (ou um e-mail abaixo).</small></div>
+      <div class="field"><label for="pfEmail">E-mail <small>· se quiser</small></label><input type="email" id="pfEmail" maxlength="80" autocomplete="email" inputmode="email"></div>
+      <div class="field"><label for="pfCidade">Cidade</label><input type="text" id="pfCidade" maxlength="40" autocomplete="address-level2"></div>
+      <div class="field"><label for="pfRamo">Ramo do negócio <small>· se quiser</small></label><input type="text" id="pfRamo" maxlength="60" placeholder="Ex.: restaurante, açaí, oficina, loja"></div>
+      <div class="field"><span class="flabel patro-lbl">O que te interessa?</span>
+        <div class="patro-chips" id="pfInteresse" role="group" aria-label="O que te interessa">
+          <button type="button" data-i="banner" aria-pressed="false">Banner no início</button><button type="button" data-i="mesa" aria-pressed="false">Mesa com a marca</button><button type="button" data-i="fim" aria-pressed="false">Fim de jogo</button><button type="button" data-i="naosei" aria-pressed="false">Ainda não sei</button>
+        </div></div>
+      <div class="field"><label for="pfMsg">Mensagem <small>· se quiser</small></label><textarea id="pfMsg" rows="3" maxlength="600" placeholder="Conte um pouco do seu negócio ou o que você imagina."></textarea></div>
+      <label class="patro-aceite"><input type="checkbox" id="pfAceite"><span>Autorizo o Dominó Manauara a me chamar no WhatsApp ou e-mail para falar de patrocínio. Veja a <a href="privacidade.html">Privacidade</a>.</span></label>
+      <small class="patro-erro" id="peAceite" hidden>Marque a autorização para a gente poder te chamar.</small>
+      <button type="button" class="primary" id="pfEnviar">Quero anunciar</button>
+    </div>
+    <div class="patro-ok wood" id="patroOk" hidden>
+      <span class="ck">Recebemos!</span>
+      <p>Obrigado pelo interesse. Em breve a gente chama você no WhatsApp para mostrar os formatos e os valores.</p>
+      <button type="button" class="primary" id="patroFim">Voltar</button>
+    </div>
   </section>
 
   <section class="screen panel" id="scrFale" hidden>
@@ -1133,10 +1296,17 @@ body{touch-action:manipulation}
     <div class="dn-list wood dn-msgs" id="dnMsgs" hidden>
       <div class="dn-msgs-top"><span class="ck">Mensagens do Fale com a gente</span><span class="dn-msgn" id="dnMsgN"></span></div>
       <div class="dn-seg dn-msgfiltro" id="dnMsgFiltro" role="group" aria-label="Quais mensagens">
-        <button type="button" data-f="novo" aria-pressed="true">Novas</button><button type="button" data-f="" aria-pressed="false">Todas</button>
+        <button type="button" data-f="novo" aria-pressed="true">Novas</button><button type="button" data-f="patrocinio" aria-pressed="false">Patrocínio</button><button type="button" data-f="" aria-pressed="false">Todas</button>
       </div>
+      <button type="button" class="linkbtn dn-anuncie" id="dnAnuncieLink">Copiar o link do formulário para anunciantes</button>
       <button type="button" class="primary" id="dnMsgSenha" hidden>Digite a senha de novo para ver as mensagens</button>
       <ul id="dnMsgLista" class="dn-msglista"></ul>
+    </div>
+    <div class="dn-list wood dn-pag" id="dnPag" hidden>
+      <span class="ck">Apoios e planos</span>
+      <div class="mt-nums dn-3"><div><b id="dnPagMes">R$ 0</b><small>este mês</small></div><div><b id="dnPagAtivos">0</b><small>planos ativos</small></div><div><b id="dnPagTotal">R$ 0</b><small>desde o início</small></div></div>
+      <ul class="dn-paglista" id="dnPagLista"></ul>
+      <p class="dn-pagaviso" id="dnPagAviso" hidden>Pagamentos desligados: falta cadastrar a chave do Asaas (ASAAS_API_KEY) nos segredos do GitHub.</p>
     </div>
     <div class="dn-list wood dn-avisos" id="dnAvisos" hidden>
       <span class="ck">Lembretes para jogar</span>
@@ -1570,7 +1740,8 @@ const CONFIG = {
   // Ex.: { nome: 'Açaí do Bairro', texto: 'Peça pelo WhatsApp', link: 'https://wa.me/55...', logo: 'patrocinio/acai.png' }
   // Estatística anônima (Umami Cloud): o "Website ID" do painel. Vazio: nada é contado.
   umamiId: '52db3c75-c2b5-4f28-b0b4-eb0fce4cecb0',
-  api: 'https://api.gubfort.workers.dev',    // Servidor do jogo (Cloudflare): mensagens do Fale com a gente; depois ranking e mesa online
+  api: 'https://api.gubfort.workers.dev',
+  pagamentos: false,   // Plano Apoiador e doação: ligar depois que a chave do Asaas estiver no ar (o dono já vê antes, para testar)    // Servidor do jogo (Cloudflare): mensagens do Fale com a gente; depois ranking e mesa online
   // Área do dono: o link do painel do Umami, cifrado. Só abre com a senha do dono (nunca fica no código).
   dono: {it: 600000, salt: 'Rsv+TFmbGp/qqRK3SjZflA==', iv: 'rbh9acXT08e5qqKS', data: 'pGUT+l1pDLcf1hbMgRRqvf36nSmWePJDvuuU7kFRbuuuHqmguqUMq8Q+aZdHQiAH9kIlbTbE1cDAdtlo97Q7q+oPJOoiPQl2MWKiWe/dBx7kDWxvEDUhoBz1Dknq9aX+fenYQUMD1il6Py4DJY/+qphQmQrKnwGP9KLGLwQeEQ=='},
   patrocinio: {
@@ -1599,6 +1770,11 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '2.3', data: '07/10/2026', itens: [
+    'Plano Apoiador: selo na mesa online, jogo sem anúncios, avatares e cores de mesa exclusivos. R$ 4,90 por 30 dias ou R$ 39,90 por 1 ano, por Pix ou cartão, sem renovação automática.',
+    'Doação de R$ 5, R$ 10 ou R$ 20 para ajudar a manter o jogo de graça.'
+  ] },
+  { v: '2.2', data: '07/10/2026', itens: ['Anuncie no Dominó Manauara: empresas que querem patrocinar o jogo deixam o contato num formulário (no início, abaixo do patrocinador).'] },
   { v: '2.1', data: '07/10/2026', itens: ['Mesa online: botão "Reagir" com frases prontas ("Égua!", "Bate logo!", "Boa, parceiro!"…) e emojis, que aparecem no balão de quem falou.'] },
   { v: '2.0', data: '07/10/2026', itens: [
     'Mesa online com os amigos: crie a mesa, mande o convite no WhatsApp e cada um joga no seu celular.',
@@ -1717,6 +1893,10 @@ function avatarSVG(a) {
   if (a.barba) face += `<path d="M33.5 48C34 60 41 66.5 50 66.5S66 60 66.5 48C64 55 60 58.5 56 58.5C53 56.5 47 56.5 44 58.5C40 58.5 36 55 33.5 48Z" fill="${a.barba}"/>`;
   face += `<path d="M45 ${stache ? 58.4 : 56.5}q5 3.6 10 0" stroke="${a.barba ? shade(skin, -0.45) : '#6a3322'}" stroke-width="1.9" fill="none" stroke-linecap="round"/>`;
   if (stache) face += `<path d="M41.5 53.5C44.5 50.5 48 51 50 52.5C52 51 55.5 50.5 58.5 53.5C55.5 55.6 52.5 55.1 50 54.3C47.5 55.1 44.5 55.6 41.5 53.5Z" fill="${stache}"/>`;
+  if (a.escuros) face += '<g fill="#1d1a18"><rect x="37.4" y="42.4" width="11.4" height="8.4" rx="3.6"/><rect x="51.2" y="42.4" width="11.4" height="8.4" rx="3.6"/></g>'
+    + '<path d="M48.6 45.4h2.8M37.6 45L33.4 44M62.4 45L66.6 44" stroke="#1d1a18" stroke-width="1.8" fill="none"/><path d="M39.6 44.6h3.4M53.4 44.6h3.4" stroke="#fff" stroke-width="1.1" opacity=".4"/>';
+  if (a.coroa) top += '<path d="M36.5 27.5L38.5 13.5L44.5 20.5L50 10.5L55.5 20.5L61.5 13.5L63.5 27.5Z" fill="#f2c14e" stroke="#b8862b" stroke-width="1.3" stroke-linejoin="round"/>'
+    + '<path d="M37 25h26" stroke="#b8862b" stroke-width="1.3"/><circle cx="50" cy="10.8" r="2" fill="#e74c3c"/><circle cx="38.7" cy="13.8" r="1.5" fill="#2e86de"/><circle cx="61.3" cy="13.8" r="1.5" fill="#2e86de"/>';
   if (a.oculos) face += '<g fill="rgba(255,255,255,.14)" stroke="#2b2622" stroke-width="1.7"><circle cx="43.5" cy="46.5" r="5.2"/><circle cx="56.5" cy="46.5" r="5.2"/></g>'
     + '<path d="M48.7 46.3h2.6M38.3 45.6L33.6 44.6M61.7 45.6L66.4 44.6" stroke="#2b2622" stroke-width="1.7" fill="none"/>';
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><clipPath id="c"><circle cx="50" cy="50" r="50"/></clipPath></defs>'
@@ -1744,6 +1924,16 @@ const AVATARS = [
   { id: 'a10', bg: '#7d9fc2', skin: SKIN.medio, style: 'bone', cap: '#1f4e79', hc: HAIR.castanho, barba: HAIR.castanho, shirt: '#e9c46a' },
   { id: 'a11', bg: '#f0b98b', skin: SKIN.escuro, style: 'cacheado', hc: HAIR.preto, shirt: '#245e6a' }
 ];
+// Avatares do Plano Apoiador: aparecem para todo mundo, mas só quem tem o plano escolhe.
+AVATARS.push(
+  { id: 'p1', premium: true, bg: '#f0b45e', skin: SKIN.moreno, style: 'curto', hc: HAIR.preto, coroa: true, shirt: '#7d1f1f' },
+  { id: 'p2', premium: true, bg: '#d64541', skin: SKIN.jambo, style: 'bone', cap: '#b0161b', hc: HAIR.preto, barba: HAIR.preto, shirt: '#f6eedf' },
+  { id: 'p3', premium: true, bg: '#2f62b5', skin: SKIN.medio, style: 'bone', cap: '#123e8a', hc: HAIR.castanho, shirt: '#f6eedf' },
+  { id: 'p4', premium: true, bg: '#2e8a72', skin: SKIN.escuro, style: 'longo', hc: HAIR.preto, escuros: true, shirt: '#f0b45e' },
+  { id: 'p5', premium: true, bg: '#6b3fa0', skin: SKIN.claro, style: 'chapeu', hc: HAIR.grisalho, bigode: HAIR.grisalho, escuros: true, shirt: '#e5a650' },
+  { id: 'p6', premium: true, bg: '#c77dab', skin: SKIN.moreno, style: 'coque', hc: HAIR.preto, coroa: true, shirt: '#245e6a' }
+);
+const avatarLivre = a => !!a && (!a.premium || (typeof temPlano === 'function' && temPlano()));
 // A turma do bairro: os três da mesa offline saem daqui
 const BOTS = [
   { name: 'Seu Raimundo', av: { bg: '#5f8f78', skin: SKIN.moreno, style: 'chapeu', hc: HAIR.grisalho, bigode: HAIR.grisalho, shirt: '#e8dcc4' } },
@@ -1779,7 +1969,8 @@ let profile = loadProfile(), photo = store.get(FKEY);
 let me = profile ? profile.name : null;
 function myFaceURI() {
   if (profile && profile.av === 'foto' && photo) return photo;
-  return avatarURI(AVATARS.find(a => profile && a.id === profile.av) || AVATARS[0]);
+  const a = AVATARS.find(x => profile && x.id === profile.av);
+  return avatarURI(avatarLivre(a) ? a : AVATARS[0]);   // plano acabou: volta para o avatar comum
 }
 function botFaceURI(name) { const b = BOTS.find(x => x.name === name); return b ? avatarURI(b.av) : null; }
 function faceImg(uri, cls) { return uri ? `<img class="${cls || ''}" src="${uri}" alt="">` : ''; }
@@ -1822,7 +2013,7 @@ function toast(msg) {
   clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 4200);
 }
 // Troca de tela com fade: a tela atual some suave e a próxima aparece suave.
-const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale'];
+const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Anuncie', 'Apoio'];
 let showTimer = null;
 function show(name) {
   if (window.__reloadWhenFree && name !== 'game') { saveGame(); location.reload(); return; }
@@ -1841,6 +2032,8 @@ function show(name) {
     if (name === 'dono') renderDono();
     if (name === 'fale') renderFale();
     if (name === 'sala') renderSala();
+    if (name === 'anuncie') renderAnuncie();
+    if (name === 'apoio') renderApoioTela();
     if (name === 'game' && G) render();
   };
   if (!cur || reduce) { finish(); return; }
@@ -1907,7 +2100,7 @@ function renderProfile() {
   const ph = draft.photo;
   $('#avatarGrid').innerHTML =
     (menor ? '' : `<button type="button" class="avbtn photo${ph ? ' has' : ''}" role="radio" aria-checked="${draft.av === 'foto'}" data-av="foto"><span class="face">${ph ? `<img src="${ph}" alt="">` : CAM}</span><span>${ph ? 'Sua foto' : 'Pôr foto'}</span></button>`)
-    + AVATARS.map((a, i) => `<button type="button" class="avbtn" role="radio" aria-checked="${draft.av === a.id}" data-av="${a.id}" aria-label="Avatar ${i + 1}"><span class="face"><img src="${avatarURI(a)}" alt=""></span></button>`).join('');
+    + AVATARS.map((a, i) => `<button type="button" class="avbtn${a.premium ? ' premium' : ''}${a.premium && !avatarLivre(a) ? ' trancado' : ''}" role="radio" aria-checked="${draft.av === a.id}" data-av="${a.id}" aria-label="${a.premium ? 'Avatar do Plano Apoiador' : 'Avatar ' + (i + 1)}"><span class="face">${a.premium ? '<i class="av-star" aria-hidden="true">★</i>' : ''}<img src="${avatarURI(a)}" alt=""></span></button>`).join('');
   $('#photoTools').hidden = !ph;
   renderPerfilAvisos();
 }
@@ -1918,6 +2111,7 @@ $('#idadeSeg').addEventListener('click', e => {
 $('#avatarGrid').addEventListener('click', e => {
   const b = e.target.closest('.avbtn'); if (!b) return;
   if (b.dataset.av === 'foto' && !draft.photo) { $('#photoInput').click(); return; }
+  if (b.classList.contains('trancado')) { toast('Esse avatar é do Plano Apoiador.'); if (typeof abrirApoio === 'function') abrirApoio('profile'); return; }
   draft.av = b.dataset.av; renderProfile();
 });
 $('#photoChange').addEventListener('click', () => $('#photoInput').click());
@@ -1953,7 +2147,8 @@ $('#saveProfile').addEventListener('click', () => {
   if (nomeOfensivo(name)) { toast('Esse apelido não pode ser usado aqui. Escolha outro.'); $('#nameInput').focus(); $('#nameInput').select(); return; }
   if (!draft.idade) { toast('Escolha a sua faixa de idade.'); $('#idadeSeg').scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
   if (draft.idade === 'menor') { draft.photo = null; if (draft.av === 'foto') draft.av = null; }
-  let av = draft.av || AVATARS[Math.floor(Math.random() * AVATARS.length)].id;
+  const comuns = AVATARS.filter(a => !a.premium);
+  let av = draft.av || comuns[Math.floor(Math.random() * comuns.length)].id;
   if (draft.photo !== photo) {
     if (!draft.photo) { store.del(FKEY); photo = null; }
     else if (store.set(FKEY, draft.photo)) photo = draft.photo;
@@ -2165,7 +2360,7 @@ $('#fbCard').addEventListener('click', () => abrirFale('home'));
 // ---- Apoio voluntário: o jogo continua de graça, quem quiser ajuda com um valor fixo ----
 const AKEY = 'dmz-apoiador';
 const apoioLinks = () => (CONFIG.apoio || []).filter(a => a.link);
-const isApoiador = () => !!store.get(AKEY);
+const isApoiador = () => !!store.get(AKEY) || (typeof temPlano === 'function' && temPlano());
 function apoioButtons() {
   return apoioLinks().map(a => `<a href="${esc(a.link)}" target="_blank" rel="noopener" data-v="${a.valor}"><b>R$${a.valor}</b><span>${esc(a.nome)}</span></a>`).join('');
 }
@@ -2499,7 +2694,7 @@ function renderDonoCard() {
 
 // ---- Caixa de mensagens do Fale com a gente ----
 let dnMsgFiltro = 'novo';
-const TIPO_NOME = { problema: 'Problema', ideia: 'Ideia', elogio: 'Elogio', outro: 'Outro' };
+const TIPO_NOME = { problema: 'Problema', ideia: 'Ideia', elogio: 'Elogio', outro: 'Outro', patrocinio: 'Patrocínio' };
 function dnContato(c) {
   if (!c) return '';
   const dig = c.replace(/\D/g, '');
@@ -2526,7 +2721,8 @@ async function dnCartaoMsgs() {
   if (!CONFIG.api || !dono || !dono.admin) return;
   try {
     const j = await dnMsgPedir('/dono/mensagens?status=novo');
-    if (j.novas) $('#donoCardTx').textContent = `${j.novas} ${j.novas > 1 ? 'mensagens novas' : 'mensagem nova'} no Fale com a gente`;
+    if (j.patrocinios) $('#donoCardTx').textContent = `${j.patrocinios} ${j.patrocinios > 1 ? 'empresas querem' : 'empresa quer'} patrocinar · ver na caixa`;
+    else if (j.novas) $('#donoCardTx').textContent = `${j.novas} ${j.novas > 1 ? 'mensagens novas' : 'mensagem nova'} no Fale com a gente`;
   } catch (e) {}
 }
 async function dnMsgCarregar() {
@@ -2539,14 +2735,14 @@ async function dnMsgCarregar() {
   if (semChave) { $('#dnMsgLista').innerHTML = ''; $('#dnMsgN').textContent = ''; return; }
   try {
     const j = await dnMsgPedir('/dono/mensagens' + (dnMsgFiltro ? '?status=' + dnMsgFiltro : ''));
-    $('#dnMsgN').textContent = j.novas ? `${j.novas} ${j.novas > 1 ? 'novas' : 'nova'}` : 'nenhuma nova';
+    $('#dnMsgN').textContent = (j.novas ? `${j.novas} ${j.novas > 1 ? 'novas' : 'nova'}` : 'nenhuma nova') + (j.patrocinios ? ` · ${j.patrocinios} de patrocínio` : '');
     $('#dnMsgLista').innerHTML = (j.mensagens || []).length ? j.mensagens.map(m => `
       <li class="${esc(m.status)}" data-id="${Number(m.id)}">
         <div class="m-top"><span class="m-tipo ${esc(m.tipo)}">${TIPO_NOME[m.tipo] || 'Outro'}${m.status === 'resolvido' ? ' · resolvida' : ''}</span><span>${dnData(m.criado_em)}</span></div>
         <div class="m-txt">${esc(m.texto)}</div>
         <div class="m-meta">${esc(m.nome || 'sem apelido')}${dnContato(m.contato)} · versão ${esc(m.versao || '?')} · ${esc(m.aparelho || '?')}</div>
         <div class="m-acoes">${m.status === 'resolvido' ? '<button type="button" data-a="novo">Reabrir</button>' : '<button type="button" data-a="resolvido">Marcar como resolvida</button>'}<button type="button" class="perigo" data-a="apagado">Apagar</button></div>
-      </li>`).join('') : `<li class="dn-empty"><span>${dnMsgFiltro ? 'Nenhuma mensagem nova.' : 'Nenhuma mensagem ainda.'}</span></li>`;
+      </li>`).join('') : `<li class="dn-empty"><span>${dnMsgFiltro === 'patrocinio' ? 'Nenhum pedido de patrocínio ainda.' : dnMsgFiltro ? 'Nenhuma mensagem nova.' : 'Nenhuma mensagem ainda.'}</span></li>`;
   } catch (e) {
     if (e.message === 'sem-chave') { dnMsgCarregar(); return; }
     $('#dnMsgLista').innerHTML = '<li class="dn-empty"><span>Não deu para carregar as mensagens agora. Confira a internet.</span></li>';
@@ -3057,7 +3253,7 @@ function meuId() {
   return id;
 }
 // Foto não sai do celular: na mesa online os outros veem o seu avatar desenhado.
-function meuAv() { return profile && profile.av && profile.av !== 'foto' ? profile.av : null; }
+function meuAv() { const a = profile && AVATARS.find(x => x.id === profile.av); if (!a) return null; return avatarLivre(a) ? a.id : 'a1'; }
 function mesaGuardada() { return (store.get(MKEY) || '').match(/^\d{5}$/) ? store.get(MKEY) : null; }
 
 // ---------- Girar a mesa do servidor para o seu ponto de vista ----------
@@ -3321,6 +3517,7 @@ render = function () {
     if (!c || !el) continue;
     const fora = !c.bot && !c.on;
     el.classList.toggle('semnet', fora);
+    el.classList.toggle('apoiador', !!c.apoiador);
     const sc = el.querySelector('.sc');
     if (fora) sc.textContent = 'sem internet';
     else if (c.saiu) sc.textContent = 'robô no lugar';
@@ -3437,7 +3634,7 @@ function renderSala() {
     const tag = `<span class="sc-tag ${pos === 2 ? 'par' : pos === 0 ? 'eu' : 'adv'}">${NOME_POS[pos]}</span>`;
     if (!c) return `<button type="button" class="sala-cad vazia ${POS_CLASS[pos]}" data-p="${p}">${tag}<span class="sc-face sc-vazia" aria-hidden="true">+</span><b>Cadeira vazia</b><small>Toque para sentar aqui</small></button>`;
     const face = pos === 0 ? faceImg(myFaceURI(), 'sc-img') : (AVATARS.find(a => a.id === c.av) ? faceImg(avatarURI(AVATARS.find(a => a.id === c.av)), 'sc-img') : `<span class="sc-letra">${esc(c.nome[0] || '?')}</span>`);
-    return `<div class="sala-cad ${POS_CLASS[pos]}${c.on ? '' : ' fora'}">${tag}<span class="sc-face">${face}<i class="sc-on${c.on ? ' ok' : ''}" aria-hidden="true"></i></span><b>${esc(pos === 0 ? 'Você' : c.nome)}</b><small>${pos === 0 ? '' : c.on ? 'Na mesa' : 'Sem conexão'}</small></div>`;
+    return `<div class="sala-cad ${POS_CLASS[pos]}${c.on ? '' : ' fora'}">${tag}<span class="sc-face">${face}<i class="sc-on${c.on ? ' ok' : ''}" aria-hidden="true"></i></span><b>${esc(pos === 0 ? 'Você' : c.nome)}${c.apoiador ? ' <i class="sc-star" title="Apoiador">★</i>' : ''}</b><small>${pos === 0 ? '' : c.on ? 'Na mesa' : 'Sem conexão'}</small></div>`;
   }).join('') + '<div class="sala-centro" aria-hidden="true"></div>';
   $$('#salaMesa .vazia').forEach(b => b.addEventListener('click', () => mandar({ t: 'sentar', cadeira: Number(b.dataset.p) })));
   const vazias = v.cad.filter(c => !c).length;
@@ -3495,6 +3692,354 @@ show = function (name) { showBase(name); statusOnline(); };
   let viva = null; try { viva = sessionStorage.getItem('dmz-mesa-viva'); } catch (e) {}
   if (viva && viva === mesaGuardada() && profile && onlineAtivo()) setTimeout(voltarMesa, 400);
 })();
+
+// ===== Anuncie no Dominó Manauara: formulário de quem quer patrocinar =====
+// O pedido vai para o servidor e aparece na caixa da Área do dono como "Patrocínio".
+// Link direto para divulgar: https://dominomanauara.com.br/#anuncie
+const LINK_ANUNCIE = SITE_URL.replace(/\/?$/, '/') + '#anuncie';
+let anuncieVolta = 'home', anuncieInteresse = new Set();
+function anuncieAtivo() { return !!CONFIG.api; }
+function abrirAnuncie(deOnde) {
+  if (!anuncieAtivo()) return;
+  anuncieVolta = deOnde || (profile ? 'home' : 'who');
+  track('anuncie-aberto');
+  show('anuncie');
+}
+function renderAnuncie() {
+  $('#patroForm').hidden = false; $('#patroOk').hidden = true;
+  if (!$('#pfNome').value && me) $('#pfNome').value = me;
+  if (!$('#pfCidade').value) $('#pfCidade').value = 'Manaus';
+  $$('#pfInteresse button').forEach(b => b.setAttribute('aria-pressed', String(anuncieInteresse.has(b.dataset.i))));
+}
+function anuncieErro(id, mostrar, campo) {
+  $('#' + id).hidden = !mostrar;
+  if (campo) $('#' + campo).classList.toggle('erro', !!mostrar);
+  return !mostrar;
+}
+async function enviarAnuncie() {
+  const empresa = $('#pfEmpresa').value.trim(), nome = $('#pfNome').value.trim();
+  const zap = $('#pfZap').value.trim(), dig = zap.replace(/\D/g, ''), email = $('#pfEmail').value.trim();
+  const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+  const ok = [
+    anuncieErro('peEmpresa', empresa.length < 2, 'pfEmpresa'),
+    anuncieErro('peNome', nome.length < 2, 'pfNome'),
+    anuncieErro('peZap', (dig.length < 10 || dig.length > 13) && !emailOk, 'pfZap'),
+    anuncieErro('peAceite', !$('#pfAceite').checked)
+  ];
+  if (ok.includes(false)) {
+    const primeiro = $$('#patroForm .patro-erro').find(e => !e.hidden);
+    if (primeiro) primeiro.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return;
+  }
+  const btn = $('#pfEnviar'); btn.disabled = true; btn.textContent = 'Enviando…';
+  try {
+    const r = await fetch(CONFIG.api + '/patrocinio', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({
+      empresa, nome, whatsapp: zap, email, cidade: $('#pfCidade').value.trim(), ramo: $('#pfRamo').value.trim(),
+      interesse: [...anuncieInteresse], mensagem: $('#pfMsg').value.trim(), aceite: true, versao: APP_VERSION, aparelho: deviceInfo() }) });
+    if (r.status === 201) {
+      track('anuncie-enviado');
+      ['pfEmpresa', 'pfZap', 'pfEmail', 'pfRamo', 'pfMsg'].forEach(id => { $('#' + id).value = ''; });
+      $('#pfAceite').checked = false; anuncieInteresse = new Set();
+      $('#patroForm').hidden = true; $('#patroOk').hidden = false;
+      $('#scrAnuncie').scrollTop = 0;
+      return;
+    }
+    toast(r.status === 429 ? 'Muitos envios agora. Tente de novo daqui a pouco.' : 'Confira os campos e tente de novo.');
+  } catch (e) {
+    toast('Sem internet agora. Tente de novo quando tiver conexão.');
+  } finally { btn.disabled = false; btn.textContent = 'Quero anunciar'; }
+}
+$('#pfInteresse').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const i = b.dataset.i;
+  if (anuncieInteresse.has(i)) anuncieInteresse.delete(i); else anuncieInteresse.add(i);
+  if (i === 'naosei' && anuncieInteresse.has(i)) anuncieInteresse = new Set(['naosei']);
+  else if (i !== 'naosei') anuncieInteresse.delete('naosei');
+  renderAnuncie();
+});
+['pfEmpresa', 'pfNome', 'pfZap', 'pfEmail'].forEach(id => $('#' + id).addEventListener('input', () => {
+  $('#' + id).classList.remove('erro');
+  const e = { pfEmpresa: 'peEmpresa', pfNome: 'peNome', pfZap: 'peZap', pfEmail: 'peZap' }[id]; $('#' + e).hidden = true;
+  if (id === 'pfEmail') $('#pfZap').classList.remove('erro');
+}));
+$('#pfAceite').addEventListener('change', () => { $('#peAceite').hidden = true; });
+$('#pfEnviar').addEventListener('click', enviarAnuncie);
+const sairAnuncie = () => show(anuncieVolta === 'who' || !profile ? 'who' : anuncieVolta);
+$('#anuncieBack').addEventListener('click', sairAnuncie);
+$('#patroFim').addEventListener('click', sairAnuncie);
+$('#anuncieLink').addEventListener('click', () => abrirAnuncie('home'));
+$('#footAnuncie').addEventListener('click', () => abrirAnuncie('home'));
+// Área do dono: copiar o link do formulário para mandar a empresas
+$('#dnAnuncieLink').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(LINK_ANUNCIE); toast('Link copiado: ' + LINK_ANUNCIE); }
+  catch (e) {
+    if (navigator.share) { try { await navigator.share({ title: 'Anuncie no Dominó Manauara', url: LINK_ANUNCIE }); } catch (x) {} }
+    else toast(LINK_ANUNCIE);
+  }
+});
+// Início: chamada para anunciar logo abaixo do patrocinador
+const renderHomeAnuncie = renderHome;
+renderHome = function () {
+  renderHomeAnuncie();
+  const on = anuncieAtivo();
+  $('#anuncieLink').hidden = !on; $('#footAnuncie').hidden = !on;
+  // sem patrocinador: o espaço vazio também leva para o formulário
+  const sp = $('#sponsor');
+  if (on && !(CONFIG.patrocinio && CONFIG.patrocinio.nome)) {
+    sp.hidden = false; sp.removeAttribute('href'); sp.removeAttribute('target'); sp.setAttribute('role', 'button'); sp.tabIndex = 0;
+    sp.innerHTML = '<span class="sp-k">Espaço para anunciante</span><b>Sua marca aqui</b><span>Apareça para quem joga dominó em Manaus. Toque para falar com a gente.</span>';
+    sp.onclick = ev => { ev.preventDefault(); abrirAnuncie('home'); };
+    $('#anuncieLink').hidden = true;
+  }
+};
+// Link direto (#anuncie): abre o formulário mesmo sem perfil
+(function () {
+  if (!/^#anuncie\b/i.test(location.hash)) return;
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  setTimeout(() => abrirAnuncie(profile ? 'home' : 'who'), 350);
+})();
+addEventListener('hashchange', () => {
+  if (!/^#anuncie\b/i.test(location.hash)) return;
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  abrirAnuncie(profile ? 'home' : 'who');
+});
+
+// ===== Plano Apoiador e doações (Asaas: Pix ou cartão) =====
+// O plano vale por 30 dias ou 1 ano e não renova sozinho. Fica ligado ao código deste aparelho (o mesmo da mesa online);
+// para trocar de celular, o código do plano leva tudo junto. Extras: selo, sem anúncios, avatares e cores de mesa.
+const PLKEY = 'dmz-plano', PEDKEY = 'dmz-pedido', MCKEY = 'dmz-mesa-cor';
+const CORES_MESA = [
+  { id: 'madeira', nome: 'Madeira', c1: '#3d2719', c2: '#26180f' },
+  { id: 'feltro', nome: 'Feltro verde', c1: '#2f6b4c', c2: '#163a29', plano: true },
+  { id: 'rionegro', nome: 'Rio Negro', c1: '#24364a', c2: '#0e1620', plano: true },
+  { id: 'acai', nome: 'Açaí', c1: '#4f2449', c2: '#26101f', plano: true }
+];
+const PRECO = { mensal: 'R$ 4,90 · 30 dias', anual: 'R$ 39,90 · 1 ano', doacao5: 'R$ 5', doacao10: 'R$ 10', doacao20: 'R$ 20' };
+let apoioVolta = 'home';
+function pagamentosAtivos() { return !!CONFIG.api && (CONFIG.pagamentos || (typeof dono !== 'undefined' && !!dono)); }
+function planoLocal() { try { return JSON.parse(store.get(PLKEY) || 'null'); } catch (e) { return null; } }
+function temPlano() { const p = planoLocal(); return !!(p && p.ate > Date.now()); }
+const dataBR = ms => new Date(ms).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Manaus' });
+const codigoBonito = c => c ? c.slice(0, 4) + '-' + c.slice(4) : '';
+function guardarPlano(j) {
+  if (j && j.ate) store.set(PLKEY, JSON.stringify({ ate: j.ate, codigo: j.codigo || null, visto: Date.now() }));
+  else store.del(PLKEY);
+  aplicarPlano();
+}
+// Liga ou desliga os extras na tela (sem anúncios, cor da mesa)
+function aplicarPlano() {
+  const on = temPlano(), r = document.documentElement;
+  r.classList.toggle('plano', on);
+  const cor = on ? (store.get(MCKEY) || 'madeira') : 'madeira';
+  if (cor === 'madeira') r.removeAttribute('data-mesa'); else r.setAttribute('data-mesa', cor);
+}
+// Pergunta ao servidor (no máximo a cada 10 min, ou na hora quando pedir)
+// Só confere quem tem (ou teve) plano neste aparelho: quem acabou de pagar é ligado pelo pedido pendente.
+async function conferirPlano(agora) {
+  const p = planoLocal();
+  if (!pagamentosAtivos() || !p) return;
+  if (!agora && p && Date.now() - (p.visto || 0) < 10 * 60000) return;
+  try {
+    const r = await fetch(CONFIG.api + '/plano?aparelho=' + encodeURIComponent(meuId()));
+    if (r.ok) { const antes = temPlano(); guardarPlano(await r.json()); if (antes !== temPlano() && screen === 'home') renderHome(); }
+  } catch (e) {}
+}
+
+// ---------- Pagar: abre a página do Asaas ----------
+async function pagarProduto(produto, btn) {
+  if (!pagamentosAtivos()) { toast('Pagamentos ainda não estão ligados.'); return; }
+  const rotulo = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '<b>Abrindo o pagamento…</b>'; }
+  try {
+    const r = await fetch(CONFIG.api + '/pagar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ produto, aparelho: meuId() }) });
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 201 && j.link) {
+      store.set(PEDKEY, JSON.stringify({ id: j.pedido, produto, quando: Date.now() }));
+      track('pagar-' + produto);
+      location.href = j.link;
+      return;
+    }
+    toast(r.status === 503 ? 'Os pagamentos ainda não estão ligados. Tente mais tarde.'
+      : r.status === 429 ? 'Muitas tentativas agora. Tente de novo daqui a pouco.'
+      : 'Não deu para abrir o pagamento agora. Tente de novo.');
+  } catch (e) { toast('Sem internet agora. Para pagar, precisa de conexão.'); }
+  if (btn) { btn.disabled = false; btn.innerHTML = rotulo; }
+}
+
+// ---------- Volta do pagamento e confirmação ----------
+function pedidoGuardado() { try { return JSON.parse(store.get(PEDKEY) || 'null'); } catch (e) { return null; } }
+let acompanhando = null;
+async function acompanharPedido(id, insistir) {
+  if (!pagamentosAtivos() || acompanhando === id) return;
+  acompanhando = id;
+  const meu = (pedidoGuardado() || {}).id === id;
+  for (let k = 0; k < (insistir ? 40 : 1); k++) {
+    try {
+      const r = await fetch(CONFIG.api + '/pedido/' + id);
+      if (r.status === 404) { if (meu) store.del(PEDKEY); break; }
+      const j = await r.json();
+      if (j.status === 'pago') {
+        if (meu) store.del(PEDKEY);
+        track('pago-' + j.produto);
+        if (j.plano && meu) { guardarPlano(j); obrigado(true, j.ate); }
+        else if (j.plano) { obrigado(true, null); conferirPlano(true); }
+        else { store.set(AKEY, new Date().toISOString().slice(0, 10)); obrigado(false); }
+        acompanhando = null;
+        if (screen === 'home') renderHome(); else if (screen === 'apoio') renderApoioTela();
+        return;
+      }
+      if (j.status === 'cancelado' || j.status === 'expirado') { if (meu) store.del(PEDKEY); break; }
+    } catch (e) {}
+    if (k === 0 && insistir) toast('Confirmando o pagamento…');
+    await new Promise(r => setTimeout(r, 2500));
+  }
+  if (insistir && pedidoGuardado()) toast('Assim que o pagamento for confirmado, o plano liga sozinho. Pode jogar enquanto isso.');
+  acompanhando = null;
+}
+function obrigado(plano, ate) {
+  const titulo = plano ? 'Você agora é Apoiador!' : 'Obrigado pela doação!';
+  const txt = plano ? (ate ? `Seu plano vale até ${dataBR(ate)}. Escolha a cor da mesa e o seu avatar exclusivo.` : 'O plano ficou ligado no aparelho em que você tocou em pagar. Abra o jogo por lá.')
+    : 'Sua ajuda mantém o Dominó Manauara de graça para a turma toda.';
+  openSheet('fb', `<p class="eyebrow">Apoie o jogo</p><h2 id="sheetTitle">${esc(titulo)}</h2><p>${esc(txt)}</p>
+    ${plano && ate ? '<button type="button" class="primary" id="obgPerso">Personalizar agora</button>' : ''}
+    <button type="button" class="secondary" id="obgOk" style="width:100%;margin-top:10px">Fechar</button>`);
+  if ($('#obgPerso')) $('#obgPerso').addEventListener('click', () => { closeSheet(); abrirApoio(screen === 'apoio' ? apoioVolta : (screen || 'home')); });
+  $('#obgOk').addEventListener('click', closeSheet);
+  try { confete(['#f0b45e', '#e5a650', '#ffd27a', '#f6eedf', '#86c98f'], 4500); } catch (e) {}
+}
+(function voltaDoPagamento() {
+  const v = new URLSearchParams(location.search).get('pago');
+  if (!v) return;
+  try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
+  if (v === 'cancelado' || v === 'expirado') {
+    setTimeout(() => toast(v === 'cancelado' ? 'Pagamento cancelado. Quando quiser, é só tentar de novo.' : 'O tempo do pagamento acabou. Tente de novo quando quiser.'), 900);
+    return;
+  }
+  if (/^[0-9a-f]{20}$/.test(v)) setTimeout(() => acompanharPedido(v, true), 700);
+})();
+// Pagou e voltou depois (ou o Pix caiu mais tarde): confere ao abrir e ao voltar para o app
+function conferirPendente() {
+  const p = pedidoGuardado();
+  if (!p) return;
+  if (Date.now() - (p.quando || 0) > 2 * 86400000) { store.del(PEDKEY); return; }
+  acompanharPedido(p.id, false);
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { conferirPendente(); conferirPlano(); } });
+
+// ---------- Tela do plano ----------
+function abrirApoio(deOnde) {
+  if (!pagamentosAtivos()) return;
+  apoioVolta = deOnde || 'home';
+  track('apoio-aberto');
+  show('apoio');
+}
+function renderApoioTela() {
+  const on = temPlano(), p = planoLocal();
+  $('#apAtivo').hidden = !on;
+  if (on) {
+    const dias = Math.ceil((p.ate - Date.now()) / 86400000);
+    $('#apAte').textContent = `Seu plano vale até ${dataBR(p.ate)}` + (dias <= 5 ? ` (faltam ${dias} ${dias === 1 ? 'dia' : 'dias'}). Para continuar, é só renovar abaixo.` : '. Obrigado!');
+    $('#apCod').textContent = codigoBonito(p.codigo);
+    $('#apCod').closest('.ap-cod').hidden = !p.codigo;
+  }
+  $('#apLead').hidden = on;
+  $$('#apPrecos .ap-preco span').forEach(s => { if (on && !s.dataset.orig) s.dataset.orig = s.textContent; });
+  $('#apPrecos').classList.toggle('renovar', on);
+  const cor = store.get(MCKEY) || 'madeira';
+  $('#apCores').innerHTML = CORES_MESA.map(c => {
+    const livre = !c.plano || on;
+    return `<button type="button" class="ap-cor${livre ? '' : ' trancado'}" role="radio" aria-checked="${on ? cor === c.id : c.id === 'madeira'}" data-c="${c.id}">
+      <span class="ap-sw" style="background:radial-gradient(circle at 40% 35%, ${c.c1}, ${c.c2} 80%)"></span><span>${esc(c.nome)}</span>${livre ? '' : '<i aria-hidden="true">★</i>'}</button>`;
+  }).join('');
+  $('#apAvs').innerHTML = AVATARS.filter(a => a.premium).map(a =>
+    `<button type="button" class="ap-av${on ? '' : ' trancado'}" data-av="${a.id}" aria-pressed="${!!(profile && profile.av === a.id)}" aria-label="Avatar exclusivo"><img src="${avatarURI(a)}" alt="">${on ? '' : '<i aria-hidden="true">★</i>'}</button>`).join('');
+  $('#apTrazerBox').hidden = on;
+}
+$('#apPrecos').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (b) pagarProduto(b.dataset.p, b); });
+$('#apDoa').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (b) pagarProduto(b.dataset.p, b); });
+$('#apCores').addEventListener('click', e => {
+  const b = e.target.closest('[data-c]'); if (!b) return;
+  if (b.classList.contains('trancado')) { toast('Essa cor de mesa é do Plano Apoiador.'); return; }
+  store.set(MCKEY, b.dataset.c); aplicarPlano(); renderApoioTela();
+  toast('Pronto! A mesa fica assim nas próximas partidas.');
+});
+$('#apAvs').addEventListener('click', e => {
+  const b = e.target.closest('[data-av]'); if (!b) return;
+  if (b.classList.contains('trancado')) { toast('Esse avatar é do Plano Apoiador.'); return; }
+  if (!profile) return;
+  profile.av = b.dataset.av; store.set(PKEY, JSON.stringify(profile));   // PKEY = chave do perfil
+  renderApoioTela(); toast('Avatar trocado!');
+});
+$('#apTrazer').addEventListener('click', async () => {
+  const cod = $('#apTrazerCod').value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (cod.length !== 8) { toast('O código tem 8 letras e números, como ABCD-1234.'); return; }
+  const b = $('#apTrazer'); b.disabled = true;
+  try {
+    const r = await fetch(CONFIG.api + '/plano/trazer', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ codigo: cod, aparelho: meuId() }) });
+    const j = await r.json().catch(() => ({}));
+    if (r.ok && j.ate) { guardarPlano(j); $('#apTrazerCod').value = ''; renderApoioTela(); toast(`Plano trazido! Vale até ${dataBR(j.ate)}.`); }
+    else toast(r.status === 404 ? 'Não achei esse código. Confira no outro celular.' : r.status === 429 ? 'Muitas tentativas. Tente de novo mais tarde.' : 'Não deu agora. Tente de novo.');
+  } catch (e) { toast('Sem internet agora.'); }
+  b.disabled = false;
+});
+$('#apTrazerCod').addEventListener('input', e => {
+  const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+  e.target.value = v.length > 4 ? v.slice(0, 4) + '-' + v.slice(4) : v;
+});
+$('#apoioBack').addEventListener('click', () => show(apoioVolta === 'profile' ? 'profile' : profile ? 'home' : 'who'));
+
+// ---------- Início: cartão do plano no lugar do antigo "Apoie o jogo" ----------
+const renderApoioBase = renderApoio;
+renderApoio = function () {
+  if (!pagamentosAtivos()) { renderApoioBase(); return; }
+  const card = $('#apoioCard'), on = temPlano(), p = planoLocal();
+  card.hidden = false;
+  if (on) {
+    const dias = Math.ceil((p.ate - Date.now()) / 86400000);
+    $('#apoioK').textContent = 'Plano Apoiador ★';
+    $('#apoioTxt').textContent = dias <= 5 ? `Seu plano acaba em ${dias} ${dias === 1 ? 'dia' : 'dias'}. Renove para continuar com os extras.` : `Obrigado por apoiar! Seu plano vale até ${dataBR(p.ate)}.`;
+    $('#apoioVals').innerHTML = `<button type="button" class="ap-ir" data-ir="apoio">${dias <= 5 ? 'Renovar o plano' : 'Cor da mesa e avatar'}</button>`;
+  } else {
+    $('#apoioK').textContent = 'Apoie o jogo';
+    $('#apoioTxt').textContent = 'Plano Apoiador: selo na mesa, jogo sem anúncios, avatares e cores de mesa exclusivos. A partir de R$ 3,33 por mês. Ou faça uma doação.';
+    $('#apoioVals').innerHTML = '<button type="button" class="ap-ir" data-ir="apoio">Ver o plano e a doação</button>';
+  }
+};
+$('#apoioVals').addEventListener('click', e => { if (e.target.closest('[data-ir="apoio"]')) abrirApoio('home'); });
+// Convite leve no fim do jogo (a cada 3 jogos, para quem ainda não apoia)
+const apoioInviteBase = apoioInvite;
+apoioInvite = function () {
+  if (!pagamentosAtivos()) return apoioInviteBase();
+  if (temPlano()) return '';
+  const t = loadHist();
+  return t.jogos > 0 && t.jogos % 3 === 1 ? '<button type="button" class="res-apoio" id="resApoio">Curtiu? Apoie o Dominó Manauara</button>' : '';
+};
+openApoioSheet = function () { closeSheet(); if (screen === 'game') leaveGame(); abrirApoio('home'); };
+
+// ---------- Área do dono: quanto entrou ----------
+const reais = v => 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',');
+const NOME_PRODUTO = { mensal: 'Plano 30 dias', anual: 'Plano 1 ano', doacao5: 'Doação', doacao10: 'Doação', doacao20: 'Doação' };
+async function dnPagCarregar() {
+  const box = $('#dnPag');
+  box.hidden = !pagamentosAtivos() || !dono || !dono.admin;
+  if (box.hidden) return;
+  try {
+    const r = await fetch(CONFIG.api + '/dono/pagamentos', { headers: { 'x-admin-key': dono.admin } });
+    if (!r.ok) { box.hidden = true; return; }
+    const j = await r.json();
+    $('#dnPagMes').textContent = reais(j.mes && j.mes.soma);
+    $('#dnPagAtivos').textContent = j.planosAtivos || 0;
+    $('#dnPagTotal').textContent = reais(j.tudo && j.tudo.soma);
+    $('#dnPagAviso').hidden = !!j.ligado;
+    $('#dnPagLista').innerHTML = (j.ultimos || []).map(u => `<li><span>${esc(NOME_PRODUTO[u.produto] || u.produto)}</span><b>${reais(u.valor)}</b><small>${dataBR(u.pago_em)}</small></li>`).join('')
+      || '<li class="dn-empty"><span>Nenhum pagamento ainda.</span></li>';
+  } catch (e) { box.hidden = true; }
+}
+const renderDonoBase = renderDono;
+renderDono = function () { renderDonoBase(); dnPagCarregar(); };
+
+aplicarPlano();
+setTimeout(() => { conferirPlano(true); conferirPendente(); }, 1500);
 
 
 // ---- Desenho das peças ----
