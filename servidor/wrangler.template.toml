@@ -16,3 +16,12 @@ crons = ["0 21,22,23 * * *"]
 binding = "DB"
 database_name = "dominomanauara"
 database_id = "__D1_ID__"
+
+# Mesa online: cada mesa é um Durable Object (com SQLite, disponível no plano grátis)
+[[durable_objects.bindings]]
+name = "MESA"
+class_name = "Mesa"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Mesa"]

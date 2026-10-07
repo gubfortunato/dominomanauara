@@ -27,3 +27,7 @@ CREATE TABLE IF NOT EXISTS avisos (
   envios INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS avisos_envio ON avisos (ultimo_envio);
+
+-- Mesa online: limite de mesas criadas por hora (resumo do endereço que muda todo dia)
+CREATE TABLE IF NOT EXISTS mesas_criadas (marca TEXT NOT NULL, criado_em INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS mesas_criadas_marca ON mesas_criadas (marca, criado_em);

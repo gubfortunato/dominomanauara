@@ -1,15 +1,18 @@
-// Servidor do Dominó Manauara (Cloudflare Workers + D1).
-// Caixa de mensagens "Fale com a gente", lembretes para jogar (Web Push) e o painel do dono.
-// Depois: ranking, turmas e mesa online.
+// Servidor do Dominó Manauara (Cloudflare Workers + D1 + Durable Objects).
+// Caixa de mensagens "Fale com a gente", lembretes para jogar (Web Push), painel do dono e mesa online por convite.
 import { enviarPush } from './webpush.js';
+import { Mesa } from './mesa.js';
+export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
 const TIPOS = ['problema', 'ideia', 'elogio', 'outro'];
 const STATUS = ['novo', 'lido', 'resolvido'];
 const LIMITE_POR_HORA = 6;
+const MESAS_POR_HORA = 20;
 
+const origemOk = origin => origin === SITE || /^http:\/\/localhost(:\d+)?$/.test(origin || '');
 function cors(origin) {
-  const ok = origin === SITE || /^http:\/\/localhost(:\d+)?$/.test(origin || '');
+  const ok = origemOk(origin);
   return {
     'Access-Control-Allow-Origin': ok ? origin : SITE,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -38,16 +41,50 @@ async function ehDono(req, env) {
   return (await sha256(k)) === env.ADMIN_HASH;
 }
 
+// Limite contra spam: por endereço de rede, sem guardar o endereço (só um resumo que muda todo dia).
+async function marcaDoDia(req, env) {
+  const ip = req.headers.get('cf-connecting-ip') || 'sem-ip';
+  const dia = new Date().toISOString().slice(0, 10);
+  return (await sha256(ip + '|' + dia + '|' + (env.ADMIN_HASH || ''))).slice(0, 24);
+}
+
+// ---- Mesa online: cria uma mesa com código de 5 números (cada mesa é um Durable Object) ----
+async function novaMesa(req, env, origin) {
+  let b;
+  try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
+  const marca = await marcaDoDia(req, env);
+  const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM mesas_criadas WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();
+  if (r && r.n >= MESAS_POR_HORA) return json({ erro: 'muitas' }, 429, origin);
+  for (let k = 0; k < 8; k++) {
+    const codigo = String(10000 + Math.floor(Math.random() * 90000));
+    const stub = env.MESA.get(env.MESA.idFromName(codigo));
+    const res = await stub.fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, codigo }) });
+    if (res.status === 201) {
+      await env.DB.prepare('INSERT INTO mesas_criadas (marca, criado_em) VALUES (?, ?)').bind(marca, Date.now()).run();
+      return json({ codigo }, 201, origin);
+    }
+    if (res.status === 400) return json({ erro: 'dados' }, 400, origin);
+  }
+  return json({ erro: 'tente-de-novo' }, 503, origin);
+}
+async function rotaMesa(req, env, origin, codigo, ws) {
+  const stub = env.MESA.get(env.MESA.idFromName(codigo));
+  if (ws) {
+    if ((req.headers.get('upgrade') || '').toLowerCase() !== 'websocket') return json({ erro: 'ws' }, 426, origin);
+    if (origin && !origemOk(origin)) return new Response('origem', { status: 403 });
+    return stub.fetch(req);
+  }
+  const r = await stub.fetch('https://mesa/info');
+  return json(await r.json(), 200, origin);
+}
+
 async function receberMensagem(req, env, origin) {
   let b;
   try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
   const texto = limpa(b.texto, 1000);
   if (texto.length < 3) return json({ erro: 'texto-curto' }, 400, origin);
   const tipo = TIPOS.includes(b.tipo) ? b.tipo : 'outro';
-  // Limite contra spam: por aparelho de rede, sem guardar o endereço (só um resumo que muda todo dia).
-  const ip = req.headers.get('cf-connecting-ip') || 'sem-ip';
-  const dia = new Date().toISOString().slice(0, 10);
-  const marca = (await sha256(ip + '|' + dia + '|' + (env.ADMIN_HASH || ''))).slice(0, 24);
+  const marca = await marcaDoDia(req, env);
   const desde = Date.now() - 60 * 60 * 1000;
   const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM mensagens WHERE marca = ? AND criado_em > ?').bind(marca, desde).first();
   if (r && r.n >= LIMITE_POR_HORA) return json({ erro: 'muitas' }, 429, origin);
@@ -121,6 +158,8 @@ async function mandarPara(lista, msgDe, env) {
 }
 // Lembrete automático: só para quem não joga há 2 dias, no máximo um a cada 3 dias.
 async function lembretesDoDia(env) {
+  // faxina: registros do limite de mesas com mais de 2 dias
+  try { await env.DB.prepare('DELETE FROM mesas_criadas WHERE criado_em < ?').bind(Date.now() - 2 * 86400000).run(); } catch (e) {}
   if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return { ok: 0, falhas: 0, motivo: 'sem-chaves' };
   const agora = Date.now();
   const { results } = await env.DB.prepare(`SELECT id, endpoint, p256dh, auth FROM avisos
@@ -163,7 +202,10 @@ export default {
     const origin = req.headers.get('origin') || '';
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(origin) });
     try {
-      if (url.pathname === '/saude') return json({ ok: true, servico: 'dominomanauara' }, 200, origin);
+      if (url.pathname === '/saude') return json({ ok: true, servico: 'dominomanauara', mesa: !!env.MESA }, 200, origin);
+      if (url.pathname === '/mesa/nova' && req.method === 'POST') return await novaMesa(req, env, origin);
+      const mc = url.pathname.match(/^\/mesa\/(\d{5})(\/ws)?$/);
+      if (mc && req.method === 'GET') return await rotaMesa(req, env, origin, mc[1], !!mc[2]);
       if (url.pathname === '/mensagens' && req.method === 'POST') return await receberMensagem(req, env, origin);
       if (url.pathname === '/avisos/chave' && req.method === 'GET') return json({ chave: env.VAPID_PUBLIC || null }, env.VAPID_PUBLIC ? 200 : 503, origin);
       if (url.pathname === '/avisos/inscrever' && req.method === 'POST') return await avisosInscrever(req, env, origin);
