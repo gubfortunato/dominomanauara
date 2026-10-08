@@ -2,6 +2,8 @@
 // O servidor guarda as pedras e aplica as regras; cada celular só recebe a própria mão.
 // Cadeiras vazias viram robôs da turma do bairro; quem cai da internet tem o lugar guardado
 // e, se demorar na vez dele, um robô joga por ele até voltar.
+// Mesa rápida: um objeto à parte (nome "fila") junta quem quer jogar com qualquer um. As mesas públicas
+// começam sozinhas depois de uma espera curta (robôs nas cadeiras vazias) e quem chega depois entra no lugar de um robô.
 import { newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, tkey, nomeOfensivo, BOT_NAMES } from './motor.js';
 import { nivelDoador } from './pagamentos.js';
 import { fotoPublica } from './fotos.js';
@@ -12,8 +14,11 @@ const TEMPO = {
   semPedra: 2600,    // pessoa sem pedra que encaixe: passa sozinha
   distribuir: 4300,  // tempo da animação de embaralhar e distribuir no celular
   ausente: 25000,    // pessoa sem conexão: o robô joga por ela depois disso
-  conferir: 60000    // vez de uma pessoa conectada: confere de novo se ela continua lá
+  conferir: 60000,   // vez de uma pessoa conectada: confere de novo se ela continua lá
+  espera: 20000,     // mesa rápida: espera por mais gente antes de começar com robôs
+  cheia: 2500        // mesa rápida completa: começa logo (dá tempo de ver quem sentou)
 };
+const FILA = { mesas: 20, idade: 60 * 60 * 1000 };   // mesas rápidas lembradas pela fila e por quanto tempo
 const SILENCIO = 50000;
 const REACAO = { intervalo: 2000, porMinuto: 8, maior: 23 };   // reações: só o número de uma frase pronta, nunca texto              // sem sinal do celular há 50 s: conta como desconectado
 const VIDA = 24 * 60 * 60 * 1000;    // a mesa some 24 h depois da última ação
@@ -35,9 +40,11 @@ export class Mesa {
   async fetch(req) {
     const url = new URL(req.url);
     if (url.pathname === '/criar' && req.method === 'POST') return this.criar(await req.json());
+    if (url.pathname === '/reservar' && req.method === 'POST') return this.reservar(await req.json());
+    if (url.pathname === '/fila' && req.method === 'POST') return this.naFila(await req.json());
     if (url.pathname === '/info') {
       const m = this.viva();
-      return Response.json(m ? { existe: true, fase: m.fase, livres: m.cad.filter(c => !c).length + (m.fase === 'jogo' ? m.cad.filter(c => c && c.bot && !c.saiu).length : 0) } : { existe: false });
+      return Response.json(m ? { existe: true, fase: m.fase, publica: !!m.publica, livres: m.cad.filter(c => !c).length + (m.fase === 'jogo' ? m.cad.filter(c => c && c.bot && !c.saiu).length : 0) } : { existe: false });
     }
     if ((req.headers.get('upgrade') || '').toLowerCase() === 'websocket') {
       const par = new WebSocketPair();
@@ -59,9 +66,82 @@ export class Mesa {
     if (!quem) return Response.json({ erro: 'dados' }, { status: 400 });
     const agora = Date.now();
     this.m = { codigo: limpa(b.codigo, 5), criada: agora, ultimo: agora, fase: 'espera', seq: 0, dono: quem.id,
-      cad: [quem, null, null, null], G: null, proximo: null, turnoDesde: agora, porRobo: null };
+      cad: [quem, null, null, null], G: null, proximo: null, turnoDesde: agora, porRobo: null,
+      publica: !!b.publica, iniciaEm: b.publica ? agora + this.T.espera : null };
+    if (this.m.publica) this.agendar();
     await this.salvar();
     return Response.json({ ok: true }, { status: 201 });
+  }
+
+  // ---------- Mesa rápida ----------
+  // A fila (um objeto só, de nome "fila") procura uma mesa pública esperando gente; se não houver, uma já começada
+  // com robô para trocar por gente; se não houver, cria uma nova. Um pedido de cada vez, para ninguém sentar duas vezes.
+  naFila(b) {
+    const vez = (this.filaVez || Promise.resolve()).then(() => this.procurarMesa(b));
+    this.filaVez = vez.catch(() => {});
+    return vez.catch(() => Response.json({ erro: 'tente-de-novo' }, { status: 503 }));
+  }
+  async procurarMesa(b) {
+    const quem = this.pessoa(b);
+    if (!quem) return Response.json({ erro: 'dados' }, { status: 400 });
+    const agora = Date.now();
+    let l = ((await this.ctx.storage.get('abertas')) || []).filter(x => agora - x.criada < FILA.idade);
+    const mesa = cod => this.env.MESA.get(this.env.MESA.idFromName(cod));
+    const fim = async (codigo, nova) => { await this.ctx.storage.put('abertas', l.slice(0, FILA.mesas)); return Response.json({ codigo, nova }, { status: nova ? 201 : 200 }); };
+    for (const so of ['espera', 'jogo']) {
+      for (const x of l.slice()) {
+        const r = await mesa(x.codigo).fetch('https://mesa/reservar', { method: 'POST', body: JSON.stringify(Object.assign({}, b, { so })) });
+        if (r.status === 200) return fim(x.codigo, false);
+        if (r.status === 410) l = l.filter(y => y.codigo !== x.codigo);   // acabou ou não serve mais
+      }
+    }
+    for (let k = 0; k < 8; k++) {
+      const codigo = String(10000 + Math.floor(Math.random() * 90000));
+      const r = await mesa(codigo).fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro, codigo, publica: true }) });
+      if (r.status === 201) { l.unshift({ codigo, criada: agora }); return fim(codigo, true); }
+      if (r.status === 400) return Response.json({ erro: 'dados' }, { status: 400 });
+    }
+    return Response.json({ erro: 'tente-de-novo' }, { status: 503 });
+  }
+  // Senta alguém da fila numa mesa pública (200), ou diz que não deu agora (409) ou que a mesa não serve mais (410)
+  async reservar(b) {
+    const m = this.viva();
+    if (!m || !m.publica) return Response.json({ erro: 'nao' }, { status: 410 });
+    const quem = this.pessoa(b);
+    if (!quem) return Response.json({ erro: 'dados' }, { status: 400 });
+    let p = m.cad.findIndex(c => c && c.id === quem.id);
+    if (p >= 0) {
+      const c = m.cad[p];
+      if (c.saiu) { c.saiu = false; c.bot = false; }
+    } else if (m.fase === 'espera') {
+      if (b.so !== 'espera') return Response.json({ erro: 'cheia' }, { status: 409 });
+      // o segundo senta de adversário, o terceiro de parceiro do primeiro, o quarto completa
+      p = [1, 2, 3, 0].find(k => !m.cad[k]);
+      if (p == null) return Response.json({ erro: 'cheia' }, { status: 409 });
+      quem.nome = this.nomeUnico(quem.nome, -1);
+      m.cad[p] = quem;
+      if (m.cad.every(c => c && !c.bot)) m.iniciaEm = Math.min(m.iniciaEm || Infinity, Date.now() + this.T.cheia);
+    } else {
+      if (b.so !== 'jogo') return Response.json({ erro: 'cheia' }, { status: 409 });
+      // na mesa rápida, quem saiu de vez libera a cadeira (o robô que estava no lugar dá a vez)
+      p = m.cad.findIndex(c => c && c.bot);
+      if (p < 0) return Response.json({ erro: 'cheia' }, { status: 409 });
+      quem.nome = this.nomeUnico(quem.nome, p);
+      m.cad[p] = quem; m.G.names[p] = quem.nome;
+    }
+    m.ultimo = Date.now();
+    this.agendar();
+    await this.salvar(); this.espalhar();
+    return Response.json({ ok: true }, { status: 200 });
+  }
+  // Mesa rápida na hora de começar: quem reservou e não apareceu sai; sem ninguém, a mesa acaba
+  async comecarPublica() {
+    const m = this.m;
+    m.cad = m.cad.map((c, p) => c && !c.bot && !this.conectado(p) ? null : c);
+    const humanos = m.cad.filter(c => c && !c.bot);
+    if (!humanos.length) { await this.apagar(); return; }
+    if (!humanos.some(c => c.id === m.dono)) m.dono = humanos[0].id;
+    return this.comecar();
   }
   // Valida quem chega: código do aparelho, apelido (filtrado) e avatar.
   pessoa(b) {
@@ -87,7 +167,7 @@ export class Mesa {
     switch (msg.t) {
       case 'entrar': return this.entrar(ws, att, msg);
       case 'sentar': if (p >= 0) return this.sentar(p, msg.cadeira); return;
-      case 'comecar': if (p >= 0) return this.comecar(); return;
+      case 'comecar': if (p >= 0) return m.publica ? this.comecarPublica() : this.comecar(); return;
       case 'jogar': if (p >= 0) return this.jogar(ws, p, msg); return;
       case 'proxima': if (p >= 0) return this.proxima(msg); return;
       case 'sair': if (p >= 0) return this.sair(ws, p); return;
@@ -166,7 +246,7 @@ export class Mesa {
     for (let i = livres.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [livres[i], livres[j]] = [livres[j], livres[i]]; }
     m.cad = m.cad.map(c => c || { id: null, nome: livres.pop(), av: null, bot: true, saiu: false });
     m.G = newGame(m.cad.map(c => c.nome)); startHand(m.G);
-    m.fase = 'jogo'; m.seq++; m.porRobo = null;
+    m.fase = 'jogo'; m.seq++; m.porRobo = null; m.iniciaEm = null;
     m.ultimo = m.turnoDesde = Date.now();
     this.agendar(this.T.distribuir);
     await this.salvar(); this.espalhar();
@@ -226,6 +306,7 @@ export class Mesa {
   agendar(extra) {
     const m = this.m, G = m.G;
     m.proximo = null;
+    if (m.fase === 'espera' && m.publica && m.iniciaEm) m.proximo = m.iniciaEm;
     if (m.fase === 'jogo' && G && G.phase === 'play') {
       const p = G.turn, c = m.cad[p], tem = legalMoves(G, p).length > 0, agora = Date.now();
       let espera;
@@ -243,6 +324,7 @@ export class Mesa {
     if (!m) return;
     const agora = Date.now();
     if (m.ultimo + VIDA <= agora) { await this.apagar(); return; }
+    if (m.fase === 'espera' && m.publica && m.iniciaEm && agora >= m.iniciaEm - 50) return this.comecarPublica();
     if (!m.proximo || agora < m.proximo - 50 || m.fase !== 'jogo') { this.agendar(); return; }
     const G = m.G, p = G.turn, c = m.cad[p], moves = legalMoves(G, p);
     if (c.bot) {
@@ -289,6 +371,7 @@ export class Mesa {
       });
     }
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
+      publica: !!m.publica, iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
       cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot ? null : (c.foto || null), on: c.bot ? true : this.conectado(p) } : null),
       jogo, agora: Date.now() };
   }

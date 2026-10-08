@@ -71,6 +71,19 @@ async function novaMesa(req, env, origin) {
   }
   return json({ erro: 'tente-de-novo' }, 503, origin);
 }
+// ---- Mesa rápida: a fila junta quem quer jogar com qualquer um (e cria mesa pública quando precisa) ----
+async function mesaRapida(req, env, origin) {
+  let b;
+  try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
+  const marca = await marcaDoDia(req, env);
+  const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM mesas_criadas WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();
+  if (r && r.n >= MESAS_POR_HORA) return json({ erro: 'muitas' }, 429, origin);
+  const res = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila', { method: 'POST',
+    body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro }) });
+  const j = await res.json().catch(() => ({}));
+  if (res.status === 201) await env.DB.prepare('INSERT INTO mesas_criadas (marca, criado_em) VALUES (?, ?)').bind(marca, Date.now()).run();
+  return json(j, res.status === 201 ? 200 : res.status, origin);
+}
 async function rotaMesa(req, env, origin, codigo, ws) {
   const stub = env.MESA.get(env.MESA.idFromName(codigo));
   if (ws) {
@@ -256,6 +269,7 @@ export default {
     try {
       if (url.pathname === '/saude') return json({ ok: true, servico: 'dominomanauara', mesa: !!env.MESA, pagamentos: !!env.ASAAS_API_KEY, versao: env.VERSAO || null }, 200, origin);
       if (url.pathname === '/mesa/nova' && req.method === 'POST') return await novaMesa(req, env, origin);
+      if (url.pathname === '/mesa/rapida' && req.method === 'POST') return await mesaRapida(req, env, origin);
       const mc = url.pathname.match(/^\/mesa\/(\d{5})(\/ws)?$/);
       if (mc && req.method === 'GET') return await rotaMesa(req, env, origin, mc[1], !!mc[2]);
       if (url.pathname === '/mensagens' && req.method === 'POST') return await receberMensagem(req, env, origin);
