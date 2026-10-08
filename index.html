@@ -2167,6 +2167,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '2.9.8', data: '08/10/2026', itens: ['"Tu é leso, é?" virou "Telezé!", nos balões da entrada e nas reações da mesa online.'] },
   { v: '2.9.7', data: '08/10/2026', itens: ['Embaralhamento de verdade: as pedras são sorteadas com a fonte de acaso do próprio celular (a mesma usada em senhas), com chance igual para cada pedra. Vale para o jogo offline e para a mesa online.'] },
   { v: '2.9.6', data: '08/10/2026', itens: ['O nome da mesa aparece ao chegar em todas as mesas, inclusive Madeira, Garantido e Caprichoso.', 'Desenhos das mesas mais apagados, para as pedras ficarem em destaque.', 'Mesa Vitória-régia no lugar do Bumbódromo (ganhe 10 jogos) e mesa nova Relógio Municipal (jogue 300 mãos).'] },
   { v: '2.9.5', data: '08/10/2026', itens: ['Mesa Mercado Adolpho Lisboa no lugar do Sambódromo, para quem bater 50 vezes.', 'A mesa verde agora se chama MUSA, com a torre do Museu da Amazônia acima das árvores.'] },
@@ -3698,7 +3699,7 @@ renderEntry = function () {
 };
 // Falas da turma na entrada: metade com termos de Manaus (só do Amazonas), intercaladas e curtas para o balão caber na tela
 const FALAS = ['Bora, maninho!', 'De rocha?', '10 pontos!', 'Chibata, bati!', 'Senta aí, %!', 'Chibata!', 'Quem sai?', 'Tá de bubuia?',
-  'Passei!', 'Leseira, passei!', 'Mais 5!', 'Vô mermo!', 'Joga, %!', 'Tu é leso, é?', '20 na mesa!', 'É de rocha, %!',
+  'Passei!', 'Leseira, passei!', 'Mais 5!', 'Vô mermo!', 'Joga, %!', 'Telezé!', '20 na mesa!', 'É de rocha, %!',
   'Bati!', 'Leseira baré!', 'Fechou!', 'Joga logo, caboco!', 'Carroça!', 'Tô brocado!', '15 na mesa!', 'Bora uma partida?'];
 let falaIdx = Math.floor(Math.random() * FALAS.length);
 setInterval(() => {
@@ -3990,7 +3991,7 @@ const ERROS_MESA = {
 };
 // Reações rápidas: a ordem nunca muda (o servidor manda só o número). Para acrescentar, ponha no fim.
 const REACOES = ['Boa, parceiro!', 'Vô mermo!', 'Leseira baré!', 'Bate logo!', 'Segura essa!', 'Tá fácil!', 'Hoje tem galo!', 'Bora, bora!', '👏', '😂', '😮', '🔥',
-  'De rocha?', 'Chibata!', 'Tu é leso?', 'Tá de bubuia?', 'Joga logo, caboco!', 'Bora um tacacá?'];
+  'De rocha?', 'Chibata!', 'Telezé!', 'Tá de bubuia?', 'Joga logo, caboco!', 'Bora um tacacá?'];
 const FALA_MS = 2800;
 let falaMinhaT = null, reagiuEm = 0;
 function mostrarReacao(pos, txt) {
