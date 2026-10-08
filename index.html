@@ -4090,6 +4090,7 @@ function receberOnline(m) {
   if (m.minha < 0) { sairDaMesa(); toast('Você não está mais nessa mesa.'); if (screen === 'sala') renderSala(); return; }
   const antes = ON.vista;
   ON.vista = m; ON.recebido = Date.now();
+  if (m.fase === 'espera') ON.esperou = true;
   statusOnline();
   if (m.fase === 'espera') {
     if (screen === 'game') { leaveGameBase(); show('sala'); }
@@ -4113,7 +4114,8 @@ function receberOnline(m) {
 // ---------- Jogo ----------
 function entrarNoJogoOnline(m, comecou) {
   // mesa rápida: quem chega com o jogo rolando entra no lugar de um robô
-  const J = m.jogo, noMeio = ON.rapida && m.publica && J && ((J.chain && J.chain.length) || (J.score || []).some(Boolean) || (J.series || []).some(Boolean));
+  // (se passou pela sala esperando, começou junto com os outros; se não, o jogo já estava rolando)
+  const noMeio = ON.rapida && m.publica && !ON.esperou;
   ON.rapida = false;
   if (noMeio) setTimeout(() => toast('Você entrou num jogo que já estava rolando, no lugar de um robô. Bom jogo!'), 600);
   mode = 'on'; seatMe = 0; offSt = null;
@@ -4300,7 +4302,7 @@ async function mesaRapida() {
   if (!profile || profile.idade === 'menor') { toast('A mesa rápida é para maiores de 18. Jogue com os amigos pelo número da mesa.'); return; }
   if (mesaGuardada()) { voltarMesa(); toast('Você ainda está nesta mesa. Para jogar em outra, saia dela primeiro.'); return; }
   if (ON.buscando) return;
-  ON.buscando = true; ON.vista = null;
+  ON.buscando = true; ON.vista = null; ON.esperou = false;
   show('sala');
   try {
     const r = await fetch(CONFIG.api + '/mesa/rapida', { method: 'POST', headers: { 'content-type': 'application/json' },
