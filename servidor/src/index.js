@@ -270,6 +270,10 @@ export default {
       if (url.pathname === '/saude') return json({ ok: true, servico: 'dominomanauara', mesa: !!env.MESA, pagamentos: !!env.ASAAS_API_KEY, versao: env.VERSAO || null }, 200, origin);
       if (url.pathname === '/mesa/nova' && req.method === 'POST') return await novaMesa(req, env, origin);
       if (url.pathname === '/mesa/rapida' && req.method === 'POST') return await mesaRapida(req, env, origin);
+      if (url.pathname === '/mesa/rapida/status' && req.method === 'GET') {
+        const r = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila/status');
+        return json(await r.json(), 200, origin);
+      }
       const mc = url.pathname.match(/^\/mesa\/(\d{5})(\/ws)?$/);
       if (mc && req.method === 'GET') return await rotaMesa(req, env, origin, mc[1], !!mc[2]);
       if (url.pathname === '/mensagens' && req.method === 'POST') return await receberMensagem(req, env, origin);

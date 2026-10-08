@@ -992,6 +992,18 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .minha-fala.show{opacity:1;transform:none}
 /* Mesa rápida: sem número nem convite (é com quem estiver online) */
 #scrSala.publica .sala-num,#scrSala.publica .sala-convite{display:none}
+/* Chamada da mesa rápida: aviso no alto da tela */
+.chamada{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:29;transform:translateX(-50%);width:min(94%,480px);box-sizing:border-box;display:grid;gap:10px;padding:14px 16px;border-radius:18px;
+  background:var(--bg-2);color:var(--fg);border:1.5px solid var(--glow);box-shadow:0 14px 34px -10px rgba(0,0,0,.55);animation:chamadaEntra .32s cubic-bezier(.2,.9,.3,1.2) both}
+.chamada p{margin:0;font-size:15.5px;line-height:1.4}
+.chamada p b{display:block;font-size:16.5px}
+.ch-ponto{float:left;width:10px;height:10px;margin:6px 9px 0 0;border-radius:50%;background:#2fbf5b;box-shadow:0 0 0 0 rgba(47,191,91,.6);animation:chPulsa 1.6s infinite}
+.ch-bt{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.ch-bt .primary{margin:0;padding:11px 14px}
+.ch-bt .linkbtn{padding:11px 14px;border-radius:14px;border:1px solid var(--line);font-size:15px;font-weight:700}
+@keyframes chamadaEntra{from{opacity:0;transform:translate(-50%,-14px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes chPulsa{0%{box-shadow:0 0 0 0 rgba(47,191,91,.55)}70%{box-shadow:0 0 0 9px rgba(47,191,91,0)}100%{box-shadow:0 0 0 0 rgba(47,191,91,0)}}
+@media (prefers-reduced-motion: reduce){.chamada,.ch-ponto{animation:none}}
 
 /* ===== Anuncie: formulário de patrocínio ===== */
 .anuncie-link{display:grid;gap:2px;justify-items:center;text-align:center;width:100%;margin-top:-4px;padding:12px 14px;border:0;border-radius:14px;background:transparent;color:var(--fg);font:inherit;cursor:pointer}
@@ -2186,6 +2198,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.0', data: '08/10/2026', itens: ['Quando tem gente querendo jogar online, o app avisa e pergunta se você quer entrar na mesa rápida. Se estiver no jogo offline, ele fica guardado.'] },
   { v: '2.9.9', data: '08/10/2026', itens: ['Escolha a mesa na hora de jogar: ao montar o jogo offline, na sala da mesa online (com amigos e rápida) e no menu durante a partida.'] },
   { v: '2.9.8', data: '08/10/2026', itens: ['"Tu é leso, é?" virou "Telezé!", nos balões da entrada e nas reações da mesa online.'] },
   { v: '2.9.7', data: '08/10/2026', itens: ['Embaralhamento de verdade: as pedras são sorteadas com a fonte de acaso do próprio celular (a mesma usada em senhas), com chance igual para cada pedra. Vale para o jogo offline e para a mesa online.'] },
@@ -4406,6 +4419,51 @@ show = function (name) { showBase(name); statusOnline(); };
   let viva = null; try { viva = sessionStorage.getItem('dmz-mesa-viva'); } catch (e) {}
   if (viva && viva === mesaGuardada() && profile && onlineAtivo()) setTimeout(voltarMesa, 400);
 })();
+
+// ---------- Chamada: tem gente na mesa rápida? ----------
+// Com o app aberto e fora da mesa online, de vez em quando pergunta ao servidor quantas pessoas estão na mesa rápida
+// com lugar sobrando (esperando gente ou jogando com robô). Se tiver, aparece um aviso no alto: "Bora jogar" ou "Agora não".
+// Só números, sem nome de ninguém. Menor de 18 não recebe (a mesa rápida é com desconhecidos).
+const CHAMKEY = 'dmz-chamada-nao';
+let chamadaUltima = 0;
+function podeChamar() {
+  return onlineAtivo() && !!profile && !!profile.idade && profile.idade !== 'menor' && document.visibilityState === 'visible'
+    && !ON.ativo && !ON.buscando && !mesaGuardada() && ['home', 'game', 'setup', 'estilo'].includes(screen)
+    && !(screen === 'game' && mode === 'on') && !$('#chamada')
+    && Date.now() - (Number(store.get(CHAMKEY)) || 0) > 20 * 60000;
+}
+async function sondarFila(agora) {
+  if (!podeChamar() || (!agora && Date.now() - chamadaUltima < 30000)) return;
+  chamadaUltima = Date.now();
+  try {
+    const r = await fetch(CONFIG.api + '/mesa/rapida/status'); if (!r.ok) return;
+    const j = await r.json();
+    if (j && j.pessoas > 0 && podeChamar()) mostrarChamada(j.pessoas);
+  } catch (e) {}
+}
+function mostrarChamada(n) {
+  const tx = n === 1 ? 'Tem 1 pessoa querendo jogar online agora.' : `Tem ${n} pessoas querendo jogar online agora.`;
+  document.body.insertAdjacentHTML('beforeend', `<div class="chamada" id="chamada" role="alertdialog" aria-labelledby="chamadaTx">
+    <p id="chamadaTx"><span class="ch-ponto" aria-hidden="true"></span><b>${tx}</b> Quer entrar na mesa rápida?</p>
+    <div class="ch-bt"><button type="button" class="primary" id="chamadaSim">Bora jogar</button><button type="button" class="linkbtn" id="chamadaNao">Agora não</button></div></div>`);
+  track('chamada-mostrada');
+  const el = $('#chamada');
+  const fechar = () => { clearTimeout(el.t); if (!el.isConnected) return; sumir(el, 220); setTimeout(() => el.remove(), 260); };
+  // sem resposta: some sozinho e pode perguntar de novo daqui a uns 5 minutos
+  el.t = setTimeout(() => { fechar(); store.set(CHAMKEY, String(Date.now() - 15 * 60000)); }, 25000);
+  $('#chamadaNao').addEventListener('click', () => { fechar(); store.set(CHAMKEY, String(Date.now())); track('chamada-nao'); });
+  $('#chamadaSim').addEventListener('click', () => {
+    fechar(); track('chamada-sim');
+    if (screen === 'game' && mode === 'off') {
+      closeSheet(); leaveGame();
+      setTimeout(() => toast('Seu jogo offline ficou guardado. Para voltar, toque em "Continuar de onde parou".'), 2600);
+    } else if (sheetKind) closeSheet();
+    mesaRapida();
+  });
+}
+setInterval(sondarFila, 45000);
+setTimeout(sondarFila, 12000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(sondarFila, 3000); });
 
 // ===== Anuncie no Dominó Manauara: formulário de quem quer patrocinar =====
 // O pedido vai para o servidor e aparece na caixa da Área do dono como "Patrocínio".

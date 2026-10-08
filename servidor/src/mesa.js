@@ -42,9 +42,10 @@ export class Mesa {
     if (url.pathname === '/criar' && req.method === 'POST') return this.criar(await req.json());
     if (url.pathname === '/reservar' && req.method === 'POST') return this.reservar(await req.json());
     if (url.pathname === '/fila' && req.method === 'POST') return this.naFila(await req.json());
+    if (url.pathname === '/fila/status') return Response.json(await this.statusFila());
     if (url.pathname === '/info') {
       const m = this.viva();
-      return Response.json(m ? { existe: true, fase: m.fase, publica: !!m.publica, livres: m.cad.filter(c => !c).length + (m.fase === 'jogo' ? m.cad.filter(c => c && c.bot && !c.saiu).length : 0) } : { existe: false });
+      return Response.json(m ? { existe: true, fase: m.fase, publica: !!m.publica, humanos: m.cad.filter(c => c && !c.bot).length, livres: m.cad.filter(c => !c).length + (m.fase === 'jogo' ? m.cad.filter(c => c && c.bot && !c.saiu).length : 0) } : { existe: false });
     }
     if ((req.headers.get('upgrade') || '').toLowerCase() === 'websocket') {
       const par = new WebSocketPair();
@@ -102,6 +103,23 @@ export class Mesa {
       if (r.status === 400) return Response.json({ erro: 'dados' }, { status: 400 });
     }
     return Response.json({ erro: 'tente-de-novo' }, { status: 503 });
+  }
+  // Quantas pessoas estão numa mesa rápida com lugar sobrando (esperando gente ou jogando com robô).
+  // Só números, sem nome de ninguém; guardado por alguns segundos para não acordar as mesas a cada pergunta.
+  async statusFila() {
+    const agora = Date.now();
+    if (this.resumo && agora - this.resumo.t < 8000) return this.resumo.v;
+    const l = ((await this.ctx.storage.get('abertas')) || []).filter(x => agora - x.criada < FILA.idade);
+    let pessoas = 0, mesas = 0, esperando = 0;
+    for (const x of l) {
+      try {
+        const j = await (await this.env.MESA.get(this.env.MESA.idFromName(x.codigo)).fetch('https://mesa/info')).json();
+        if (!j.existe || !j.publica || !(j.livres > 0) || !(j.humanos > 0)) continue;
+        pessoas += j.humanos; mesas++; if (j.fase === 'espera') esperando += j.humanos;
+      } catch (e) {}
+    }
+    this.resumo = { t: agora, v: { pessoas, mesas, esperando } };
+    return this.resumo.v;
   }
   // Senta alguém da fila numa mesa pública (200), ou diz que não deu agora (409) ou que a mesa não serve mais (410)
   async reservar(b) {
