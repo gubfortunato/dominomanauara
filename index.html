@@ -2199,6 +2199,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.1.1', data: '08/10/2026', itens: ['Rolar a fileira de mesas no menu da partida para o lado não puxa mais o menu para baixo.'] },
   { v: '3.1', data: '08/10/2026', itens: ['Na mesa online, todo mundo joga na mesa de quem criou. Quem criou escolhe (e pode trocar no menu durante a partida).'] },
   { v: '3.0', data: '08/10/2026', itens: ['Quando tem gente querendo jogar online, o app avisa e pergunta se você quer entrar na mesa rápida. Se estiver no jogo offline, ele fica guardado.', 'Desenhos novos da Vitória-régia (as folhas com a borda virada) e da Arena da Amazônia vista de cima.'] },
   { v: '2.9.9', data: '08/10/2026', itens: ['Escolha a mesa na hora de jogar: ao montar o jogo offline, na sala da mesa online (com amigos e rápida) e no menu durante a partida.'] },
@@ -5353,17 +5354,25 @@ openSheet = function (kind, html) {
   sh.scrollTop = 0;
 };
 // Arrastar para baixo (só quando a folha está no topo da rolagem, para não brigar com a rolagem do texto)
+// Gesto para o lado (fileira de mesas do menu) nunca puxa a folha: ela fica parada e a fileira rola.
 (function () {
   const sh = $('#sheet');
-  let y0 = null, dy = 0, t0 = 0, puxando = false;
+  let y0 = null, x0 = 0, dy = 0, t0 = 0, puxando = false, decidido = false;
   sh.addEventListener('touchstart', e => {
+    y0 = null;
     if (!sheetKind || sheetKind === 'result' || e.touches.length !== 1) return;
-    if (sh.scrollTop > 0 && !e.target.closest('.folha-alca')) { y0 = null; return; }
-    y0 = e.touches[0].clientY; dy = 0; t0 = Date.now(); puxando = false;
+    if (e.target.closest('.mm-lista')) return;
+    if (sh.scrollTop > 0 && !e.target.closest('.folha-alca')) return;
+    y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; dy = 0; t0 = Date.now(); puxando = false; decidido = false;
   }, { passive: true });
   sh.addEventListener('touchmove', e => {
     if (y0 == null) return;
     dy = e.touches[0].clientY - y0;
+    if (!decidido) {
+      const dx = e.touches[0].clientX - x0;
+      if (Math.abs(dx) > Math.abs(dy)) { y0 = null; return; }   // para o lado: não é arrastar a folha
+      if (dy !== 0) decidido = true;
+    }
     if (dy <= 0) { if (puxando) { sh.style.transform = ''; puxando = false; } return; }
     if (sh.scrollTop > 0) { y0 = null; return; }
     puxando = true;
