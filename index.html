@@ -2150,6 +2150,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '2.9.1', data: '07/10/2026', itens: ['Falas da turma na entrada: "20 na mesa!", "15 na mesa!" e "Bora, maninho!".'] },
   { v: '2.9', data: '07/10/2026', itens: [
     'Mesa rápida: jogue online com quem estiver no app agora, sem precisar de convite.',
     'Se faltar gente, a turma do bairro completa a mesa. Quem chega depois entra no lugar de um robô.',
@@ -3671,9 +3672,9 @@ renderEntry = function () {
   const s = $('#scrWho'); s.classList.remove('entra'); void s.offsetWidth; s.classList.add('entra');
 };
 // Falas da turma na entrada: metade com termos de Manaus (só do Amazonas), intercaladas e curtas para o balão caber na tela
-const FALAS = ['Bora, %!', 'De rocha?', '10 pontos!', 'Chibata, bati!', 'Senta aí, %!', 'Chibata!', 'Quem sai?', 'Tá de bubuia?',
-  'Passei!', 'Leseira, passei!', 'Mais 5!', 'Vô mermo!', 'Joga, %!', 'Tu é leso, é?', '20 pontos!', 'É de rocha, %!',
-  'Bati!', 'Leseira baré!', 'Fechou!', 'Joga logo, caboco!', 'Carroça!', 'Tô brocado!', '15 pontos!', 'Bora uma partida?'];
+const FALAS = ['Bora, maninho!', 'De rocha?', '10 pontos!', 'Chibata, bati!', 'Senta aí, %!', 'Chibata!', 'Quem sai?', 'Tá de bubuia?',
+  'Passei!', 'Leseira, passei!', 'Mais 5!', 'Vô mermo!', 'Joga, %!', 'Tu é leso, é?', '20 na mesa!', 'É de rocha, %!',
+  'Bati!', 'Leseira baré!', 'Fechou!', 'Joga logo, caboco!', 'Carroça!', 'Tô brocado!', '15 na mesa!', 'Bora uma partida?'];
 let falaIdx = Math.floor(Math.random() * FALAS.length);
 setInterval(() => {
   if (screen !== 'who' || document.visibilityState !== 'visible') return;
