@@ -1233,6 +1233,23 @@ html[data-mesa="vitoria"] .table.wood{--wood-1:#13403a;--wood-2:#072019;--wood-e
   background:radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,.42)), var(--img-vitoria) center 50%/112% auto no-repeat, radial-gradient(120% 90% at 50% 45%, #13403a, #072019)}
 html[data-mesa="relogio"] .table.wood{--wood-1:#1e4a5e;--wood-2:#0b1d27;--wood-edge:#c9a13a;
   background:radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,.42)), var(--img-relogio) center 52%/auto 76% no-repeat, radial-gradient(120% 90% at 50% 45%, #1e4a5e, #0b1d27)}
+/* Escolher a mesa no jogo offline, na sala online e no menu do jogo */
+.mesa-pick{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;width:100%;padding:9px 16px 9px 10px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;cursor:pointer;text-align:left}
+.mesa-pick .ap-sw{width:44px;height:44px}
+.mp-tx{display:grid;gap:1px;min-width:0}
+.mp-tx small{font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mp-tx b{font-size:17px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mp-go{font-size:15px;font-weight:700;color:var(--nos);white-space:nowrap}
+.menu-mesas{margin-top:16px}
+.menu-mk{margin:0 0 6px;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mm-lista{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.mm-lista::-webkit-scrollbar{display:none}
+.mm-op{flex:none;width:74px;display:grid;justify-items:center;align-content:start;gap:5px;padding:0;border:0;background:none;color:var(--fg);font:inherit;font-size:12px;font-weight:700;line-height:1.15;text-align:center;cursor:pointer}
+.mm-op .ap-sw{position:relative;width:52px;height:52px}
+.mm-op[aria-checked="true"] .ap-sw{box-shadow:0 0 0 3px var(--bg-2),0 0 0 5.5px var(--glow)}
+.mm-op.trancado .ap-sw{opacity:.6}
+.mm-op i{position:absolute;top:-4px;right:-6px;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#2a1a08;color:#f0b45e}
+.mm-op i svg{width:11px;height:11px}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -1458,7 +1475,8 @@ html[data-mesa="relogio"] .table.wood{--wood-1:#1e4a5e;--wood-2:#0b1d27;--wood-e
     <div class="field nos"><label for="selPartner">Seu parceiro <small>· senta na sua frente</small></label><select id="selPartner"></select></div>
     <div class="field"><label for="selLeft">Adversário à esquerda <small>· joga depois de você</small></label><select id="selLeft"></select></div>
     <div class="field"><label for="selRight">Adversário à direita <small>· joga antes de você</small></label><select id="selRight"></select></div>
-    <button type="button" class="menubtn sortear" id="shuffleBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.6" fill="currentColor"/></svg>Sortear outra mesa</button>
+    <button type="button" class="menubtn sortear" id="shuffleBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.6" fill="currentColor"/></svg>Sortear outra turma</button>
+    <button type="button" class="mesa-pick" id="setupMesa" aria-label="Trocar a mesa"></button>
     <button type="button" class="primary" id="startOffline">Começar</button>
     <div id="setupPatro"></div>
   </section>
@@ -1479,6 +1497,7 @@ html[data-mesa="relogio"] .table.wood{--wood-1:#1e4a5e;--wood-2:#0b1d27;--wood-e
     <div class="sala-espera" id="salaEspera" hidden>
       <div class="sala-num"><span>Número da mesa</span><b id="salaNum">00000</b></div>
       <div class="sala-mesa" id="salaMesa"></div>
+      <button type="button" class="mesa-pick" id="salaMesaPick" aria-label="Trocar a mesa"></button>
       <p class="note sala-dica" id="salaDica">Toque numa cadeira vazia para trocar de lugar. Quem senta na sua frente é o seu parceiro.</p>
       <a class="share-wa sala-convite" id="salaConvite" href="https://wa.me/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.3 14.8L2.3 21.8l4.9-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-3-.4-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.1 11.1 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3Z"/></svg>Chamar os amigos no WhatsApp</a>
       <button type="button" class="primary" id="salaComecar">Começar</button>
@@ -2167,6 +2186,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '2.9.9', data: '08/10/2026', itens: ['Escolha a mesa na hora de jogar: ao montar o jogo offline, na sala da mesa online (com amigos e rápida) e no menu durante a partida.'] },
   { v: '2.9.8', data: '08/10/2026', itens: ['"Tu é leso, é?" virou "Telezé!", nos balões da entrada e nas reações da mesa online.'] },
   { v: '2.9.7', data: '08/10/2026', itens: ['Embaralhamento de verdade: as pedras são sorteadas com a fonte de acaso do próprio celular (a mesma usada em senhas), com chance igual para cada pedra. Vale para o jogo offline e para a mesa online.'] },
   { v: '2.9.6', data: '08/10/2026', itens: ['O nome da mesa aparece ao chegar em todas as mesas, inclusive Madeira, Garantido e Caprichoso.', 'Desenhos das mesas mais apagados, para as pedras ficarem em destaque.', 'Mesa Vitória-régia no lugar do Bumbódromo (ganhe 10 jogos) e mesa nova Relógio Municipal (jogue 300 mãos).'] },
@@ -5668,6 +5688,8 @@ function aplicarMesa() {
   try {
     const m = mesaAtual(), r = document.documentElement;
     if (m.id === 'madeira') r.removeAttribute('data-mesa'); else r.setAttribute('data-mesa', m.id);
+    renderPickers();
+    if (screen === 'sala') renderSala();
   } catch (e) {}
 }
 const fundoMesa = m => m.bg || `radial-gradient(circle at 40% 35%, ${m.c1}, ${m.c2} 78%)`;
@@ -5686,6 +5708,7 @@ const showEstilo = show;
 show = function (name) {
   const antes = screen;
   showEstilo(name);
+  if (name === 'setup') renderPickers();
   if (name === 'game' && antes !== 'game') setTimeout(() => { if (screen === 'game') tituloMesa(); }, 250);
   else if (name !== 'game') { const t = $('.mesa-titulo'); if (t) t.remove(); }
 };
@@ -5693,6 +5716,7 @@ show = function (name) {
 const renderSalaEstilo = renderSala;
 renderSala = function () {
   renderSalaEstilo();
+  renderPickers();
   const c = $('#salaMesa .sala-centro'), m = mesaAtual();
   if (!c || m.id === 'madeira') return;
   c.classList.add('com-nome'); c.style.background = fundoMesa(m);
@@ -5803,9 +5827,9 @@ function renderEstilo() {
   trava.innerHTML = travadas.map(p => `<span>${esc(p.n)}: ${p.plano ? 'vem com o Plano Apoiador' : esc(faltaTexto(p.req))}.</span>`).join('');
   renderMesas(); renderConquistas();
 }
-function renderMesas() {
+function renderMesas(el) {
   const atual = mesaAtual().id;
-  $('#esMesas').innerHTML = MESAS.filter(parteVisivel).map(m => {
+  (el || $('#esMesas')).innerHTML = MESAS.filter(parteVisivel).map(m => {
     const livre = mesaLivre(m);
     return `<button type="button" class="ap-cor${livre ? '' : ' trancado'}" role="radio" aria-checked="${m.id === atual}" data-m="${m.id}" aria-label="Mesa ${esc(m.nome)}${livre ? '' : ', ainda não liberada'}">`
       + `<span class="ap-sw" style="background:${fundoMesa(m)}"></span><span>${esc(m.nome)}</span>`
@@ -5845,15 +5869,56 @@ $('#esUsar').addEventListener('click', () => {
   toast('Avatar trocado!');
   renderEstilo();
 });
+// Escolhe a mesa (de qualquer lugar: Personalizar, montar o jogo offline, sala online, menu do jogo)
+function escolherMesa(id, avisar) {
+  const m = MESAS.find(x => x.id === id); if (!m) return false;
+  if (!mesaLivre(m)) { toast(m.plano ? `A mesa ${m.nome} vem com o Plano Apoiador.` : `Para liberar a mesa ${m.nome}: ${faltaTexto(m.req)}.`); return false; }
+  if (m.id === 'madeira') store.del(MCKEY); else store.set(MCKEY, m.id);
+  aplicarMesa();
+  track('mesa-' + m.id);
+  if (avisar) toast(`Mesa ${m.nome} escolhida.`);
+  return true;
+}
 $('#esMesas').addEventListener('click', e => {
   const b = e.target.closest('[data-m]'); if (!b) return;
-  const m = MESAS.find(x => x.id === b.dataset.m);
-  if (!mesaLivre(m)) { toast(m.plano ? `A mesa ${m.nome} vem com o Plano Apoiador.` : `Para liberar a mesa ${m.nome}: ${faltaTexto(m.req)}.`); return; }
-  if (m.id === 'madeira') store.del(MCKEY); else store.set(MCKEY, m.id);
-  aplicarMesa(); renderMesas();
-  track('mesa-' + m.id);
-  toast(`Mesa ${m.nome} escolhida.`);
+  if (escolherMesa(b.dataset.m, true)) renderMesas();
 });
+// Botão "Mesa: Ponta Negra · Trocar" no jogo offline e na sala online: abre a grade numa folha
+function renderPickers() {
+  const m = mesaAtual();
+  $$('.mesa-pick').forEach(b => { b.innerHTML = `<span class="ap-sw" style="background:${fundoMesa(m)}"></span><span class="mp-tx"><small>Mesa</small><b>${esc(m.nome)}</b></span><span class="mp-go">Trocar ›</span>`; });
+}
+function abrirMesas(online) {
+  openSheet('info', `<p class="eyebrow">Sua mesa</p><h2 id="sheetTitle">Escolha a mesa</h2>
+    <div class="ap-cores es-mesas" id="shMesas" role="radiogroup" aria-label="Mesa"></div>
+    ${online ? '<p class="note" style="margin-top:10px">Na mesa online, cada um vê no próprio celular a mesa que escolheu.</p>' : ''}
+    <button type="button" class="primary" id="shMesasOk" style="width:100%;margin-top:14px">Pronto</button>`);
+  const g = $('#shMesas'); renderMesas(g);
+  g.addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b && escolherMesa(b.dataset.m)) renderMesas(g); });
+  $('#shMesasOk').addEventListener('click', closeSheet);
+}
+$('#setupMesa').addEventListener('click', () => abrirMesas(false));
+$('#salaMesaPick').addEventListener('click', () => abrirMesas(true));
+// No menu do jogo (offline e online): uma fileira de mesas para trocar sem sair da partida
+function menuMesas() {
+  const acts = $('#sheet .menu-actions'); if (!acts || $('#sheet .menu-mesas')) return;
+  acts.insertAdjacentHTML('afterend', '<div class="menu-mesas"><p class="menu-mk">Trocar a mesa</p><div class="mm-lista" id="mmLista" role="radiogroup" aria-label="Mesa"></div></div>');
+  const el = $('#mmLista');
+  const desenha = () => {
+    const atual = mesaAtual().id;
+    el.innerHTML = MESAS.filter(parteVisivel).map(m => {
+      const livre = mesaLivre(m);
+      return `<button type="button" class="mm-op${livre ? '' : ' trancado'}" role="radio" aria-checked="${m.id === atual}" data-m="${m.id}" aria-label="Mesa ${esc(m.nome)}${livre ? '' : ', ainda não liberada'}">`
+        + `<span class="ap-sw" style="background:${fundoMesa(m)}">${livre ? '' : `<i aria-hidden="true">${LOCK_SVG}</i>`}</span><span>${esc(m.nome)}</span></button>`;
+    }).join('');
+  };
+  desenha();
+  const sel = el.querySelector('[aria-checked="true"]');
+  if (sel) el.scrollLeft = Math.max(0, sel.offsetLeft - el.clientWidth / 2 + sel.offsetWidth / 2);
+  el.addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b && escolherMesa(b.dataset.m)) { const x = el.scrollLeft; desenha(); el.scrollLeft = x; } });
+}
+// (o menu abre depois deste clique: o jogo registra o dele mais adiante)
+$('#menuBtn').addEventListener('click', () => setTimeout(() => { if (sheetKind === 'rules') menuMesas(); }, 0));
 $('#estiloBack').addEventListener('click', () => show(estiloVolta));
 $('#goEstilo').addEventListener('click', () => abrirEstilo('profile'));
 
