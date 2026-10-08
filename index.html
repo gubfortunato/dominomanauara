@@ -1262,6 +1262,7 @@ html[data-mesa="relogio"] .table.wood{--wood-1:#1e4a5e;--wood-2:#0b1d27;--wood-e
 .mm-op.trancado .ap-sw{opacity:.6}
 .mm-op i{position:absolute;top:-4px;right:-6px;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#2a1a08;color:#f0b45e}
 .mm-op i svg{width:11px;height:11px}
+.mesa-pick.alheia{grid-template-columns:auto minmax(0,1fr);cursor:default}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -2198,6 +2199,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.1', data: '08/10/2026', itens: ['Na mesa online, todo mundo joga na mesa de quem criou. Quem criou escolhe (e pode trocar no menu durante a partida).'] },
   { v: '3.0', data: '08/10/2026', itens: ['Quando tem gente querendo jogar online, o app avisa e pergunta se você quer entrar na mesa rápida. Se estiver no jogo offline, ele fica guardado.', 'Desenhos novos da Vitória-régia (as folhas com a borda virada) e da Arena da Amazônia vista de cima.'] },
   { v: '2.9.9', data: '08/10/2026', itens: ['Escolha a mesa na hora de jogar: ao montar o jogo offline, na sala da mesa online (com amigos e rápida) e no menu durante a partida.'] },
   { v: '2.9.8', data: '08/10/2026', itens: ['"Tu é leso, é?" virou "Telezé!", nos balões da entrada e nas reações da mesa online.'] },
@@ -3974,7 +3976,8 @@ function conectar(cod) {
   ON.ws = ws;
   ws.onopen = () => {
     ON.tent = 0;
-    ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv(), bairro: meuBairro() }));
+    let mesa = null; try { mesa = mesaEscolhida().id; } catch (e) {}
+    ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), mesa }));
     clearInterval(ON.pingT);
     ON.pingT = setInterval(() => { try { if (ws.readyState === 1) ws.send('ping'); } catch (e) {} }, 25000);
     statusOnline();
@@ -4091,6 +4094,12 @@ function receberOnline(m) {
   const antes = ON.vista;
   ON.vista = m; ON.recebido = Date.now();
   if (m.fase === 'espera') ON.esperou = true;
+  // quem criou trocou a mesa: muda na hora para todo mundo
+  if (!antes || antes.tema !== m.tema) {
+    aplicarMesa();
+    const nova = m.tema && MESAS.find(x => x.id === m.tema);
+    if (antes && antes.tema && nova && !m.dono && (screen === 'sala' || (screen === 'game' && mode === 'on'))) toast(`Quem criou trocou a mesa: agora é ${nova.nome}.`);
+  }
   statusOnline();
   if (m.fase === 'espera') {
     if (screen === 'game') { leaveGameBase(); show('sala'); }
@@ -5743,11 +5752,23 @@ function premiosDe(id) {
 }
 
 // ---- Mesa escolhida ----
-function mesaAtual() { const m = MESAS.find(x => x.id === store.get(MCKEY)); return m && mesaLivre(m) ? m : MESAS[0]; }
-function aplicarMesa() {
+// A sua mesa: a que você escolheu (e já liberou)
+function mesaEscolhida() { const m = MESAS.find(x => x.id === store.get(MCKEY)); return m && mesaLivre(m) ? m : MESAS[0]; }
+// Na mesa online, todo mundo joga na mesa de quem criou: o servidor guarda a escolha dele e manda para todos
+function emMesaOnline() { try { return !!(ON.ativo && ON.vista && (screen === 'sala' || (screen === 'game' && mode === 'on'))); } catch (e) { return false; } }
+function mesaDaMesaOnline() { try { return emMesaOnline() && ON.vista.tema ? MESAS.find(x => x.id === ON.vista.tema) || null : null; } catch (e) { return null; } }
+// convidado numa mesa online: a mesa é a de quem criou (não troca daqui)
+function mesaAlheia() { try { return !!mesaDaMesaOnline() && !ON.vista.dono; } catch (e) { return false; } }
+function mesaAtual() { return mesaDaMesaOnline() || mesaEscolhida(); }
+function marcarMesa() {
   try {
     const m = mesaAtual(), r = document.documentElement;
-    if (m.id === 'madeira') r.removeAttribute('data-mesa'); else r.setAttribute('data-mesa', m.id);
+    if (m.id === 'madeira') r.removeAttribute('data-mesa'); else if (r.getAttribute('data-mesa') !== m.id) r.setAttribute('data-mesa', m.id);
+  } catch (e) {}
+}
+function aplicarMesa() {
+  try {
+    marcarMesa();
     renderPickers();
     if (screen === 'sala') renderSala();
   } catch (e) {}
@@ -5768,7 +5789,8 @@ const showEstilo = show;
 show = function (name) {
   const antes = screen;
   showEstilo(name);
-  if (name === 'setup') renderPickers();
+  marcarMesa();   // mesa online (a de quem criou) ou a sua, conforme a tela
+  if (name === 'setup' || name === 'sala') renderPickers();
   if (name === 'game' && antes !== 'game') setTimeout(() => { if (screen === 'game') tituloMesa(); }, 250);
   else if (name !== 'game') { const t = $('.mesa-titulo'); if (t) t.remove(); }
 };
@@ -5776,7 +5798,7 @@ show = function (name) {
 const renderSalaEstilo = renderSala;
 renderSala = function () {
   renderSalaEstilo();
-  renderPickers();
+  marcarMesa(); renderPickers();
   const c = $('#salaMesa .sala-centro'), m = mesaAtual();
   if (!c || m.id === 'madeira') return;
   c.classList.add('com-nome'); c.style.background = fundoMesa(m);
@@ -5932,8 +5954,11 @@ $('#esUsar').addEventListener('click', () => {
 // Escolhe a mesa (de qualquer lugar: Personalizar, montar o jogo offline, sala online, menu do jogo)
 function escolherMesa(id, avisar) {
   const m = MESAS.find(x => x.id === id); if (!m) return false;
+  if (mesaAlheia()) { toast('Na mesa online, quem escolhe a mesa é quem criou.'); return false; }
   if (!mesaLivre(m)) { toast(m.plano ? `A mesa ${m.nome} vem com o Plano Apoiador.` : `Para liberar a mesa ${m.nome}: ${faltaTexto(m.req)}.`); return false; }
   if (m.id === 'madeira') store.del(MCKEY); else store.set(MCKEY, m.id);
+  // quem criou a mesa online troca para todo mundo
+  if (emMesaOnline() && ON.vista.dono && ON.vista.tema !== m.id && mandar({ t: 'mesa', id: m.id })) ON.vista.tema = m.id;
   aplicarMesa();
   track('mesa-' + m.id);
   if (avisar) toast(`Mesa ${m.nome} escolhida.`);
@@ -5945,23 +5970,27 @@ $('#esMesas').addEventListener('click', e => {
 });
 // Botão "Mesa: Ponta Negra · Trocar" no jogo offline e na sala online: abre a grade numa folha
 function renderPickers() {
-  const m = mesaAtual();
-  $$('.mesa-pick').forEach(b => { b.innerHTML = `<span class="ap-sw" style="background:${fundoMesa(m)}"></span><span class="mp-tx"><small>Mesa</small><b>${esc(m.nome)}</b></span><span class="mp-go">Trocar ›</span>`; });
+  const m = mesaAtual(), alheia = mesaAlheia();
+  $$('.mesa-pick').forEach(b => {
+    b.classList.toggle('alheia', alheia);
+    b.innerHTML = `<span class="ap-sw" style="background:${fundoMesa(m)}"></span><span class="mp-tx"><small>${alheia ? 'Mesa de quem criou' : 'Mesa'}</small><b>${esc(m.nome)}</b></span>${alheia ? '' : '<span class="mp-go">Trocar ›</span>'}`;
+  });
 }
 function abrirMesas(online) {
   openSheet('info', `<p class="eyebrow">Sua mesa</p><h2 id="sheetTitle">Escolha a mesa</h2>
     <div class="ap-cores es-mesas" id="shMesas" role="radiogroup" aria-label="Mesa"></div>
-    ${online ? '<p class="note" style="margin-top:10px">Na mesa online, cada um vê no próprio celular a mesa que escolheu.</p>' : ''}
+    ${online ? '<p class="note" style="margin-top:10px">Todo mundo nessa mesa online joga na mesa que você escolher.</p>' : ''}
     <button type="button" class="primary" id="shMesasOk" style="width:100%;margin-top:14px">Pronto</button>`);
   const g = $('#shMesas'); renderMesas(g);
   g.addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b && escolherMesa(b.dataset.m)) renderMesas(g); });
   $('#shMesasOk').addEventListener('click', closeSheet);
 }
 $('#setupMesa').addEventListener('click', () => abrirMesas(false));
-$('#salaMesaPick').addEventListener('click', () => abrirMesas(true));
+$('#salaMesaPick').addEventListener('click', () => { if (mesaAlheia()) toast('Na mesa online, quem escolhe a mesa é quem criou.'); else abrirMesas(true); });
 // No menu do jogo (offline e online): uma fileira de mesas para trocar sem sair da partida
 function menuMesas() {
   const acts = $('#sheet .menu-actions'); if (!acts || $('#sheet .menu-mesas')) return;
+  if (mesaAlheia()) { acts.insertAdjacentHTML('afterend', `<div class="menu-mesas"><p class="note" style="margin:0">Vocês estão na mesa <b>${esc(mesaAtual().nome)}</b>, escolhida por quem criou.</p></div>`); return; }
   acts.insertAdjacentHTML('afterend', '<div class="menu-mesas"><p class="menu-mk">Trocar a mesa</p><div class="mm-lista" id="mmLista" role="radiogroup" aria-label="Mesa"></div></div>');
   const el = $('#mmLista');
   const desenha = () => {

@@ -23,6 +23,8 @@ const SILENCIO = 50000;
 const REACAO = { intervalo: 2000, porMinuto: 8, maior: 23 };   // reações: só o número de uma frase pronta, nunca texto              // sem sinal do celular há 50 s: conta como desconectado
 const VIDA = 24 * 60 * 60 * 1000;    // a mesa some 24 h depois da última ação
 
+// Mesa (tema) escolhida por quem criou: todo mundo joga nela. Só o nome curto (madeira, ponte, teatro...).
+const temaOk = v => typeof v === 'string' && /^[a-z]{3,16}$/.test(v) ? v : null;
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 
 export class Mesa {
@@ -190,6 +192,7 @@ export class Mesa {
       case 'proxima': if (p >= 0) return this.proxima(msg); return;
       case 'sair': if (p >= 0) return this.sair(ws, p); return;
       case 'reacao': if (p >= 0) return this.reagir(p, msg.k); return;
+      case 'mesa': if (p >= 0 && m.cad[p].id === m.dono) return this.trocarTema(msg.id); return;
     }
   }
   async webSocketClose(ws) { await this.mudouConexao(ws); }
@@ -236,10 +239,18 @@ export class Mesa {
     }
     att.id = quem.id; ws.serializeAttachment(att);
     if (!m.dono || !m.cad.some(c => c && c.id === m.dono && !c.bot)) m.dono = quem.id;
+    // a mesa de quem criou vale para todos (até ele trocar)
+    if (!m.tema && m.dono === quem.id && temaOk(msg.mesa)) m.tema = msg.mesa;
     m.ultimo = Date.now();
     if (m.fase === 'jogo') this.agendar();
     await this.salvar();
     this.espalhar();
+  }
+  async trocarTema(id) {
+    const m = this.m, t = temaOk(id);
+    if (!t || t === m.tema) return;
+    m.tema = t; m.ultimo = Date.now();
+    await this.salvar(); this.espalhar();
   }
   recusar(ws, cod) { this.enviar(ws, { t: 'erro', cod }); try { ws.close(4000, cod); } catch (e) {} }
   nomeUnico(nome, p) {
@@ -389,7 +400,7 @@ export class Mesa {
       });
     }
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
-      publica: !!m.publica, iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
+      tema: m.tema || null, publica: !!m.publica, iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
       cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot ? null : (c.foto || null), on: c.bot ? true : this.conectado(p) } : null),
       jogo, agora: Date.now() };
   }
