@@ -1,0 +1,18 @@
+commit b3c28b1 · 2026-10-08T19:52:19Z
+token (usuário): {"ok":true,"status":"active"}
+token (conta): {"ok":false,"status":null}
+subdomínio: gubfort
+wrangler: 4.149.0
+banco: f732778c-0b95-4c57-9811-da7b23322c82
+tabelas: código 0 🚣 Executed 23 queries in 5.91ms (0 rows read, 0 rows written)         "Total queries executed": 23,     "success": true, 
+publicar: código 0
+Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
+Uploaded api (2.12 sec)
+Deployed api triggers (0.91 sec)
+  https://api.gubfort.workers.dev
+chaves dos lembretes: 2 segredos já guardados
+saúde: {"ok":true,"servico":"dominomanauara","mesa":true,"pagamentos":false,"versao":"b3c28b1"}
+mesa online: mesa 59611: fase espera, cadeira 0, 1 sentado
+lembretes: {"chave_publica":true}
+asaas: falta o segredo ASAAS_API_KEY no GitHub (pagamentos desligados)
+url: https://api.gubfort.workers.dev
