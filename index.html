@@ -1081,7 +1081,9 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
 html[data-mesa="pontanegra"] .table.wood{--wood-1:#6e2f3c;--wood-2:#22182e;--wood-edge:#c0703a;
   background:repeating-linear-gradient(92deg, rgba(255,235,205,.025) 0 2px, transparent 2px 7px), radial-gradient(120% 90% at 50% 45%, transparent 35%, rgba(0,0,0,.42)), linear-gradient(172deg, #2b1a3a 0%, #6a2c3c 38%, #9c4a2a 57%, #3a2238 78%, #1c1a30 100%)}
 html[data-mesa="teatro"] .table.wood{--wood-1:#7e2f48;--wood-2:#35101d;--wood-edge:#c9a13a;
-  background:radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,.42)), repeating-conic-gradient(from 45deg, rgba(232,190,90,.07) 0 25%, transparent 0 50%) 0 0/24px 24px, radial-gradient(120% 90% at 50% 45%, #7e2f48, #35101d)}
+  background:radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,.42)), var(--img-teatro) center 46%/min(78%, 340px) auto no-repeat, repeating-conic-gradient(from 45deg, rgba(232,190,90,.05) 0 25%, transparent 0 50%) 0 0/24px 24px, radial-gradient(120% 90% at 50% 45%, #7e2f48, #35101d)}
+html[data-mesa="ponte"] .table.wood{--wood-1:#1c2f50;--wood-2:#0a1424;--wood-edge:#4f6f96;
+  background:radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,.42)), var(--img-ponte) center 50%/112% auto no-repeat, linear-gradient(180deg, #0e1830 0%, #1c2f50 56%, #12223c 66%, #0a1424 100%)}
 /* Área do dono: pagamentos */
 .dn-paglista{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .dn-paglista li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;font-size:15px;color:var(--wood-ink);padding:6px 0;border-bottom:1px solid rgba(239,226,204,.15)}
@@ -1206,6 +1208,24 @@ html[data-mesa="teatro"] .table.wood{--wood-1:#7e2f48;--wood-2:#35101d;--wood-ed
 @media (prefers-reduced-motion: reduce){.cq-novas .es-cq-ic{animation:none}}
 .festa-cq{margin:2px 0 4px;font-size:15px;line-height:1.4;color:var(--wood-ink)}
 .festa-cq b{color:var(--glow)}
+/* Nome da mesa: impresso no pano, embaixo, atrás das pedras */
+.mesa-nome{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);display:grid;justify-items:center;gap:2px;pointer-events:none;white-space:nowrap;color:var(--wood-ink);opacity:.34;text-align:center}
+.mesa-nome small{display:flex;align-items:center;gap:8px;font-size:10.5px;font-weight:800;letter-spacing:.32em;text-transform:uppercase;padding-left:.32em}
+.mesa-nome small::before,.mesa-nome small::after{content:'';width:18px;height:1px;background:currentColor}
+.mesa-nome b{font-family:var(--font-display);font-weight:400;font-size:clamp(20px,6.2vw,28px);line-height:1.05}
+html.plano .mesa-nome,.board-wrap:not(:has(.mesa-patro)) .mesa-nome{bottom:10px}
+.sala-centro.com-nome{display:grid;place-items:center;padding:10%;text-align:center}
+.sc-mesa{display:grid;gap:1px;color:#efe2cc;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.sc-mesa small{font-size:9.5px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;opacity:.85}
+.sc-mesa b{font-size:13px;font-weight:800;line-height:1.15}
+/* celular baixo (iPhone SE): a mesa é curta, o nome vira uma linha pequena */
+@media (max-height: 700px){
+  .mesa-nome{display:flex;align-items:center;gap:7px;bottom:24px}
+  .mesa-nome small::before,.mesa-nome small::after{display:none}
+  .mesa-nome small,.mesa-nome b{font-family:inherit;font-size:10.5px;font-weight:800;line-height:1;letter-spacing:.22em;text-transform:uppercase;padding:0}
+  html.plano .mesa-nome,.board-wrap:not(:has(.mesa-patro)) .mesa-nome{bottom:8px}
+}
+#goEstilo{margin:2px 0 8px}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -1329,6 +1349,11 @@ html[data-mesa="teatro"] .table.wood{--wood-1:#7e2f48;--wood-2:#35101d;--wood-ed
     </div>
     <div class="field">
       <span class="flabel">Sua cara na mesa</span>
+      <button type="button" class="rulescard estilocard" id="goEstilo" hidden>
+        <span class="rc-ic es-ic" id="goEstiloFace" aria-hidden="true"></span>
+        <span class="rc-tx"><b>Personalizar</b><small id="goEstiloTx">Avatar, mesa e conquistas</small></span>
+        <span class="rc-go" aria-hidden="true">›</span>
+      </button>
       <div class="avatars" id="avatarGrid" role="radiogroup" aria-label="Escolha sua foto ou um avatar"></div>
       <div class="links" id="photoTools" hidden><button type="button" class="linkbtn" id="photoChange">Trocar foto</button><button type="button" class="linkbtn" id="photoRemove">Remover foto</button></div>
       <input type="file" id="photoInput" accept="image/*" hidden>
@@ -1371,11 +1396,6 @@ html[data-mesa="teatro"] .table.wood{--wood-1:#7e2f48;--wood-2:#35101d;--wood-ed
       <span class="ck">Mesa online</span><span class="ct">Jogar com os amigos</span>
       <span class="cd">Cada um no seu celular. Crie a mesa e chame a turma pelo WhatsApp, ou entre com o número que um amigo mandou.</span>
     </button>
-    <button type="button" class="rulescard estilocard" id="goEstilo">
-      <span class="rc-ic es-ic" id="goEstiloFace" aria-hidden="true"></span>
-      <span class="rc-tx"><b>Personalizar</b><small id="goEstiloTx">Avatar, mesa e conquistas</small></span>
-      <span class="rc-go" aria-hidden="true">›</span>
-    </button>
     <button type="button" class="donocard" id="donoCard" hidden>
       <span class="dc-live" aria-hidden="true"></span>
       <span class="dc-tx"><b>Área do administrador</b><small id="donoCardTx">Os números do jogo</small></span>
@@ -1394,6 +1414,11 @@ html[data-mesa="teatro"] .table.wood{--wood-1:#7e2f48;--wood-2:#35101d;--wood-ed
       <p class="mt-nota" id="mtNota"></p>
       <a class="mt-share" id="mtShare" href="https://wa.me/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.3 14.8L2.3 21.8l4.9-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-3-.4-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1l-.5-.3Z"/></svg><span>Mandar meu histórico no WhatsApp</span></a>
     </div>
+    <button type="button" class="fbcard" id="fbCard" hidden>
+      <span class="sp-k">Fale com a gente</span>
+      <b>Achou um erro ou tem uma ideia?</b>
+      <span>O jogo está começando e cada opinião ajuda a deixar ele do jeito da nossa mesa.</span>
+    </button>
     <div class="avisos-card wood" id="avisosCard" hidden>
       <span class="ck">Lembretes para jogar</span>
       <p id="avisosTx"></p>
@@ -1411,11 +1436,6 @@ html[data-mesa="teatro"] .table.wood{--wood-1:#7e2f48;--wood-2:#35101d;--wood-ed
       <p id="apoioTxt">O Dominó Manauara é de graça. Se você curte, ajude a manter a mesa de pé com quanto puder.</p>
       <div class="apoio-vals" id="apoioVals"></div>
     </div>
-    <button type="button" class="fbcard" id="fbCard" hidden>
-      <span class="sp-k">Fale com a gente</span>
-      <b>Achou um erro ou tem uma ideia?</b>
-      <span>O jogo está começando e cada opinião ajuda a deixar ele do jeito da nossa mesa.</span>
-    </button>
     <a class="sponsor" id="sponsor" target="_blank" rel="noopener" hidden></a>
     <button type="button" class="anuncie-link" id="anuncieLink" hidden><span>Quer ver a sua empresa no jogo?</span><b>Anuncie no Dominó Manauara ›</b></button>
     <p class="note foot"><span id="footBrand">Dominó Manauara</span> · <button type="button" class="verlink" id="verBtn">Versão <span class="appver"></span></button> · <a href="termos.html">Termos</a> · <a href="privacidade.html">Privacidade</a> · <button type="button" class="verlink" id="footAnuncie" hidden>Anuncie</button><span id="footApoioSep" hidden> · </span><button type="button" class="verlink" id="footApoio" hidden>Apoie o jogo</button><span> · </span><a href="https://www.instagram.com/dominomanauara/" target="_blank" rel="noopener" id="footInsta">Instagram</a><span id="footInstSep" hidden> · </span><button type="button" class="verlink" id="footInstalar" hidden>Como instalar o app</button></p>
@@ -2128,8 +2148,9 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '2.8.1', data: '07/10/2026', itens: ['O nome da mesa escolhida aparece impresso na mesa, embaixo, e no centro da sala da mesa online.', 'Personalizar agora fica dentro do perfil: toque na sua foto, no início.', 'Mesa nova: Ponte Rio Negro, para quem bater 10 vezes. A do Teatro Amazonas ganhou a cúpula.', '"Achou um erro?" fica logo abaixo do seu histórico.'] },
   { v: '2.8', data: '07/10/2026', itens: [
-    'Novo no início: Personalizar. Monte o seu avatar peça por peça, com a camisa do Garantido ou do Caprichoso.',
+    'Novo no perfil (toque na sua foto, no início): Personalizar. Monte o seu avatar peça por peça, com a camisa do Garantido ou do Caprichoso.',
     'Conquistas: jogando, você ganha tapioca, cuia de tacacá, açaí, X-caboquinho e tambaqui assado para o avatar.',
     'Mesas novas: Garantido, Caprichoso e Encontro das Águas de graça; Ponta Negra, Açaí, Rio Negro e Tucumã se ganham jogando.'
   ] },
@@ -4402,6 +4423,10 @@ addEventListener('hashchange', () => {
 // O plano vale por 30 dias ou 1 ano e não renova sozinho. Fica ligado ao código deste aparelho (o mesmo da mesa online);
 // para trocar de celular, o código do plano leva tudo junto. Extras: selo, sem anúncios, avatares e cores de mesa.
 const PLKEY = 'dmz-plano', PEDKEY = 'dmz-pedido', MCKEY = 'dmz-mesa-cor', DOAKEY = 'dmz-doador';
+// Desenhos das mesas de cartão-postal (bem apagados, atrás das pedras): a Ponte Rio Negro e a cúpula do Teatro Amazonas
+const svgURL = svg => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+document.documentElement.style.setProperty('--img-ponte', svgURL('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" fill="none" stroke-linecap="round"><path d="M116 18L22 70.0M124 18L218 70.0M113 25L40 68.7M127 25L200 68.7M110 33L58 67.6M130 33L182 67.6M108 42L76 66.8M132 42L164 66.8M107 52L92 66.3M133 52L148 66.3" stroke="#efe2cc" stroke-opacity=".16" stroke-width=".55"/><path d="M14 70.7V80M46 68.3V80M194 68.3V80M226 70.7V80" stroke="#efe2cc" stroke-opacity=".2" stroke-width="1.6"/><path d="M106 80V66M134 80V66" stroke="#efe2cc" stroke-opacity=".26" stroke-width="2.4"/><path d="M106 66C106 32 111 13 120 13S134 32 134 66" stroke="#efe2cc" stroke-opacity=".34" stroke-width="2.6"/><path d="M0 72Q120 60 240 72" stroke="#efe2cc" stroke-opacity=".32" stroke-width="2"/><g fill="#f3c063" fill-opacity=".55"><circle cx="6" cy="70.0" r=".9"/><circle cx="17" cy="69.0" r=".9"/><circle cx="28" cy="68.1" r=".9"/><circle cx="39" cy="67.3" r=".9"/><circle cx="50" cy="66.6" r=".9"/><circle cx="61" cy="66.1" r=".9"/><circle cx="72" cy="65.6" r=".9"/><circle cx="83" cy="65.19999999999999" r=".9"/><circle cx="94" cy="64.89999999999999" r=".9"/><circle cx="105" cy="64.69999999999999" r=".9"/><circle cx="116" cy="64.6" r=".9"/><circle cx="127" cy="64.6" r=".9"/><circle cx="138" cy="64.69999999999999" r=".9"/><circle cx="149" cy="65.0" r=".9"/><circle cx="160" cy="65.3" r=".9"/><circle cx="171" cy="65.69999999999999" r=".9"/><circle cx="182" cy="66.19999999999999" r=".9"/><circle cx="193" cy="66.8" r=".9"/><circle cx="204" cy="67.5" r=".9"/><circle cx="215" cy="68.39999999999999" r=".9"/><circle cx="226" cy="69.3" r=".9"/><circle cx="237" cy="70.3" r=".9"/></g><path d="M20 86h40M80 89h30M130 86h50M190 90h28M50 93h36M150 94h24" stroke="#f3c063" stroke-opacity=".12" stroke-width="1"/></svg>'));
+document.documentElement.style.setProperty('--img-teatro', svgURL('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none"><defs><pattern id="m" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2.5" height="2.5" fill="#e9c24a" fill-opacity=".34"/><rect x="2.5" y="2.5" width="2.5" height="2.5" fill="#3f9a5a" fill-opacity=".3"/><rect x="2.5" width="2.5" height="2.5" fill="#3b6fc2" fill-opacity=".26"/></pattern></defs><path d="M27 63C27 41 37 27 50 21C63 27 73 41 73 63Z" fill="url(#m)" stroke="#efe2cc" stroke-opacity=".3" stroke-width="1"/><path d="M44 21V15H56V21M46 15C46 11 54 11 54 15M50 11V5" stroke="#efe2cc" stroke-opacity=".3" stroke-width="1"/><path d="M25 63H75V69H25ZM16 69H84V76H16Z" stroke="#efe2cc" stroke-opacity=".26" stroke-width="1"/><path d="M22 76V90M31 76V90M40 76V90M60 76V90M69 76V90M78 76V90M14 90H86" stroke="#efe2cc" stroke-opacity=".2" stroke-width="1.2"/><path d="M44 90V80Q50 75 56 80V90" stroke="#efe2cc" stroke-opacity=".22" stroke-width="1"/></svg>'));
 // Mesas: grátis (o regional fica de graça), por conquista (req) ou do Plano Apoiador (plano)
 const MESAS = [
   { id: 'madeira', nome: 'Madeira', c1: '#3d2719', c2: '#26180f' },
@@ -4411,9 +4436,10 @@ const MESAS = [
   { id: 'feltro', nome: 'Feltro verde', c1: '#2f6b4c', c2: '#163a29' },
   { id: 'pontanegra', nome: 'Ponta Negra', bg: 'linear-gradient(172deg, #3b1d3f 0%, #7e3338 38%, #c0622b 60%, #2a2340 100%)', req: 'vit10' },
   { id: 'acai', nome: 'Açaí', c1: '#4f2449', c2: '#26101f', req: 'jogo3' },
+  { id: 'ponte', nome: 'Ponte Rio Negro', bg: 'var(--img-ponte) center 58%/150% auto no-repeat, linear-gradient(180deg, #0e1830 0%, #1c2f50 58%, #0a1424 100%)', req: 'bat10' },
   { id: 'rionegro', nome: 'Rio Negro', c1: '#24364a', c2: '#0e1620', req: 'galo5' },
   { id: 'tucuma', nome: 'Tucumã', c1: '#a3581a', c2: '#4f2608', req: 'vit25' },
-  { id: 'teatro', nome: 'Teatro Amazonas', bg: 'radial-gradient(circle at 40% 30%, #8a3550, #3a1220 80%)', plano: true }
+  { id: 'teatro', nome: 'Teatro Amazonas', bg: 'var(--img-teatro) center 40%/86% auto no-repeat, radial-gradient(circle at 40% 30%, #8a3550, #3a1220 80%)', plano: true }
 ];
 const PRECO = { mensal: 'R$ 4,90 · 30 dias', anual: 'R$ 39,90 · 1 ano', doacao5: 'R$ 5', doacao10: 'R$ 10', doacao20: 'R$ 20' };
 let apoioVolta = 'home';
@@ -5532,9 +5558,27 @@ function aplicarMesa() {
   try {
     const m = mesaAtual(), r = document.documentElement;
     if (m.id === 'madeira') r.removeAttribute('data-mesa'); else r.setAttribute('data-mesa', m.id);
+    nomeNaMesa(m);
   } catch (e) {}
 }
 const fundoMesa = m => m.bg || `radial-gradient(circle at 40% 35%, ${m.c1}, ${m.c2} 78%)`;
+// O nome da mesa aparece impresso no pano, embaixo, atrás das pedras (a de madeira, a padrão, fica sem nome)
+function nomeNaMesa(m) {
+  const wrap = $('#boardWrap'); if (!wrap) return;
+  let el = wrap.querySelector('.mesa-nome');
+  if (m.id === 'madeira') { if (el) el.remove(); return; }
+  if (!el) { wrap.insertAdjacentHTML('afterbegin', '<div class="mesa-nome" aria-hidden="true"></div>'); el = wrap.querySelector('.mesa-nome'); }
+  el.innerHTML = `<small>Mesa</small><b>${esc(m.nome)}</b>`;
+}
+// Na sala da mesa online, o centro mostra a sua mesa com o nome
+const renderSalaEstilo = renderSala;
+renderSala = function () {
+  renderSalaEstilo();
+  const c = $('#salaMesa .sala-centro'), m = mesaAtual();
+  if (!c || m.id === 'madeira') return;
+  c.classList.add('com-nome'); c.style.background = fundoMesa(m);
+  c.innerHTML = `<span class="sc-mesa"><small>Mesa</small><b>${esc(m.nome)}</b></span>`;
+};
 
 // ---- Desenhos pequenos ----
 const LOCK_SVG = '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>';
@@ -5692,7 +5736,7 @@ $('#esMesas').addEventListener('click', e => {
   toast(`Mesa ${m.nome} escolhida.`);
 });
 $('#estiloBack').addEventListener('click', () => show(estiloVolta));
-$('#goEstilo').addEventListener('click', () => abrirEstilo('home'));
+$('#goEstilo').addEventListener('click', () => abrirEstilo('profile'));
 
 // ---- Conquista nova: aviso no início (com o prêmio) e uma linha na festa de fim de partida ----
 function conquistasVistas() { try { const l = JSON.parse(store.get(CQKEY) || '[]'); return Array.isArray(l) ? l : []; } catch (e) { return []; } }
@@ -5720,16 +5764,13 @@ festa = function (r, depois) {
   const novas = conquistasNovas().filter(c => !cqNaFesta.has(c.id));
   if (!novas.length) return;
   novas.forEach(c => cqNaFesta.add(c.id));
-  $('#festaOk').insertAdjacentHTML('beforebegin', `<p class="festa-cq"><span aria-hidden="true">🎁</span> Conquista nova: <b>${esc(juntaE(novas.map(c => c.nome)))}</b>. O prêmio está em Personalizar, no início.</p>`);
+  $('#festaOk').insertAdjacentHTML('beforebegin', `<p class="festa-cq"><span aria-hidden="true">🎁</span> Conquista nova: <b>${esc(juntaE(novas.map(c => c.nome)))}</b>. O prêmio está no seu perfil, em Personalizar.</p>`);
 };
 
-// ---- Início: o cartão Personalizar ----
+// ---- Início: o aviso de conquista nova aparece um pouco depois de chegar ----
 const renderHomeEstilo = renderHome;
 renderHome = function () {
   renderHomeEstilo();
-  $('#goEstiloFace').innerHTML = faceImg(myFaceURI(), '');
-  const feitas = CONQUISTAS.filter(c => conquistaFeita(c.id)).length;
-  $('#goEstiloTx').textContent = feitas ? `Avatar, mesa e conquistas · ${feitas} de ${CONQUISTAS.length}` : 'Monte o seu avatar, troque a mesa e ganhe prêmios jogando';
   clearTimeout(renderHome.cq);
   renderHome.cq = setTimeout(avisarConquistas, 1100);
 };
@@ -5738,6 +5779,13 @@ renderHome = function () {
 const renderProfileEstilo = renderProfile;
 renderProfile = function () {
   renderProfileEstilo();
+  // o botão Personalizar fica no perfil (quando já tem perfil salvo)
+  $('#goEstilo').hidden = !profile;
+  if (profile) {
+    $('#goEstiloFace').innerHTML = faceImg(myFaceURI(), '');
+    const feitas = CONQUISTAS.filter(c => conquistaFeita(c.id)).length;
+    $('#goEstiloTx').textContent = feitas ? `Avatar, mesa e conquistas · ${feitas} de ${CONQUISTAS.length}` : 'Monte o seu avatar, troque a mesa e ganhe prêmios jogando';
+  }
   const grid = $('#avatarGrid');
   const meu = [draft.av, profile && profile.av, store.get(AVMKEY)].find(v => /^c[0-9a-z]{8}$/.test(v || ''));
   const a = meu && avatarDe(meu), livre = a && avatarLivre(a);
