@@ -1078,6 +1078,10 @@ html[data-mesa="caprichoso"] .table.wood{--wood-1:#23489c;--wood-2:#0c1f4a;--woo
 html[data-mesa="tucuma"] .table.wood{--wood-1:#a3581a;--wood-2:#4f2608;--wood-edge:#c98238}
 html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-edge:#6b5534;
   background:repeating-linear-gradient(92deg, rgba(255,235,205,.025) 0 2px, transparent 2px 7px), radial-gradient(120% 90% at 50% 45%, transparent 35%, rgba(0,0,0,.4)), linear-gradient(105deg, #1a1f24 0 46%, #3b3125 50%, #7a5c36 54% 100%)}
+html[data-mesa="pontanegra"] .table.wood{--wood-1:#6e2f3c;--wood-2:#22182e;--wood-edge:#c0703a;
+  background:repeating-linear-gradient(92deg, rgba(255,235,205,.025) 0 2px, transparent 2px 7px), radial-gradient(120% 90% at 50% 45%, transparent 35%, rgba(0,0,0,.42)), linear-gradient(172deg, #2b1a3a 0%, #6a2c3c 38%, #9c4a2a 57%, #3a2238 78%, #1c1a30 100%)}
+html[data-mesa="teatro"] .table.wood{--wood-1:#7e2f48;--wood-2:#35101d;--wood-edge:#c9a13a;
+  background:radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,.42)), repeating-conic-gradient(from 45deg, rgba(232,190,90,.07) 0 25%, transparent 0 50%) 0 0/24px 24px, radial-gradient(120% 90% at 50% 45%, #7e2f48, #35101d)}
 /* Área do dono: pagamentos */
 .dn-paglista{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .dn-paglista li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;font-size:15px;color:var(--wood-ink);padding:6px 0;border-bottom:1px solid rgba(239,226,204,.15)}
@@ -1144,6 +1148,64 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
 .dn-fotobt .primary{width:auto;padding:9px 14px;font-size:15px}
 .dn-fotobt .linkbtn{font-size:14px}
 .dn-fotolista span b{font-family:inherit;font-size:16px;font-weight:800;line-height:1.3}
+
+/* ===== Personalizar ===== */
+.estilocard .es-ic{width:46px;height:46px;transform:none;border-radius:50%;overflow:hidden;filter:none;box-shadow:0 0 0 2px var(--line)}
+.estilocard .es-ic img{width:100%;height:100%;display:block;object-fit:cover}
+.es-av{display:grid;gap:14px;padding:18px 16px 16px;justify-items:center}
+.es-av .ck{justify-self:start;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+.es-prev{width:136px;height:136px;border-radius:50%;display:block;box-shadow:0 0 0 3px var(--wood-edge),0 12px 26px -10px rgba(0,0,0,.65)}
+.es-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:100%}
+.es-tabs button{min-height:42px;padding:8px 4px;border-radius:999px;border:1px solid rgba(239,226,204,.32);background:rgba(0,0,0,.18);color:var(--wood-ink);font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.es-tabs button[aria-selected="true"]{background:var(--glow);border-color:transparent;color:#2a1a08}
+.es-ops{display:grid;gap:10px;width:100%}
+.es-gk{margin:2px 0 0;font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--wood-muted)}
+.es-grid{display:grid;grid-template-columns:repeat(var(--cols,4),minmax(0,1fr));gap:12px 8px}
+.es-op{display:grid;justify-items:center;align-content:start;gap:4px;padding:0;border:0;background:none;color:var(--wood-ink);font:inherit;cursor:pointer;text-align:center;min-width:0}
+.es-th{position:relative;display:block;width:100%;max-width:66px;aspect-ratio:1;border-radius:50%}
+.es-th img{width:100%;height:100%;display:block;border-radius:50%;box-shadow:0 0 0 2px rgba(239,226,204,.22)}
+.es-op[aria-checked="true"] .es-th img{box-shadow:0 0 0 3px var(--wood-2),0 0 0 5.5px var(--glow)}
+.es-op:active .es-th{transform:scale(.94)}
+.es-op.trancado .es-th img{filter:grayscale(.5);opacity:.62}
+.es-th .av-lock{right:-3px;top:-3px}
+.es-n{font-size:12.5px;font-weight:700;line-height:1.2;overflow-wrap:anywhere}
+.es-op small{font-size:11.5px;font-weight:700;line-height:1.15;color:var(--glow)}
+#esUsar{width:100%}
+.es-trava{margin:-4px 0 0;display:grid;gap:2px;text-align:center;font-size:14px;line-height:1.4;color:var(--wood-muted)}
+.es-sec{display:grid;gap:10px}
+.es-sec .ap-k small{font-size:inherit;letter-spacing:inherit;font-weight:inherit}
+.es-mesas{grid-template-columns:repeat(3,1fr)}
+.es-mesas .ap-cor{gap:5px;padding:10px 4px}
+.es-mesas .ap-cor small{font-size:11.5px;color:var(--muted);font-weight:700}
+.es-mesas .ap-sw{width:52px;height:52px}
+.ap-cor i svg{width:11px;height:11px}
+.es-conq,.cq-novas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.es-conq li{display:grid;grid-template-columns:48px minmax(0,1fr);gap:12px;align-items:center;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg-2)}
+.es-conq li.feita{border-color:var(--nos)}
+.es-cq-ic{position:relative;display:block;width:48px;height:48px}
+.es-cq-ic img,.es-msw{display:block;width:100%;height:100%;border-radius:50%;box-shadow:0 0 0 2px var(--line)}
+.es-conq li:not(.feita) .es-cq-ic img,.es-conq li:not(.feita) .es-msw{filter:grayscale(.35);opacity:.78}
+.es-mesas .ap-cor.trancado .ap-sw{filter:none;opacity:.88}
+.es-ok{position:absolute;right:-4px;bottom:-4px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--nos);color:#fff;font-style:normal;font-size:13px;font-weight:800;box-shadow:0 0 0 2px var(--bg-2)}
+.es-cq-tx{display:grid;gap:2px;min-width:0}
+.es-cq-tx b{font-size:16px;line-height:1.2}
+.es-cq-tx small{font-size:13.5px;line-height:1.35;color:var(--muted)}
+.es-cq-tx .es-premio{color:var(--fg);opacity:.85}
+.es-bar{display:block;height:6px;margin-top:4px;border-radius:3px;background:var(--line);overflow:hidden}
+.es-bar i{display:block;height:100%;border-radius:3px;background:var(--nos)}
+.avbtn.montar .face{background:var(--bg-2);box-shadow:inset 0 0 0 2px var(--muted);color:var(--fg)}
+.avbtn.montado .face{position:relative}
+/* Aviso de conquista */
+.cq-novas{margin:4px 0 14px}
+.cq-novas li{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;align-items:center}
+.cq-novas .es-cq-ic{width:56px;height:56px;animation:cqPula .6s cubic-bezier(.3,1.6,.5,1) both}
+.cq-novas li:nth-child(2) .es-cq-ic{animation-delay:.12s}.cq-novas li:nth-child(3) .es-cq-ic{animation-delay:.24s}
+.cq-novas b{display:block;font-size:17px;line-height:1.25}
+.cq-novas small{display:block;font-size:14.5px;line-height:1.35;color:var(--muted)}
+@keyframes cqPula{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion: reduce){.cq-novas .es-cq-ic{animation:none}}
+.festa-cq{margin:2px 0 4px;font-size:15px;line-height:1.4;color:var(--wood-ink)}
+.festa-cq b{color:var(--glow)}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -1309,6 +1371,11 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
       <span class="ck">Mesa online</span><span class="ct">Jogar com os amigos</span>
       <span class="cd">Cada um no seu celular. Crie a mesa e chame a turma pelo WhatsApp, ou entre com o número que um amigo mandou.</span>
     </button>
+    <button type="button" class="rulescard estilocard" id="goEstilo">
+      <span class="rc-ic es-ic" id="goEstiloFace" aria-hidden="true"></span>
+      <span class="rc-tx"><b>Personalizar</b><small id="goEstiloTx">Avatar, mesa e conquistas</small></span>
+      <span class="rc-go" aria-hidden="true">›</span>
+    </button>
     <button type="button" class="donocard" id="donoCard" hidden>
       <span class="dc-live" aria-hidden="true"></span>
       <span class="dc-tx"><b>Área do administrador</b><small id="donoCardTx">Os números do jogo</small></span>
@@ -1448,7 +1515,7 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
         <li><span class="ap-ic" aria-hidden="true">✓</span><span><b>Jogo sem anúncios</b></span></li>
         <li><span class="ap-ic" aria-hidden="true">◉</span><span><b>Sua foto na mesa online</b>, depois de aprovada</span></li>
         <li><span class="ap-ic" aria-hidden="true">☺</span><span><b>Avatares exclusivos</b>: coroa, óculos escuros, bonés vermelho e azul de Parintins</span></li>
-        <li><span class="ap-ic" aria-hidden="true">◼</span><span><b>Cores de mesa</b>: Garantido, Caprichoso, Encontro das Águas, Rio Negro, açaí, tucumã e feltro verde</span></li>
+        <li><span class="ap-ic" aria-hidden="true">◼</span><span><b>Tudo liberado na hora</b>: mesas e comidas que se ganham jogando, mais a mesa Teatro Amazonas e avatares com coroa</span></li>
       </ul>
       <div class="ap-precos" id="apPrecos">
         <button type="button" class="ap-preco" data-p="mensal"><b>R$ 4,90</b><span>30 dias</span></button>
@@ -1457,8 +1524,7 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
       <p class="note ap-nota">O plano também ajuda a manter o jogo de graça. Não renova sozinho: quando acabar, você escolhe se continua.</p>
     </div>
     <div class="ap-perso">
-      <span class="ap-k">Cor da mesa</span>
-      <div class="ap-cores" id="apCores" role="radiogroup" aria-label="Cor da mesa"></div>
+      <button type="button" class="secondary" id="apEstilo" style="width:100%">Escolher mesa e montar avatar</button>
       <span class="ap-k">Avatares exclusivos</span>
       <div class="ap-avs" id="apAvs"></div>
     </div>
@@ -1467,6 +1533,28 @@ html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-
       <p class="note">Digite o código que aparece no outro celular, em "Apoie o jogo". Ele traz o plano e o selo de doador.</p>
       <div class="sala-cod"><input type="text" id="apTrazerCod" maxlength="9" placeholder="ABCD-1234" autocomplete="off" autocapitalize="characters" spellcheck="false"><button type="button" class="secondary" id="apTrazer">Trazer</button></div>
     </details>
+  </section>
+
+  <section class="screen panel" id="scrEstilo" hidden>
+    <button type="button" class="backbtn" id="estiloBack">← Voltar</button>
+    <div><p class="kicker">Personalizar</p><h2 class="brand" style="font-size:30px">Do seu jeito</h2></div>
+    <div class="es-av wood">
+      <span class="ck">Seu avatar</span>
+      <img id="esPrev" class="es-prev" alt="Prévia do seu avatar">
+      <div class="es-tabs" id="esTabs" role="tablist" aria-label="Partes do avatar"></div>
+      <div class="es-ops" id="esOps"></div>
+      <button type="button" class="primary" id="esUsar">Usar este avatar</button>
+      <p class="es-trava" id="esTrava" hidden></p>
+    </div>
+    <div class="es-sec">
+      <span class="ap-k">Sua mesa</span>
+      <div class="ap-cores es-mesas" id="esMesas" role="radiogroup" aria-label="Mesa"></div>
+    </div>
+    <div class="es-sec">
+      <span class="ap-k">Conquistas <small id="esConqN"></small></span>
+      <ul class="es-conq" id="esConq"></ul>
+      <p class="note">Valem partidas offline e na mesa online. Cada conquista libera uma comida de Manaus para o avatar ou uma mesa nova.</p>
+    </div>
   </section>
 
   <section class="screen panel" id="scrAnuncie" hidden>
@@ -2040,8 +2128,13 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '2.8', data: '07/10/2026', itens: [
+    'Novo no início: Personalizar. Monte o seu avatar peça por peça, com a camisa do Garantido ou do Caprichoso.',
+    'Conquistas: jogando, você ganha tapioca, cuia de tacacá, açaí, X-caboquinho e tambaqui assado para o avatar.',
+    'Mesas novas: Garantido, Caprichoso e Encontro das Águas de graça; Ponta Negra, Açaí, Rio Negro e Tucumã se ganham jogando.'
+  ] },
   { v: '2.7', data: '07/10/2026', itens: [
-    'Instalar o app agora é o primeiro passo, com o passo a passo para iPhone e Android (dá para pular).',
+    'Passo a passo para instalar o app no iPhone e no Android, com o link "Como instalar o app" no fim do início.',
     'Escolha o seu bairro no perfil: ele aparece na mesa online, para quem joga com você.',
     'Avatares novos: torcedor do Garantido e torcedora do Caprichoso.',
     'Siga o Dominó Manauara no Instagram: @dominomanauara (link no início).',
@@ -2208,8 +2301,67 @@ function avatarSVG(a) {
     + (a.emblema === 'estrela' ? '<path transform="translate(50 91.5)" d="' + estrelaD(8.6, 3.6) + '" fill="#fff"/>' : '')
     + (a.coracao ? '<path transform="translate(63.5 89) scale(1.25)" d="M0 4C-1.5 2.6-5 .2-5-2.6C-5-4.4-3.7-5.6-2.3-5.6C-1.2-5.6-.4-5 0-4.2C.4-5 1.2-5.6 2.3-5.6C3.7-5.6 5-4.4 5-2.6C5 .2 1.5 2.6 0 4Z" fill="#e23b3b" stroke="#fff" stroke-width="1"/>' : '')
     + `<circle cx="32.8" cy="47.5" r="4.4" fill="${dk}"/><circle cx="67.2" cy="47.5" r="4.4" fill="${dk}"/><ellipse cx="50" cy="45" rx="17" ry="20" fill="${skin}"/>`
-    + `${hair}${face}${top}</g></svg>`;
+    + `${hair}${face}${top}${a.mao && MAO_SVG[a.mao] ? MAO_SVG[a.mao] : ''}</g></svg>`;
 }
+// Na mão: comidas e coisas de Manaus (desenhadas aqui, na frente do peito, do lado direito)
+const MAO_SVG = {
+  tacaca: '<g transform="translate(71 83)"><path d="M10 -12L1 1" stroke="#d9b98a" stroke-width="1.6" stroke-linecap="round"/>'
+    + '<path d="M-15 0A15 12 0 0 0 15 0Z" fill="#5a3218"/><ellipse cx="0" cy="0" rx="15" ry="4.4" fill="#e2b324"/>'
+    + '<ellipse cx="-6" cy="-.3" rx="3.6" ry="1.5" fill="#3f8f3a" transform="rotate(-20 -6 -.3)"/><ellipse cx="2" cy="1" rx="3.4" ry="1.4" fill="#2f7a2e" transform="rotate(25 2 1)"/>'
+    + '<ellipse cx="-1" cy="-1.6" rx="2.6" ry="1.1" fill="#4b9b40" transform="rotate(-5 -1 -1.6)"/><path d="M6.5 -1q3 -2.4 5.6 -.2" stroke="#ea7a3e" stroke-width="1.8" fill="none" stroke-linecap="round"/>'
+    + '<path d="M-15 0A15 4.4 0 0 0 15 0" stroke="#3d2010" stroke-width="1" fill="none"/></g>',
+  xcaboquinho: '<g transform="translate(71 86)"><path d="M-14 1h28v3.2a3.2 3.2 0 0 1-3.2 3.2h-21.6a3.2 3.2 0 0 1-3.2-3.2z" fill="#c4843f"/>'
+    + '<rect x="-14.6" y="-1.8" width="29.2" height="3.4" rx="1.2" fill="#f6e7b8"/>'
+    + '<path d="M-13.4 -2.6q2.2 -2.4 4.4 0t4.4 0t4.4 0t4.4 0t4.4 0t4.4 0" stroke="#f08a24" stroke-width="2.6" fill="none" stroke-linecap="round"/>'
+    + '<path d="M-14 -3.6a14 10 0 0 1 28 0z" fill="#dca055"/><g fill="#f7ecd2"><ellipse cx="-5" cy="-8" rx="1" ry=".55"/><ellipse cx="1" cy="-10" rx="1" ry=".55"/><ellipse cx="6" cy="-7" rx="1" ry=".55"/><ellipse cx="-1" cy="-6" rx="1" ry=".55"/></g></g>',
+  tapioca: '<g transform="translate(72 86) rotate(-14)"><path d="M-15 1A15 15 0 0 1 15 1Z" fill="#fbf7ee" stroke="#e3d8c0" stroke-width="1.1"/>'
+    + '<path d="M-12.5 1A12.5 3.4 0 0 0 12.5 1Z" fill="#f2cf6e"/><path d="M-9 1A9 2.2 0 0 0 9 1Z" fill="#fffaf0"/>'
+    + '<g fill="#efe4cc"><circle cx="-6" cy="-6" r=".9"/><circle cx="2" cy="-9" r=".9"/><circle cx="7" cy="-4" r=".9"/><circle cx="-2" cy="-3.5" r=".8"/></g></g>',
+  tambaqui: '<g transform="translate(69 86) rotate(-12)"><path d="M10 0L19 -8L17.5 0L19 8Z" fill="#7d431c"/>'
+    + '<path d="M-15 0C-10 -12 5 -12 11 0C5 12 -10 12 -15 0Z" fill="#a8622e"/><path d="M-15 0C-10 5 0 7 11 0C5 12 -10 12 -15 0Z" fill="#8f4f22"/>'
+    + '<path d="M-6 -7L-2.5 6M0 -8.5L3.5 7M6 -6.5L8.5 4" stroke="#5a2e12" stroke-width="1.7" stroke-linecap="round"/>'
+    + '<circle cx="-9.5" cy="-2" r="1.6" fill="#fff"/><circle cx="-9.6" cy="-2" r=".8" fill="#222"/><path d="M-14.6 1.2q1.6 .6 2.8 0" stroke="#5a2e12" stroke-width="1" fill="none"/></g>',
+  acai: '<g transform="translate(73 84)"><path d="M3.5 -8L9 -17" stroke="#cfd6dc" stroke-width="1.8" stroke-linecap="round"/>'
+    + '<path d="M-10 -9h20l-2.8 19h-14.4z" fill="#f4f1f6" stroke="#d7cfe0" stroke-width="1"/><path d="M-9.4 -5.6h18.8l-2.3 15.2h-14.2z" fill="#4b1a4a"/>'
+    + '<ellipse cx="0" cy="-5.8" rx="9.4" ry="2.2" fill="#6e2b69"/><ellipse cx="-3" cy="-6.2" rx="2.6" ry=".8" fill="#8a3d84"/></g>'
+};
+
+// ---- Avatar montável: o jogador escolhe cada parte. Vira um código curto ("c" + 8 letras) que vai para a mesa online. ----
+// Partes com "req" se ganham jogando (conquistas); com "plano" vêm no Plano Apoiador (escondidas enquanto os pagamentos estiverem desligados).
+const PARTES = {
+  pele: [SKIN.claro, SKIN.medio, SKIN.moreno, SKIN.jambo, SKIN.escuro].map(v => ({ v })),
+  cabelo: [{ v: 'curto', n: 'Curto' }, { v: 'raspado', n: 'Raspado' }, { v: 'careca', n: 'Careca' }, { v: 'cacheado', n: 'Cacheado' },
+    { v: 'longo', n: 'Longo' }, { v: 'coque', n: 'Coque' }, { v: 'bone', cap: '#c8102e', n: 'Boné vermelho' }, { v: 'bone', cap: '#0b3d91', n: 'Boné azul' },
+    { v: 'chapeu', n: 'Chapéu de palha' }, { v: 'curto', coroa: true, n: 'Coroa', plano: true }],
+  cor: [HAIR.preto, HAIR.castanho, HAIR.grisalho, HAIR.branco].map(v => ({ v })),
+  pelos: [{ v: '', n: 'Nada' }, { v: 'bigode', n: 'Bigode' }, { v: 'barba', n: 'Barba' }],
+  oculos: [{ v: '', n: 'Sem óculos' }, { v: 'oculos', n: 'Óculos' }, { v: 'escuros', n: 'Óculos escuros', req: 'bat10' }],
+  roupa: ['#245e6a', '#97520f', '#f2e7d5', '#3d6b4f', '#4f7fa6', '#a8402a', '#e5a650', '#7d4e7a', '#1f4e79', '#2b2b2b'].map(v => ({ v }))
+    .concat([{ v: '#c8102e', emblema: 'coracao', n: 'Camisa do Garantido' }, { v: '#0b3d91', emblema: 'estrela', n: 'Camisa do Caprichoso' }]),
+  mao: [{ v: '', n: 'Nada' }, { v: 'tacaca', n: 'Cuia de tacacá', req: 'vit5' }, { v: 'tapioca', n: 'Tapioca', req: 'galo1' },
+    { v: 'xcaboquinho', n: 'X-caboquinho', req: 'vit10' }, { v: 'acai', n: 'Açaí', req: 'jogo3' }, { v: 'tambaqui', n: 'Tambaqui assado', req: 'vit25' }],
+  fundo: ['#e5a650', '#8fbcc2', '#86c98f', '#d9825b', '#e9c46a', '#c77dab', '#8fb3d9', '#e58a6c', '#a7c97a', '#f3d29b', '#bcd3ee', '#cfc2b0'].map(v => ({ v }))
+};
+const ORDEM_PARTES = ['pele', 'cabelo', 'cor', 'pelos', 'oculos', 'roupa', 'mao', 'fundo'];
+function codigoAvatar(d) { return 'c' + ORDEM_PARTES.map(k => Math.max(0, Math.min(PARTES[k].length - 1, d[k] | 0)).toString(36)).join(''); }
+function partesDoCodigo(code) {
+  const d = {}; const s = /^c[0-9a-z]{8}$/.test(String(code || '')) ? code.slice(1) : '00000000';
+  ORDEM_PARTES.forEach((k, i) => { const n = parseInt(s[i], 36); d[k] = n >= 0 && n < PARTES[k].length ? n : 0; });
+  return d;
+}
+const avCustom = new Map();
+function avatarDoCodigo(code) {
+  if (avCustom.has(code)) return avCustom.get(code);
+  const d = partesDoCodigo(code), P = k => PARTES[k][d[k]];
+  const cab = P('cabelo'), roupa = P('roupa'), pelos = P('pelos').v, ocu = P('oculos').v;
+  const a = { id: code, custom: true, partes: d, bg: P('fundo').v, skin: P('pele').v, style: cab.v, cap: cab.cap, coroa: !!cab.coroa, hc: P('cor').v,
+    shirt: roupa.v, emblema: roupa.emblema, mao: P('mao').v, oculos: ocu === 'oculos', escuros: ocu === 'escuros' };
+  if (pelos === 'bigode') a.bigode = a.hc; else if (pelos === 'barba') a.barba = a.hc;
+  avCustom.set(code, a);
+  return a;
+}
+// Acha o avatar pelo id: os prontos da lista ou um montado (código "c…")
+function avatarDe(id) { return /^c[0-9a-z]{8}$/.test(String(id || '')) ? avatarDoCodigo(id) : AVATARS.find(x => x.id === id) || null; }
 const avCache = new Map();
 function avatarURI(a) {
   let u = avCache.get(a);
@@ -2246,7 +2398,8 @@ AVATARS.push(
   { id: 'd1', doador: true, coracao: true, bg: '#e8796a', skin: SKIN.moreno, style: 'curto', hc: HAIR.preto, bigode: HAIR.preto, shirt: '#f6eedf' },
   { id: 'd2', doador: true, coracao: true, bg: '#f2b05e', skin: SKIN.jambo, style: 'longo', hc: HAIR.preto, shirt: '#2f4f6f' }
 );
-const avatarLivre = a => !!a && (a.doador ? (typeof souDoador === 'function' && souDoador())
+const avatarLivre = a => !!a && (a.custom ? (typeof parteLivre !== 'function' || ORDEM_PARTES.every(k => parteLivre(PARTES[k][a.partes[k]])))
+  : a.doador ? (typeof souDoador === 'function' && souDoador())
   : (!a.premium || (typeof temPlano === 'function' && temPlano())));
 const avatarComum = a => !a.premium && !a.doador;
 // A turma do bairro: os três da mesa offline saem daqui
@@ -2298,7 +2451,7 @@ let profile = loadProfile(), photo = store.get(FKEY);
 let me = profile ? profile.name : null;
 function myFaceURI() {
   if (profile && profile.av === 'foto' && photo) return photo;
-  const a = AVATARS.find(x => profile && x.id === profile.av);
+  const a = profile && avatarDe(profile.av);
   return avatarURI(avatarLivre(a) ? a : AVATARS[0]);   // plano acabou: volta para o avatar comum
 }
 function botFaceURI(name) { const b = BOTS.find(x => x.name === name); return b ? avatarURI(b.av) : null; }
@@ -2342,7 +2495,7 @@ function toast(msg) {
   clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 4200);
 }
 // Troca de tela com fade: a tela atual some suave e a próxima aparece suave.
-const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Anuncie', 'Apoio', 'Patro', 'Instalar'];
+const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Anuncie', 'Apoio', 'Patro', 'Instalar', 'Estilo'];
 let showTimer = null;
 function show(name) {
   if (window.__reloadWhenFree && name !== 'game') { recarregar(name); return; }
@@ -2365,6 +2518,7 @@ function show(name) {
     if (name === 'apoio') renderApoioTela();
     if (name === 'patro') renderPatroTela();
     if (name === 'instalar') renderInstalar();
+    if (name === 'estilo') renderEstilo();
     if (name === 'game' && G) render();
   };
   if (!cur || reduce) { finish(); return; }
@@ -3683,7 +3837,7 @@ function meuId() {
   return id;
 }
 // Foto não sai do celular: na mesa online os outros veem o seu avatar desenhado.
-function meuAv() { const a = profile && AVATARS.find(x => x.id === profile.av); if (!a) return null; return avatarLivre(a) ? a.id : 'a1'; }
+function meuAv() { const a = profile && avatarDe(profile.av); if (!a) return null; return avatarLivre(a) ? a.id : 'a1'; }
 function mesaGuardada() { return (store.get(MKEY) || '').match(/^\d{5}$/) ? store.get(MKEY) : null; }
 
 // ---------- Girar a mesa do servidor para o seu ponto de vista ----------
@@ -3942,7 +4096,7 @@ seatFace = function (p, cls) {
   const c = cadDe(p);
   if (!c) return seatFaceBase(p, cls);
   if (c.bot && !c.saiu) return faceImg(botFaceURI(c.nome), cls);
-  const a = AVATARS.find(x => x.id === c.av);
+  const a = avatarDe(c.av);
   return a ? faceImg(avatarURI(a), cls) : '';
 };
 const renderBase = render;
@@ -4073,7 +4227,7 @@ function renderSala() {
     const p = (pos + v.minha) % 4, c = v.cad[p];
     const tag = `<span class="sc-tag ${pos === 2 ? 'par' : pos === 0 ? 'eu' : 'adv'}">${NOME_POS[pos]}</span>`;
     if (!c) return `<button type="button" class="sala-cad vazia ${POS_CLASS[pos]}" data-p="${p}">${tag}<span class="sc-face sc-vazia" aria-hidden="true">+</span><b>Cadeira vazia</b><small>Toque para sentar aqui</small></button>`;
-    const face = pos === 0 ? faceImg(myFaceURI(), 'sc-img') : c.foto && !fotoEscondida(c.foto) ? fotoOnlineImg(c, 'sc-img') : (AVATARS.find(a => a.id === c.av) ? faceImg(avatarURI(AVATARS.find(a => a.id === c.av)), 'sc-img') : `<span class="sc-letra">${esc(c.nome[0] || '?')}</span>`);
+    const face = pos === 0 ? faceImg(myFaceURI(), 'sc-img') : c.foto && !fotoEscondida(c.foto) ? fotoOnlineImg(c, 'sc-img') : (avatarDe(c.av) ? faceImg(avatarURI(avatarDe(c.av)), 'sc-img') : `<span class="sc-letra">${esc(c.nome[0] || '?')}</span>`);
     return `<div class="sala-cad ${POS_CLASS[pos]}${c.on ? '' : ' fora'}">${tag}<span class="sc-face">${face}<i class="sc-on${c.on ? ' ok' : ''}" aria-hidden="true"></i></span><b>${esc(pos === 0 ? 'Você' : c.nome)}${c.apoiador ? ' <i class="sc-star" title="Apoiador">★</i>' : ''}${c.doador ? ` <i class="sc-heart" title="Doador">${'♥'.repeat(c.doador)}</i>` : ''}</b><small>${esc(salaSub(c, pos))}</small></div>`;
   }).join('') + '<div class="sala-centro" aria-hidden="true"></div>';
   $$('#salaMesa .vazia').forEach(b => b.addEventListener('click', () => mandar({ t: 'sentar', cadeira: Number(b.dataset.p) })));
@@ -4248,15 +4402,18 @@ addEventListener('hashchange', () => {
 // O plano vale por 30 dias ou 1 ano e não renova sozinho. Fica ligado ao código deste aparelho (o mesmo da mesa online);
 // para trocar de celular, o código do plano leva tudo junto. Extras: selo, sem anúncios, avatares e cores de mesa.
 const PLKEY = 'dmz-plano', PEDKEY = 'dmz-pedido', MCKEY = 'dmz-mesa-cor', DOAKEY = 'dmz-doador';
-const CORES_MESA = [
+// Mesas: grátis (o regional fica de graça), por conquista (req) ou do Plano Apoiador (plano)
+const MESAS = [
   { id: 'madeira', nome: 'Madeira', c1: '#3d2719', c2: '#26180f' },
-  { id: 'garantido', nome: 'Garantido', c1: '#9a2222', c2: '#4a0d0d', plano: true },
-  { id: 'caprichoso', nome: 'Caprichoso', c1: '#23489c', c2: '#0c1f4a', plano: true },
-  { id: 'encontro', nome: 'Encontro das Águas', bg: 'linear-gradient(105deg, #1a1f24 0 47%, #4a3b28 50%, #8a6a40 53% 100%)', plano: true },
-  { id: 'rionegro', nome: 'Rio Negro', c1: '#24364a', c2: '#0e1620', plano: true },
-  { id: 'acai', nome: 'Açaí', c1: '#4f2449', c2: '#26101f', plano: true },
-  { id: 'tucuma', nome: 'Tucumã', c1: '#a3581a', c2: '#4f2608', plano: true },
-  { id: 'feltro', nome: 'Feltro verde', c1: '#2f6b4c', c2: '#163a29', plano: true }
+  { id: 'encontro', nome: 'Encontro das Águas', bg: 'linear-gradient(105deg, #1a1f24 0 47%, #4a3b28 50%, #8a6a40 53% 100%)' },
+  { id: 'garantido', nome: 'Garantido', c1: '#9a2222', c2: '#4a0d0d' },
+  { id: 'caprichoso', nome: 'Caprichoso', c1: '#23489c', c2: '#0c1f4a' },
+  { id: 'feltro', nome: 'Feltro verde', c1: '#2f6b4c', c2: '#163a29' },
+  { id: 'pontanegra', nome: 'Ponta Negra', bg: 'linear-gradient(172deg, #3b1d3f 0%, #7e3338 38%, #c0622b 60%, #2a2340 100%)', req: 'vit10' },
+  { id: 'acai', nome: 'Açaí', c1: '#4f2449', c2: '#26101f', req: 'jogo3' },
+  { id: 'rionegro', nome: 'Rio Negro', c1: '#24364a', c2: '#0e1620', req: 'galo5' },
+  { id: 'tucuma', nome: 'Tucumã', c1: '#a3581a', c2: '#4f2608', req: 'vit25' },
+  { id: 'teatro', nome: 'Teatro Amazonas', bg: 'radial-gradient(circle at 40% 30%, #8a3550, #3a1220 80%)', plano: true }
 ];
 const PRECO = { mensal: 'R$ 4,90 · 30 dias', anual: 'R$ 39,90 · 1 ano', doacao5: 'R$ 5', doacao10: 'R$ 10', doacao20: 'R$ 20' };
 let apoioVolta = 'home';
@@ -4291,8 +4448,7 @@ function guardarConta(j) {
 function aplicarPlano() {
   const on = temPlano(), r = document.documentElement;
   r.classList.toggle('plano', on);
-  const cor = on ? (store.get(MCKEY) || 'madeira') : 'madeira';
-  if (cor === 'madeira') r.removeAttribute('data-mesa'); else r.setAttribute('data-mesa', cor);
+  if (typeof aplicarMesa === 'function') aplicarMesa();
 }
 // Pergunta ao servidor (no máximo a cada 10 min, ou na hora quando pedir)
 // Só confere quem tem (ou teve) plano neste aparelho: quem acabou de pagar é ligado pelo pedido pendente.
@@ -4365,12 +4521,12 @@ async function acompanharPedido(id, insistir) {
 }
 function obrigado(plano, ate) {
   const titulo = plano ? 'Você agora é Apoiador!' : 'Obrigado pela doação!';
-  const txt = plano ? (ate ? `Seu plano vale até ${dataBR(ate)}. Escolha a cor da mesa e o seu avatar exclusivo.` : 'O plano ficou ligado no aparelho em que você tocou em pagar. Abra o jogo por lá.')
+  const txt = plano ? (ate ? `Seu plano vale até ${dataBR(ate)}. Tudo do Personalizar já está liberado: mesas, comidas e a coroa no avatar.` : 'O plano ficou ligado no aparelho em que você tocou em pagar. Abra o jogo por lá.')
     : 'Sua ajuda mantém o Dominó Manauara de graça para a turma toda.';
   openSheet('fb', `<p class="eyebrow">Apoie o jogo</p><h2 id="sheetTitle">${esc(titulo)}</h2><p>${esc(txt)}</p>
     ${plano && ate ? '<button type="button" class="primary" id="obgPerso">Personalizar agora</button>' : ''}
     <button type="button" class="secondary" id="obgOk" style="width:100%;margin-top:10px">Fechar</button>`);
-  if ($('#obgPerso')) $('#obgPerso').addEventListener('click', () => { closeSheet(); abrirApoio(screen === 'apoio' ? apoioVolta : (screen || 'home')); });
+  if ($('#obgPerso')) $('#obgPerso').addEventListener('click', () => { closeSheet(); abrirEstilo(screen === 'apoio' ? 'apoio' : 'home'); });
   $('#obgOk').addEventListener('click', closeSheet);
   try { confete(['#f0b45e', '#e5a650', '#ffd27a', '#f6eedf', '#86c98f'], 4500); } catch (e) {}
 }
@@ -4382,8 +4538,8 @@ function obrigadoDoacao(j, meu, nivelAntes) {
   if (n) txt += n > nivelAntes && nivelAntes > 0 ? ` Seu selo de doador subiu para ${coracoes(n)}!` : ` Você ganhou o selo ${coracoes(n)} na mesa online e o avatar do doador.`;
   openSheet('fb', `<p class="eyebrow">Apoie o jogo</p><h2 id="sheetTitle">Obrigado pela doação! ♥</h2><p>${esc(txt)}</p>
     ${n ? `<p class="ap-k" style="margin-top:4px">Avatar do doador</p><div class="obg-avs" id="obgAvs">${avs.map(a => `<button type="button" class="obg-av" data-av="${a.id}" aria-pressed="${!!(profile && profile.av === a.id)}" aria-label="Usar o avatar do doador"><img src="${avatarURI(a)}" alt=""><span>Usar</span></button>`).join('')}</div>` : ''}
-    ${brinde ? `<p class="obg-brinde"><b>De presente:</b> 30 dias de Plano Apoiador, até ${esc(dataBR(j.ate))}. Sem anúncios, cores de mesa e mais avatares.</p><button type="button" class="primary" id="obgPerso">Personalizar agora</button>`
-      : temPlano() ? '' : `<p class="obg-ponte">Quer apoiar todo mês? Com o Plano Apoiador, por R$ 4,90, você ainda joga sem anúncios e ganha avatares e cores de mesa.</p><button type="button" class="secondary" id="obgPlano" style="width:100%">Conhecer o Plano Apoiador</button>`}
+    ${brinde ? `<p class="obg-brinde"><b>De presente:</b> 30 dias de Plano Apoiador, até ${esc(dataBR(j.ate))}. Sem anúncios e tudo do Personalizar liberado.</p><button type="button" class="primary" id="obgPerso">Personalizar agora</button>`
+      : temPlano() ? '' : `<p class="obg-ponte">Quer apoiar todo mês? Com o Plano Apoiador, por R$ 4,90, você ainda joga sem anúncios e libera tudo do Personalizar na hora.</p><button type="button" class="secondary" id="obgPlano" style="width:100%">Conhecer o Plano Apoiador</button>`}
     <button type="button" class="secondary" id="obgOk" style="width:100%;margin-top:10px">Fechar</button>`);
   const box = $('#obgAvs');
   if (box) box.addEventListener('click', e => {
@@ -4393,7 +4549,7 @@ function obrigadoDoacao(j, meu, nivelAntes) {
     toast('Avatar trocado!');
     if (screen === 'home') renderHome();
   });
-  if ($('#obgPerso')) $('#obgPerso').addEventListener('click', () => { closeSheet(); abrirApoio(screen === 'apoio' ? apoioVolta : (screen || 'home')); });
+  if ($('#obgPerso')) $('#obgPerso').addEventListener('click', () => { closeSheet(); abrirEstilo(screen === 'apoio' ? 'apoio' : 'home'); });
   if ($('#obgPlano')) $('#obgPlano').addEventListener('click', () => { closeSheet(); abrirApoio(screen === 'apoio' ? apoioVolta : (screen || 'home'), 'plano'); });
   $('#obgOk').addEventListener('click', closeSheet);
   try { confete(['#f0b45e', '#e5a650', '#ffd27a', '#f6eedf', '#e8796a'], 4500); } catch (e) {}
@@ -4450,24 +4606,12 @@ function renderApoioTela() {
   $('#apPlano').querySelector('.ap-k').textContent = on ? 'Renovar o Plano Apoiador' : 'Quer uns extras? Plano Apoiador';
   $$('#apPrecos .ap-preco span').forEach(s => { if (on && !s.dataset.orig) s.dataset.orig = s.textContent; });
   $('#apPrecos').classList.toggle('renovar', on);
-  const cor = store.get(MCKEY) || 'madeira';
-  $('#apCores').innerHTML = CORES_MESA.map(c => {
-    const livre = !c.plano || on;
-    return `<button type="button" class="ap-cor${livre ? '' : ' trancado'}" role="radio" aria-checked="${on ? cor === c.id : c.id === 'madeira'}" data-c="${c.id}">
-      <span class="ap-sw" style="background:${c.bg || `radial-gradient(circle at 40% 35%, ${c.c1}, ${c.c2} 80%)`}"></span><span>${esc(c.nome)}</span>${livre ? '' : '<i aria-hidden="true">★</i>'}</button>`;
-  }).join('');
   $('#apAvs').innerHTML = AVATARS.filter(a => a.premium).map(a =>
     `<button type="button" class="ap-av${on ? '' : ' trancado'}" data-av="${a.id}" aria-pressed="${!!(profile && profile.av === a.id)}" aria-label="Avatar exclusivo"><img src="${avatarURI(a)}" alt="">${on ? '' : '<i aria-hidden="true">★</i>'}</button>`).join('');
   $('#apTrazerBox').hidden = on;
 }
 $('#apPrecos').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (b) pagarProduto(b.dataset.p, b); });
 $('#apDoa').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (b) pagarProduto(b.dataset.p, b); });
-$('#apCores').addEventListener('click', e => {
-  const b = e.target.closest('[data-c]'); if (!b) return;
-  if (b.classList.contains('trancado')) { toast('Essa cor de mesa é do Plano Apoiador.'); return; }
-  store.set(MCKEY, b.dataset.c); aplicarPlano(); renderApoioTela();
-  toast('Pronto! A mesa fica assim nas próximas partidas.');
-});
 $('#apDoaAvs').addEventListener('click', e => {
   const b = e.target.closest('[data-av]'); if (!b || !profile) return;
   profile.av = b.dataset.av; store.set(PKEY, JSON.stringify(profile));
@@ -5341,6 +5485,274 @@ $('#dnFotosLista').addEventListener('click', async e => {
 });
 const renderDonoFoto = renderDono;
 renderDono = function () { renderDonoFoto(); dnFotosCarregar(); };
+
+// ===== Personalizar: monte o avatar, escolha a mesa e veja as conquistas =====
+// O regional fica de graça (Garantido, Caprichoso, Encontro das Águas). Comidas de Manaus e mesas novas se ganham jogando
+// (conquistas, offline e online). O Plano Apoiador libera tudo na hora e traz extras (coroa, Teatro Amazonas),
+// que só aparecem quando os pagamentos estão ligados.
+const CONQUISTAS = [
+  { id: 'galo1', nome: 'Primeiro galo', tx: 'Aplique um galo', feito: 'Aplicou o primeiro galo', curto: '1 galo', campo: 'galos', meta: 1 },
+  { id: 'vit5', nome: 'Pegou o jeito', tx: 'Ganhe 5 partidas', feito: 'Ganhou 5 partidas', curto: '5 partidas', campo: 'partidasVencidas', meta: 5 },
+  { id: 'jogo3', nome: 'Dono da mesa', tx: 'Ganhe 3 jogos completos', feito: 'Ganhou 3 jogos completos', curto: '3 jogos', campo: 'vitorias', meta: 3 },
+  { id: 'bat10', nome: 'Batedor', tx: 'Bata 10 vezes', feito: 'Bateu 10 vezes', curto: '10 batidas', campo: 'batidas', meta: 10 },
+  { id: 'vit10', nome: 'Caboco bom de pedra', tx: 'Ganhe 10 partidas', feito: 'Ganhou 10 partidas', curto: '10 partidas', campo: 'partidasVencidas', meta: 10 },
+  { id: 'galo5', nome: 'Galo de briga', tx: 'Aplique 5 galos', feito: 'Aplicou 5 galos', curto: '5 galos', campo: 'galos', meta: 5 },
+  { id: 'vit25', nome: 'Lenda do bairro', tx: 'Ganhe 25 partidas', feito: 'Ganhou 25 partidas', curto: '25 partidas', campo: 'partidasVencidas', meta: 25 }
+];
+const CQKEY = 'dmz-conquistas-vistas', AVMKEY = 'dmz-avatar-montado';
+const minusc = s => s && /^[A-ZÀ-Ú][a-zà-ú ]/.test(s) ? s[0].toLowerCase() + s.slice(1) : s || '';
+// Nome do prêmio dentro de uma frase: "tapioca", "X-caboquinho", "a mesa Ponta Negra"
+const premioFrase = p => p.tipo === 'mesa' ? 'a ' + minusc(p.nome) : minusc(p.nome);
+const juntaE = l => l.length < 2 ? (l[0] || '') : l.slice(0, -1).join(', ') + ' e ' + l[l.length - 1];
+const conquistaDe = id => CONQUISTAS.find(x => x.id === id);
+function progressoConquista(c, t) { return Math.min(c.meta, (t || loadHist())[c.campo] || 0); }
+function conquistaFeita(id) {
+  try { const c = conquistaDe(id); return !!c && progressoConquista(c) >= c.meta; } catch (e) { return false; }
+}
+function faltaTexto(id) {
+  const c = conquistaDe(id); if (!c) return '';
+  const f = c.meta - progressoConquista(c);
+  return minusc(c.tx) + (f > 0 && c.meta > 1 ? ` (faltam ${f})` : '');
+}
+// Liberado? Grátis; por conquista (ou com o plano); só do plano
+function parteLivre(p) { return !!p && (p.plano ? temPlano() : !p.req || conquistaFeita(p.req) || temPlano()); }
+const mesaLivre = parteLivre;
+// O que é do plano só aparece quando dá para assinar (ou para quem já tem)
+function parteVisivel(p) { return !p.plano || pagamentosAtivos() || temPlano(); }
+function premiosDe(id) {
+  const l = [];
+  ORDEM_PARTES.forEach(k => PARTES[k].forEach((p, i) => { if (p.req === id) l.push({ tipo: 'parte', k, i, nome: p.n }); }));
+  MESAS.forEach(m => { if (m.req === id) l.push({ tipo: 'mesa', id: m.id, nome: 'Mesa ' + m.nome }); });
+  return l;
+}
+
+// ---- Mesa escolhida ----
+function mesaAtual() { const m = MESAS.find(x => x.id === store.get(MCKEY)); return m && mesaLivre(m) ? m : MESAS[0]; }
+function aplicarMesa() {
+  try {
+    const m = mesaAtual(), r = document.documentElement;
+    if (m.id === 'madeira') r.removeAttribute('data-mesa'); else r.setAttribute('data-mesa', m.id);
+  } catch (e) {}
+}
+const fundoMesa = m => m.bg || `radial-gradient(circle at 40% 35%, ${m.c1}, ${m.c2} 78%)`;
+
+// ---- Desenhos pequenos ----
+const LOCK_SVG = '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>';
+const MAIS_SVG = '<svg viewBox="0 0 24 24" class="cam" aria-hidden="true"><circle cx="12" cy="9" r="3.6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 20c.6-3.6 3.2-5.6 6.5-5.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M17.5 13.5v7M14 17h7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>';
+const maoCache = new Map();
+function maoURI(v, bg) {
+  const key = v + '|' + bg;
+  if (!maoCache.has(key)) maoCache.set(key, 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="51 63 40 40"><circle cx="71" cy="83" r="20" fill="${bg}"/>${MAO_SVG[v] || ''}</svg>`));
+  return maoCache.get(key);
+}
+function iconePremio(p, d) {
+  if (!p) return '';
+  if (p.tipo === 'mesa') { const m = MESAS.find(x => x.id === p.id); return `<span class="es-msw" style="background:${fundoMesa(m)}"></span>`; }
+  if (p.k === 'mao') return `<img src="${maoURI(PARTES.mao[p.i].v, '#f3d29b')}" alt="">`;
+  return `<img src="${avatarURI(avatarDe(codigoAvatar(Object.assign({}, d || esBase(), { [p.k]: p.i }))))}" alt="">`;
+}
+
+// ---- Do avatar pronto para as partes (para começar a montar a partir do que a pessoa já usa) ----
+const rgbDe = h => { const n = parseInt(String(h).slice(1), 16) || 0; return [n >> 16, (n >> 8) & 255, n & 255]; };
+function maisPerto(pares, hex) {
+  if (!pares.length) return 0;
+  const a = rgbDe(hex || '#000000'); let best = pares[0][1], bd = Infinity;
+  pares.forEach(([p, i]) => { const b = rgbDe(p.v), d = (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2; if (d < bd) { bd = d; best = i; } });
+  return best;
+}
+const pares = k => PARTES[k].map((p, i) => [p, i]);
+function partesDeAvatar(a) {
+  if (!a) a = AVATARS[0];
+  if (a.custom) return Object.assign({}, a.partes);
+  const cab = pares('cabelo').filter(([p]) => p.v === a.style && !p.plano);
+  const capa = cab.filter(([p]) => !p.cap);
+  const emb = pares('roupa').filter(([p]) => p.emblema && p.emblema === a.emblema);
+  return {
+    pele: maisPerto(pares('pele'), a.skin),
+    cabelo: !cab.length ? 0 : a.style === 'bone' ? maisPerto(cab.map(([p, i]) => [{ v: p.cap }, i]), a.cap) : (capa[0] || cab[0])[1],
+    cor: maisPerto(pares('cor'), a.hc),
+    pelos: a.barba ? 2 : a.bigode ? 1 : 0,
+    oculos: a.escuros ? 2 : a.oculos ? 1 : 0,
+    roupa: emb.length ? emb[0][1] : maisPerto(pares('roupa').filter(([p]) => !p.emblema), a.shirt),
+    mao: 0,
+    fundo: maisPerto(pares('fundo'), a.bg)
+  };
+}
+// Ponto de partida: o avatar montado de antes, ou o avatar que a pessoa usa agora
+function esBase() {
+  const av = estiloVolta === 'profile' ? draft.av : profile && profile.av;
+  const a = avatarDe(av) || avatarDe(store.get(AVMKEY)) || AVATARS[0];
+  return partesDeAvatar(a);
+}
+
+// ---- Tela Personalizar ----
+const ABAS = [
+  { id: 'pele', nome: 'Pele', partes: ['pele'] },
+  { id: 'cabelo', nome: 'Cabelo', partes: ['cabelo', 'cor'] },
+  { id: 'rosto', nome: 'Rosto', partes: ['pelos', 'oculos'] },
+  { id: 'roupa', nome: 'Camisa', partes: ['roupa'] },
+  { id: 'mao', nome: 'Na mão', partes: ['mao'] },
+  { id: 'fundo', nome: 'Fundo', partes: ['fundo'] }
+];
+const TITULO = { pele: 'Cor da pele', cabelo: 'Cabelo', cor: 'Cor do cabelo', pelos: 'Barba e bigode', oculos: 'Óculos', roupa: 'Camisa', mao: 'Na mão', fundo: 'Fundo' };
+const ROTULO_CURTO = { 'Camisa do Garantido': 'Garantido', 'Camisa do Caprichoso': 'Caprichoso', 'Cuia de tacacá': 'Tacacá', 'Tambaqui assado': 'Tambaqui', 'Óculos escuros': 'Escuros', 'Sem óculos': 'Sem' };
+const COM_ROTULO = new Set(['pelos', 'oculos', 'roupa', 'mao']);
+let esDraft = null, esAba = 'cabelo', estiloVolta = 'home';
+const abaDaParte = k => (ABAS.find(t => t.partes.includes(k)) || ABAS[1]).id;
+// Abre a tela. "provar" já veste a peça (por exemplo, o prêmio de uma conquista) e "rolar" desce até as mesas.
+function abrirEstilo(deOnde, provar, rolar) {
+  estiloVolta = deOnde || 'home';
+  esDraft = esBase();
+  if (provar) { esDraft[provar.k] = provar.i; esAba = abaDaParte(provar.k); }
+  track('estilo-aberto');
+  show('estilo');
+  if (rolar) setTimeout(() => { const el = $('#esMesas'); if (el) el.scrollIntoView({ block: 'center', behavior: reduzMov() ? 'auto' : 'smooth' }); }, 320);
+}
+const meuAvAgora = () => estiloVolta === 'profile' ? draft.av : profile && profile.av;
+function opcaoHTML(k, p, i) {
+  const livre = parteLivre(p), sel = esDraft[k] === i;
+  const img = k === 'mao' ? maoURI(p.v, PARTES.fundo[esDraft.fundo].v)
+    : avatarURI(avatarDe(codigoAvatar(Object.assign({}, esDraft, { [k]: i }))));
+  const nome = p.n || '', rot = ROTULO_CURTO[nome] || nome;
+  return `<button type="button" class="es-op${livre ? '' : ' trancado'}" role="radio" aria-checked="${sel}" data-k="${k}" data-i="${i}" aria-label="${esc(nome || TITULO[k] + ' ' + (i + 1))}${livre ? '' : ', ainda não liberado'}">`
+    + `<span class="es-th">${livre ? '' : `<i class="av-lock" aria-hidden="true">${LOCK_SVG}</i>`}<img src="${img}" alt=""></span>`
+    + (COM_ROTULO.has(k) && rot ? `<span class="es-n">${esc(rot)}</span>` : '')
+    + (livre ? '' : `<small>${p.plano ? 'Plano' : esc(conquistaDe(p.req).curto)}</small>`) + '</button>';
+}
+function renderEstilo() {
+  if (!esDraft) esDraft = esBase();
+  const code = codigoAvatar(esDraft);
+  $('#esPrev').src = avatarURI(avatarDe(code));
+  $('#esTabs').innerHTML = ABAS.map(t => `<button type="button" role="tab" aria-selected="${t.id === esAba}" data-aba="${t.id}">${t.nome}</button>`).join('');
+  const aba = ABAS.find(t => t.id === esAba) || ABAS[1];
+  $('#esOps').innerHTML = aba.partes.map(k => {
+    const ops = PARTES[k].map((p, i) => [p, i]).filter(([p]) => parteVisivel(p));
+    const cols = k === 'pele' ? 5 : k === 'mao' || ops.length <= 3 ? 3 : 4;
+    return `<p class="es-gk">${TITULO[k]}</p><div class="es-grid" style="--cols:${cols}" role="radiogroup" aria-label="${TITULO[k]}">${ops.map(([p, i]) => opcaoHTML(k, p, i)).join('')}</div>`;
+  }).join('');
+  // Botão: usar, já é o seu, ou ainda não liberado (dá para provar antes de ganhar)
+  const travadas = ORDEM_PARTES.map(k => PARTES[k][esDraft[k]]).filter(p => !parteLivre(p));
+  const usar = $('#esUsar'), trava = $('#esTrava');
+  usar.disabled = travadas.length > 0 || code === meuAvAgora();
+  usar.textContent = travadas.length ? 'Ainda não liberado' : code === meuAvAgora() ? '✓ Este é o seu avatar' : 'Usar este avatar';
+  trava.hidden = !travadas.length;
+  trava.innerHTML = travadas.map(p => `<span>${esc(p.n)}: ${p.plano ? 'vem com o Plano Apoiador' : esc(faltaTexto(p.req))}.</span>`).join('');
+  renderMesas(); renderConquistas();
+}
+function renderMesas() {
+  const atual = mesaAtual().id;
+  $('#esMesas').innerHTML = MESAS.filter(parteVisivel).map(m => {
+    const livre = mesaLivre(m);
+    return `<button type="button" class="ap-cor${livre ? '' : ' trancado'}" role="radio" aria-checked="${m.id === atual}" data-m="${m.id}" aria-label="Mesa ${esc(m.nome)}${livre ? '' : ', ainda não liberada'}">`
+      + `<span class="ap-sw" style="background:${fundoMesa(m)}"></span><span>${esc(m.nome)}</span>`
+      + (livre ? '' : `<small>${m.plano ? 'Plano' : esc(conquistaDe(m.req).curto)}</small><i aria-hidden="true">${LOCK_SVG}</i>`) + '</button>';
+  }).join('');
+}
+function renderConquistas() {
+  const t = loadHist(), base = esDraft || esBase();
+  const feitas = CONQUISTAS.filter(c => progressoConquista(c, t) >= c.meta).length;
+  $('#esConqN').textContent = `· ${feitas} de ${CONQUISTAS.length}`;
+  $('#esConq').innerHTML = CONQUISTAS.map(c => {
+    const n = progressoConquista(c, t), ok = n >= c.meta, pr = premiosDe(c.id);
+    return `<li class="${ok ? 'feita' : ''}"><span class="es-cq-ic">${iconePremio(pr[0], base)}${ok ? '<i class="es-ok" aria-hidden="true">✓</i>' : ''}</span>`
+      + `<span class="es-cq-tx"><b>${esc(c.nome)}</b><small>${esc(c.tx)} · ${ok ? 'feito!' : `${n} de ${c.meta}`}</small>`
+      + `<small class="es-premio">Prêmio: ${esc(juntaE(pr.map(premioFrase)))}</small>`
+      + (ok ? '' : `<span class="es-bar" aria-hidden="true"><i style="width:${Math.round(100 * n / c.meta)}%"></i></span>`) + '</span></li>';
+  }).join('');
+}
+$('#esTabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-aba]'); if (!b) return;
+  esAba = b.dataset.aba; renderEstilo();
+});
+$('#esOps').addEventListener('click', e => {
+  const b = e.target.closest('.es-op'); if (!b) return;
+  const k = b.dataset.k, i = +b.dataset.i, p = PARTES[k][i];
+  esDraft[k] = i;
+  if (!parteLivre(p)) toast(p.plano ? `${p.n}: vem com o Plano Apoiador.` : `${p.n}: ${faltaTexto(p.req)} para liberar.`);
+  renderEstilo();
+});
+$('#esUsar').addEventListener('click', () => {
+  const code = codigoAvatar(esDraft);
+  if (!avatarLivre(avatarDe(code))) return;
+  store.set(AVMKEY, code);
+  track('avatar-montado');
+  if (profile) { profile.av = code; store.set(PKEY, JSON.stringify(profile)); }
+  if (estiloVolta === 'profile') { draft.av = code; show('profile'); toast(profile ? 'Avatar trocado!' : 'Avatar pronto! Agora é só salvar.'); return; }
+  toast('Avatar trocado!');
+  renderEstilo();
+});
+$('#esMesas').addEventListener('click', e => {
+  const b = e.target.closest('[data-m]'); if (!b) return;
+  const m = MESAS.find(x => x.id === b.dataset.m);
+  if (!mesaLivre(m)) { toast(m.plano ? `A mesa ${m.nome} vem com o Plano Apoiador.` : `Para liberar a mesa ${m.nome}: ${faltaTexto(m.req)}.`); return; }
+  if (m.id === 'madeira') store.del(MCKEY); else store.set(MCKEY, m.id);
+  aplicarMesa(); renderMesas();
+  track('mesa-' + m.id);
+  toast(`Mesa ${m.nome} escolhida.`);
+});
+$('#estiloBack').addEventListener('click', () => show(estiloVolta));
+$('#goEstilo').addEventListener('click', () => abrirEstilo('home'));
+
+// ---- Conquista nova: aviso no início (com o prêmio) e uma linha na festa de fim de partida ----
+function conquistasVistas() { try { const l = JSON.parse(store.get(CQKEY) || '[]'); return Array.isArray(l) ? l : []; } catch (e) { return []; } }
+function conquistasNovas() { const v = conquistasVistas(); return CONQUISTAS.filter(c => conquistaFeita(c.id) && !v.includes(c.id)); }
+function avisarConquistas() {
+  if (screen !== 'home' || sheetKind || !profile) return;
+  const novas = conquistasNovas();
+  if (!novas.length) return;
+  store.set(CQKEY, JSON.stringify(conquistasVistas().concat(novas.map(c => c.id))));
+  novas.forEach(c => track('conquista-' + c.id));
+  const premios = novas.flatMap(c => premiosDe(c.id)), parte = premios.find(p => p.tipo === 'parte');
+  openSheet('info', `<p class="eyebrow">Conquista nova</p><h2 id="sheetTitle">${novas.length > 1 ? `Você ganhou ${novas.length} conquistas!` : `${esc(novas[0].nome)}!`}</h2>
+    <ul class="cq-novas">${novas.map(c => { const pr = premiosDe(c.id); return `<li><span class="es-cq-ic">${iconePremio(pr[0])}</span><span><b>${esc(c.feito)}</b><small>Ganhou ${esc(juntaE(pr.map(premioFrase)))}</small></span></li>`; }).join('')}</ul>
+    <button type="button" class="primary" id="cqVer">${parte ? 'Ver no meu avatar' : 'Ver a mesa nova'}</button>
+    <button type="button" class="secondary" id="cqDepois" style="width:100%;margin-top:10px">Depois</button>`);
+  $('#cqVer').addEventListener('click', () => { closeSheet(); abrirEstilo('home', parte || null, !parte); });
+  $('#cqDepois').addEventListener('click', closeSheet);
+}
+const cqNaFesta = new Set();
+const festaEstilo = festa;
+festa = function (r, depois) {
+  festaEstilo(r, depois);
+  const card = $('#festaCard'), velho = card.querySelector('.festa-cq');
+  if (velho) velho.remove();
+  const novas = conquistasNovas().filter(c => !cqNaFesta.has(c.id));
+  if (!novas.length) return;
+  novas.forEach(c => cqNaFesta.add(c.id));
+  $('#festaOk').insertAdjacentHTML('beforebegin', `<p class="festa-cq"><span aria-hidden="true">🎁</span> Conquista nova: <b>${esc(juntaE(novas.map(c => c.nome)))}</b>. O prêmio está em Personalizar, no início.</p>`);
+};
+
+// ---- Início: o cartão Personalizar ----
+const renderHomeEstilo = renderHome;
+renderHome = function () {
+  renderHomeEstilo();
+  $('#goEstiloFace').innerHTML = faceImg(myFaceURI(), '');
+  const feitas = CONQUISTAS.filter(c => conquistaFeita(c.id)).length;
+  $('#goEstiloTx').textContent = feitas ? `Avatar, mesa e conquistas · ${feitas} de ${CONQUISTAS.length}` : 'Monte o seu avatar, troque a mesa e ganhe prêmios jogando';
+  clearTimeout(renderHome.cq);
+  renderHome.cq = setTimeout(avisarConquistas, 1100);
+};
+
+// ---- Perfil: "Montar" e o avatar montado entre os avatares ----
+const renderProfileEstilo = renderProfile;
+renderProfile = function () {
+  renderProfileEstilo();
+  const grid = $('#avatarGrid');
+  const meu = [draft.av, profile && profile.av, store.get(AVMKEY)].find(v => /^c[0-9a-z]{8}$/.test(v || ''));
+  const a = meu && avatarDe(meu), livre = a && avatarLivre(a);
+  const html = `<button type="button" class="avbtn montar" data-av="montar" aria-label="Montar o seu avatar"><span class="face">${MAIS_SVG}</span><span>Montar</span></button>`
+    + (a ? `<button type="button" class="avbtn montado${livre ? '' : ' trancado'}" role="radio" aria-checked="${draft.av === meu}" data-av="${meu}" aria-label="Seu avatar montado${livre ? '' : ', com parte ainda não liberada'}"><span class="face">${livre ? '' : `<i class="av-lock" aria-hidden="true">${LOCK_SVG}</i>`}<img src="${avatarURI(a)}" alt=""></span></button>` : '');
+  const foto = grid.querySelector('.avbtn.photo');
+  if (foto) foto.insertAdjacentHTML('afterend', html); else grid.insertAdjacentHTML('afterbegin', html);
+};
+$('#avatarGrid').addEventListener('click', e => {
+  const b = e.target.closest('.avbtn'); if (!b) return;
+  if (b.dataset.av === 'montar') { e.stopPropagation(); abrirEstilo('profile'); return; }
+  if (b.classList.contains('montado') && b.classList.contains('trancado')) { e.stopPropagation(); toast('Uma parte desse avatar ainda não está liberada. Troque ela aqui.'); abrirEstilo('profile'); }
+}, true);
+$('#apEstilo').addEventListener('click', () => abrirEstilo('apoio'));
+aplicarMesa();
 
 
 // ---- Desenho das peças ----
