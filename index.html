@@ -1756,7 +1756,15 @@ const pips = t => t[0] + t[1];
 const tkey = t => Math.min(t[0], t[1]) + '-' + Math.max(t[0], t[1]);
 
 function fullSet() { const s = []; for (let a = 0; a <= 6; a++) for (let b = a; b <= 6; b++) s.push([a, b]); return s; }
-function shuffle(arr, rnd) { rnd = rnd || Math.random; for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+// Embaralhar de verdade: o sorteio usa a fonte de acaso do sistema (crypto.getRandomValues, a mesma de senhas e chaves),
+// não o Math.random, e cada pedra tem exatamente a mesma chance de cair em qualquer lugar (Fisher–Yates, com rejeição para não ter viés).
+const acaso = (() => {
+  const c = globalThis.crypto;
+  if (!c || !c.getRandomValues) return n => Math.floor(Math.random() * n);
+  const buf = new Uint32Array(64); let k = 64;
+  return n => { const lim = Math.floor(0x100000000 / n) * n; let x; do { if (k >= 64) { c.getRandomValues(buf); k = 0; } x = buf[k++]; } while (x >= lim); return x % n; };
+})();
+function shuffle(arr, rnd) { for (let i = arr.length - 1; i > 0; i--) { const j = rnd ? Math.floor(rnd() * (i + 1)) : acaso(i + 1); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
 
 function newGame(names) {
   return { names: (names || ['Jogador 1', 'Jogador 2', 'Jogador 3', 'Jogador 4']).slice(),
@@ -2159,6 +2167,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '2.9.7', data: '08/10/2026', itens: ['Embaralhamento de verdade: as pedras são sorteadas com a fonte de acaso do próprio celular (a mesma usada em senhas), com chance igual para cada pedra. Vale para o jogo offline e para a mesa online.'] },
   { v: '2.9.6', data: '08/10/2026', itens: ['O nome da mesa aparece ao chegar em todas as mesas, inclusive Madeira, Garantido e Caprichoso.', 'Desenhos das mesas mais apagados, para as pedras ficarem em destaque.', 'Mesa Vitória-régia no lugar do Bumbódromo (ganhe 10 jogos) e mesa nova Relógio Municipal (jogue 300 mãos).'] },
   { v: '2.9.5', data: '08/10/2026', itens: ['Mesa Mercado Adolpho Lisboa no lugar do Sambódromo, para quem bater 50 vezes.', 'A mesa verde agora se chama MUSA, com a torre do Museu da Amazônia acima das árvores.'] },
   { v: '2.9.4', data: '08/10/2026', itens: ['Desenhos refeitos a partir de fotos e mais apagados no pano: a Ponte Rio Negro com a torre em A e os pilares, os losangos brancos da Arena da Amazônia, o Bumbódromo com as arquibancadas azul e vermelha e o arco, e o Teatro Amazonas com o frontão e a cúpula.'] },

@@ -7,7 +7,15 @@ const pips = t => t[0] + t[1];
 const tkey = t => Math.min(t[0], t[1]) + '-' + Math.max(t[0], t[1]);
 
 function fullSet() { const s = []; for (let a = 0; a <= 6; a++) for (let b = a; b <= 6; b++) s.push([a, b]); return s; }
-function shuffle(arr, rnd) { rnd = rnd || Math.random; for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+// Embaralhar de verdade: o sorteio usa a fonte de acaso do sistema (crypto.getRandomValues, a mesma de senhas e chaves),
+// não o Math.random, e cada pedra tem exatamente a mesma chance de cair em qualquer lugar (Fisher–Yates, com rejeição para não ter viés).
+const acaso = (() => {
+  const c = globalThis.crypto;
+  if (!c || !c.getRandomValues) return n => Math.floor(Math.random() * n);
+  const buf = new Uint32Array(64); let k = 64;
+  return n => { const lim = Math.floor(0x100000000 / n) * n; let x; do { if (k >= 64) { c.getRandomValues(buf); k = 0; } x = buf[k++]; } while (x >= lim); return x % n; };
+})();
+function shuffle(arr, rnd) { for (let i = arr.length - 1; i > 0; i--) { const j = rnd ? Math.floor(rnd() * (i + 1)) : acaso(i + 1); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
 
 function newGame(names) {
   return { names: (names || ['Jogador 1', 'Jogador 2', 'Jogador 3', 'Jogador 4']).slice(),
