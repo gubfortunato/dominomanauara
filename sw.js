@@ -1,6 +1,6 @@
 // Dominó Manauara: guarda o jogo no celular para abrir rápido e funcionar sem internet.
 // Ao publicar uma versão nova, troque o número abaixo para os celulares baixarem tudo de novo.
-const CACHE = 'dominomanauara-2.8.1-86246223';
+const CACHE = 'dominomanauara-2.9-b16d52dd';
 const FILES = [
   './',
   './index.html',
@@ -9,9 +9,9 @@ const FILES = [
   './termos.html',
   './fonts/alfa-slab-one.woff',
   './fonts/figtree.woff',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/apple-touch-icon.png'
+  './icons/icon-192-v2.png',
+  './icons/icon-512-v2.png',
+  './icons/apple-touch-icon-v2.png'
 ];
 
 self.addEventListener('install', e => {
@@ -63,8 +63,8 @@ self.addEventListener('push', e => {
   try { d = e.data ? e.data.json() : {}; } catch (err) { d = { texto: e.data ? e.data.text() : '' }; }
   e.waitUntil(self.registration.showNotification(d.titulo || 'Dominó Manauara', {
     body: d.texto || 'A mesa tá montada. Bora uma partida?',
-    icon: './icons/icon-192.png',
-    badge: './icons/icon-192.png',
+    icon: './icons/icon-192-v2.png',
+    badge: './icons/icon-192-v2.png',
     tag: 'dominomanauara',
     data: { url: d.url || './' }
   }));

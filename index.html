@@ -7,8 +7,8 @@
 <meta name="description" content="Dominó em duplas com bucho, garagem, passe e galo. Grátis no celular, até sem internet.">
 <meta name="theme-color" content="#15100c">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icons/icon-192.png" type="image/png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192-v2.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-v2.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Dominó">
@@ -990,6 +990,8 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .bubble.reacao{z-index:4}
 .minha-fala{position:absolute;left:0;bottom:calc(100% + 8px);z-index:5;max-width:90%;background:var(--tile);color:var(--pip);font-size:18px;font-weight:800;padding:7px 14px;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.35);opacity:0;transform:translateY(6px) scale(.9);transition:opacity .2s, transform .2s;pointer-events:none;white-space:nowrap}
 .minha-fala.show{opacity:1;transform:none}
+/* Mesa rápida: sem número nem convite (é com quem estiver online) */
+#scrSala.publica .sala-num,#scrSala.publica .sala-convite{display:none}
 
 /* ===== Anuncie: formulário de patrocínio ===== */
 .anuncie-link{display:grid;gap:2px;justify-items:center;text-align:center;width:100%;margin-top:-4px;padding:12px 14px;border:0;border-radius:14px;background:transparent;color:var(--fg);font:inherit;cursor:pointer}
@@ -1070,11 +1072,14 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 /* Sem anúncios para quem tem o plano */
 html.plano .sponsor,html.plano .mesa-patro,html.plano .res-patro,html.plano #setupPatro,html.plano .anuncie-link{display:none!important}
 /* Cores de mesa do plano */
-html[data-mesa="feltro"] .table.wood{--wood-1:#2f6b4c;--wood-2:#163a29;--wood-edge:#6b4a2a}
+html[data-mesa="feltro"] .table.wood{--wood-1:#2f6b4c;--wood-2:#163a29;--wood-edge:#6b4a2a;
+  background:var(--img-floresta) center bottom/100% 30% no-repeat, repeating-linear-gradient(92deg, rgba(255,235,205,.025) 0 2px, transparent 2px 7px), repeating-linear-gradient(88deg, rgba(0,0,0,.08) 0 1px, transparent 1px 13px), radial-gradient(120% 90% at 50% 45%, var(--wood-1), var(--wood-2))}
 html[data-mesa="rionegro"] .table.wood{--wood-1:#24364a;--wood-2:#0e1620;--wood-edge:#4d5d6b}
 html[data-mesa="acai"] .table.wood{--wood-1:#4f2449;--wood-2:#26101f;--wood-edge:#74405f}
-html[data-mesa="garantido"] .table.wood{--wood-1:#9a2222;--wood-2:#4a0d0d;--wood-edge:#c94a3a}
-html[data-mesa="caprichoso"] .table.wood{--wood-1:#23489c;--wood-2:#0c1f4a;--wood-edge:#4a74c9}
+html[data-mesa="garantido"] .table.wood{--wood-1:#9a2222;--wood-2:#4a0d0d;--wood-edge:#c94a3a;
+  background:var(--img-coracao) center 52%/min(56%, 230px) auto no-repeat, repeating-linear-gradient(92deg, rgba(255,235,205,.025) 0 2px, transparent 2px 7px), repeating-linear-gradient(88deg, rgba(0,0,0,.08) 0 1px, transparent 1px 13px), radial-gradient(120% 90% at 50% 45%, var(--wood-1), var(--wood-2))}
+html[data-mesa="caprichoso"] .table.wood{--wood-1:#23489c;--wood-2:#0c1f4a;--wood-edge:#4a74c9;
+  background:var(--img-estrela) center 50%/min(60%, 250px) auto no-repeat, repeating-linear-gradient(92deg, rgba(255,235,205,.025) 0 2px, transparent 2px 7px), repeating-linear-gradient(88deg, rgba(0,0,0,.08) 0 1px, transparent 1px 13px), radial-gradient(120% 90% at 50% 45%, var(--wood-1), var(--wood-2))}
 html[data-mesa="tucuma"] .table.wood{--wood-1:#a3581a;--wood-2:#4f2608;--wood-edge:#c98238}
 html[data-mesa="encontro"] .table.wood{--wood-1:#3b3125;--wood-2:#1a1f24;--wood-edge:#6b5534;
   background:repeating-linear-gradient(92deg, rgba(255,235,205,.025) 0 2px, transparent 2px 7px), radial-gradient(120% 90% at 50% 45%, transparent 35%, rgba(0,0,0,.4)), linear-gradient(105deg, #1a1f24 0 46%, #3b3125 50%, #7a5c36 54% 100%)}
@@ -1208,24 +1213,17 @@ html[data-mesa="ponte"] .table.wood{--wood-1:#1c2f50;--wood-2:#0a1424;--wood-edg
 @media (prefers-reduced-motion: reduce){.cq-novas .es-cq-ic{animation:none}}
 .festa-cq{margin:2px 0 4px;font-size:15px;line-height:1.4;color:var(--wood-ink)}
 .festa-cq b{color:var(--glow)}
-/* Nome da mesa: impresso no pano, embaixo, atrás das pedras */
-.mesa-nome{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);display:grid;justify-items:center;gap:2px;pointer-events:none;white-space:nowrap;color:var(--wood-ink);opacity:.34;text-align:center}
-.mesa-nome small{display:flex;align-items:center;gap:8px;font-size:10.5px;font-weight:800;letter-spacing:.32em;text-transform:uppercase;padding-left:.32em}
-.mesa-nome small::before,.mesa-nome small::after{content:'';width:18px;height:1px;background:currentColor}
-.mesa-nome b{font-family:var(--font-display);font-weight:400;font-size:clamp(20px,6.2vw,28px);line-height:1.05}
-html.plano .mesa-nome,.board-wrap:not(:has(.mesa-patro)) .mesa-nome{bottom:10px}
 .sala-centro.com-nome{display:grid;place-items:center;padding:10%;text-align:center}
 .sc-mesa{display:grid;gap:1px;color:#efe2cc;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .sc-mesa small{font-size:9.5px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;opacity:.85}
 .sc-mesa b{font-size:13px;font-weight:800;line-height:1.15}
-/* celular baixo (iPhone SE): a mesa é curta, o nome vira uma linha pequena */
-@media (max-height: 700px){
-  .mesa-nome{display:flex;align-items:center;gap:7px;bottom:24px}
-  .mesa-nome small::before,.mesa-nome small::after{display:none}
-  .mesa-nome small,.mesa-nome b{font-family:inherit;font-size:10.5px;font-weight:800;line-height:1;letter-spacing:.22em;text-transform:uppercase;padding:0}
-  html.plano .mesa-nome,.board-wrap:not(:has(.mesa-patro)) .mesa-nome{bottom:8px}
-}
 #goEstilo{margin:2px 0 8px}
+/* Nome da mesa: aparece no meio do pano ao chegar na mesa e some sozinho */
+.mesa-titulo{position:fixed;z-index:16;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:2px;padding:12px 22px 14px;border-radius:16px;background:rgba(0,0,0,.38);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);color:#efe2cc;pointer-events:none;white-space:nowrap;text-align:center;animation:mesaTitulo 2.8s ease both}
+.mesa-titulo small{font-size:10.5px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;padding-left:.3em;opacity:.8}
+.mesa-titulo b{font-family:var(--font-display);font-weight:400;font-size:clamp(22px,6.5vw,30px);line-height:1.05}
+@keyframes mesaTitulo{0%{opacity:0;transform:translate(-50%,-44%)}14%{opacity:1;transform:translate(-50%,-50%)}78%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.mesa-titulo{animation:none}}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -1318,7 +1316,7 @@ html.plano .mesa-nome,.board-wrap:not(:has(.mesa-patro)) .mesa-nome{bottom:10px}
 
   <section class="screen panel inst" id="scrInstalar" hidden>
     <div class="inst-topo">
-      <img class="inst-icone" src="icons/icon-192.png" alt="" width="72" height="72">
+      <img class="inst-icone" src="icons/icon-192-v2.png" alt="" width="72" height="72">
       <div><p class="kicker">Primeiro passo</p><h2 class="brand" style="font-size:30px">Instale o jogo no celular</h2></div>
     </div>
     <p class="sala-lead">O Dominó Manauara fica com ícone na tela de início, abre em tela cheia, funciona até sem internet e se atualiza sozinho. Leva menos de um minuto.</p>
@@ -1387,6 +1385,10 @@ html.plano .mesa-nome,.board-wrap:not(:has(.mesa-patro)) .mesa-nome{bottom:10px}
     <button type="button" class="card wood" id="goOffline">
       <span class="ck" id="offlineK">Jogo offline</span><span class="ct">Você contra a turma do bairro</span>
       <span class="cd">Você e um parceiro contra dois adversários, todos no mesmo nível e sem pressa. Funciona até sem internet.</span>
+    </button>
+    <button type="button" class="card wood" id="goRapida" hidden>
+      <span class="ck">Mesa rápida · online</span><span class="ct">Jogar com quem estiver online</span>
+      <span class="cd">A gente junta você com outros jogadores. Se faltar gente, a turma do bairro completa a mesa.</span>
     </button>
     <button type="button" class="card wood mesa-volta" id="goMesa" hidden>
       <span class="ck">Mesa online · <span id="goMesaNum"></span></span><span class="ct">Voltar para a mesa</span>
@@ -2148,6 +2150,14 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '2.9', data: '07/10/2026', itens: [
+    'Mesa rápida: jogue online com quem estiver no app agora, sem precisar de convite.',
+    'Se faltar gente, a turma do bairro completa a mesa. Quem chega depois entra no lugar de um robô.',
+    'Mesas do Garantido e do Caprichoso com o coração e a estrela no pano. O nome das outras mesas aparece quando você chega na mesa.',
+    'Mesa Teatro Amazonas: para quem ganhar 50 partidas (conquista Orgulho de Manaus).',
+    'A mesa verde agora é a Floresta, com a mata desenhada no pé da mesa.',
+    'Ícone novo: o Encontro das Águas, igual à mesa do jogo.'
+  ] },
   { v: '2.8.1', data: '07/10/2026', itens: ['O nome da mesa escolhida aparece impresso na mesa, embaixo, e no centro da sala da mesa online.', 'Personalizar agora fica dentro do perfil: toque na sua foto, no início.', 'Mesa nova: Ponte Rio Negro, para quem bater 10 vezes. A do Teatro Amazonas ganhou a cúpula.', '"Achou um erro?" fica logo abaixo do seu histórico.'] },
   { v: '2.8', data: '07/10/2026', itens: [
     'Novo no perfil (toque na sua foto, no início): Personalizar. Monte o seu avatar peça por peça, com a camisa do Garantido ou do Caprichoso.',
@@ -3846,7 +3856,7 @@ $('#dnAvEnviar').addEventListener('click', async () => {
 const MKEY = 'dmz-mesa';           // mesa em que você está sentado (para voltar depois)
 const CONVITE = 'dmz-convite';     // número que chegou por link, esperando você entrar
 const ON = { cod: null, ws: null, ativo: false, vista: null, seq: -1, tent: 0, reT: null, pingT: null, otimista: null,
-  depoisDoDeal: null, armado: false, ultimoAviso: 0 };
+  depoisDoDeal: null, armado: false, ultimoAviso: 0, buscando: false, rapida: false, recebido: 0, contaT: null };
 
 function onlineAtivo() { return !!CONFIG.api && typeof WebSocket === 'function'; }
 function meuId() {
@@ -4019,7 +4029,7 @@ function receberOnline(m) {
   if (m.t !== 'mesa') return;
   if (m.minha < 0) { sairDaMesa(); toast('Você não está mais nessa mesa.'); if (screen === 'sala') renderSala(); return; }
   const antes = ON.vista;
-  ON.vista = m;
+  ON.vista = m; ON.recebido = Date.now();
   statusOnline();
   if (m.fase === 'espera') {
     if (screen === 'game') { leaveGameBase(); show('sala'); }
@@ -4042,6 +4052,10 @@ function receberOnline(m) {
 
 // ---------- Jogo ----------
 function entrarNoJogoOnline(m, comecou) {
+  // mesa rápida: quem chega com o jogo rolando entra no lugar de um robô
+  const J = m.jogo, noMeio = ON.rapida && m.publica && J && ((J.chain && J.chain.length) || (J.score || []).some(Boolean) || (J.series || []).some(Boolean));
+  ON.rapida = false;
+  if (noMeio) setTimeout(() => toast('Você entrou num jogo que já estava rolando, no lugar de um robô. Bom jogo!'), 600);
   mode = 'on'; seatMe = 0; offSt = null;
   G = girar(m.jogo, m.minha); ON.seq = m.seq;
   endDrag(); closeSheet();
@@ -4061,8 +4075,8 @@ function aplicarJogo(m) {
   if (mode !== 'on' || !G) { entrarNoJogoOnline(m, false); return; }
   if (dealing) { ON.depoisDoDeal = m; return; }
   const ant = G, novo = girar(m.jogo, m.minha);
-  if (m.seq === ON.seq) {   // nada mudou no jogo (só quem está conectado)
-    render(); return;
+  if (m.seq === ON.seq) {   // nada mudou no jogo (só quem está conectado, ou alguém sentou no lugar de um robô)
+    G.names = novo.names; render(); return;
   }
   const pulou = ON.seq >= 0 && m.seq > ON.seq + 1;
   ON.seq = m.seq;
@@ -4190,8 +4204,8 @@ function statusOnline() {
   el.textContent = ON.ws && ON.ws.readyState === 0 && ON.tent === 0 ? 'Conectando à mesa…' : 'Sem conexão com a mesa. Tentando de novo…';
   if (screen === 'sala') {
     const st = $('#salaSt');
-    st.hidden = !(ON.ativo && !ON.vista);
-    st.textContent = 'Conectando à mesa…';
+    st.hidden = !((ON.ativo && !ON.vista) || ON.buscando);
+    st.textContent = ON.buscando ? 'Procurando uma mesa…' : 'Conectando à mesa…';
   }
 }
 
@@ -4220,6 +4234,31 @@ async function entrarMesa(cod) {
   } catch (e) { toast('Sem internet agora. A mesa online precisa de conexão.'); }
   finally { b.disabled = false; }
 }
+// Mesa rápida: a fila do servidor junta quem quer jogar com qualquer um (robôs completam a mesa)
+async function mesaRapida() {
+  if (!onlineAtivo()) { toast('A mesa rápida precisa de internet.'); return; }
+  if (!profile || profile.idade === 'menor') { toast('A mesa rápida é para maiores de 18. Jogue com os amigos pelo número da mesa.'); return; }
+  if (mesaGuardada()) { voltarMesa(); toast('Você ainda está nesta mesa. Para jogar em outra, saia dela primeiro.'); return; }
+  if (ON.buscando) return;
+  ON.buscando = true; ON.vista = null;
+  show('sala');
+  try {
+    const r = await fetch(CONFIG.api + '/mesa/rapida', { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro() }) });
+    const j = await r.json().catch(() => ({}));
+    ON.buscando = false;
+    if (r.ok && /^\d{5}$/.test(j.codigo || '')) { track('mesa-rapida'); ON.rapida = true; conectar(j.codigo); renderSala(); return; }
+    toast(r.status === 429 ? 'Muitas mesas agora. Tente de novo daqui a pouco.' : 'Não deu para achar uma mesa agora. Tente de novo.');
+    show('home');
+  } catch (e) { ON.buscando = false; toast('Sem internet agora. A mesa rápida precisa de conexão.'); show('home'); }
+}
+// Contagem até a mesa rápida começar (o servidor começa sozinho; a contagem é só para quem espera)
+function restanteRapida(v) { return Math.max(0, Math.ceil((v.iniciaEm - v.agora - (Date.now() - ON.recebido)) / 1000)); }
+function textoRapida(v) {
+  const vazias = v.cad.filter(c => !c).length, s = restanteRapida(v);
+  if (!vazias) return 'Mesa completa! Começando…';
+  return s > 0 ? `Começa em ${s} s. Se faltar gente, a turma do bairro completa a mesa.` : 'Começando…';
+}
 function voltarMesa() {
   const cod = mesaGuardada(); if (!cod) return;
   if (ON.ativo && ON.cod === cod && ON.ws && ON.ws.readyState === 1 && ON.vista) {
@@ -4235,11 +4274,14 @@ const NOME_POS = ['Você', 'Adversário', 'Parceiro', 'Adversário'];
 function renderSala() {
   if (screen !== 'sala') return;
   const v = ON.vista, naMesa = ON.ativo && ON.cod;
-  $('#salaEntrada').hidden = !!naMesa;
+  const pub = !!(v && v.publica);
+  $('#salaEntrada').hidden = !!naMesa || ON.buscando;
   $('#salaEspera').hidden = !(naMesa && v && v.fase === 'espera');
-  $('#salaTitulo').textContent = naMesa ? 'Esperando a turma' : 'Jogar com os amigos';
+  $('#salaTitulo').textContent = ON.buscando || pub || (naMesa && !v && ON.rapida) ? 'Procurando jogadores' : naMesa ? 'Esperando a turma' : 'Jogar com os amigos';
+  $('#scrSala').classList.toggle('publica', pub);
   statusOnline();
-  if (!naMesa) { $('#salaCodigo').value = store.get(CONVITE) || $('#salaCodigo').value; return; }
+  clearInterval(ON.contaT);
+  if (!naMesa) { if (!ON.buscando) $('#salaCodigo').value = store.get(CONVITE) || $('#salaCodigo').value; return; }
   if (!v || v.fase !== 'espera') return;
   $('#salaNum').textContent = v.codigo;
   $('#salaConvite').href = 'https://wa.me/?text=' + encodeURIComponent(conviteTexto(v.codigo));
@@ -4253,19 +4295,28 @@ function renderSala() {
   }).join('') + '<div class="sala-centro" aria-hidden="true"></div>';
   $$('#salaMesa .vazia').forEach(b => b.addEventListener('click', () => mandar({ t: 'sentar', cadeira: Number(b.dataset.p) })));
   const vazias = v.cad.filter(c => !c).length;
+  if (pub) {
+    $('#salaDica').textContent = 'Quem chegar agora senta nas cadeiras vazias. Quem senta na sua frente é o seu parceiro.';
+    $('#salaFaltam').textContent = textoRapida(v);
+    $('#salaComecar').textContent = 'Começar agora';
+    ON.contaT = setInterval(() => { if (screen === 'sala' && ON.vista === v) $('#salaFaltam').textContent = textoRapida(v); else clearInterval(ON.contaT); }, 1000);
+    return;
+  }
+  $('#salaDica').textContent = 'Toque numa cadeira vazia para trocar de lugar. Quem senta na sua frente é o seu parceiro.';
   $('#salaFaltam').textContent = vazias ? `Faltam ${vazias === 1 ? '1 pessoa' : vazias + ' pessoas'}. Se começar agora, a turma do bairro joga nas cadeiras vazias.` : 'Mesa completa! Pode começar.';
   if (!vazias) ON.armado = false;
   $('#salaComecar').textContent = ON.armado ? 'Toque de novo: começar com a turma' : 'Começar';
 }
 $('#goOnline').addEventListener('click', () => { if (!onlineAtivo()) { toast('A mesa online precisa de internet.'); return; } if (mesaGuardada() && !ON.ativo) { voltarMesa(); return; } show('sala'); });
 $('#goMesa').addEventListener('click', voltarMesa);
+$('#goRapida').addEventListener('click', mesaRapida);
 $('#salaCriar').addEventListener('click', criarMesa);
 $('#salaEntrar').addEventListener('click', () => entrarMesa($('#salaCodigo').value));
 $('#salaCodigo').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 5); });
 $('#salaCodigo').addEventListener('keydown', e => { if (e.key === 'Enter') entrarMesa(e.target.value); });
 $('#salaComecar').addEventListener('click', () => {
   const v = ON.vista; if (!v) return;
-  if (v.cad.some(c => !c) && !ON.armado) { ON.armado = true; renderSala(); return; }
+  if (!v.publica && v.cad.some(c => !c) && !ON.armado) { ON.armado = true; renderSala(); return; }
   ON.armado = false;
   mandar({ t: 'comecar' });
 });
@@ -4284,6 +4335,7 @@ renderHome = function () {
     $('#goMesaD').textContent = ON.ativo && ON.vista && ON.vista.fase === 'espera' ? 'Esperando a turma chegar.' : 'Seu lugar está guardado. Toque para voltar.';
   }
   $('#goOnline').hidden = !onlineAtivo();
+  $('#goRapida').hidden = !onlineAtivo() || !profile || profile.idade === 'menor';
   const conv = store.get(CONVITE);
   if (conv && onlineAtivo()) { store.del(CONVITE); setTimeout(() => { show('sala'); entrarMesa(conv); }, 250); }
 };
@@ -4426,20 +4478,28 @@ const PLKEY = 'dmz-plano', PEDKEY = 'dmz-pedido', MCKEY = 'dmz-mesa-cor', DOAKEY
 // Desenhos das mesas de cartão-postal (bem apagados, atrás das pedras): a Ponte Rio Negro e a cúpula do Teatro Amazonas
 const svgURL = svg => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 document.documentElement.style.setProperty('--img-ponte', svgURL('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" fill="none" stroke-linecap="round"><path d="M116 18L22 70.0M124 18L218 70.0M113 25L40 68.7M127 25L200 68.7M110 33L58 67.6M130 33L182 67.6M108 42L76 66.8M132 42L164 66.8M107 52L92 66.3M133 52L148 66.3" stroke="#efe2cc" stroke-opacity=".16" stroke-width=".55"/><path d="M14 70.7V80M46 68.3V80M194 68.3V80M226 70.7V80" stroke="#efe2cc" stroke-opacity=".2" stroke-width="1.6"/><path d="M106 80V66M134 80V66" stroke="#efe2cc" stroke-opacity=".26" stroke-width="2.4"/><path d="M106 66C106 32 111 13 120 13S134 32 134 66" stroke="#efe2cc" stroke-opacity=".34" stroke-width="2.6"/><path d="M0 72Q120 60 240 72" stroke="#efe2cc" stroke-opacity=".32" stroke-width="2"/><g fill="#f3c063" fill-opacity=".55"><circle cx="6" cy="70.0" r=".9"/><circle cx="17" cy="69.0" r=".9"/><circle cx="28" cy="68.1" r=".9"/><circle cx="39" cy="67.3" r=".9"/><circle cx="50" cy="66.6" r=".9"/><circle cx="61" cy="66.1" r=".9"/><circle cx="72" cy="65.6" r=".9"/><circle cx="83" cy="65.19999999999999" r=".9"/><circle cx="94" cy="64.89999999999999" r=".9"/><circle cx="105" cy="64.69999999999999" r=".9"/><circle cx="116" cy="64.6" r=".9"/><circle cx="127" cy="64.6" r=".9"/><circle cx="138" cy="64.69999999999999" r=".9"/><circle cx="149" cy="65.0" r=".9"/><circle cx="160" cy="65.3" r=".9"/><circle cx="171" cy="65.69999999999999" r=".9"/><circle cx="182" cy="66.19999999999999" r=".9"/><circle cx="193" cy="66.8" r=".9"/><circle cx="204" cy="67.5" r=".9"/><circle cx="215" cy="68.39999999999999" r=".9"/><circle cx="226" cy="69.3" r=".9"/><circle cx="237" cy="70.3" r=".9"/></g><path d="M20 86h40M80 89h30M130 86h50M190 90h28M50 93h36M150 94h24" stroke="#f3c063" stroke-opacity=".12" stroke-width="1"/></svg>'));
+// Mesas dos bois: o coração do Garantido e a estrela do Caprichoso no pano (apagados na mesa, mais fortes na amostra)
+const emblemaSVG = (d, vb, a) => svgURL(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}"><path d="${d}" fill="#fff" fill-opacity="${a}"/></svg>`);
+const CORACAO_D = 'M0 4C-1.5 2.6-5 .2-5-2.6C-5-4.4-3.7-5.6-2.3-5.6C-1.2-5.6-.4-5 0-4.2C.4-5 1.2-5.6 2.3-5.6C3.7-5.6 5-4.4 5-2.6C5 .2 1.5 2.6 0 4Z';
+document.documentElement.style.setProperty('--img-coracao', emblemaSVG(CORACAO_D, '-5.6 -6.2 11.2 10.8', '.11'));
+document.documentElement.style.setProperty('--img-coracao-sw', emblemaSVG(CORACAO_D, '-5.6 -6.2 11.2 10.8', '.7'));
+document.documentElement.style.setProperty('--img-estrela', emblemaSVG(estrelaD(10, 4.2), '-10.6 -10.6 21.2 20.6', '.11'));
+document.documentElement.style.setProperty('--img-estrela-sw', emblemaSVG(estrelaD(10, 4.2), '-10.6 -10.6 21.2 20.6', '.7'));
+document.documentElement.style.setProperty('--img-floresta', svgURL('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" preserveAspectRatio="none"><path d="M0 60V30Q6.5 19.4 12.9 28.3Q20.0 21.8 27.1 30.0Q34.4 24.0 41.7 28.4Q50.2 21.9 58.7 28.9Q67.5 17.8 76.3 29.6Q82.5 13.3 88.6 29.2Q95.0 22.3 101.3 31.3Q109.1 20.4 116.8 29.5Q123.0 21.7 129.2 28.8Q136.5 19.3 143.8 30.3Q150.7 17.6 157.6 30.8Q165.3 20.6 173.0 31.5Q179.9 14.3 186.7 28.5Q195.0 21.7 203.3 30.0Q211.3 20.8 219.3 30.3Q226.2 15.3 233.2 30.4Q236.6 16.4 240.0 31.8V60Z" fill="#0b2a1a" fill-opacity=".32"/><path d="M0 60V42Q6.5 35.7 13.0 42.8Q20.5 31.1 27.9 41.1Q34.4 36.2 41.0 41.8Q45.8 36.8 50.7 43.1Q55.9 35.6 61.1 43.5Q67.0 35.2 72.8 43.5Q79.9 33.3 87.0 41.7Q94.2 32.0 101.3 40.6Q106.5 36.1 111.7 41.9Q117.0 35.6 122.3 41.7Q128.5 32.0 134.7 42.8Q141.0 32.5 147.4 40.2Q154.2 29.4 161.1 43.2Q166.8 35.8 172.5 42.5Q177.2 36.6 181.9 40.6Q186.5 36.5 191.2 40.6Q196.8 37.2 202.4 43.5Q207.3 34.2 212.3 41.4Q217.1 32.5 222.0 44.0Q228.0 35.6 233.9 40.4Q237.0 32.7 240.0 40.6V60Z" fill="#071d11" fill-opacity=".45"/></svg>'));
 document.documentElement.style.setProperty('--img-teatro', svgURL('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none"><defs><pattern id="m" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2.5" height="2.5" fill="#e9c24a" fill-opacity=".34"/><rect x="2.5" y="2.5" width="2.5" height="2.5" fill="#3f9a5a" fill-opacity=".3"/><rect x="2.5" width="2.5" height="2.5" fill="#3b6fc2" fill-opacity=".26"/></pattern></defs><path d="M27 63C27 41 37 27 50 21C63 27 73 41 73 63Z" fill="url(#m)" stroke="#efe2cc" stroke-opacity=".3" stroke-width="1"/><path d="M44 21V15H56V21M46 15C46 11 54 11 54 15M50 11V5" stroke="#efe2cc" stroke-opacity=".3" stroke-width="1"/><path d="M25 63H75V69H25ZM16 69H84V76H16Z" stroke="#efe2cc" stroke-opacity=".26" stroke-width="1"/><path d="M22 76V90M31 76V90M40 76V90M60 76V90M69 76V90M78 76V90M14 90H86" stroke="#efe2cc" stroke-opacity=".2" stroke-width="1.2"/><path d="M44 90V80Q50 75 56 80V90" stroke="#efe2cc" stroke-opacity=".22" stroke-width="1"/></svg>'));
 // Mesas: grátis (o regional fica de graça), por conquista (req) ou do Plano Apoiador (plano)
 const MESAS = [
   { id: 'madeira', nome: 'Madeira', c1: '#3d2719', c2: '#26180f' },
   { id: 'encontro', nome: 'Encontro das Águas', bg: 'linear-gradient(105deg, #1a1f24 0 47%, #4a3b28 50%, #8a6a40 53% 100%)' },
-  { id: 'garantido', nome: 'Garantido', c1: '#9a2222', c2: '#4a0d0d' },
-  { id: 'caprichoso', nome: 'Caprichoso', c1: '#23489c', c2: '#0c1f4a' },
-  { id: 'feltro', nome: 'Feltro verde', c1: '#2f6b4c', c2: '#163a29' },
+  { id: 'garantido', nome: 'Garantido', bg: 'var(--img-coracao-sw) center 54%/46% auto no-repeat, radial-gradient(circle at 40% 35%, #9a2222, #4a0d0d 78%)', emblema: true },
+  { id: 'caprichoso', nome: 'Caprichoso', bg: 'var(--img-estrela-sw) center/50% auto no-repeat, radial-gradient(circle at 40% 35%, #23489c, #0c1f4a 78%)', emblema: true },
+  { id: 'feltro', nome: 'Floresta', bg: 'var(--img-floresta) center bottom/100% 42% no-repeat, radial-gradient(circle at 40% 35%, #2f6b4c, #163a29 78%)' },   // id antigo mantido (quem já escolheu continua com ela)
   { id: 'pontanegra', nome: 'Ponta Negra', bg: 'linear-gradient(172deg, #3b1d3f 0%, #7e3338 38%, #c0622b 60%, #2a2340 100%)', req: 'vit10' },
   { id: 'acai', nome: 'Açaí', c1: '#4f2449', c2: '#26101f', req: 'jogo3' },
   { id: 'ponte', nome: 'Ponte Rio Negro', bg: 'var(--img-ponte) center 58%/150% auto no-repeat, linear-gradient(180deg, #0e1830 0%, #1c2f50 58%, #0a1424 100%)', req: 'bat10' },
   { id: 'rionegro', nome: 'Rio Negro', c1: '#24364a', c2: '#0e1620', req: 'galo5' },
   { id: 'tucuma', nome: 'Tucumã', c1: '#a3581a', c2: '#4f2608', req: 'vit25' },
-  { id: 'teatro', nome: 'Teatro Amazonas', bg: 'var(--img-teatro) center 40%/86% auto no-repeat, radial-gradient(circle at 40% 30%, #8a3550, #3a1220 80%)', plano: true }
+  { id: 'teatro', nome: 'Teatro Amazonas', bg: 'var(--img-teatro) center 40%/86% auto no-repeat, radial-gradient(circle at 40% 30%, #8a3550, #3a1220 80%)', req: 'vit50' }
 ];
 const PRECO = { mensal: 'R$ 4,90 · 30 dias', anual: 'R$ 39,90 · 1 ano', doacao5: 'R$ 5', doacao10: 'R$ 10', doacao20: 'R$ 20' };
 let apoioVolta = 'home';
@@ -5523,7 +5583,8 @@ const CONQUISTAS = [
   { id: 'bat10', nome: 'Batedor', tx: 'Bata 10 vezes', feito: 'Bateu 10 vezes', curto: '10 batidas', campo: 'batidas', meta: 10 },
   { id: 'vit10', nome: 'Caboco bom de pedra', tx: 'Ganhe 10 partidas', feito: 'Ganhou 10 partidas', curto: '10 partidas', campo: 'partidasVencidas', meta: 10 },
   { id: 'galo5', nome: 'Galo de briga', tx: 'Aplique 5 galos', feito: 'Aplicou 5 galos', curto: '5 galos', campo: 'galos', meta: 5 },
-  { id: 'vit25', nome: 'Lenda do bairro', tx: 'Ganhe 25 partidas', feito: 'Ganhou 25 partidas', curto: '25 partidas', campo: 'partidasVencidas', meta: 25 }
+  { id: 'vit25', nome: 'Lenda do bairro', tx: 'Ganhe 25 partidas', feito: 'Ganhou 25 partidas', curto: '25 partidas', campo: 'partidasVencidas', meta: 25 },
+  { id: 'vit50', nome: 'Orgulho de Manaus', tx: 'Ganhe 50 partidas', feito: 'Ganhou 50 partidas', curto: '50 partidas', campo: 'partidasVencidas', meta: 50 }
 ];
 const CQKEY = 'dmz-conquistas-vistas', AVMKEY = 'dmz-avatar-montado';
 const minusc = s => s && /^[A-ZÀ-Ú][a-zà-ú ]/.test(s) ? s[0].toLowerCase() + s.slice(1) : s || '';
@@ -5538,7 +5599,8 @@ function conquistaFeita(id) {
 function faltaTexto(id) {
   const c = conquistaDe(id); if (!c) return '';
   const f = c.meta - progressoConquista(c);
-  return minusc(c.tx) + (f > 0 && c.meta > 1 ? ` (faltam ${f})` : '');
+  // quem não quer esperar libera na hora com o Plano Apoiador (só aparece com os pagamentos ligados)
+  return minusc(c.tx) + (f > 0 && c.meta > 1 ? ` (faltam ${f})` : '') + (pagamentosAtivos() && !temPlano() ? ', ou libere na hora com o Plano Apoiador' : '');
 }
 // Liberado? Grátis; por conquista (ou com o plano); só do plano
 function parteLivre(p) { return !!p && (p.plano ? temPlano() : !p.req || conquistaFeita(p.req) || temPlano()); }
@@ -5558,26 +5620,36 @@ function aplicarMesa() {
   try {
     const m = mesaAtual(), r = document.documentElement;
     if (m.id === 'madeira') r.removeAttribute('data-mesa'); else r.setAttribute('data-mesa', m.id);
-    nomeNaMesa(m);
   } catch (e) {}
 }
 const fundoMesa = m => m.bg || `radial-gradient(circle at 40% 35%, ${m.c1}, ${m.c2} 78%)`;
-// O nome da mesa aparece impresso no pano, embaixo, atrás das pedras (a de madeira, a padrão, fica sem nome)
-function nomeNaMesa(m) {
-  const wrap = $('#boardWrap'); if (!wrap) return;
-  let el = wrap.querySelector('.mesa-nome');
-  if (m.id === 'madeira') { if (el) el.remove(); return; }
-  if (!el) { wrap.insertAdjacentHTML('afterbegin', '<div class="mesa-nome" aria-hidden="true"></div>'); el = wrap.querySelector('.mesa-nome'); }
-  el.innerHTML = `<small>Mesa</small><b>${esc(m.nome)}</b>`;
+// O nome da mesa aparece só ao chegar na mesa, no meio do pano, e some sozinho (nada fixo atrapalhando as pedras).
+// As mesas dos bois não precisam de nome: o coração e a estrela já ficam no pano.
+function tituloMesa() {
+  const m = mesaAtual(), wrap = $('#boardWrap');
+  if (!wrap || m.id === 'madeira' || m.emblema) return;
+  const velho = $('.mesa-titulo'); if (velho) velho.remove();
+  // por cima das pedras sendo embaralhadas, no meio da mesa
+  const r = wrap.getBoundingClientRect();
+  document.body.insertAdjacentHTML('beforeend', `<div class="mesa-titulo" aria-hidden="true" style="left:${r.left + r.width / 2}px;top:${r.top + r.height / 2}px"><small>Mesa</small><b>${esc(m.nome)}</b></div>`);
+  const el = $('.mesa-titulo');
+  setTimeout(() => { if (el.isConnected) el.remove(); }, 2900);
 }
-// Na sala da mesa online, o centro mostra a sua mesa com o nome
+const showEstilo = show;
+show = function (name) {
+  const antes = screen;
+  showEstilo(name);
+  if (name === 'game' && antes !== 'game') setTimeout(() => { if (screen === 'game') tituloMesa(); }, 250);
+  else if (name !== 'game') { const t = $('.mesa-titulo'); if (t) t.remove(); }
+};
+// Na sala da mesa online, o centro mostra a sua mesa (com o nome, ou o coração / a estrela dos bois)
 const renderSalaEstilo = renderSala;
 renderSala = function () {
   renderSalaEstilo();
   const c = $('#salaMesa .sala-centro'), m = mesaAtual();
   if (!c || m.id === 'madeira') return;
   c.classList.add('com-nome'); c.style.background = fundoMesa(m);
-  c.innerHTML = `<span class="sc-mesa"><small>Mesa</small><b>${esc(m.nome)}</b></span>`;
+  c.innerHTML = m.emblema ? '' : `<span class="sc-mesa"><small>Mesa</small><b>${esc(m.nome)}</b></span>`;
 };
 
 // ---- Desenhos pequenos ----
