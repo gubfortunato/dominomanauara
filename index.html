@@ -1263,6 +1263,7 @@ html[data-mesa="relogio"] .table.wood{--wood-1:#1e4a5e;--wood-2:#0b1d27;--wood-e
 .mm-op i{position:absolute;top:-4px;right:-6px;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#2a1a08;color:#f0b45e}
 .mm-op i svg{width:11px;height:11px}
 .mesa-pick.alheia{grid-template-columns:auto minmax(0,1fr);cursor:default}
+.mesa-promo{margin:4px 0 10px;font-weight:600}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -1611,6 +1612,7 @@ html[data-mesa="relogio"] .table.wood{--wood-1:#1e4a5e;--wood-2:#0b1d27;--wood-e
     </div>
     <div class="es-sec">
       <span class="ap-k">Sua mesa</span>
+      <p class="note mesa-promo" id="esPromo" hidden></p>
       <div class="ap-cores es-mesas" id="esMesas" role="radiogroup" aria-label="Mesa"></div>
     </div>
     <div class="es-sec">
@@ -2199,6 +2201,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.2', data: '08/10/2026', itens: ['Lançamento: todas as mesas liberadas para todo mundo até 23/10 (Teatro Amazonas, Ponte, Mercado, Arena e as outras). Depois, elas voltam a ser ganhas jogando.'] },
   { v: '3.1.1', data: '08/10/2026', itens: ['Rolar a fileira de mesas no menu da partida para o lado não puxa mais o menu para baixo.'] },
   { v: '3.1', data: '08/10/2026', itens: ['Na mesa online, todo mundo joga na mesa de quem criou. Quem criou escolhe (e pode trocar no menu durante a partida).'] },
   { v: '3.0', data: '08/10/2026', itens: ['Quando tem gente querendo jogar online, o app avisa e pergunta se você quer entrar na mesa rápida. Se estiver no jogo offline, ele fica guardado.', 'Desenhos novos da Vitória-régia (as folhas com a borda virada) e da Arena da Amazônia vista de cima.'] },
@@ -5750,7 +5753,12 @@ function faltaTexto(id) {
 // Liberado? Grátis; por conquista (ou com o plano); só do plano
 // o administrador testa tudo liberado
 function parteLivre(p) { return !!p && (souAdmin() || (p.plano ? temPlano() : !p.req || conquistaFeita(p.req) || temPlano())); }
-const mesaLivre = parteLivre;
+// Lançamento: todas as mesas liberadas para todo mundo até o fim de 23/10/2026 (horário de Manaus).
+// Depois, voltam a ser ganhas jogando (conquistas) ou com o plano.
+const MESAS_LIVRES_ATE = Date.parse('2026-10-24T00:00:00-04:00');
+function mesasNaPromo() { return Date.now() < MESAS_LIVRES_ATE; }
+const PROMO_TX = 'Todas as mesas liberadas até 23/10. Depois, elas se ganham jogando.';
+const mesaLivre = p => mesasNaPromo() || parteLivre(p);
 // O que é do plano só aparece quando dá para assinar (ou para quem já tem)
 function parteVisivel(p) { return !p.plano || pagamentosAtivos() || temPlano() || souAdmin(); }
 function premiosDe(id) {
@@ -5919,7 +5927,8 @@ function renderEstilo() {
   renderMesas(); renderConquistas();
 }
 function renderMesas(el) {
-  const atual = mesaAtual().id;
+  const atual = mesaAtual().id, promo = $('#esPromo');
+  if (!el && promo) { promo.hidden = !mesasNaPromo(); promo.textContent = '🎁 ' + PROMO_TX; }
   (el || $('#esMesas')).innerHTML = MESAS.filter(parteVisivel).map(m => {
     const livre = mesaLivre(m);
     return `<button type="button" class="ap-cor${livre ? '' : ' trancado'}" role="radio" aria-checked="${m.id === atual}" data-m="${m.id}" aria-label="Mesa ${esc(m.nome)}${livre ? '' : ', ainda não liberada'}">`
@@ -5987,6 +5996,7 @@ function renderPickers() {
 }
 function abrirMesas(online) {
   openSheet('info', `<p class="eyebrow">Sua mesa</p><h2 id="sheetTitle">Escolha a mesa</h2>
+    ${mesasNaPromo() ? `<p class="note mesa-promo">🎁 ${PROMO_TX}</p>` : ''}
     <div class="ap-cores es-mesas" id="shMesas" role="radiogroup" aria-label="Mesa"></div>
     ${online ? '<p class="note" style="margin-top:10px">Todo mundo nessa mesa online joga na mesa que você escolher.</p>' : ''}
     <button type="button" class="primary" id="shMesasOk" style="width:100%;margin-top:14px">Pronto</button>`);
@@ -6083,6 +6093,14 @@ $('#avatarGrid').addEventListener('click', e => {
 }, true);
 $('#apEstilo').addEventListener('click', () => abrirEstilo('apoio'));
 aplicarMesa();
+// Acabou o período das mesas liberadas: quem estava numa mesa ainda não conquistada volta para a Madeira, com um aviso (uma vez)
+(function () {
+  if (mesasNaPromo() || store.get('dmz-promo-mesas-fim')) return;
+  const m = MESAS.find(x => x.id === store.get(MCKEY));
+  if (!m || mesaLivre(m)) return;
+  store.set('dmz-promo-mesas-fim', '1');
+  setTimeout(() => toast(`Acabou o período das mesas liberadas. Para ter a mesa ${m.nome} de novo: ${m.req ? faltaTexto(m.req) : 'Plano Apoiador'}.`), 2500);
+})();
 
 
 // ---- Desenho das peças ----
