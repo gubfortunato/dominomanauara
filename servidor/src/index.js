@@ -153,12 +153,12 @@ const LEMBRETES = [
   { titulo: 'A mesa tá montada', texto: 'A turma do bairro tá te esperando. Bora uma partida?' },
   { titulo: 'Tá de bubuia?', texto: 'Então bora uma partidinha de dominó. A turma tá esperando.' },
   { titulo: 'Tá brocado?', texto: 'Pega um X‑caboquinho e vem pra mesa. A turma tá esperando.' },
-  { titulo: 'Seu Raimundo mandou avisar', texto: 'Disse que hoje ninguém ganha dele. Vai deixar?' },
+  { titulo: 'A turma mandou avisar', texto: 'Disseram que hoje ninguém ganha deles. Vai deixar?' },
   { titulo: 'Bora bater uma?', texto: 'Uma partidinha de dominó antes da janta.' },
-  { titulo: 'Cadê você?', texto: 'Dona Socorro já embaralhou as pedras. Só falta você na mesa.' },
+  { titulo: 'Cadê você?', texto: 'A turma já embaralhou as pedras. Só falta você na mesa.' },
   { titulo: 'Hoje tem galo?', texto: 'Faz tempo que você não aplica um galo. Bora tentar?' },
   { titulo: 'Partida rápida', texto: 'Cinco minutinhos de dominó para relaxar. A mesa é sua.' },
-  { titulo: 'O Tonhão tá folgado', texto: 'Ele diz que você correu da mesa. Mostra pra ele.' }
+  { titulo: 'A turma tá folgada', texto: 'Dizem que você correu da mesa. Mostra pra eles.' }
 ];
 const DIA = 24 * 60 * 60 * 1000;
 function validaInscricao(b) {

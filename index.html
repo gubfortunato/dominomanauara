@@ -2200,7 +2200,8 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.5', data: '14/10/2026', itens: ['Mais Manaus: a mesa e o avatar de Açaí viraram Cupuaçu, a tapioca agora é com tucumã, a turma ganhou a Dona Conceição e a mesa online ganhou o "Ê, caroço!". Quem já usava continua com o item, já com o novo.'] },
+  { v: '3.6', data: '14/10/2026', itens: ['Ajustes nos nomes da turma do bairro.'] },
+  { v: '3.5', data: '14/10/2026', itens: ['Mais Manaus: a mesa e o avatar de Açaí viraram Cupuaçu, a tapioca agora é com tucumã, a turma ganhou a Conceição e a mesa online ganhou o "Ê, caroço!". Quem já usava continua com o item, já com o novo.'] },
   { v: '3.4', data: '14/10/2026', itens: ['Camisas vermelha e azul no avatar: cor lisa, sem desenho no peito. Quem já usava continua com ela.'] },
   { v: '3.3', data: '14/10/2026', itens: ['Mesas Vermelha e Azul com visual novo: cor lisa, sem desenho no pano. Quem já usava continua com ela.'] },
   { v: '3.2', data: '08/10/2026', itens: ['Lançamento: todas as mesas liberadas para todo mundo até 23/10 (Teatro Amazonas, Ponte, Mercado, Arena e as outras). Depois, elas voltam a ser ganhas jogando.'] },
@@ -2306,7 +2307,7 @@ const NOVIDADES = [
   { v: '1.6', data: '06/10/2026', itens: [
     'Na mesa, cada jogador tem a etiqueta Parceiro ou Adversário, com a cor da dupla.',
     'Balões de fala dos jogadores maiores.',
-    'Oito jogadores novos na turma do bairro: Mundico, Dona Conceição, Seu Bené, Dona Rosinha, Zeca, Seu Arlindo, Dona Cleide e Juca.',
+    'Oito jogadores novos na turma do bairro: Mundico, Conceição, Bené, Rosinha, Zeca, Arlindo, Cleide e Juca.',
     'Botão novo para mandar o seu histórico no WhatsApp.'
   ] },
   { v: '1.5.2', data: '06/10/2026', itens: ['Resultado da mão com letras e pedras maiores.'] },
@@ -2501,19 +2502,19 @@ const avatarLivre = a => !!a && ((typeof souAdmin === 'function' && souAdmin()) 
 const avatarComum = a => !a.premium && !a.doador;
 // A turma do bairro: os três da mesa offline saem daqui
 const BOTS = [
-  { name: 'Seu Raimundo', av: { bg: '#5f8f78', skin: SKIN.moreno, style: 'chapeu', hc: HAIR.grisalho, bigode: HAIR.grisalho, shirt: '#e8dcc4' } },
+  { name: 'Raimundo', av: { bg: '#5f8f78', skin: SKIN.moreno, style: 'chapeu', hc: HAIR.grisalho, bigode: HAIR.grisalho, shirt: '#e8dcc4' } },
   { name: 'Nonato', av: { bg: '#d9a05b', skin: SKIN.jambo, style: 'bone', cap: '#c0392b', hc: HAIR.preto, shirt: '#2f4f6f' } },
-  { name: 'Dona Socorro', av: { bg: '#b98bc4', skin: SKIN.moreno, style: 'coque', hc: HAIR.grisalho, oculos: true, shirt: '#2e7d6b' } },
+  { name: 'Socorro', av: { bg: '#b98bc4', skin: SKIN.moreno, style: 'coque', hc: HAIR.grisalho, oculos: true, shirt: '#2e7d6b' } },
   { name: 'Tonhão', av: { bg: '#e0b15e', skin: SKIN.escuro, style: 'careca', hc: HAIR.preto, barba: HAIR.preto, shirt: '#b03a2e' } },
   { name: 'Chiquinho', av: { bg: '#7fb0b8', skin: SKIN.medio, style: 'curto', hc: HAIR.preto, shirt: '#e5a650' } },
-  { name: 'Dona Graça', av: { bg: '#e48a7a', skin: SKIN.medio, style: 'longo', hc: HAIR.castanho, shirt: '#3d5a80' } },
+  { name: 'Graça', av: { bg: '#e48a7a', skin: SKIN.medio, style: 'longo', hc: HAIR.castanho, shirt: '#3d5a80' } },
   { name: 'Mundico', av: { bg: '#9cc5a1', skin: SKIN.jambo, style: 'chapeu', hc: HAIR.preto, bigode: HAIR.preto, shirt: '#c0392b' } },
-  { name: 'Dona Conceição', av: { bg: '#e7b7c8', skin: SKIN.moreno, style: 'coque', hc: HAIR.preto, shirt: '#1f4e79' } },
-  { name: 'Seu Bené', av: { bg: '#c9a46b', skin: SKIN.escuro, style: 'raspado', hc: HAIR.grisalho, bigode: HAIR.grisalho, oculos: true, shirt: '#e8dcc4' } },
-  { name: 'Dona Rosinha', av: { bg: '#f2a7a0', skin: SKIN.claro, style: 'longo', hc: HAIR.grisalho, oculos: true, shirt: '#7d4e7a' } },
+  { name: 'Conceição', av: { bg: '#e7b7c8', skin: SKIN.moreno, style: 'coque', hc: HAIR.preto, shirt: '#1f4e79' } },
+  { name: 'Bené', av: { bg: '#c9a46b', skin: SKIN.escuro, style: 'raspado', hc: HAIR.grisalho, bigode: HAIR.grisalho, oculos: true, shirt: '#e8dcc4' } },
+  { name: 'Rosinha', av: { bg: '#f2a7a0', skin: SKIN.claro, style: 'longo', hc: HAIR.grisalho, oculos: true, shirt: '#7d4e7a' } },
   { name: 'Zeca', av: { bg: '#7cb7d6', skin: SKIN.medio, style: 'bone', cap: '#2e7d32', hc: HAIR.preto, shirt: '#f6eedf' } },
-  { name: 'Seu Arlindo', av: { bg: '#b7c48a', skin: SKIN.moreno, style: 'careca', hc: HAIR.grisalho, bigode: HAIR.grisalho, shirt: '#3d5a80' } },
-  { name: 'Dona Cleide', av: { bg: '#d6a2e8', skin: SKIN.jambo, style: 'cacheado', hc: HAIR.preto, shirt: '#e5a650' } },
+  { name: 'Arlindo', av: { bg: '#b7c48a', skin: SKIN.moreno, style: 'careca', hc: HAIR.grisalho, bigode: HAIR.grisalho, shirt: '#3d5a80' } },
+  { name: 'Cleide', av: { bg: '#d6a2e8', skin: SKIN.jambo, style: 'cacheado', hc: HAIR.preto, shirt: '#e5a650' } },
   { name: 'Juca', av: { bg: '#e8c07d', skin: SKIN.escuro, style: 'curto', hc: HAIR.preto, barba: HAIR.preto, shirt: '#245e6a' } }
 ];
 const BOT_NAMES = BOTS.map(b => b.name);
@@ -2640,7 +2641,7 @@ function topple(first) {
 }
 $('#train').addEventListener('click', () => topple(false));
 $('#train').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); topple(false); } });
-const ENTRY_SEATS = [{ ang: -90, bot: 'Nonato' }, { ang: 0, bot: 'Seu Raimundo' }, { ang: 90, you: true }, { ang: 180, bot: 'Dona Socorro' }];
+const ENTRY_SEATS = [{ ang: -90, bot: 'Nonato' }, { ang: 0, bot: 'Raimundo' }, { ang: 90, you: true }, { ang: 180, bot: 'Socorro' }];
 function renderEntry() {
   const html = ENTRY_SEATS.map((s, i) => {
     const a = s.ang * Math.PI / 180, style = `left:${f2(50 + 50 * Math.cos(a))}%;top:${f2(50 + 50 * Math.sin(a))}%;--i:${i}`;

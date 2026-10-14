@@ -375,5 +375,5 @@ function nomeOfensivo(nome) {
   const palavras = base.split(/[^a-z]+/).filter(Boolean);
   return NOME_RUIM_PALAVRA.some(w => tudo === w || tudoJ === junta(w) || palavras.some(p => p === w || junta(p) === junta(w)));
 }
-const BOT_NAMES = ["Seu Raimundo", "Nonato", "Dona Socorro", "Tonhão", "Chiquinho", "Dona Graça", "Mundico", "Dona Conceição", "Seu Bené", "Dona Rosinha", "Zeca", "Seu Arlindo", "Dona Cleide", "Juca"];
+const BOT_NAMES = ["Raimundo", "Nonato", "Socorro", "Tonhão", "Chiquinho", "Graça", "Mundico", "Conceição", "Bené", "Rosinha", "Zeca", "Arlindo", "Cleide", "Juca"];
 export { TEAM, TARGET, tkey, isDbl, pips, newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, openEnds, tableSum, nomeOfensivo, BOT_NAMES };
