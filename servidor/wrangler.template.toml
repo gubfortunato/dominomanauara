@@ -9,6 +9,10 @@ workers_dev = true
 VERSAO = "__VERSAO__"
 ADMIN_HASH = "e57e78a3bb0d8127b02226822dbc4fe943bb5ddd711696f032bcf36adf28589c"
 
+# IA que confere as fotos da mesa online (Workers AI). Se o token não puder usar, a publicação tira esta parte e as fotos esperam o administrador.
+[ai]
+binding = "AI"
+
 # Lembretes para jogar: 17h, 18h e 19h em Manaus (21h, 22h e 23h UTC)
 [triggers]
 crons = ["0 21,22,23 * * *"]

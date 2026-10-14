@@ -47,9 +47,21 @@ CREATE INDEX IF NOT EXISTS avisos_id_aparelho ON avisos_id (aparelho);
 -- Foto na mesa online (Plano Apoiador): uma por aparelho; "pub" é o código público da foto (o do aparelho nunca aparece)
 CREATE TABLE IF NOT EXISTS fotos (aparelho TEXT PRIMARY KEY, pub TEXT NOT NULL UNIQUE, mime TEXT NOT NULL, dados TEXT NOT NULL, status TEXT NOT NULL, criado_em INTEGER NOT NULL, revisado_em INTEGER, denuncias INTEGER NOT NULL DEFAULT 0);
 CREATE INDEX IF NOT EXISTS fotos_status ON fotos (status, criado_em);
+-- O que a IA achou de cada foto (o motivo que o jogador lê quando é recusada) e o teste de saúde da IA
+CREATE TABLE IF NOT EXISTS fotos_ia (aparelho TEXT PRIMARY KEY, pub TEXT, veredito TEXT, categoria TEXT, modelo TEXT, em INTEGER, tentou_em INTEGER, denuncias_vistas INTEGER);
+CREATE TABLE IF NOT EXISTS ia_teste (id INTEGER PRIMARY KEY, em INTEGER NOT NULL, resultado TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS lembretes_plano (aparelho TEXT NOT NULL, ate INTEGER NOT NULL, enviado_em INTEGER NOT NULL, PRIMARY KEY (aparelho, ate));
 
 -- Patrocinadores (cadastrados pelo dono) e quantas vezes cada espaço apareceu / foi tocado por dia
 CREATE TABLE IF NOT EXISTS patrocinadores (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, texto TEXT, link TEXT, logo INTEGER, banners TEXT, espacos TEXT NOT NULL, inicio INTEGER, fim INTEGER, ativo INTEGER NOT NULL DEFAULT 1, peso INTEGER NOT NULL DEFAULT 1, criado_em INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS patro_imgs (id INTEGER PRIMARY KEY AUTOINCREMENT, mime TEXT NOT NULL, dados TEXT NOT NULL, criado_em INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS patro_contagem (patro INTEGER NOT NULL, dia TEXT NOT NULL, espaco TEXT NOT NULL, vistas INTEGER NOT NULL DEFAULT 0, cliques INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (patro, dia, espaco));
+
+-- Turmas (grupos por código) e o Desafio das Confrarias (1º/11 a 20/12; 3 títulos = Grande Taça)
+CREATE TABLE IF NOT EXISTS turmas (codigo TEXT PRIMARY KEY, nome TEXT NOT NULL, criador TEXT, criada INTEGER NOT NULL, titulos INTEGER NOT NULL DEFAULT 0);
+CREATE UNIQUE INDEX IF NOT EXISTS turmas_nome ON turmas (lower(nome));
+CREATE TABLE IF NOT EXISTS turma_membros (aparelho TEXT PRIMARY KEY, turma TEXT NOT NULL, nome TEXT, entrou INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS turma_membros_turma ON turma_membros (turma, entrou);
+CREATE TABLE IF NOT EXISTS desafio_pontos (edicao INTEGER NOT NULL, turma TEXT NOT NULL, pontos INTEGER NOT NULL DEFAULT 0, ultimo INTEGER, PRIMARY KEY (edicao, turma));
+CREATE TABLE IF NOT EXISTS desafio_jogos (edicao INTEGER NOT NULL, dia TEXT NOT NULL, vencedora TEXT NOT NULL, perdedora TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (edicao, dia, vencedora, perdedora));
+CREATE TABLE IF NOT EXISTS desafio_campeas (edicao INTEGER PRIMARY KEY, turma TEXT, pontos INTEGER, fechada_em INTEGER);

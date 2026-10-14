@@ -5,6 +5,7 @@ import { Mesa } from './mesa.js';
 import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolver } from './pagamentos.js';
 import { atuais, imagem, contar, donoLista, donoImagem, donoSalvar, donoApagar } from './patrocinadores.js';
 import * as fotos from './fotos.js';
+import * as turmas from './turmas.js';
 export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
@@ -274,12 +275,12 @@ async function mudarStatus(req, env, origin, id) {
 }
 
 export default {
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
     const url = new URL(req.url);
     const origin = req.headers.get('origin') || '';
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(origin) });
     try {
-      if (url.pathname === '/saude') return json({ ok: true, servico: 'dominomanauara', mesa: !!env.MESA, pagamentos: !!env.ASAAS_API_KEY, versao: env.VERSAO || null }, 200, origin);
+      if (url.pathname === '/saude') return json({ ok: true, servico: 'dominomanauara', mesa: !!env.MESA, pagamentos: !!env.ASAAS_API_KEY, ia: !!env.AI, versao: env.VERSAO || null }, 200, origin);
       if (url.pathname === '/mesa/nova' && req.method === 'POST') return await novaMesa(req, env, origin);
       if (url.pathname === '/mesa/rapida' && req.method === 'POST') return await mesaRapida(req, env, origin);
       if (url.pathname === '/mesa/rapida/status' && req.method === 'GET') {
@@ -292,6 +293,11 @@ export default {
       if (url.pathname === '/patrocinio' && req.method === 'POST') return await receberPatrocinio(req, env, origin);
       // Plano Apoiador e doações (Asaas)
       const H = { json, marcaDoDia, ehDono, SITE };
+      if (url.pathname === '/saude/ia' && req.method === 'GET') return await fotos.saudeIA(env, origin, H);
+      if ((url.pathname === '/turma' || url.pathname === '/desafio') && req.method === 'GET') return await turmas.ver(env, origin, H, url);
+      if (url.pathname === '/turma/nova' && req.method === 'POST') return await turmas.nova(req, env, origin, H);
+      if (url.pathname === '/turma/entrar' && req.method === 'POST') return await turmas.entrar(req, env, origin, H);
+      if (url.pathname === '/turma/sair' && req.method === 'POST') return await turmas.sair(req, env, origin, H);
       if (url.pathname === '/pagar' && req.method === 'POST') return await pagar(req, env, origin, H);
       const pd = url.pathname.match(/^\/pedido\/([0-9a-f]{20})$/);
       if (pd && req.method === 'GET') return await pedido(env, origin, H, pd[1]);
@@ -303,9 +309,9 @@ export default {
       if (dv && req.method === 'POST') return await donoDevolver(req, env, origin, H, dv[1]);
       // Foto na mesa online (Plano Apoiador)
       if (url.pathname === '/foto' && req.method === 'POST') return await fotos.enviar(req, env, origin, H);
-      if (url.pathname === '/foto/status' && req.method === 'GET') return await fotos.status(env, origin, H, url);
+      if (url.pathname === '/foto/status' && req.method === 'GET') return await fotos.status(env, origin, H, url, ctx);
       if (url.pathname === '/foto/apagar' && req.method === 'POST') return await fotos.apagar(req, env, origin, H);
-      if (url.pathname === '/foto/denunciar' && req.method === 'POST') return await fotos.denunciar(req, env, origin, H);
+      if (url.pathname === '/foto/denunciar' && req.method === 'POST') return await fotos.denunciar(req, env, origin, H, ctx);
       const fi = url.pathname.match(/^\/foto\/([0-9a-f]{16})$/);
       if (fi && req.method === 'GET') return await fotos.imagem(env, fi[1]);
       if (url.pathname === '/dono/fotos' && req.method === 'GET') return await fotos.donoLista(req, env, origin, H);
@@ -338,7 +344,7 @@ export default {
   },
   // Agendado (Cron do Cloudflare): lembretes no fim da tarde de Manaus.
   async scheduled(evento, env, ctx) {
-    ctx.waitUntil((async () => { try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env); } catch (e) {} await lembretesDoDia(env); })());
+    ctx.waitUntil((async () => { try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env); } catch (e) {} try { await fotos.moderarPendentes(env); } catch (e) {} try { await turmas.fecharDesafio(env); } catch (e) {} await lembretesDoDia(env); })());
   }
 };
 export { lembretesDoDia, lembretesPlano, lembreteDaData };

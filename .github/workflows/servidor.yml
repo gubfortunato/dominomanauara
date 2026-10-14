@@ -61,6 +61,12 @@ jobs:
           log "tabelas: código $rc $(echo "$out" | grep -iE 'success|error|✘|executed' | head -3 | tr '\n' ' ')"
           out=$(wrangler deploy 2>&1); rc=$?
           log "publicar: código $rc"
+          if [ "$rc" != "0" ] && grep -q '^\[ai\]' wrangler.toml; then
+            echo "$out" | grep -E 'Error|error|✘' | head -3 | tee -a "$ST"
+            sed -i '/^\[ai\]/,/^binding = "AI"/d' wrangler.toml
+            out=$(wrangler deploy 2>&1); rc=$?
+            log "publicar sem a IA das fotos: código $rc (as fotos esperam o administrador)"
+          fi
           echo "$out" | grep -E 'https://|Error|error|✘|Uploaded|Deployed' | head -10 | tee -a "$ST"
           # Chaves dos lembretes (VAPID): criadas uma vez e guardadas só no Cloudflare, como segredo do Worker
           if [ "$rc" = "0" ] && ! wrangler secret list 2>/dev/null | grep -q VAPID_PRIVATE_JWK; then
@@ -77,6 +83,7 @@ jobs:
           for i in $(seq 1 18); do s=$(curl -s "$url/saude"); echo "$s" | grep -q "\"versao\":\"${GITHUB_SHA::7}\"" && break; sleep 5; done
           log "saúde: $s"
           log "mesa online: $(node teste_publicado.mjs "$url" 2>&1 | tail -1)"
+          log "ia das fotos: $(curl -s "$url/saude/ia")"
           for i in 1 2 3 4 5 6; do k=$(curl -s "$url/avisos/chave" | jq -c '{chave_publica: (.chave != null)}'); echo "$k" | grep -q true && break; sleep 10; done
           log "lembretes: $k"
           # Pagamentos (Asaas): guarda a chave no Cloudflare, cadastra o aviso de pagamento (webhook) e testa uma cobrança

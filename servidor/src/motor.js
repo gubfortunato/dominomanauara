@@ -84,7 +84,7 @@ function legalMoves(st, p) {
     if (p !== st.turn) return out;
     h.forEach((t, i) => {
       if (st.openMode === 'sena' && !(t[0] === 6 && t[1] === 6)) return;
-      if (st.openMode === 'carroca' && !isDbl(t)) return;
+      if ((st.openMode || 'carroca') === 'carroca' && !isDbl(t)) return;
       out.push({ i, side: 'C' });
     });
     return out;
@@ -133,15 +133,15 @@ function startHand(st) {
     st.openMode = 'sena';
     st.events.push({ type: 'start', p: st.turn, mode: 'sena' });
   } else {
-    const b = ns.player;
-    if (hands[b].some(isDbl)) { st.turn = b; st.openMode = 'carroca'; st.events.push({ type: 'start', p: b, mode: 'carroca' }); }
-    else {
+    let b = ns.player;
+    for (let k = 0; k < 4 && !hands[b].some(isDbl); k++) {
       const team = 1 - TEAM(b);
       addScore(st, team, 20);
       st.events.push({ type: 'semCarroca', p: b, team, pts: 20 });
-      st.turn = (b + 1) % 4; st.openMode = 'livre';
-      st.events.push({ type: 'start', p: st.turn, mode: 'livre' });
+      b = (b + 1) % 4;
     }
+    st.turn = b; st.openMode = 'carroca';
+    st.events.push({ type: 'start', p: b, mode: 'carroca' });
   }
 }
 
@@ -387,10 +387,12 @@ function armLayout(tiles, o, put) {
 const NOME_RUIM_PARTE = ['porra', 'caralh', 'buceta', 'boceta', 'xoxota', 'xereca', 'piroca', 'punheta', 'siririca', 'arrombad',
   'filhodaputa', 'fdp', 'fodase', 'fodido', 'fudido', 'foder', 'putaria', 'vagabund', 'cuzao', 'cusao', 'vadia', 'prostitut',
   'traveco', 'retardad', 'nazista', 'hitler', 'estupr', 'pedofil', 'viadinho', 'porno', 'merda', 'bosta', 'cacete', 'pqp',
-  'tomarnocu', 'paunocu', 'vaitomar', 'safad', 'piranh'];
+  'tomarnocu', 'paunocu', 'vaitomar', 'safad', 'piranh',
+  // de Manaus (estudo de cultura): ofensa, termo sexual, xingamento e violência
+  'baitola', 'quenga', 'acochar', 'lazarent', 'chabocar', 'malaco', 'galeros', 'abestad', 'baiacu', 'perreche', 'jorgetexas'];
 // Curtas: só barram como palavra separada (para não pegar "Cunha" ou "Disputa").
 const NOME_RUIM_PALAVRA = ['cu', 'puta', 'putas', 'puto', 'foda', 'fode', 'rola', 'xota', 'viado', 'veado', 'bicha', 'sapatao',
-  'crioulo', 'corno', 'otario', 'babaca', 'anus', 'penis', 'vagina', 'kct', 'vsf', 'tnc', 'fdps'];
+  'crioulo', 'corno', 'otario', 'babaca', 'anus', 'penis', 'vagina', 'kct', 'vsf', 'tnc', 'fdps', 'teba', 'cui', 'tobo'];
 function nomeOfensivo(nome) {
   const junta = s => s.replace(/(.)\1+/g, '$1');
   const leet = { '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', '@': 'a', '$': 's', '!': 'i' };
@@ -400,5 +402,5 @@ function nomeOfensivo(nome) {
   const palavras = base.split(/[^a-z]+/).filter(Boolean);
   return NOME_RUIM_PALAVRA.some(w => tudo === w || tudoJ === junta(w) || palavras.some(p => p === w || junta(p) === junta(w)));
 }
-const BOT_NAMES = ["Raimundo", "Nonato", "Socorro", "Tonhão", "Chiquinho", "Graça", "Tião", "Conceição", "Bené", "Rosinha", "Zeca", "Arlindo", "Cleide", "Juca"];
+const BOT_NAMES = ["Raimundo", "Nonato", "Socorro", "Tonhão", "Chiquinho", "Graça", "Tião", "Conceição", "Bené", "Rosinha", "Zeca", "Arlindo", "Cleide", "Juca", "Lucinha", "Mané", "Dico", "Nazaré", "Mundico", "Dita", "Piaba", "Chica", "Curica", "Dorinha", "Valdir", "Zuleide", "Deco", "Tetê", "Dodó", "Ciça"];
 export { TEAM, TARGET, tkey, isDbl, pips, newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, openEnds, tableSum, nomeOfensivo, BOT_NAMES, pedirPonto };

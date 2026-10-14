@@ -7,6 +7,7 @@
 import { newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, tkey, nomeOfensivo, BOT_NAMES, pedirPonto } from './motor.js';
 import { nivelDoador } from './pagamentos.js';
 import { fotoPublica } from './fotos.js';
+import { pontuar, nomeDaTurma, apelido as apelidoNaTurma } from './turmas.js';
 
 const TEMPO = {
   jogada: 4500,      // robô: espera antes de jogar (igual ao jogo offline)
@@ -216,19 +217,21 @@ export class Mesa {
       const p = await this.env.DB.prepare('SELECT ate FROM planos WHERE aparelho = ?').bind(id).first();
       const d = await this.env.DB.prepare("SELECT COALESCE(SUM(valor), 0) AS t FROM pedidos WHERE aparelho = ? AND status = 'pago' AND produto LIKE 'doacao%'").bind(id).first();
       let foto = null; try { foto = await fotoPublica(this.env, id); } catch (e) {}
-      return { apoiador: !!(p && p.ate > Date.now()), doador: nivelDoador((d && d.t) || 0), foto };
-    } catch (e) { return { apoiador: false, doador: 0, foto: null }; }
+      let turma = null; try { turma = await nomeDaTurma(this.env, id); } catch (e) {}
+      return { apoiador: !!(p && p.ate > Date.now()), doador: nivelDoador((d && d.t) || 0), foto, turma };
+    } catch (e) { return { apoiador: false, doador: 0, foto: null, turma: null }; }
   }
   async entrar(ws, att, msg) {
     const m = this.m;
     const quem = this.pessoa(msg);
     if (!quem) return this.enviar(ws, { t: 'erro', cod: 'dados' });
     Object.assign(quem, await this.apoiador(quem.id));
+    try { await apelidoNaTurma(this.env, quem.id, quem.nome); } catch (e) {}
     let p = m.cad.findIndex(c => c && c.id === quem.id);
     const f = (m.fila || []).findIndex(c => c.id === quem.id);
     if (p < 0 && f >= 0) {
       // já estava na fila (voltou): continua esperando a vez
-      Object.assign(m.fila[f], { apoiador: quem.apoiador, doador: quem.doador, foto: quem.foto });
+      Object.assign(m.fila[f], { apoiador: quem.apoiador, doador: quem.doador, foto: quem.foto, turma: quem.turma });
       att.id = quem.id; ws.serializeAttachment(att);
       m.ultimo = Date.now(); await this.salvar(); this.espalhar();
       return;
@@ -237,7 +240,7 @@ export class Mesa {
       // voltou (ou abriu em outro aparelho): retoma a cadeira; se tinha saído, volta a jogar
       const c = m.cad[p];
       if (m.fase === 'espera') { c.nome = quem.nome; c.av = quem.av; c.bairro = quem.bairro; }
-      c.apoiador = quem.apoiador; c.doador = quem.doador; c.foto = quem.foto;
+      c.apoiador = quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma;
       if (c.saiu) { c.saiu = false; c.bot = false; }
     } else if (m.fase === 'espera') {
       p = this.cadeiraNaEspera();
@@ -516,9 +519,23 @@ export class Mesa {
   }
   async depoisDaAcao(porRobo, extra) {
     const m = this.m;
+    await this.contarDesafio();
     m.seq++; m.porRobo = porRobo; m.ultimo = m.turnoDesde = Date.now();
     this.agendar(extra);
     await this.salvar(); this.espalhar();
+  }
+
+  // Desafio das Confrarias: fim de partida online, quem ganhou leva ponto para a Turma (se perdeu alguém de outra Turma)
+  async contarDesafio() {
+    const m = this.m, G = m.G, r = G && G.result;
+    if (!r || r.matchWinner == null || r.desafio) return;
+    r.desafio = true;
+    const lado = w => m.cad.map((c, p) => c && !c.bot && c.id && p % 2 === w ? p : -1).filter(p => p >= 0);
+    const ganhou = lado(r.matchWinner), perdeu = lado(1 - r.matchWinner);
+    if (!ganhou.length || !perdeu.length) return;
+    let res = null;
+    try { res = await pontuar(this.env, ganhou.map(p => m.cad[p].id), perdeu.map(p => m.cad[p].id)); } catch (e) {}
+    if (res && res.turmas.length) m.desafio = { seq: m.seq + 1, turmas: res.turmas, cadeiras: ganhou.filter(p => res.ids.includes(m.cad[p].id)) };
   }
 
   // ---------- Conexões e envio ----------
@@ -548,8 +565,8 @@ export class Mesa {
     }
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
-      tema: m.tema || null, torneio: !!m.torneio, turnoDesde: m.turnoDesde || null, publica: !!m.publica, iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
-      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot ? null : (c.foto || null), on: c.bot ? true : this.conectado(p) } : null),
+      tema: m.tema || null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, publica: !!m.publica, iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
+      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), on: c.bot ? true : this.conectado(p) } : null),
       jogo, agora: Date.now() };
   }
   enviar(ws, obj) { try { ws.send(JSON.stringify(obj)); } catch (e) {} }
