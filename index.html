@@ -2199,6 +2199,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.4', data: '14/10/2026', itens: ['Camisas vermelha e azul no avatar: cor lisa, sem desenho no peito. Quem já usava continua com ela.'] },
   { v: '3.3', data: '14/10/2026', itens: ['Mesas Vermelha e Azul com visual novo: cor lisa, sem desenho no pano. Quem já usava continua com ela.'] },
   { v: '3.2', data: '08/10/2026', itens: ['Lançamento: todas as mesas liberadas para todo mundo até 23/10 (Teatro Amazonas, Ponte, Mercado, Arena e as outras). Depois, elas voltam a ser ganhas jogando.'] },
   { v: '3.1.1', data: '08/10/2026', itens: ['Rolar a fileira de mesas no menu da partida para o lado não puxa mais o menu para baixo.'] },
@@ -2207,7 +2208,7 @@ const NOVIDADES = [
   { v: '2.9.9', data: '08/10/2026', itens: ['Escolha a mesa na hora de jogar: ao montar o jogo offline, na sala da mesa online (com amigos e rápida) e no menu durante a partida.'] },
   { v: '2.9.8', data: '08/10/2026', itens: ['"Tu é leso, é?" virou "Telezé!", nos balões da entrada e nas reações da mesa online.'] },
   { v: '2.9.7', data: '08/10/2026', itens: ['Embaralhamento de verdade: as pedras são sorteadas com a fonte de acaso do próprio celular (a mesma usada em senhas), com chance igual para cada pedra. Vale para o jogo offline e para a mesa online.'] },
-  { v: '2.9.6', data: '08/10/2026', itens: ['O nome da mesa aparece ao chegar em todas as mesas, inclusive Madeira, Garantido e Caprichoso.', 'Desenhos das mesas mais apagados, para as pedras ficarem em destaque.', 'Mesa Vitória-régia no lugar do Bumbódromo (ganhe 10 jogos) e mesa nova Relógio Municipal (jogue 300 mãos).'] },
+  { v: '2.9.6', data: '08/10/2026', itens: ['O nome da mesa aparece ao chegar em todas as mesas, inclusive Madeira, Vermelha e Azul.', 'Desenhos das mesas mais apagados, para as pedras ficarem em destaque.', 'Mesa Vitória-régia no lugar do Bumbódromo (ganhe 10 jogos) e mesa nova Relógio Municipal (jogue 300 mãos).'] },
   { v: '2.9.5', data: '08/10/2026', itens: ['Mesa Mercado Adolpho Lisboa no lugar do Sambódromo, para quem bater 50 vezes.', 'A mesa verde agora se chama MUSA, com a torre do Museu da Amazônia acima das árvores.'] },
   { v: '2.9.4', data: '08/10/2026', itens: ['Desenhos refeitos a partir de fotos e mais apagados no pano: a Ponte Rio Negro com a torre em A e os pilares, os losangos brancos da Arena da Amazônia, o Bumbódromo com as arquibancadas azul e vermelha e o arco, e o Teatro Amazonas com o frontão e a cúpula.'] },
   { v: '2.9.3', data: '08/10/2026', itens: ['Desenhos mais fiéis: a torre da Ponte Rio Negro com os estais em leque, o "cesto" da Arena da Amazônia, o Bumbódromo visto de cima (a cabeça de boi) e a fachada do Teatro Amazonas com as ondas do Largo de São Sebastião.'] },
@@ -2216,21 +2217,21 @@ const NOVIDADES = [
   { v: '2.9', data: '07/10/2026', itens: [
     'Mesa rápida: jogue online com quem estiver no app agora, sem precisar de convite.',
     'Se faltar gente, a turma do bairro completa a mesa. Quem chega depois entra no lugar de um robô.',
-    'Mesas do Garantido e do Caprichoso com o coração e a estrela no pano. O nome das outras mesas aparece quando você chega na mesa.',
+    'O nome da mesa aparece quando você chega na mesa.',
     'Mesa Teatro Amazonas: para quem ganhar 50 partidas (conquista Orgulho de Manaus).',
     'A mesa verde agora é a Floresta, com a mata desenhada no pé da mesa.',
     'Ícone novo: o Encontro das Águas, igual à mesa do jogo.'
   ] },
   { v: '2.8.1', data: '07/10/2026', itens: ['O nome da mesa escolhida aparece impresso na mesa, embaixo, e no centro da sala da mesa online.', 'Personalizar agora fica dentro do perfil: toque na sua foto, no início.', 'Mesa nova: Ponte Rio Negro, para quem bater 10 vezes. A do Teatro Amazonas ganhou a cúpula.', '"Achou um erro?" fica logo abaixo do seu histórico.'] },
   { v: '2.8', data: '07/10/2026', itens: [
-    'Novo no perfil (toque na sua foto, no início): Personalizar. Monte o seu avatar peça por peça, com a camisa do Garantido ou do Caprichoso.',
+    'Novo no perfil (toque na sua foto, no início): Personalizar. Monte o seu avatar peça por peça, com camisa vermelha ou azul.',
     'Conquistas: jogando, você ganha tapioca, cuia de tacacá, açaí, X-caboquinho e tambaqui assado para o avatar.',
-    'Mesas novas: Garantido, Caprichoso e Encontro das Águas de graça; Ponta Negra, Açaí, Rio Negro e Tucumã se ganham jogando.'
+    'Mesas novas: Vermelha, Azul e Encontro das Águas de graça; Ponta Negra, Açaí, Rio Negro e Tucumã se ganham jogando.'
   ] },
   { v: '2.7', data: '07/10/2026', itens: [
     'Passo a passo para instalar o app no iPhone e no Android, com o link "Como instalar o app" no fim do início.',
     'Escolha o seu bairro no perfil: ele aparece na mesa online, para quem joga com você.',
-    'Avatares novos: torcedor do Garantido e torcedora do Caprichoso.',
+    'Avatares novos: de camisa vermelha e de camisa azul.',
     'Siga o Dominó Manauara no Instagram: @dominomanauara (link no início).',
     'Pedras maiores na mesa: a fileira dobra antes e a mesa aproveita melhor o espaço.'
   ] },
@@ -2244,7 +2245,7 @@ const NOVIDADES = [
   { v: '2.5', data: '07/10/2026', itens: [
     'A turma do bairro agora fala do jeito de Manaus: "Leseira, passo", "Chibata, bati!", "Tá de bubuia?".',
     'Mesa online: novas reações, como De rocha?, Chibata!, Tu é leso?, Tá de bubuia? e Bora um tacacá?',
-    'Mesas novas no Plano Apoiador: Garantido, Caprichoso, Encontro das Águas e Tucumã.',
+    'Mesas novas no Plano Apoiador: Vermelha, Azul, Encontro das Águas e Tucumã.',
     'Regras ficam logo no começo da tela inicial.'
   ] },
   { v: '2.4', data: '07/10/2026', itens: [
@@ -2391,8 +2392,6 @@ function avatarSVG(a) {
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><clipPath id="c"><circle cx="50" cy="50" r="50"/></clipPath></defs>'
     + `<g clip-path="url(#c)"><rect width="100" height="100" fill="${a.bg}"/>${back}`
     + `<path d="M12 104C14 80 30 71 50 71S86 80 88 104Z" fill="${a.shirt}"/><path d="M43 62H57V72Q50 78 43 72Z" fill="${dk}"/><path d="M42.5 71.5L50 79.5L57.5 71.5Z" fill="${dk}"/>`
-    + (a.emblema === 'coracao' ? '<path transform="translate(50 92) scale(1.9)" d="M0 4C-1.5 2.6-5 .2-5-2.6C-5-4.4-3.7-5.6-2.3-5.6C-1.2-5.6-.4-5 0-4.2C.4-5 1.2-5.6 2.3-5.6C3.7-5.6 5-4.4 5-2.6C5 .2 1.5 2.6 0 4Z" fill="#fff"/>' : '')
-    + (a.emblema === 'estrela' ? '<path transform="translate(50 91.5)" d="' + estrelaD(8.6, 3.6) + '" fill="#fff"/>' : '')
     + (a.coracao ? '<path transform="translate(63.5 89) scale(1.25)" d="M0 4C-1.5 2.6-5 .2-5-2.6C-5-4.4-3.7-5.6-2.3-5.6C-1.2-5.6-.4-5 0-4.2C.4-5 1.2-5.6 2.3-5.6C3.7-5.6 5-4.4 5-2.6C5 .2 1.5 2.6 0 4Z" fill="#e23b3b" stroke="#fff" stroke-width="1"/>' : '')
     + `<circle cx="32.8" cy="47.5" r="4.4" fill="${dk}"/><circle cx="67.2" cy="47.5" r="4.4" fill="${dk}"/><ellipse cx="50" cy="45" rx="17" ry="20" fill="${skin}"/>`
     + `${hair}${face}${top}${a.mao && MAO_SVG[a.mao] ? MAO_SVG[a.mao] : ''}</g></svg>`;
@@ -2431,7 +2430,7 @@ const PARTES = {
   pelos: [{ v: '', n: 'Nada' }, { v: 'bigode', n: 'Bigode' }, { v: 'barba', n: 'Barba' }],
   oculos: [{ v: '', n: 'Sem óculos' }, { v: 'oculos', n: 'Óculos' }, { v: 'escuros', n: 'Óculos escuros', req: 'bat10' }],
   roupa: ['#245e6a', '#97520f', '#f2e7d5', '#3d6b4f', '#4f7fa6', '#a8402a', '#e5a650', '#7d4e7a', '#1f4e79', '#2b2b2b'].map(v => ({ v }))
-    .concat([{ v: '#c8102e', emblema: 'coracao', n: 'Camisa do Garantido' }, { v: '#0b3d91', emblema: 'estrela', n: 'Camisa do Caprichoso' }]),
+    .concat([{ v: '#c8102e', n: 'Camisa vermelha' }, { v: '#0b3d91', n: 'Camisa azul' }]),   // cor lisa, sem símbolo de ninguém
   mao: [{ v: '', n: 'Nada' }, { v: 'tacaca', n: 'Cuia de tacacá', req: 'vit5' }, { v: 'tapioca', n: 'Tapioca', req: 'galo1' },
     { v: 'xcaboquinho', n: 'X-caboquinho', req: 'vit10' }, { v: 'acai', n: 'Açaí', req: 'jogo3' }, { v: 'tambaqui', n: 'Tambaqui assado', req: 'vit25' }],
   fundo: ['#e5a650', '#8fbcc2', '#86c98f', '#d9825b', '#e9c46a', '#c77dab', '#8fb3d9', '#e58a6c', '#a7c97a', '#f3d29b', '#bcd3ee', '#cfc2b0'].map(v => ({ v }))
@@ -2449,7 +2448,7 @@ function avatarDoCodigo(code) {
   const d = partesDoCodigo(code), P = k => PARTES[k][d[k]];
   const cab = P('cabelo'), roupa = P('roupa'), pelos = P('pelos').v, ocu = P('oculos').v;
   const a = { id: code, custom: true, partes: d, bg: P('fundo').v, skin: P('pele').v, style: cab.v, cap: cab.cap, coroa: !!cab.coroa, hc: P('cor').v,
-    shirt: roupa.v, emblema: roupa.emblema, mao: P('mao').v, oculos: ocu === 'oculos', escuros: ocu === 'escuros' };
+    shirt: roupa.v, mao: P('mao').v, oculos: ocu === 'oculos', escuros: ocu === 'escuros' };
   if (pelos === 'bigode') a.bigode = a.hc; else if (pelos === 'barba') a.barba = a.hc;
   avCustom.set(code, a);
   return a;
@@ -2474,9 +2473,9 @@ const AVATARS = [
   { id: 'a9', bg: '#a7c97a', skin: SKIN.claro, style: 'curto', hc: HAIR.castanho, shirt: '#7d4e7a' },
   { id: 'a10', bg: '#7d9fc2', skin: SKIN.medio, style: 'bone', cap: '#1f4e79', hc: HAIR.castanho, barba: HAIR.castanho, shirt: '#e9c46a' },
   { id: 'a11', bg: '#f0b98b', skin: SKIN.escuro, style: 'cacheado', hc: HAIR.preto, shirt: '#245e6a' },
-  // Parintins: os dois bois, sempre juntos (cores e símbolo, sem logotipo de ninguém)
-  { id: 'a12', nome: 'Torcedor do Garantido', bg: '#f3d29b', skin: SKIN.jambo, style: 'curto', hc: HAIR.preto, bigode: HAIR.preto, shirt: '#c8102e', emblema: 'coracao' },
-  { id: 'a13', nome: 'Torcedora do Caprichoso', bg: '#bcd3ee', skin: SKIN.moreno, style: 'longo', hc: HAIR.preto, shirt: '#0b3d91', emblema: 'estrela' }
+  // camisa vermelha e camisa azul, sempre juntas (só a cor, sem símbolo de ninguém)
+  { id: 'a12', nome: 'De camisa vermelha', bg: '#f3d29b', skin: SKIN.jambo, style: 'curto', hc: HAIR.preto, bigode: HAIR.preto, shirt: '#c8102e' },
+  { id: 'a13', nome: 'De camisa azul', bg: '#bcd3ee', skin: SKIN.moreno, style: 'longo', hc: HAIR.preto, shirt: '#0b3d91' }
 ];
 // Avatares do Plano Apoiador: aparecem para todo mundo, mas só quem tem o plano escolhe.
 AVATARS.push(
@@ -5710,7 +5709,7 @@ const renderDonoFoto = renderDono;
 renderDono = function () { renderDonoFoto(); dnFotosCarregar(); };
 
 // ===== Personalizar: monte o avatar, escolha a mesa e veja as conquistas =====
-// O regional fica de graça (Garantido, Caprichoso, Encontro das Águas). Comidas de Manaus e mesas novas se ganham jogando
+// O regional fica de graça (mesas Vermelha, Azul e Encontro das Águas). Comidas de Manaus e mesas novas se ganham jogando
 // (conquistas, offline e online). O Plano Apoiador libera tudo na hora e traz extras (coroa, Teatro Amazonas),
 // que só aparecem quando os pagamentos estão ligados.
 const CONQUISTAS = [
@@ -5846,14 +5845,13 @@ function partesDeAvatar(a) {
   if (a.custom) return Object.assign({}, a.partes);
   const cab = pares('cabelo').filter(([p]) => p.v === a.style && !p.plano);
   const capa = cab.filter(([p]) => !p.cap);
-  const emb = pares('roupa').filter(([p]) => p.emblema && p.emblema === a.emblema);
   return {
     pele: maisPerto(pares('pele'), a.skin),
     cabelo: !cab.length ? 0 : a.style === 'bone' ? maisPerto(cab.map(([p, i]) => [{ v: p.cap }, i]), a.cap) : (capa[0] || cab[0])[1],
     cor: maisPerto(pares('cor'), a.hc),
     pelos: a.barba ? 2 : a.bigode ? 1 : 0,
     oculos: a.escuros ? 2 : a.oculos ? 1 : 0,
-    roupa: emb.length ? emb[0][1] : maisPerto(pares('roupa').filter(([p]) => !p.emblema), a.shirt),
+    roupa: maisPerto(pares('roupa'), a.shirt),
     mao: 0,
     fundo: maisPerto(pares('fundo'), a.bg)
   };
@@ -5875,7 +5873,7 @@ const ABAS = [
   { id: 'fundo', nome: 'Fundo', partes: ['fundo'] }
 ];
 const TITULO = { pele: 'Cor da pele', cabelo: 'Cabelo', cor: 'Cor do cabelo', pelos: 'Barba e bigode', oculos: 'Óculos', roupa: 'Camisa', mao: 'Na mão', fundo: 'Fundo' };
-const ROTULO_CURTO = { 'Camisa do Garantido': 'Garantido', 'Camisa do Caprichoso': 'Caprichoso', 'Cuia de tacacá': 'Tacacá', 'Tambaqui assado': 'Tambaqui', 'Óculos escuros': 'Escuros', 'Sem óculos': 'Sem' };
+const ROTULO_CURTO = { 'Camisa vermelha': 'Vermelha', 'Camisa azul': 'Azul', 'Cuia de tacacá': 'Tacacá', 'Tambaqui assado': 'Tambaqui', 'Óculos escuros': 'Escuros', 'Sem óculos': 'Sem' };
 const COM_ROTULO = new Set(['pelos', 'oculos', 'roupa', 'mao']);
 let esDraft = null, esAba = 'cabelo', estiloVolta = 'home';
 const abaDaParte = k => (ABAS.find(t => t.partes.includes(k)) || ABAS[1]).id;
