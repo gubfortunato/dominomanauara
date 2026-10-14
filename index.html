@@ -1090,6 +1090,7 @@ html.plano .sponsor,html.plano .mesa-patro,html.plano .res-patro,html.plano #set
 html[data-mesa="feltro"] .table.wood{--wood-1:#2f6b4c;--wood-2:#163a29;--wood-edge:#6b4a2a;
   background:var(--img-floresta) center bottom/100% 30% no-repeat, var(--img-musa) 74% 100%/auto 66% no-repeat, repeating-linear-gradient(92deg, rgba(255,235,205,.025) 0 2px, transparent 2px 7px), repeating-linear-gradient(88deg, rgba(0,0,0,.08) 0 1px, transparent 1px 13px), radial-gradient(120% 90% at 50% 45%, var(--wood-1), var(--wood-2))}
 html[data-mesa="rionegro"] .table.wood{--wood-1:#24364a;--wood-2:#0e1620;--wood-edge:#4d5d6b}
+html[data-mesa="acairoxo"] .table.wood{--wood-1:#4f2449;--wood-2:#26101f;--wood-edge:#74405f}
 html[data-mesa="acai"] .table.wood{--wood-1:#9b7a3a;--wood-2:#47330f;--wood-edge:#c7a25e;
   background:radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,.42)), var(--img-cupuacu) center 50%/96% auto no-repeat, radial-gradient(120% 90% at 50% 45%, #9b7a3a, #47330f)}
 html[data-mesa="garantido"] .table.wood{--wood-1:#9a2222;--wood-2:#4a0d0d;--wood-edge:#c94a3a}
@@ -2203,7 +2204,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.7.1', data: '14/10/2026', itens: ['Na sala da mesa online, quem chega aparece suave, um de cada vez.'] },
+  { v: '3.7.2', data: '14/10/2026', itens: ['Na sala da mesa online, quem chega aparece suave, um de cada vez.', 'A mesa Açaí voltou (ganhe 5 partidas), e a Cupuaçu continua.'] },
   { v: '3.7', data: '14/10/2026', itens: ['Mesa rápida: nos últimos segundos antes de começar, a mesa se completa.', 'Ajustes nos nomes da turma do bairro.'] },
   { v: '3.6', data: '14/10/2026', itens: ['Ajustes nos nomes da turma do bairro.'] },
   { v: '3.5', data: '14/10/2026', itens: ['Mais Manaus: a mesa e o avatar de Açaí viraram Cupuaçu, a tapioca agora é com tucumã, a turma ganhou a Conceição e a mesa online ganhou o "Ê, caroço!". Quem já usava continua com o item, já com o novo.'] },
@@ -4643,6 +4644,7 @@ const MESAS = [
   { id: 'feltro', nome: 'MUSA', bg: 'var(--img-floresta-sw) center bottom/100% 42% no-repeat, var(--img-musa-sw) 66% 100%/auto 86% no-repeat, radial-gradient(circle at 40% 35%, #2f6b4c, #163a29 78%)' },   // id antigo mantido (quem já escolheu continua com ela)
   { id: 'pontanegra', nome: 'Ponta Negra', bg: 'linear-gradient(172deg, #3b1d3f 0%, #7e3338 38%, #c0622b 60%, #2a2340 100%)', req: 'vit10' },
   { id: 'acai', nome: 'Cupuaçu', bg: 'var(--img-cupuacu-sw) center 46%/112% auto no-repeat, radial-gradient(circle at 40% 35%, #9b7a3a, #47330f 80%)', req: 'jogo3' },   // era o Açaí (marca de Belém); o id fica
+  { id: 'acairoxo', nome: 'Açaí', c1: '#4f2449', c2: '#26101f', req: 'vit5' },
   { id: 'ponte', nome: 'Ponte Rio Negro', bg: 'var(--img-ponte-sw) 62% 60%/170% auto no-repeat, linear-gradient(180deg, #0e1830 0%, #1c2f50 58%, #0a1424 100%)', req: 'bat10' },
   { id: 'rionegro', nome: 'Rio Negro', c1: '#24364a', c2: '#0e1620', req: 'galo5' },
   { id: 'tucuma', nome: 'Tucumã', c1: '#a3581a', c2: '#4f2608', req: 'vit25' },

@@ -17,8 +17,8 @@ const TEMPO = {
   conferir: 60000,   // vez de uma pessoa conectada: confere de novo se ela continua lá
   espera: 20000,     // mesa rápida: espera por mais gente antes de começar com robôs
   cheia: 2500,       // mesa rápida completa: começa logo (dá tempo de ver quem sentou)
-  sentaRobo: 5000,   // mesa rápida: faltando 5 s, a turma do bairro começa a sentar nas cadeiras vazias (quem chegar depois troca com um deles)
-  entreRobos: 1300   // um de cada vez, com um intervalo de ~1 a 1,7 s entre eles
+  sentaRobo: 5000,   // (mesas abertas antes da troca) faltando 5 s, a turma começa a sentar
+  entreRobos: 1300   // (mesas abertas antes da troca) intervalo entre um robô e outro
 };
 const FILA = { mesas: 20, idade: 60 * 60 * 1000 };   // mesas rápidas lembradas pela fila e por quanto tempo
 const SILENCIO = 50000;
@@ -73,6 +73,7 @@ export class Mesa {
     this.m = { codigo: limpa(b.codigo, 5), criada: agora, ultimo: agora, fase: 'espera', seq: 0, dono: quem.id,
       cad: [quem, null, null, null], G: null, proximo: null, turnoDesde: agora, porRobo: null,
       publica: !!b.publica, iniciaEm: b.publica ? agora + this.T.espera : null };
+    if (this.m.publica) this.m.chegadas = this.sortearChegadas(this.m.iniciaEm);
     if (this.m.publica) this.agendar();
     await this.salvar();
     return Response.json({ ok: true }, { status: 201 });
@@ -255,14 +256,27 @@ export class Mesa {
     await this.salvar(); this.espalhar();
   }
   // Na espera: o segundo senta de adversário, o terceiro de parceiro do primeiro, o quarto completa.
-  // Sem cadeira vazia (a turma já sentou nos últimos segundos da mesa rápida), troca com um robô.
+  // Se um robô da turma já sentou nessa cadeira (mesa rápida), a pessoa fica com ela.
   cadeiraNaEspera() {
-    const m = this.m, ordem = [1, 2, 3, 0];
-    const k = ordem.find(i => !m.cad[i]);
-    return k != null ? k : ordem.find(i => m.cad[i] && m.cad[i].bot);
+    const m = this.m;
+    return [1, 2, 3, 0].find(i => !m.cad[i] || m.cad[i].bot);
   }
-  // Hora do próximo robô sentar na espera da mesa rápida (o primeiro faltando 5 s)
-  horaDoRobo() { const m = this.m; return Math.max(m.iniciaEm - this.T.sentaRobo, m.proxRobo || 0); }
+  // Mesa rápida: a turma do bairro vai chegando em momentos sorteados da espera (ex.: faltando 15, 12 e 7 s),
+  // um de cada vez, entre ~18 s e 3 s antes de começar, com pelo menos 1,5 s entre um e outro
+  sortearChegadas(iniciaEm) {
+    const E = this.T.espera, de = iniciaEm - E * 0.88, ate = iniciaEm - E * 0.15, folga = E * 0.075;
+    for (let tent = 0; tent < 50; tent++) {
+      const t = [0, 1, 2].map(() => de + Math.random() * (ate - de)).sort((a, b) => a - b);
+      if (t[1] - t[0] >= folga && t[2] - t[1] >= folga) return t;
+    }
+    return [de, (de + ate) / 2, ate];
+  }
+  // Hora do próximo robô sentar na espera da mesa rápida
+  horaDoRobo() {
+    const m = this.m;
+    if (Array.isArray(m.chegadas)) return m.chegadas.length ? m.chegadas[0] : Infinity;
+    return Math.max(m.iniciaEm - this.T.sentaRobo, m.proxRobo || 0);
+  }
   // Um robô senta numa cadeira vazia (sorteada), com um nome que ninguém da mesa está usando
   sentarUmRobo() {
     const m = this.m, vazias = [1, 2, 3, 0].filter(k => !m.cad[k]);
@@ -384,7 +398,8 @@ export class Mesa {
     if (m.fase === 'espera' && m.publica && m.iniciaEm && agora >= m.iniciaEm - 50) return this.comecarPublica();
     if (m.fase === 'espera' && m.publica && m.iniciaEm && m.cad.some(c => !c) && agora >= this.horaDoRobo() - 50) {
       this.sentarUmRobo(); m.ultimo = agora;
-      m.proxRobo = agora + this.T.entreRobos * (0.75 + Math.random() * 0.5);
+      if (Array.isArray(m.chegadas)) m.chegadas.shift();
+      else m.proxRobo = agora + this.T.entreRobos * (0.75 + Math.random() * 0.5);
       this.agendar(); await this.salvar(); this.espalhar();
       return;
     }
