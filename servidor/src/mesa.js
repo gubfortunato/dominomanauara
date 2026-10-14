@@ -17,7 +17,8 @@ const TEMPO = {
   conferir: 60000,   // vez de uma pessoa conectada: confere de novo se ela continua lá
   espera: 20000,     // mesa rápida: espera por mais gente antes de começar com robôs
   cheia: 2500,       // mesa rápida completa: começa logo (dá tempo de ver quem sentou)
-  sentaRobo: 5000    // mesa rápida: faltando 5 s, a turma do bairro senta nas cadeiras vazias (quem chegar depois troca com um deles)
+  sentaRobo: 5000,   // mesa rápida: faltando 5 s, a turma do bairro começa a sentar nas cadeiras vazias (quem chegar depois troca com um deles)
+  entreRobos: 1300   // um de cada vez, com um intervalo de ~1 a 1,7 s entre eles
 };
 const FILA = { mesas: 20, idade: 60 * 60 * 1000 };   // mesas rápidas lembradas pela fila e por quanto tempo
 const SILENCIO = 50000;
@@ -260,6 +261,17 @@ export class Mesa {
     const k = ordem.find(i => !m.cad[i]);
     return k != null ? k : ordem.find(i => m.cad[i] && m.cad[i].bot);
   }
+  // Hora do próximo robô sentar na espera da mesa rápida (o primeiro faltando 5 s)
+  horaDoRobo() { const m = this.m; return Math.max(m.iniciaEm - this.T.sentaRobo, m.proxRobo || 0); }
+  // Um robô senta numa cadeira vazia (sorteada), com um nome que ninguém da mesa está usando
+  sentarUmRobo() {
+    const m = this.m, vazias = [1, 2, 3, 0].filter(k => !m.cad[k]);
+    if (!vazias.length) return;
+    const usados = m.cad.filter(Boolean).map(c => c.nome.toLowerCase());
+    const nomes = BOT_NAMES.filter(n => !usados.includes(n.toLowerCase()));
+    const k = vazias[Math.floor(Math.random() * vazias.length)];
+    m.cad[k] = { id: null, nome: nomes[Math.floor(Math.random() * nomes.length)], av: null, bot: true, saiu: false };
+  }
   // Robôs da turma nas cadeiras vazias, com nomes que ninguém da mesa está usando
   sentarRobos() {
     const m = this.m;
@@ -349,8 +361,8 @@ export class Mesa {
     const m = this.m, G = m.G;
     m.proximo = null;
     if (m.fase === 'espera' && m.publica && m.iniciaEm) {
-      const sentam = m.iniciaEm - this.T.sentaRobo;
-      m.proximo = m.cad.some(c => !c) && Date.now() < sentam ? sentam : m.iniciaEm;
+      const robo = this.horaDoRobo();
+      m.proximo = m.cad.some(c => !c) && robo < m.iniciaEm ? robo : m.iniciaEm;
     }
     if (m.fase === 'jogo' && G && G.phase === 'play') {
       const p = G.turn, c = m.cad[p], tem = legalMoves(G, p).length > 0, agora = Date.now();
@@ -370,8 +382,9 @@ export class Mesa {
     const agora = Date.now();
     if (m.ultimo + VIDA <= agora) { await this.apagar(); return; }
     if (m.fase === 'espera' && m.publica && m.iniciaEm && agora >= m.iniciaEm - 50) return this.comecarPublica();
-    if (m.fase === 'espera' && m.publica && m.iniciaEm && agora >= m.iniciaEm - this.T.sentaRobo - 50 && m.cad.some(c => !c)) {
-      this.sentarRobos(); m.ultimo = agora;
+    if (m.fase === 'espera' && m.publica && m.iniciaEm && m.cad.some(c => !c) && agora >= this.horaDoRobo() - 50) {
+      this.sentarUmRobo(); m.ultimo = agora;
+      m.proxRobo = agora + this.T.entreRobos * (0.75 + Math.random() * 0.5);
       this.agendar(); await this.salvar(); this.espalhar();
       return;
     }
