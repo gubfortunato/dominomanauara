@@ -16,7 +16,8 @@ const TEMPO = {
   ausente: 25000,    // pessoa sem conexão: o robô joga por ela depois disso
   conferir: 60000,   // vez de uma pessoa conectada: confere de novo se ela continua lá
   espera: 20000,     // mesa rápida: espera por mais gente antes de começar com robôs
-  cheia: 2500        // mesa rápida completa: começa logo (dá tempo de ver quem sentou)
+  cheia: 2500,       // mesa rápida completa: começa logo (dá tempo de ver quem sentou)
+  sentaRobo: 5000    // mesa rápida: faltando 5 s, a turma do bairro senta nas cadeiras vazias (quem chegar depois troca com um deles)
 };
 const FILA = { mesas: 20, idade: 60 * 60 * 1000 };   // mesas rápidas lembradas pela fila e por quanto tempo
 const SILENCIO = 50000;
@@ -47,7 +48,7 @@ export class Mesa {
     if (url.pathname === '/fila/status') return Response.json(await this.statusFila());
     if (url.pathname === '/info') {
       const m = this.viva();
-      return Response.json(m ? { existe: true, fase: m.fase, publica: !!m.publica, humanos: m.cad.filter(c => c && !c.bot).length, livres: m.cad.filter(c => !c).length + (m.fase === 'jogo' ? m.cad.filter(c => c && c.bot && !c.saiu).length : 0) } : { existe: false });
+      return Response.json(m ? { existe: true, fase: m.fase, publica: !!m.publica, humanos: m.cad.filter(c => c && !c.bot).length, livres: m.cad.filter(c => !c || (c.bot && !c.saiu)).length } : { existe: false });
     }
     if ((req.headers.get('upgrade') || '').toLowerCase() === 'websocket') {
       const par = new WebSocketPair();
@@ -136,9 +137,9 @@ export class Mesa {
     } else if (m.fase === 'espera') {
       if (b.so !== 'espera') return Response.json({ erro: 'cheia' }, { status: 409 });
       // o segundo senta de adversário, o terceiro de parceiro do primeiro, o quarto completa
-      p = [1, 2, 3, 0].find(k => !m.cad[k]);
+      p = this.cadeiraNaEspera();
       if (p == null) return Response.json({ erro: 'cheia' }, { status: 409 });
-      quem.nome = this.nomeUnico(quem.nome, -1);
+      quem.nome = this.nomeUnico(quem.nome, p);
       m.cad[p] = quem;
       if (m.cad.every(c => c && !c.bot)) m.iniciaEm = Math.min(m.iniciaEm || Infinity, Date.now() + this.T.cheia);
     } else {
@@ -226,9 +227,9 @@ export class Mesa {
       c.apoiador = quem.apoiador; c.doador = quem.doador; c.foto = quem.foto;
       if (c.saiu) { c.saiu = false; c.bot = false; }
     } else if (m.fase === 'espera') {
-      p = [1, 2, 3, 0].find(k => !m.cad[k]);
+      p = this.cadeiraNaEspera();
       if (p == null) return this.recusar(ws, 'cheia');
-      quem.nome = this.nomeUnico(quem.nome, -1);
+      quem.nome = this.nomeUnico(quem.nome, p);
       m.cad[p] = quem;
     } else {
       // jogo já começou: entra no lugar de um robô da turma, se houver
@@ -252,6 +253,21 @@ export class Mesa {
     m.tema = t; m.ultimo = Date.now();
     await this.salvar(); this.espalhar();
   }
+  // Na espera: o segundo senta de adversário, o terceiro de parceiro do primeiro, o quarto completa.
+  // Sem cadeira vazia (a turma já sentou nos últimos segundos da mesa rápida), troca com um robô.
+  cadeiraNaEspera() {
+    const m = this.m, ordem = [1, 2, 3, 0];
+    const k = ordem.find(i => !m.cad[i]);
+    return k != null ? k : ordem.find(i => m.cad[i] && m.cad[i].bot);
+  }
+  // Robôs da turma nas cadeiras vazias, com nomes que ninguém da mesa está usando
+  sentarRobos() {
+    const m = this.m;
+    const usados = m.cad.filter(Boolean).map(c => c.nome.toLowerCase());
+    const livres = BOT_NAMES.filter(n => !usados.includes(n.toLowerCase()));
+    for (let i = livres.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [livres[i], livres[j]] = [livres[j], livres[i]]; }
+    m.cad = m.cad.map(c => c || { id: null, nome: livres.pop(), av: null, bot: true, saiu: false });
+  }
   recusar(ws, cod) { this.enviar(ws, { t: 'erro', cod }); try { ws.close(4000, cod); } catch (e) {} }
   nomeUnico(nome, p) {
     const usados = this.m.cad.filter((c, k) => c && k !== p).map(c => c.nome.toLowerCase());
@@ -270,10 +286,7 @@ export class Mesa {
   async comecar() {
     const m = this.m;
     if (m.fase !== 'espera') return;
-    const humanos = m.cad.filter(Boolean).map(c => c.nome.toLowerCase());
-    const livres = BOT_NAMES.filter(n => !humanos.includes(n.toLowerCase()));
-    for (let i = livres.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [livres[i], livres[j]] = [livres[j], livres[i]]; }
-    m.cad = m.cad.map(c => c || { id: null, nome: livres.pop(), av: null, bot: true, saiu: false });
+    this.sentarRobos();
     m.G = newGame(m.cad.map(c => c.nome)); startHand(m.G);
     m.fase = 'jogo'; m.seq++; m.porRobo = null; m.iniciaEm = null;
     m.ultimo = m.turnoDesde = Date.now();
@@ -335,7 +348,10 @@ export class Mesa {
   agendar(extra) {
     const m = this.m, G = m.G;
     m.proximo = null;
-    if (m.fase === 'espera' && m.publica && m.iniciaEm) m.proximo = m.iniciaEm;
+    if (m.fase === 'espera' && m.publica && m.iniciaEm) {
+      const sentam = m.iniciaEm - this.T.sentaRobo;
+      m.proximo = m.cad.some(c => !c) && Date.now() < sentam ? sentam : m.iniciaEm;
+    }
     if (m.fase === 'jogo' && G && G.phase === 'play') {
       const p = G.turn, c = m.cad[p], tem = legalMoves(G, p).length > 0, agora = Date.now();
       let espera;
@@ -354,6 +370,11 @@ export class Mesa {
     const agora = Date.now();
     if (m.ultimo + VIDA <= agora) { await this.apagar(); return; }
     if (m.fase === 'espera' && m.publica && m.iniciaEm && agora >= m.iniciaEm - 50) return this.comecarPublica();
+    if (m.fase === 'espera' && m.publica && m.iniciaEm && agora >= m.iniciaEm - this.T.sentaRobo - 50 && m.cad.some(c => !c)) {
+      this.sentarRobos(); m.ultimo = agora;
+      this.agendar(); await this.salvar(); this.espalhar();
+      return;
+    }
     if (!m.proximo || agora < m.proximo - 50 || m.fase !== 'jogo') { this.agendar(); return; }
     const G = m.G, p = G.turn, c = m.cad[p], moves = legalMoves(G, p);
     if (c.bot) {

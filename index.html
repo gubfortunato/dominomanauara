@@ -2200,6 +2200,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.7', data: '14/10/2026', itens: ['Mesa rápida: nos últimos segundos antes de começar, a mesa se completa.', 'Ajustes nos nomes da turma do bairro.'] },
   { v: '3.6', data: '14/10/2026', itens: ['Ajustes nos nomes da turma do bairro.'] },
   { v: '3.5', data: '14/10/2026', itens: ['Mais Manaus: a mesa e o avatar de Açaí viraram Cupuaçu, a tapioca agora é com tucumã, a turma ganhou a Conceição e a mesa online ganhou o "Ê, caroço!". Quem já usava continua com o item, já com o novo.'] },
   { v: '3.4', data: '14/10/2026', itens: ['Camisas vermelha e azul no avatar: cor lisa, sem desenho no peito. Quem já usava continua com ela.'] },
@@ -2307,7 +2308,7 @@ const NOVIDADES = [
   { v: '1.6', data: '06/10/2026', itens: [
     'Na mesa, cada jogador tem a etiqueta Parceiro ou Adversário, com a cor da dupla.',
     'Balões de fala dos jogadores maiores.',
-    'Oito jogadores novos na turma do bairro: Mundico, Conceição, Bené, Rosinha, Zeca, Arlindo, Cleide e Juca.',
+    'Oito jogadores novos na turma do bairro: Tião, Conceição, Bené, Rosinha, Zeca, Arlindo, Cleide e Juca.',
     'Botão novo para mandar o seu histórico no WhatsApp.'
   ] },
   { v: '1.5.2', data: '06/10/2026', itens: ['Resultado da mão com letras e pedras maiores.'] },
@@ -2508,7 +2509,7 @@ const BOTS = [
   { name: 'Tonhão', av: { bg: '#e0b15e', skin: SKIN.escuro, style: 'careca', hc: HAIR.preto, barba: HAIR.preto, shirt: '#b03a2e' } },
   { name: 'Chiquinho', av: { bg: '#7fb0b8', skin: SKIN.medio, style: 'curto', hc: HAIR.preto, shirt: '#e5a650' } },
   { name: 'Graça', av: { bg: '#e48a7a', skin: SKIN.medio, style: 'longo', hc: HAIR.castanho, shirt: '#3d5a80' } },
-  { name: 'Mundico', av: { bg: '#9cc5a1', skin: SKIN.jambo, style: 'chapeu', hc: HAIR.preto, bigode: HAIR.preto, shirt: '#c0392b' } },
+  { name: 'Tião', av: { bg: '#9cc5a1', skin: SKIN.jambo, style: 'chapeu', hc: HAIR.preto, bigode: HAIR.preto, shirt: '#c0392b' } },
   { name: 'Conceição', av: { bg: '#e7b7c8', skin: SKIN.moreno, style: 'coque', hc: HAIR.preto, shirt: '#1f4e79' } },
   { name: 'Bené', av: { bg: '#c9a46b', skin: SKIN.escuro, style: 'raspado', hc: HAIR.grisalho, bigode: HAIR.grisalho, oculos: true, shirt: '#e8dcc4' } },
   { name: 'Rosinha', av: { bg: '#f2a7a0', skin: SKIN.claro, style: 'longo', hc: HAIR.grisalho, oculos: true, shirt: '#7d4e7a' } },
@@ -2552,7 +2553,13 @@ function myFaceURI() {
   const a = profile && avatarDe(profile.av);
   return avatarURI(avatarLivre(a) ? a : AVATARS[0]);   // plano acabou: volta para o avatar comum
 }
-function botFaceURI(name) { const b = BOTS.find(x => x.name === name); return b ? avatarURI(b.av) : null; }
+// Jogo guardado ou mesa de antes da troca de nomes ("Seu Raimundo", "Dona Socorro", "Mundico"): acha o mesmo rosto
+const BOT_ANTIGO = { 'Mundico': 'Tião' };
+function botFaceURI(name) {
+  const n = String(name || ''), sem = n.replace(/^(Seu|Dona) /, '');
+  const b = BOTS.find(x => x.name === n) || BOTS.find(x => x.name === sem) || BOTS.find(x => x.name === BOT_ANTIGO[n]);
+  return b ? avatarURI(b.av) : null;
+}
 function faceImg(uri, cls) { return uri ? `<img class="${cls || ''}" src="${uri}" alt="">` : ''; }
 function seatFace(p, cls) { return faceImg(p === seatMe ? myFaceURI() : botFaceURI(G.names[p]), cls); }
 
@@ -4334,8 +4341,8 @@ async function mesaRapida() {
 function restanteRapida(v) { return Math.max(0, Math.ceil((v.iniciaEm - v.agora - (Date.now() - ON.recebido)) / 1000)); }
 function textoRapida(v) {
   const vazias = v.cad.filter(c => !c).length, s = restanteRapida(v);
-  if (!vazias) return 'Mesa completa! Começando…';
-  return s > 0 ? `Começa em ${s} s. Se faltar gente, a turma do bairro completa a mesa.` : 'Começando…';
+  if (s <= 0) return 'Começando…';
+  return vazias ? `Começa em ${s} s. Se faltar gente, a turma do bairro completa a mesa.` : `Mesa completa! Começa em ${s} s.`;
 }
 function voltarMesa() {
   const cod = mesaGuardada(); if (!cod) return;
@@ -4368,7 +4375,7 @@ function renderSala() {
     const p = (pos + v.minha) % 4, c = v.cad[p];
     const tag = `<span class="sc-tag ${pos === 2 ? 'par' : pos === 0 ? 'eu' : 'adv'}">${NOME_POS[pos]}</span>`;
     if (!c) return `<button type="button" class="sala-cad vazia ${POS_CLASS[pos]}" data-p="${p}">${tag}<span class="sc-face sc-vazia" aria-hidden="true">+</span><b>Cadeira vazia</b><small>Toque para sentar aqui</small></button>`;
-    const face = pos === 0 ? faceImg(myFaceURI(), 'sc-img') : c.foto && !fotoEscondida(c.foto) ? fotoOnlineImg(c, 'sc-img') : (avatarDe(c.av) ? faceImg(avatarURI(avatarDe(c.av)), 'sc-img') : `<span class="sc-letra">${esc(c.nome[0] || '?')}</span>`);
+    const face = pos === 0 ? faceImg(myFaceURI(), 'sc-img') : c.bot && botFaceURI(c.nome) ? faceImg(botFaceURI(c.nome), 'sc-img') : c.foto && !fotoEscondida(c.foto) ? fotoOnlineImg(c, 'sc-img') : (avatarDe(c.av) ? faceImg(avatarURI(avatarDe(c.av)), 'sc-img') : `<span class="sc-letra">${esc(c.nome[0] || '?')}</span>`);
     return `<div class="sala-cad ${POS_CLASS[pos]}${c.on ? '' : ' fora'}">${tag}<span class="sc-face">${face}<i class="sc-on${c.on ? ' ok' : ''}" aria-hidden="true"></i></span><b>${esc(pos === 0 ? 'Você' : c.nome)}${c.apoiador ? ' <i class="sc-star" title="Apoiador">★</i>' : ''}${c.doador ? ` <i class="sc-heart" title="Doador">${'♥'.repeat(c.doador)}</i>` : ''}</b><small>${esc(salaSub(c, pos))}</small></div>`;
   }).join('') + '<div class="sala-centro" aria-hidden="true"></div>';
   $$('#salaMesa .vazia').forEach(b => b.addEventListener('click', () => mandar({ t: 'sentar', cadeira: Number(b.dataset.p) })));
