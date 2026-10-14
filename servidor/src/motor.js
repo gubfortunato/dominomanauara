@@ -125,7 +125,7 @@ function startHand(st) {
   }
   hands.forEach(h => h.sort((x, y) => x[0] - y[0] || x[1] - y[1]));
   Object.assign(st, { hands, chain: [], center: 0, bucho: { U: [], D: [] }, passStreak: [], lastPlayer: null, lastKey: null,
-    lacks: [[], [], [], []], result: null, phase: 'play', events: [] });
+    lacks: [[], [], [], []], result: null, phase: 'play', events: [], pedido: null });
   if (redeals) st.events.push({ type: 'redeal', n: redeals });
   const ns = st.nextStart;
   if (ns.mode === 'sena') {
@@ -149,13 +149,16 @@ function anyoneCanPlay(st) { for (let q = 0; q < 4; q++) if (legalMoves(st, q).l
 
 function applyMove(st, p, mv) {
   st.events = [];
+  expirarPonto(st);
   const t = st.hands[p].splice(mv.i, 1)[0];
   place(st, t, mv.side);
   st.passStreak = []; st.lastPlayer = p; st.lastKey = tkey(t); st.openMode = null;
   const pts = tableScore(st);   // soma das 4 pontas (bucho incluído)
-  if (pts) addScore(st, TEAM(p), pts);
-  st.events.push({ type: 'play', p, t, pts, team: TEAM(p), side: mv.side });
+  // modo torneio: o ponto fica esperando a dupla pedir
+  if (pts) { if (st.torneio) st.pedido = { team: TEAM(p), pts, p }; else addScore(st, TEAM(p), pts); }
+  st.events.push({ type: 'play', p, t, pts, team: TEAM(p), side: mv.side, pedir: !!(pts && st.torneio) });
   if (!st.hands[p].length) {
+    if (st.pedido) { addScore(st, st.pedido.team, st.pedido.pts); st.pedido = null; }   // na batida, o ponto da última pedra vale direto
     const carroca = isDbl(t);
     if (carroca) addScore(st, TEAM(p), 20);
     st.events.push({ type: 'batida', p, carroca, team: TEAM(p), pts: carroca ? 20 : 0 });
@@ -169,12 +172,13 @@ function applyMove(st, p, mv) {
     endHand(st, { kind: 'batida', p, carroca, lastPts: pts, garagem, garagemSum: gSum });
     return;
   }
-  if (!anyoneCanPlay(st)) { closeHand(st, p); return; }
+  if (!anyoneCanPlay(st)) { if (st.pedido) { addScore(st, st.pedido.team, st.pedido.pts); st.pedido = null; } closeHand(st, p); return; }
   st.turn = (p + 1) % 4;
 }
 
 function applyPass(st, p) {
   st.events = [];
+  expirarPonto(st);
   for (const e of openEnds(st)) if (!st.lacks[p].includes(e.v)) st.lacks[p].push(e.v);
   // O passe vale 20 para a dupla de quem jogou por último. Se quem passa é parceiro de quem jogou, ninguém marca.
   const lp = st.lastPlayer, team = TEAM(lp);
@@ -193,6 +197,27 @@ function applyPass(st, p) {
   st.turn = (p + 1) % 4;
 }
 
+// Modo torneio: o ponto não pedido se perde quando o próximo joga ou passa
+function expirarPonto(st) {
+  if (!st.pedido) return;
+  st.events.push({ type: 'pontoPerdido', p: st.pedido.p, team: st.pedido.team, pts: st.pedido.pts });
+  st.pedido = null;
+}
+// Pedir ponto: vale se a dupla tem ponto esperando; se não tem, dá 20 para os adversários.
+// junto = o pedido sai junto com a jogada (robô), sem apagar os avisos dela
+function pedirPonto(st, p, junto) {
+  if (!junto) st.events = [];
+  if (st.pedido && st.pedido.team === TEAM(p)) {
+    addScore(st, st.pedido.team, st.pedido.pts);
+    st.events.push({ type: 'ponto', p, team: st.pedido.team, pts: st.pedido.pts });
+    st.pedido = null;
+    return true;
+  }
+  const team = 1 - TEAM(p);
+  addScore(st, team, 20);
+  st.events.push({ type: 'pontoErrado', p, team, pts: 20 });
+  return false;
+}
 function closeHand(st, p) {
   const sums = [0, 0];
   st.hands.forEach((h, q) => { sums[TEAM(q)] += h.reduce((s, t) => s + pips(t), 0); });
@@ -226,7 +251,7 @@ function nextHand(st) {
   const r = st.result;
   if (r && r.matchWinner != null) {
     // Jogo novo começa com a carroça de sena; partida nova segue com quem jogou a última pedra.
-    if (r.gameWinner != null) { const fresh = newGame(st.names); Object.keys(st).forEach(k => delete st[k]); Object.assign(st, fresh); }
+    if (r.gameWinner != null) { const fresh = newGame(st.names); fresh.torneio = st.torneio; Object.keys(st).forEach(k => delete st[k]); Object.assign(st, fresh); }
     else { st.partida++; st.score = [0, 0]; st.handNo = 0; }
   }
   startHand(st);
@@ -376,4 +401,4 @@ function nomeOfensivo(nome) {
   return NOME_RUIM_PALAVRA.some(w => tudo === w || tudoJ === junta(w) || palavras.some(p => p === w || junta(p) === junta(w)));
 }
 const BOT_NAMES = ["Raimundo", "Nonato", "Socorro", "Tonhão", "Chiquinho", "Graça", "Tião", "Conceição", "Bené", "Rosinha", "Zeca", "Arlindo", "Cleide", "Juca"];
-export { TEAM, TARGET, tkey, isDbl, pips, newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, openEnds, tableSum, nomeOfensivo, BOT_NAMES };
+export { TEAM, TARGET, tkey, isDbl, pips, newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, openEnds, tableSum, nomeOfensivo, BOT_NAMES, pedirPonto };
