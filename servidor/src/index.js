@@ -220,6 +220,18 @@ async function lembretesDoDia(env) {
   const dia = Math.floor(agora / DIA);
   return mandarPara(results || [], s => Object.assign({ url: '/' }, LEMBRETES[(dia + s.id) % LEMBRETES.length]), env);
 }
+// Datas especiais: um aviso para todo mundo que ligou os lembretes (uma vez por aparelho no dia), mesmo quem jogou ontem
+const DATAS = {
+  '2026-10-24': { titulo: 'Manaus faz 357 anos hoje!', texto: 'Jogue uma mão hoje e ganhe a mesa Manaus 357. Só quem jogar no aniversário vai ter.' }
+};
+async function lembreteDaData(env) {
+  if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return null;
+  const hoje = new Date(Date.now() - 4 * 3600000).toISOString().slice(0, 10), msg = DATAS[hoje];
+  if (!msg) return null;
+  const inicio = Date.parse(hoje + 'T00:00:00-04:00');
+  const { results } = await env.DB.prepare('SELECT id, endpoint, p256dh, auth FROM avisos WHERE COALESCE(ultimo_envio, 0) < ? LIMIT 300').bind(inicio).all();
+  return mandarPara(results || [], () => Object.assign({ url: '/' }, msg), env);
+}
 // Plano Apoiador acabando (até 3 dias antes): um aviso por vencimento, só para quem ligou os lembretes.
 const diaMes = ms => { const d = new Date(ms - 4 * 3600000); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0'); };
 async function lembretesPlano(env) {
@@ -326,7 +338,7 @@ export default {
   },
   // Agendado (Cron do Cloudflare): lembretes no fim da tarde de Manaus.
   async scheduled(evento, env, ctx) {
-    ctx.waitUntil((async () => { try { await lembretesPlano(env); } catch (e) {} await lembretesDoDia(env); })());
+    ctx.waitUntil((async () => { try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env); } catch (e) {} await lembretesDoDia(env); })());
   }
 };
-export { lembretesDoDia, lembretesPlano };
+export { lembretesDoDia, lembretesPlano, lembreteDaData };
