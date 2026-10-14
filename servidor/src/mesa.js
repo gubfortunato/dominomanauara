@@ -305,6 +305,8 @@ export class Mesa {
     }
     if (!entraram.length) return false;
     fila.push(...voltam); m.fila = fila;
+    // quem criou foi para a fila: quem ficou na mesa passa a mandar nela
+    if (!m.cad.some(c => c && c.id === m.dono)) { const h = m.cad.find(c => c && !c.bot && c.id); if (h) m.dono = h.id; }
     const torneio = m.G.torneio;
     m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = torneio; startHand(m.G);
     m.troca = { seq: m.seq + 1, entraram, sairam, ficam: [0, 1, 2, 3].filter(k => k % 2 === w).map(k => m.cad[k].nome) };
@@ -425,6 +427,9 @@ export class Mesa {
     const m = this.m;
     if (m.fase === 'espera') {
       m.cad[p] = null;
+      // mesa com os amigos: o primeiro da fila senta na cadeira que ficou vazia
+      const i = !m.publica ? (m.fila || []).findIndex(c => this.conectadoId(c.id)) : -1;
+      if (i >= 0) { const novo = m.fila.splice(i, 1)[0]; novo.nome = this.nomeUnico(novo.nome, p); m.cad[p] = novo; }
     } else {
       // no meio do jogo: se tem gente na fila, o primeiro entra no lugar; senão, um robô assume a cadeira até a pessoa voltar
       const i = !m.publica ? (m.fila || []).findIndex(c => this.conectadoId(c.id)) : -1;
