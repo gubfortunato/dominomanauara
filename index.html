@@ -2209,6 +2209,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.9', data: '14/10/2026', itens: ['Reações novas na mesa online: Deu galo!, Comeu abiu?, Nem com nojo! e Vou pegar o beco!'] },
   { v: '3.8', data: '14/10/2026', itens: ['Copa 357 Anos: no sábado, 24/10, aniversário de Manaus, jogue uma mão e ganhe a mesa Manaus 357. Só quem jogar no dia vai ter.', 'Mesas liberadas até 25/10.', 'Ao chegar na mesa: Teatro Amazonas Patrimônio Mundial, a Ponte com os 15 anos e a frase do Relógio Municipal.'] },
   { v: '3.7.2', data: '14/10/2026', itens: ['Na sala da mesa online, quem chega aparece suave, um de cada vez.', 'A mesa Açaí voltou (ganhe 5 partidas), e a Cupuaçu continua.'] },
   { v: '3.7', data: '14/10/2026', itens: ['Mesa rápida: nos últimos segundos antes de começar, a mesa se completa.', 'Ajustes nos nomes da turma do bairro.'] },
@@ -4052,7 +4053,8 @@ const ERROS_MESA = {
 };
 // Reações rápidas: a ordem nunca muda (o servidor manda só o número). Para acrescentar, ponha no fim.
 const REACOES = ['Boa, parceiro!', 'Vô mermo!', 'Leseira baré!', 'Bate logo!', 'Segura essa!', 'Tá fácil!', 'Hoje tem galo!', 'Bora, bora!', '👏', '😂', '😮', '🔥',
-  'Ê, caroço!', 'Chibata!', 'Telezé!', 'Tá de bubuia?', 'Joga logo, caboco!', 'Bora um tacacá?'];
+  'Ê, caroço!', 'Chibata!', 'Telezé!', 'Tá de bubuia?', 'Joga logo, caboco!', 'Bora um tacacá?',
+  'Deu galo!', 'Comeu abiu?', 'Nem com nojo!', 'Vou pegar o beco!'];
 const FALA_MS = 2800;
 let falaMinhaT = null, reagiuEm = 0;
 function mostrarReacao(pos, txt) {
