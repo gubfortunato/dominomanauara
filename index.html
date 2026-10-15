@@ -1024,8 +1024,11 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
   body:not(.laterais) .table .seat .sc{font-size:11px;white-space:nowrap}
 }
 /* 3.20: nível — bolinha no avatar, faixa no início, folha e linha de experiência */
-.av[data-nv]::after{content:attr(data-nv);position:absolute;right:-7px;bottom:-5px;min-width:17px;height:17px;padding:0 3px;border-radius:9px;box-sizing:border-box;
-  background:var(--wood-2);color:var(--glow);border:1.5px solid var(--glow);font:800 10px/14px var(--font-body);text-align:center;letter-spacing:0}
+.av[data-nv]::after{content:'Nv ' attr(data-nv);position:absolute;left:50%;transform:translateX(-50%);bottom:-8px;height:16px;padding:0 4px;border-radius:8px;box-sizing:border-box;white-space:nowrap;
+  background:var(--wood-2);color:var(--glow);border:1.5px solid var(--glow);font:800 9px/13px var(--font-body);text-align:center;letter-spacing:0}
+.table .seat{cursor:pointer}
+.xp-seq{display:block;margin-top:3px;font-size:13px;color:var(--muted)}
+.festa .xp-seq{color:var(--wood-muted)}
 .nv-faixa{display:flex;align-items:center;gap:12px;width:100%;padding:10px 16px 10px 12px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);text-align:left;font:inherit;cursor:pointer}
 .nv-faixa:active{transform:scale(.99)}
 .nv-num{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--wood-2);color:var(--glow);font-family:var(--font-display);font-size:20px;box-shadow:inset 0 0 0 3px var(--glow)}
@@ -1050,8 +1053,9 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .festa .xp-linha b{color:var(--glow)}
 .me-av{position:relative;display:inline-block;vertical-align:-7px;margin-right:9px;line-height:0}
 .me-av img{margin-right:0;vertical-align:0}
-.me-av[data-nv]::after{content:attr(data-nv);position:absolute;right:-8px;bottom:-5px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;box-sizing:border-box;
-  background:var(--wood-2);color:var(--glow);border:1.5px solid var(--glow);font:800 9px/12px var(--font-body);text-align:center}
+.me-av{cursor:pointer}
+.me-av[data-nv]::after{content:'Nv ' attr(data-nv);position:absolute;left:50%;transform:translateX(-50%);bottom:-9px;height:15px;padding:0 4px;border-radius:8px;box-sizing:border-box;white-space:nowrap;
+  background:var(--wood-2);color:var(--glow);border:1.5px solid var(--glow);font:800 8.5px/12px var(--font-body);text-align:center}
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
@@ -2418,6 +2422,9 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.20.1', data: '15/10/2026', itens: ['Novos títulos nos níveis 25 (Fera do bairro), 35 (Terror da mesa) e 45 (Cobra criada): sempre tem um próximo título por perto.',
+    'Sequência de vitórias: a cada 3 partidas ganhas seguidas, +20 de experiência. Perder zera a sequência.',
+    'A bolinha do avatar agora diz "Nv 3", para ficar claro que é o nível. Tocando no cartão de alguém na mesa, aparece o nível e o título.'] },
   { v: '3.20', data: '15/10/2026', itens: ['Níveis e títulos: cada jogo dá experiência (mão jogada, galo, batida, partida ganha e missões do dia) e você sobe do nível 1 ao 50, de Novato da calçada a Lenda de Manaus. O seu nível aparece no início e numa bolinha no avatar, e na mesa online todo mundo vê.',
     'Quem já jogava começa com a experiência das partidas que já fez.',
     'Cartões dos jogadores mais finos no alto da mesa: sobra espaço e as pedras ficam maiores, principalmente em celulares menores.',
@@ -7101,9 +7108,10 @@ const NV_KEY = 'dmz-nivel';
 const NV_MAX = 50;
 const XP_DO_NIVEL = n => 100 + 20 * (n - 1);   // quanto falta do nível n para o n + 1
 const XP_REGRAS = [['Mão jogada', 5], ['Mão ganha pela sua dupla', 5], ['Galo seu', 10], ['Batida sua', 10], ['Batida de carroça', 15],
-  ['Partida ganha', 30], ['Missões do dia completas', 50]];
-const TITULOS_NV = [[50, 'Lenda de Manaus'], [40, 'Rei da calçada'], [30, 'Mestre da taberna'], [20, 'Galo de briga'],
-  [15, 'Dono do bucho'], [10, 'Batedor de esquina'], [5, 'Pedra solta'], [1, 'Novato da calçada']];
+  ['Partida ganha', 30], ['3 partidas ganhas seguidas', 20], ['Missões do dia completas', 50]];
+// um título a cada 5 níveis (desde a 3.20.1 também no 25, 35 e 45, para nunca ficar muito tempo sem novidade)
+const TITULOS_NV = [[50, 'Lenda de Manaus'], [45, 'Cobra criada'], [40, 'Rei da calçada'], [35, 'Terror da mesa'], [30, 'Mestre da taberna'],
+  [25, 'Fera do bairro'], [20, 'Galo de briga'], [15, 'Dono do bucho'], [10, 'Batedor de esquina'], [5, 'Pedra solta'], [1, 'Novato da calçada']];
 const tituloNv = n => (TITULOS_NV.find(([k]) => n >= k) || TITULOS_NV[TITULOS_NV.length - 1])[1];
 function nivelDe(xp) {
   let n = 1, resto = Math.max(0, Math.floor(xp || 0));
@@ -7127,7 +7135,7 @@ function nivelDoRobo(nome) {
   let h = 7; for (const ch of String(nome || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return 1 + Math.floor(Math.pow((h % 1000) / 1000, 1.8) * 24);
 }
-let xpDaMao = 0;
+let xpDaMao = 0, xpSeqMsg = '';
 function ganharXP(pts, porque) {
   if (!pts) return;
   const s = nvEstado(), antes = nivelDe(s.xp);
@@ -7158,6 +7166,13 @@ function contarXP() {
     const venceu = r.kind === 'batida' ? TEAM(r.p) : r.team;
     if (venceu === 0) pts += 5;
     if (r.matchWinner === 0) pts += 30;
+    // sequência de partidas ganhas: a cada 3 seguidas, +20 (perder zera)
+    if (r.matchWinner != null) {
+      const s = nvEstado();
+      s.seq = r.matchWinner === 0 ? (s.seq || 0) + 1 : 0;
+      store.set(NV_KEY, JSON.stringify(s));
+      if (s.seq && s.seq % 3 === 0) { pts += 20; xpSeqMsg = `🔥 ${s.seq} partidas ganhas seguidas: +20`; }
+    }
   }
   ganharXP(pts);
 }
@@ -7167,8 +7182,8 @@ trackOffline = function () { try { contarXP(); } catch (e) {} return trackOfflin
 function linhaXP(onde, como) {
   if (!xpDaMao || !onde) return;
   const v = nivelDe(nvEstado().xp);
-  onde.insertAdjacentHTML(como, `<p class="xp-linha"><b>+${xpDaMao}</b> de experiência · Nível ${v.n}${v.precisa ? ` <span>(${v.dentro}/${v.precisa})</span>` : ''}</p>`);
-  xpDaMao = 0;
+  onde.insertAdjacentHTML(como, `<p class="xp-linha"><b>+${xpDaMao}</b> de experiência · Nível ${v.n}${v.precisa ? ` <span>(${v.dentro}/${v.precisa})</span>` : ''}${xpSeqMsg ? `<small class="xp-seq">${esc(xpSeqMsg)}</small>` : ''}</p>`);
+  xpDaMao = 0; xpSeqMsg = '';
 }
 const showResultNv = showResult;
 showResult = function () {
@@ -7222,7 +7237,7 @@ function abrirNivel() {
   openSheet('info', `<p class="eyebrow">Seu nível</p><h2 id="sheetTitle">Nível ${v.n} · ${esc(v.titulo)}</h2>
     <div class="nv-grande"><span class="nv-barra"><i style="width:${v.precisa ? Math.round(100 * v.dentro / v.precisa) : 100}%"></i></span>
     <small>${v.precisa ? `${v.dentro} de ${v.precisa} para o nível ${v.n + 1}` : 'Nível máximo'}</small></div>
-    <p class="es-gk">Como ganhar experiência</p><ul class="nv-lista">${regras}</ul>
+    <p class="es-gk">Como ganhar experiência?</p><ul class="nv-lista">${regras}</ul>
     <p class="es-gk">Títulos</p><ul class="nv-lista nv-titulos">${titulos}</ul>
     <p class="note">Vale no jogo offline e no online. Na mesa online, todo mundo vê o seu nível na bolinha do avatar.</p>
     <button type="button" class="primary" id="nvJogar" style="width:100%">Jogar agora</button>
@@ -7233,6 +7248,17 @@ function abrirNivel() {
 }
 const renderHomeNv = renderHome;
 renderHome = function () { renderHomeNv.apply(this, arguments); try { desenharFaixaNv(); } catch (e) {} };
+// Tocar no avatar de alguém na mesa (ou no seu, embaixo) mostra o nível e o título
+(function () {
+  const seats = $('.table .seats');
+  if (seats) seats.addEventListener('click', e => {
+    const el = e.target.closest('.seat'); if (!el) return;
+    const av = el.querySelector('.av'), nv = av && Number(av.dataset.nv), nome = (el.querySelector('.sn') || {}).textContent || '';
+    if (nv && nome) toast(`${nome} · Nível ${nv} · ${tituloNv(nv)}`);
+  });
+  const eu = $('#meName');
+  if (eu) eu.addEventListener('click', e => { if (e.target.closest('.me-av')) { const v = nivelDe(nvEstado().xp); toast(`Você · Nível ${v.n} · ${v.titulo}`); } });
+})();
 
 
 // ---- Desenho das peças ----
