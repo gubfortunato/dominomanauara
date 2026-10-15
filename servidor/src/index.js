@@ -223,7 +223,7 @@ async function lembretesDoDia(env) {
 }
 // Datas especiais: um aviso para todo mundo que ligou os lembretes (uma vez por aparelho no dia), mesmo quem jogou ontem
 const DATAS = {
-  '2026-10-24': { titulo: 'Manaus faz 357 anos hoje!', texto: 'Jogue uma mão hoje e ganhe a mesa Manaus 357. Só quem jogar no aniversário vai ter.' }
+  '2026-10-24': { titulo: 'Manaus faz 357 anos hoje!', texto: 'Parabéns, Manaus! Bora celebrar com uma partida de dominó.' }
 };
 async function lembreteDaData(env) {
   if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return null;

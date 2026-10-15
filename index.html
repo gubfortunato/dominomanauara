@@ -1070,6 +1070,33 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .fila-lista small{font-size:13px;color:var(--muted)}
 .fila-regra,.sala-nafila{font-size:15px;line-height:1.45;text-align:center;margin:0}
 .nota-fila{text-align:center}
+/* Turmas e Desafio das Confrarias */
+#turmaCard.card{--wood-1:#8a5a14;--wood-2:#3a2206;--wood-edge:#d9a93a}
+.tm-regra{margin:8px 0 12px}
+.tm-box{display:grid;gap:8px;margin:12px 0;padding:14px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2)}
+.tm-box b{font-size:17px}
+.tm-box small{color:var(--muted);font-size:14px;margin-top:-4px}
+.tm-box input{width:100%;font-size:18px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+.tm-box #tmCod{text-transform:uppercase;letter-spacing:.18em;font-weight:700}
+.tm-status{margin:2px 0 12px;font-size:17px;color:var(--muted)}
+.tm-status b{color:var(--ink)}
+.tm-cod{display:grid;justify-items:center;gap:2px;margin:6px 0 12px;padding:12px;border-radius:16px;border:1.5px dashed var(--line)}
+.tm-cod small{color:var(--muted);font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+.tm-cod b{font-family:var(--font-display);font-weight:400;font-size:38px;letter-spacing:.14em;line-height:1.1}
+a.tm-zap{display:block;text-align:center;text-decoration:none}
+.tm-k{margin:16px 0 6px;font-size:12.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.tm-membros{margin:0;font-size:16px;line-height:1.45}
+.tm-rank,.tm-camp{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.tm-rank li,.tm-camp li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:var(--bg-2)}
+.tm-camp li{grid-template-columns:52px minmax(0,1fr)}
+.tm-rank li.eu{box-shadow:inset 0 0 0 2px var(--glow)}
+.tm-rank b,.tm-camp b{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tm-pos,.tm-camp span{font-weight:800;color:var(--muted)}
+.tm-pts{font-family:var(--font-display);font-size:22px}
+.tm-fechar{width:100%;margin-top:16px}
+.tm-sair{display:block;margin:12px auto 0;color:var(--alert)}
+.tm-box #tmCod::placeholder{text-transform:none;letter-spacing:normal;font-weight:400}
+.tm-rank li,.tm-camp li{border:1px solid var(--line)}
 
 /* ===== Anuncie: formulário de patrocínio ===== */
 .anuncie-link{display:grid;gap:2px;justify-items:center;text-align:center;width:100%;margin-top:-4px;padding:12px 14px;border:0;border-radius:14px;background:transparent;color:var(--fg);font:inherit;cursor:pointer}
@@ -1500,14 +1527,6 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
       <span class="rc-tx"><b>Regras</b><small>Bucho, garagem, passe e galo, explicados</small></span>
       <span class="rc-go" aria-hidden="true">›</span>
     </button>
-    <button type="button" class="card wood" id="goResume" hidden>
-      <span class="ck">Jogo em andamento</span><span class="ct">Continuar de onde parou</span>
-      <span class="cd" id="resumeD"></span>
-    </button>
-    <button type="button" class="card wood" id="goOffline">
-      <span class="ck" id="offlineK">Jogo offline</span><span class="ct">Você contra a turma do bairro</span>
-      <span class="cd">Você e um parceiro contra dois adversários, todos no mesmo nível e sem pressa. Funciona até sem internet.</span>
-    </button>
     <button type="button" class="card wood" id="goRapida" hidden>
       <span class="ck">Mesa rápida · online</span><span class="ct">Jogar com quem estiver online</span>
       <span class="cd">A gente junta você com outros jogadores. Se faltar gente, a turma do bairro completa a mesa.</span>
@@ -1519,6 +1538,14 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
     <button type="button" class="card wood" id="goOnline">
       <span class="ck">Mesa online</span><span class="ct">Jogar com os amigos</span>
       <span class="cd">Cada um no seu celular. Crie a mesa e chame a turma pelo WhatsApp, ou entre com o número que um amigo mandou.</span>
+    </button>
+    <button type="button" class="card wood" id="goOffline">
+      <span class="ck" id="offlineK">Jogo offline</span><span class="ct">Você contra a turma do bairro</span>
+      <span class="cd">Você e um parceiro contra dois adversários, todos no mesmo nível e sem pressa. Funciona até sem internet.</span>
+    </button>
+    <button type="button" class="card wood" id="goResume" hidden>
+      <span class="ck">Jogo em andamento</span><span class="ct">Continuar de onde parou</span>
+      <span class="cd" id="resumeD"></span>
     </button>
     <button type="button" class="donocard" id="donoCard" hidden>
       <span class="dc-live" aria-hidden="true"></span>
@@ -1660,7 +1687,7 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
         <li><span class="ap-ic" aria-hidden="true">★</span><span><b>Selo de apoiador</b> ao lado do seu nome na mesa online</span></li>
         <li><span class="ap-ic" aria-hidden="true">✓</span><span><b>Jogo sem anúncios</b></span></li>
         <li><span class="ap-ic" aria-hidden="true">☺</span><span><b>Avatares exclusivos</b>: coroa, óculos escuros, bonés vermelho e azul de Parintins</span></li>
-        <li><span class="ap-ic" aria-hidden="true">◼</span><span><b>Tudo liberado na hora</b>: mesas e comidas que se ganham jogando, mais a mesa Teatro Amazonas e avatares com coroa</span></li>
+        <li><span class="ap-ic" aria-hidden="true">◼</span><span><b>Tudo liberado na hora</b>: comidas que se ganham jogando e avatares com coroa</span></li>
       </ul>
       <div class="ap-precos" id="apPrecos">
         <button type="button" class="ap-preco" data-p="mensal"><b>R$ 4,90</b><span>30 dias</span></button>
@@ -2307,6 +2334,11 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.17', data: '14/10/2026', itens: ['Turmas: junte os amigos numa Turma com um código e chame pelo WhatsApp.',
+    'Desafio das Confrarias, de 1º/11 a 20/12: cada vitória numa partida online contra alguém de outra Turma vale ponto. A campeã leva o título do ano; com 3 títulos, a Grande Taça.',
+    'Na sala da mesa online aparece a Turma de cada um.', 'Todas as mesas liberadas para todo mundo, inclusive a Manaus 357 e a Igreja de São Sebastião.',
+    'Pedras maiores na mesa quando a mão vai longe, com os pontos mais fáceis de ler.',
+    'Início reorganizado: a mesa rápida logo no alto e o jogo offline depois do jogar com os amigos.'] },
   { v: '3.16', data: '14/10/2026', itens: ['Foto na mesa online para todo adulto: uma inteligência artificial confere na hora e recusa nudez, violência, ofensa, preconceito, política e propaganda. A foto aparece pequena, sem ampliar.',
     'A saída é sempre com carroça: quem não tem perde a vez, dá 20 aos adversários e a saída passa para o próximo.',
     'Quem perde a partida vê outra tela: sem troféu e sem confete.', 'Cada cartão do início tem a sua cor, e os botões do menu também.',
@@ -2572,7 +2604,7 @@ const PARTES = {
   oculos: [{ v: '', n: 'Sem óculos' }, { v: 'oculos', n: 'Óculos' }, { v: 'escuros', n: 'Óculos escuros', req: 'bat10' }],
   roupa: ['#245e6a', '#97520f', '#f2e7d5', '#3d6b4f', '#4f7fa6', '#a8402a', '#e5a650', '#7d4e7a', '#1f4e79', '#2b2b2b'].map(v => ({ v }))
     .concat([{ v: '#c8102e', n: 'Camisa vermelha' }, { v: '#0b3d91', n: 'Camisa azul' },
-      { v: 'tururi', n: 'Tururi', req: 'copa357', evento: true }]),   // cor lisa, sem símbolo de ninguém; tururi: o abadá do Boi Manaus (aniversário)
+      { v: 'tururi', n: 'Abadá Tururi', req: 'copa357', evento: true }]),   // cor lisa, sem símbolo de ninguém; tururi: o abadá do Boi Manaus (aniversário)
   mao: [{ v: '', n: 'Nada' }, { v: 'tacaca', n: 'Cuia de tacacá', req: 'vit5' }, { v: 'tapioca', n: 'Tapioca com tucumã', req: 'galo1' },
     { v: 'xcaboquinho', n: 'X-caboquinho', req: 'vit10' }, { v: 'cupuacu', n: 'Cupuaçu', req: 'jogo3' }, { v: 'tambaqui', n: 'Tambaqui assado', req: 'vit25' },
     { v: 'jaraqui', n: 'Jaraqui com farinha do Uarini', req: 'galo5' }, { v: 'kikao', n: 'Kikão', req: 'par25' }, { v: 'pirarucu', n: 'Pirarucu de casaca', req: 'jogo10' },
@@ -3946,7 +3978,7 @@ function cameraMesa(minX, maxX, minY, maxY, Xmax, a) {
   // - não cabe a próxima pedra: afasta até caber, com uma folga para não mexer de novo na jogada seguinte;
   // - sobrou muito espaço (dá para aumentar as pedras em mais de 30%): aproxima, uma vez;
   // - no resto do tempo a mesa fica parada.
-  const m = 0.5, FOLGA = 1.06;
+  const m = 0.35, FOLGA = 1.03;   // margem e folga pequenas: pedras maiores quando a mesa enche
   const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
   let iw = Math.max(Math.min(2 * Xmax + 2.4, 13), maxX - minX + 2 * m), ih = Math.max(iw / a, maxY - minY + 2 * m);
   if (iw / ih < a) iw = ih * a; else ih = iw / a;
@@ -4838,7 +4870,7 @@ const MESAS = [
   { id: 'relogio', nome: 'Relógio Municipal', bg: 'var(--img-relogio-sw) center 30%/auto 140% no-repeat, radial-gradient(circle at 40% 35%, #1e4a5e, #0b1d27 80%)', req: 'mao300' },
   { id: 'teatro', nome: 'Teatro Amazonas', bg: 'var(--img-teatro-sw) center 55%/140% auto no-repeat, #35101d', req: 'vit50' },
   // Mesa da época: livre para todo mundo só nos meses dela (horário de Manaus); fora da época, some
-  { id: 'igreja', nome: 'Igreja de São Sebastião', bg: 'var(--img-igreja-sw) center 60%/140% auto no-repeat, #c9d7e2', epoca: [1, 1], sub: 'Mesa da época: festa de São Sebastião, em janeiro' },
+  { id: 'igreja', nome: 'Igreja de São Sebastião', bg: 'var(--img-igreja-sw) center 60%/140% auto no-repeat, #c9d7e2', epoca: [1, 1], sub: 'Festa de São Sebastião, em janeiro' },
   // Copa 357 Anos: só quem jogou no aniversário de Manaus (24/10/2026) tem
   { id: 'manaus357', nome: 'Manaus 357', bg: 'var(--img-manaus357-sw) center 50%/120% auto no-repeat, #241c4c', req: 'copa357', evento: true }
 ];
@@ -5935,8 +5967,9 @@ renderDono = function () { renderDonoFoto(); dnFotosCarregar(); };
 // O regional fica de graça (mesas Vermelha, Azul e Encontro das Águas). Comidas de Manaus e mesas novas se ganham jogando
 // (conquistas, offline e online). O Plano Apoiador libera tudo na hora e traz extras (coroa, Teatro Amazonas),
 // que só aparecem quando os pagamentos estão ligados.
-// Copa 357 Anos: aniversário de Manaus (24/10/2026). Quem jogar uma mão no dia (offline ou online) ganha a mesa Manaus 357,
-// que só quem jogou no aniversário tem (o Plano Apoiador não libera). Depois do dia, quem não ganhou nem vê a mesa.
+// Todas as mesas estão liberadas para todo mundo (desde a 3.17), inclusive a Manaus 357 e a Igreja de São Sebastião.
+// Copa 357 Anos: aniversário de Manaus (24/10/2026). Quem jogar uma mão no dia (offline ou online) ganha o abadá Tururi,
+// que só quem jogou no aniversário tem (o Plano Apoiador não libera).
 const COPA = { dia: '2026-10-24', fim: Date.parse('2026-10-25T00:00:00-04:00'), chave: 'dmz-copa357' };
 const diaManaus = () => new Date(Date.now() - 4 * 3600000).toISOString().slice(0, 10);
 function copaHoje() { return diaManaus() === COPA.dia; }
@@ -5986,17 +6019,17 @@ function parteLivre(p) { return !!p && (souAdmin() || (p.plano ? temPlano() : !p
 // Depois, voltam a ser ganhas jogando (conquistas) ou com o plano.
 const MESAS_LIVRES_ATE = Date.parse('2026-10-26T00:00:00-04:00');
 function mesasNaPromo() { return Date.now() < MESAS_LIVRES_ATE; }
-const PROMO_TX = 'Todas as mesas liberadas até 25/10. Depois, elas se ganham jogando.';
+const PROMO_TX = 'Todas as mesas estão liberadas para todo mundo.';
 // Mesa da época (ex.: Igreja de São Sebastião, em janeiro): mês de Manaus dentro do intervalo
 const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 function naEpoca(p) { const m = +diaManaus().slice(5, 7); return m >= p.epoca[0] && m <= p.epoca[1]; }
-const mesaLivre = p => !!p && ((p.id === 'pontanegra' && ehReveillon()) || (p.epoca ? souAdmin() || naEpoca(p) : p.evento ? souAdmin() || conquistaFeita(p.req) : mesasNaPromo() || parteLivre(p)));
+const mesaLivre = p => !!p && (MESAS.includes(p) || (p.id === 'pontanegra' && ehReveillon()) || (p.epoca ? souAdmin() || naEpoca(p) : p.evento ? souAdmin() || conquistaFeita(p.req) : mesasNaPromo() || parteLivre(p)));
 // O que é do plano só aparece quando dá para assinar (ou para quem já tem)
 function parteVisivel(p) { return (!p.plano || pagamentosAtivos() || temPlano() || souAdmin()) && (!p.evento || Date.now() < COPA.fim || mesaLivre(p)) && (!p.epoca || mesaLivre(p)); }
 function premiosDe(id) {
   const l = [];
   ORDEM_PARTES.forEach(k => PARTES[k].forEach((p, i) => { if (p.req === id) l.push({ tipo: 'parte', k, i, nome: p.n }); }));
-  MESAS.forEach(m => { if (m.req === id) l.push({ tipo: 'mesa', id: m.id, nome: 'Mesa ' + m.nome }); });
+  // as mesas não são mais prêmio: estão todas liberadas
   return l;
 }
 
@@ -6313,13 +6346,14 @@ function cardCopa() {
   if (Date.now() >= COPA.fim || !profile) return;
   const ganhou = copaGanha(), hoje = copaHoje();
   const dias = Math.ceil((Date.parse(COPA.dia + 'T00:00:00-04:00') - Date.now()) / 86400000);
-  const cd = ganhou ? 'Você ganhou a mesa Manaus 357. Ela já está no Personalizar. Parabéns, Manaus!'
-    : hoje ? 'É hoje! Jogue uma mão, offline ou online, e ganhe a mesa Manaus 357. Só quem jogar hoje vai ter.'
-    : `No sábado, 24/10, Manaus faz 357 anos. Jogue uma mão no dia e ganhe a mesa Manaus 357, que só quem jogar no aniversário vai ter. ${dias <= 1 ? 'É amanhã!' : `Faltam ${dias} dias.`}`;
-  const alvo = $('#goResume');
+  // só a festa da cidade, sem falar de prêmio (para ninguém achar que ganha alguma coisa de verdade)
+  const cd = ganhou ? 'Parabéns, Manaus! Obrigado por celebrar os 357 anos da cidade com a gente.'
+    : hoje ? 'Hoje Manaus faz 357 anos! Parabéns, Manaus. Bora celebrar com uma partida de dominó.'
+    : `No sábado, 24/10, Manaus faz 357 anos. Bora celebrar a nossa cidade com uma partida de dominó! ${dias <= 1 ? 'É amanhã!' : `Faltam ${dias} dias.`}`;
+  const alvo = $('#goRapida');   // a Copa fica no alto, logo antes da mesa rápida
   if (!alvo) return;
   alvo.insertAdjacentHTML('beforebegin', `<button type="button" class="card wood copa-card" id="copaCard"><span class="ck">24/10 · Aniversário de Manaus</span><span class="ct">Copa 357 Anos</span><span class="cd">${esc(cd)}</span></button>`);
-  $('#copaCard').addEventListener('click', () => { if (ganhou) abrirEstilo('home', null, true); else $('#goOffline').click(); });
+  $('#copaCard').addEventListener('click', () => $('#goOffline').click());
 }
 const showResultCopa = showResult;
 showResult = function () { try { marcarCopa(); } catch (e) {} return showResultCopa.apply(this, arguments); };
@@ -6579,6 +6613,159 @@ renderHome = function () {
   if (emFila(v) && mesaGuardada() && $('#goMesaD')) $('#goMesaD').textContent = `Você está na fila (${v.naFila + 1}º). Toque para ver.`;
 };
 
+// ===== Turmas e o Desafio das Confrarias =====
+// A Turma é um grupo de amigos que entra por um código. De 1º/11 a 20/12, cada vitória numa partida online contra
+// alguém de outra Turma vale 1 ponto para a sua (o servidor conta). A campeã leva o título do ano; 3 títulos, a Grande Taça.
+const TM = { info: null, desafio: null, em: 0 };
+const TURMA_CONV = 'dmz-turma-convite', TURMA_VISTOS = 'dmz-desafio-vistos';
+const TURMA_ERROS = {
+  nome: 'Esse nome não pode. Escolha outro, sem palavrão nem ofensa.', 'nome-usado': 'Já tem uma Turma com esse nome. Escolha outro.',
+  'nao-existe': 'Não achei Turma com esse código. Confira as letras e os números.', codigo: 'O código tem 6 letras e números.',
+  cheia: 'Essa Turma já está com 40 pessoas.', muitas: 'Muitas Turmas criadas hoje neste aparelho. Tente amanhã.'
+};
+async function turmaApi(path, body) {
+  const r = await fetch(CONFIG.api + path, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : undefined);
+  return { ok: r.ok, status: r.status, j: await r.json().catch(() => ({})) };
+}
+function turmaGuardar(j) { if (j && 'turma' in j) TM.info = j.turma; if (j && j.desafio) TM.desafio = j.desafio; TM.em = Date.now(); }
+async function turmaCarregar(forcar) {
+  if (!CONFIG.api || !profile || (!forcar && Date.now() - TM.em < 60000)) return;
+  TM.em = Date.now();
+  try { const r = await turmaApi('/turma?aparelho=' + encodeURIComponent(meuId())); if (r.ok) turmaGuardar(r.j); } catch (e) { return; }
+  if (screen === 'home') desenharCartaoTurma();
+  if ($('#turmaFolha')) desenharTurma();
+}
+// Período do Desafio (o servidor manda as datas; antes de carregar, calcula aqui pelo horário de Manaus)
+function desafioAgora() {
+  if (TM.desafio) return TM.desafio;
+  const d = diaManaus(), mmdd = d.slice(5);
+  return { ano: +d.slice(0, 4), aberto: mmdd >= '11-01' && mmdd <= '12-20', antes: mmdd < '11-01', depois: mmdd > '12-20', ranking: [], campeas: [] };
+}
+const nomeTurma = n => /^turma\b/i.test(String(n || '').trim()) ? n : 'Turma ' + n;   // "Turma do Bar" não vira "Turma Turma do Bar"
+const estrelas = t => t ? ' ' + (t >= 3 ? '🏆' : '') + '★'.repeat(Math.min(t, 6)) : '';
+const pts = n => `${n} ${n === 1 ? 'ponto' : 'pontos'}`;
+// Cartão no início (depois do jogo offline)
+(function () {
+  const alvo = $('#goResume'); if (!alvo) return;   // depois do jogo offline (e do "Continuar")
+  alvo.insertAdjacentHTML('afterend', `<button type="button" class="card wood turma-card" id="turmaCard" hidden>
+    <span class="ck">Desafio das Confrarias · 1º/11 a 20/12</span><span class="ct" id="turmaCardT">Monte a sua Turma</span><span class="cd" id="turmaCardD"></span></button>`);
+  $('#turmaCard').addEventListener('click', () => abrirTurma());
+})();
+function desenharCartaoTurma() {
+  const card = $('#turmaCard'); if (!card) return;
+  const t = TM.info, d = desafioAgora(), mes = +diaManaus().slice(5, 7);
+  card.hidden = !onlineAtivo() || !profile || !(t || mes >= 10);
+  if (card.hidden) return;
+  $('#turmaCardT').textContent = t ? `${nomeTurma(t.nome)}${estrelas(t.titulos)}` : 'Monte a sua Turma';
+  const camp = d.campeas && d.campeas[0] && d.campeas[0].ano === d.ano ? d.campeas[0] : null;
+  $('#turmaCardD').textContent = d.depois ? (camp ? `Campeã de ${d.ano}: ${camp.nome}, com ${pts(camp.pontos)}.` : 'O Desafio deste ano acabou.') + (t ? ` A sua fez ${pts(t.pontos)}.` : '')
+    : d.aberto ? (t ? `${pts(t.pontos)}${t.pos ? ` · ${t.pos}º lugar` : ''}. Cada vitória online contra outra Turma vale ponto.` : 'Está valendo! Junte os amigos numa Turma: cada vitória online contra outra Turma vale ponto.')
+    : (t ? `Começa em 1º/11. Chame a turma com o código ${t.codigo}.` : 'Junte os amigos numa Turma. De 1º/11 a 20/12, cada vitória online contra outra Turma vale ponto; a campeã leva o título.');
+}
+const renderHomeTurma = renderHome;
+renderHome = function () {
+  renderHomeTurma();
+  desenharCartaoTurma(); turmaCarregar();
+  conviteTurma(0);
+};
+// Abre o convite quando o início estiver livre (sem outra folha aberta por cima)
+function conviteTurma(n) {
+  const conv = store.get(TURMA_CONV);
+  if (!conv || !profile || !onlineAtivo() || screen !== 'home') return;
+  if (sheetKind) { if (n < 40) setTimeout(() => conviteTurma(n + 1), 1000); return; }
+  store.del(TURMA_CONV); setTimeout(() => abrirTurma(conv), 300);
+}
+// Convite por link: ...#turma=ABC123
+(function () {
+  const m = location.hash.match(/^#turma=([A-Za-z0-9]{6})\b/);
+  if (!m) return;
+  store.set(TURMA_CONV, m[1].toUpperCase());
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+})();
+// Folha da Turma
+function abrirTurma(codigo) {
+  openSheet('info', `<div id="turmaFolha"></div>`);
+  TM.convite = codigo || null;
+  desenharTurma(); turmaCarregar(true);
+}
+function rankingHTML(d, minha) {
+  if (!d.ranking || !d.ranking.length) return d.antes ? '' : '<p class="note">Ninguém pontuou ainda.</p>';
+  return `<p class="tm-k">Ranking ${d.ano}</p><ol class="tm-rank">${d.ranking.map(r => `<li class="${minha && r.nome === minha.nome ? 'eu' : ''}"><span class="tm-pos">${r.pos}º</span><b>${esc(r.nome)}${estrelas(r.titulos)}</b><span class="tm-pts">${r.pontos}</span></li>`).join('')}</ol>`;
+}
+function desenharTurma() {
+  const box = $('#turmaFolha'); if (!box) return;
+  const t = TM.info, d = desafioAgora();
+  const regra = `<p class="note tm-regra">De 1º/11 a 20/12. Cada vitória numa partida online contra alguém de outra Turma vale 1 ponto para a sua (até 5 por dia contra a mesma Turma). A Turma com mais pontos leva o título do ano; com 3 títulos, a <b>Grande Taça</b>.</p>`;
+  const campeas = d.campeas && d.campeas.length ? `<p class="tm-k">Campeãs</p><ul class="tm-camp">${d.campeas.map(c => `<li><span>${c.ano}</span><b>${esc(c.nome)}</b></li>`).join('')}</ul>` : '';
+  if (!t) {
+    box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">Sua Turma</h2>${regra}
+      <div class="tm-box"><b>Entrar numa Turma</b><small>Peça o código para quem criou.</small>
+        <input id="tmCod" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="Código: 6 letras e números" value="${esc(TM.convite || '')}">
+        <button type="button" class="primary" id="tmEntrar">Entrar na Turma</button></div>
+      <div class="tm-box"><b>Criar uma Turma</b><small>Depois é só mandar o código para os amigos.</small>
+        <input id="tmNome" maxlength="24" autocomplete="off" placeholder="Nome da Turma (ex.: Os do Japiim)">
+        <button type="button" class="secondary" id="tmCriar">Criar Turma</button></div>
+      ${rankingHTML(d, null)}${campeas}
+      <button type="button" class="secondary tm-fechar" id="tmFechar">Fechar</button>`;
+    $('#tmEntrar').addEventListener('click', () => turmaAcao('/turma/entrar', { codigo: $('#tmCod').value.trim().toUpperCase() }, 'turma-entrou'));
+    $('#tmCriar').addEventListener('click', () => {
+      const nome = $('#tmNome').value.trim();
+      if (nome.length < 3) { toast('O nome da Turma precisa de pelo menos 3 letras.'); return; }
+      turmaAcao('/turma/nova', { nome }, 'turma-criada');
+    });
+    if (TM.convite) setTimeout(() => { const b = $('#tmEntrar'); if (b) b.focus(); }, 300);
+  } else {
+    const link = `${SITE_URL}#turma=${t.codigo}`;
+    const zap = 'https://wa.me/?text=' + encodeURIComponent(`Entra na minha Turma "${t.nome}" no Dominó Manauara, para o Desafio das Confrarias (1º/11 a 20/12). Código: ${t.codigo}\n${link}`);
+    const status = d.aberto ? `<b>${pts(t.pontos)}</b>${t.pos ? ` · ${t.pos}º lugar` : ''}` : d.antes ? 'Começa em 1º de novembro.' : `Este ano a sua Turma fez ${pts(t.pontos)}.`;
+    box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">${esc(nomeTurma(t.nome))}${estrelas(t.titulos)}</h2>
+      <p class="tm-status">${status}${t.taca ? ' · Grande Taça!' : t.titulos ? ` · ${t.titulos} ${t.titulos === 1 ? 'título' : 'títulos'}` : ''}</p>
+      <div class="tm-cod"><small>Código da Turma</small><b>${esc(t.codigo)}</b></div>
+      <a class="primary tm-zap" id="tmZap" href="${esc(zap)}" target="_blank" rel="noopener">Chamar a turma no WhatsApp</a>
+      <p class="tm-k">Na Turma (${t.membros.length})</p><p class="tm-membros">${t.membros.map(n => esc(n)).join(', ')}</p>
+      ${rankingHTML(d, t)}${regra}${campeas}
+      <button type="button" class="secondary tm-fechar" id="tmFechar">Fechar</button>
+      <button type="button" class="linkbtn tm-sair" id="tmSair">Sair da Turma</button>`;
+    $('#tmZap').addEventListener('click', () => track('turma-convite'));
+    $('#tmSair').addEventListener('click', () => {
+      const b = $('#tmSair');
+      if (b.dataset.certeza !== '1') { b.dataset.certeza = '1'; b.textContent = 'Toque de novo para sair da Turma'; return; }
+      turmaAcao('/turma/sair', {}, 'turma-saiu');
+    });
+  }
+  $('#tmFechar').addEventListener('click', closeSheet);
+}
+async function turmaAcao(path, extra, ev) {
+  const bt = $$('#turmaFolha button'); bt.forEach(b => b.disabled = true);
+  try {
+    const r = await turmaApi(path, Object.assign({ aparelho: meuId(), apelido: profile ? profile.name : '' }, extra));
+    if (r.ok) {
+      turmaGuardar(r.j); track(ev); TM.convite = null;
+      toast(path === '/turma/sair' ? 'Você saiu da Turma.' : path === '/turma/nova' ? `${nomeTurma(r.j.turma.nome)} criada! Mande o código para os amigos.` : `Você entrou: ${nomeTurma(r.j.turma.nome)}!`);
+    } else toast(r.j.erro === 'ja-tem' ? `Você já está na ${nomeTurma(r.j.turma || '')}. Para trocar, saia dela antes.` : TURMA_ERROS[r.j.erro] || 'Não deu agora. Tente de novo.');
+  } catch (e) { toast('Sem internet agora. Tente de novo.'); }
+  desenharTurma(); if (screen === 'home') desenharCartaoTurma();
+}
+// Na sala: a Turma de cada um aparece embaixo do nome
+const salaSubTurma = salaSub;
+salaSub = function (c, pos) { return c && c.turma && (pos === 0 || c.on) ? nomeTurma(c.turma) : salaSubTurma(c, pos); };
+// Ponto no Desafio: avisa quem ganhou (uma vez por partida)
+const receberOnlineTurma = receberOnline;
+receberOnline = function (m) {
+  receberOnlineTurma(m);
+  try {
+    const d = m && m.t === 'mesa' && m.desafio;
+    if (!d || m.minha < 0 || !d.cadeiras.includes(m.minha)) return;
+    const k = m.codigo + ':' + d.seq;
+    let vistos = []; try { vistos = JSON.parse(store.get(TURMA_VISTOS) || '[]'); } catch (e) {}
+    if (vistos.includes(k)) return;
+    store.set(TURMA_VISTOS, JSON.stringify(vistos.concat(k).slice(-20)));
+    const minha = m.cad[m.minha] && m.cad[m.minha].turma, nome = d.turmas.includes(minha) ? minha : d.turmas[0];
+    TM.em = 0;
+    setTimeout(() => toast(`+1 ponto para a ${nomeTurma(nome)} no Desafio das Confrarias!`), 1800);
+  } catch (e) {}
+};
+
 
 // ---- Desenho das peças ----
 function tileSVG(p, cls, shadow) {
@@ -6592,7 +6779,7 @@ function tileSVG(p, cls, shadow) {
   const halves = p.o === 'h' ? [[x0, y0, p.v1], [x0 + 1, y0, p.v2]] : [[x0, y0, p.v1], [x0, y0 + 1, p.v2]];
   for (const [hx, hy, v] of halves) for (const [px, py] of PIPS[v]) {
     const [qx, qy] = p.o === 'h' ? [py, px] : [px, py];
-    s += `<circle cx="${f2(hx + qx)}" cy="${f2(hy + qy)}" r=".095" class="t-pip"/>`;
+    s += `<circle cx="${f2(hx + qx)}" cy="${f2(hy + qy)}" r=".108" class="t-pip"/>`;
   }
   s += `<circle cx="${f2(p.x)}" cy="${f2(p.y)}" r=".065" class="t-pin"/>`;
   return s + '</g>';
@@ -6747,7 +6934,7 @@ function renderBoard() {
   const showZones = !!(drag && drag.moved);
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   const grow = p => { const w = p.o === 'h' ? 1 : .5, h = p.o === 'h' ? .5 : 1; minX = Math.min(minX, p.x - w); maxX = Math.max(maxX, p.x + w); minY = Math.min(minY, p.y - h); maxY = Math.max(maxY, p.y + h); };
-  pos.forEach(grow); bTiles.forEach(b => grow(b.pos)); zones.forEach(z => grow(z.pos));
+  pos.forEach(grow); bTiles.forEach(b => grow(b.pos)); if (showZones) zones.forEach(z => grow(z.pos));
   if (!isFinite(minX)) { minX = -1; maxX = 1; minY = -1; maxY = 1; }
   const vb = cameraMesa(minX, maxX, minY, maxY, Xmax, a);
   svg.setAttribute('viewBox', `${f2(vb.x)} ${f2(vb.y)} ${f2(vb.w)} ${f2(vb.h)}`);
