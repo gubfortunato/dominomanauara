@@ -1051,11 +1051,9 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .xp-linha span{color:var(--muted)}
 .festa .xp-linha{color:var(--wood-ink)}
 .festa .xp-linha b{color:var(--glow)}
-.me-av{position:relative;display:inline-block;vertical-align:-7px;margin-right:9px;line-height:0}
-.me-av img{margin-right:0;vertical-align:0}
-.me-av{cursor:pointer}
-.me-av[data-nv]::after{content:'Nv ' attr(data-nv);position:absolute;left:50%;transform:translateX(-50%);bottom:-9px;height:15px;padding:0 4px;border-radius:8px;box-sizing:border-box;white-space:nowrap;
-  background:var(--wood-2);color:var(--glow);border:1.5px solid var(--glow);font:800 8.5px/12px var(--font-body);text-align:center}
+.me-nv{display:inline-block;height:17px;padding:0 6px;margin-left:2px;border-radius:9px;box-sizing:border-box;vertical-align:2px;cursor:pointer;
+  background:var(--wood-2);color:var(--glow);border:1.5px solid var(--glow);font:800 10px/14px var(--font-body);letter-spacing:0}
+.me-name img{cursor:pointer}
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
@@ -2422,6 +2420,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.20.2', data: '15/10/2026', itens: ['O seu nível agora aparece ao lado do "Você", embaixo da mesa, sem ficar coberto pelo aviso de "Sua vez de jogar!".'] },
   { v: '3.20.1', data: '15/10/2026', itens: ['Novos títulos nos níveis 25 (Fera do bairro), 35 (Terror da mesa) e 45 (Cobra criada): sempre tem um próximo título por perto.',
     'Sequência de vitórias: a cada 3 partidas ganhas seguidas, +20 de experiência. Perder zera a sequência.',
     'A bolinha do avatar agora diz "Nv 3", para ficar claro que é o nível. Tocando no cartão de alguém na mesa, aparece o nível e o título.'] },
@@ -7209,9 +7208,9 @@ render = function () {
       else if (G.names && G.names[p]) nv = nivelDoRobo(G.names[p]);
       if (nv) el.dataset.nv = nv; else delete el.dataset.nv;
     }
-    // o seu nível numa bolinha no seu avatar, no rodapé (o texto continua "Você · parceiro de ...")
-    const img = $('#meName > img');
-    if (img && seatMe === 0) { const w = document.createElement('span'); w.className = 'me-av'; w.dataset.nv = meuNivel(); img.replaceWith(w); w.appendChild(img); }
+    // o seu nível numa etiqueta logo depois do "Você", no rodapé (embaixo do avatar ela batia no "Sua vez de jogar!")
+    const sm = $('#meName > small');
+    if (sm && seatMe === 0 && !$('#meName .me-nv')) sm.insertAdjacentHTML('beforebegin', `<span class="me-nv" role="button" aria-label="Seu nível">Nv ${meuNivel()}</span> `);
   } catch (e) {}
 };
 // Faixa no início: nível, título e a barrinha até o próximo
@@ -7257,7 +7256,7 @@ renderHome = function () { renderHomeNv.apply(this, arguments); try { desenharFa
     if (nv && nome) toast(`${nome} · Nível ${nv} · ${tituloNv(nv)}`);
   });
   const eu = $('#meName');
-  if (eu) eu.addEventListener('click', e => { if (e.target.closest('.me-av')) { const v = nivelDe(nvEstado().xp); toast(`Você · Nível ${v.n} · ${v.titulo}`); } });
+  if (eu) eu.addEventListener('click', e => { if (e.target.closest('.me-nv, .me-name img')) { const v = nivelDe(nvEstado().xp); toast(`Você · Nível ${v.n} · ${v.titulo}`); } });
 })();
 
 
