@@ -2089,8 +2089,8 @@ function applyMove(st, p, mv) {
   st.passStreak = []; st.lastPlayer = p; st.lastKey = tkey(t); st.openMode = null;
   const pts = tableScore(st);   // soma das 4 pontas (bucho incluído)
   // modo torneio: o ponto fica esperando a dupla pedir
-  if (pts) { if (st.torneio) st.pedido = { team: TEAM(p), pts, p }; else addScore(st, TEAM(p), pts); }
-  st.events.push({ type: 'play', p, t, pts, team: TEAM(p), side: mv.side, pedir: !!(pts && st.torneio) });
+  if (pts) { if (st.pedirPonto) st.pedido = { team: TEAM(p), pts, p }; else addScore(st, TEAM(p), pts); }
+  st.events.push({ type: 'play', p, t, pts, team: TEAM(p), side: mv.side, pedir: !!(pts && st.pedirPonto) });
   if (!st.hands[p].length) {
     if (st.pedido) { addScore(st, st.pedido.team, st.pedido.pts); st.pedido = null; }   // na batida, o ponto da última pedra vale direto
     const carroca = isDbl(t);
@@ -2377,6 +2377,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.19.2', data: '15/10/2026', itens: ['Modo torneio: o ponto agora entra sozinho, sem precisar pedir, e o contador das pontas some. Cada um soma as pontas de cabeça, como no torneio de verdade. Continua com 20 s por jogada.', 'O aviso de “Bateu de carroça!” agora cabe inteiro na mesa, em duas linhas.'] },
   { v: '3.19.1', data: '14/10/2026', itens: ['Mesa Ponta Negra: o hotel da ponta ficou como na foto.'] },
   { v: '3.19', data: '14/10/2026', itens: ['As conquistas voltaram todas, com prêmios novos para o avatar: camisa floral (Pé-quente), troféu do galo (Rei do galo), óculos dourados (Rei da batida), camisa do Teatro (Orgulho de Manaus) e a carroça de sena na mão (Hora do dominó).', 'As mesas continuam todas liberadas.'] },
   { v: '3.18', data: '14/10/2026', itens: ['Missões do dia: três desafios por dia, no jogo offline e no online. Cumpra os três para manter o foguinho dos dias seguidos e ganhar títulos e comidas novas para o avatar.',
@@ -6484,10 +6485,10 @@ $('#goOffline').addEventListener('click', mesaDaVez);
   setTimeout(() => toast(`Acabou o período das mesas liberadas. Para ter a mesa ${m.nome} de novo: ${m.req ? faltaTexto(m.req) : 'Plano Apoiador'}.`), 2500);
 })();
 
-// ===== Modo torneio: 20 s por jogada e pedir ponto (como no Regulamento de Dominó dos Jogos dos Servidores, Prefeitura de Manaus) =====
+// ===== Modo torneio: 20 s por jogada e sem o contador das pontas =====
 // Offline: liga ao montar a mesa. Online: quem criou a mesa liga para todos na sala (não vale na mesa rápida).
-// Os pontos na mesa só valem se a dupla pedir antes do próximo jogar; pedir sem ter ponto dá 20 para os adversários.
-// Na sua vez, 20 s: se passar, o robô joga por você (e pede o ponto, se tiver).
+// O ponto entra sozinho (o "pedir ponto" do regulamento saiu na 3.19.2), mas o "Pontas" some: cada um soma de cabeça.
+// Na sua vez, 20 s: se passar, o robô joga por você.
 const TORKEY = 'dmz-torneio', TORNEIO_MS = 20000;
 function torneioLigado() { return store.get(TORKEY) === '1'; }
 let vezDesde = 0;   // offline: quando começou a sua vez
@@ -6518,7 +6519,7 @@ function restanteVez() {
 (function () {
   const alvo = $('#startOffline'); if (!alvo) return;
   alvo.insertAdjacentHTML('beforebegin', `<label class="torneio-op" id="setupTorneio"><input type="checkbox" id="torneioChk">
-    <span><b>Modo torneio</b><small>20 s por jogada (passou, o robô joga por você) e precisa pedir o ponto</small></span></label>`);
+    <span><b>Modo torneio</b><small>20 s por jogada (passou, o robô joga por você) e sem o contador das pontas: some de cabeça</small></span></label>`);
   const chk = $('#torneioChk'); chk.checked = torneioLigado();
   chk.addEventListener('change', () => { store.set(TORKEY, chk.checked ? '1' : '0'); track('torneio-' + (chk.checked ? 'liga' : 'desliga')); });
 })();
@@ -6531,7 +6532,7 @@ function restanteVez() {
 setInterval(() => {
   const b = $('#pontoBtn'), r = $('#relogioVez'); if (!b || !r) return;
   const on = screen === 'game' && !!G && !!G.torneio && G.phase === 'play' && (mode === 'off' || mode === 'on');
-  b.hidden = !on;
+  b.hidden = !(on && G.pedirPonto);   // pedir ponto desligado: o ponto entra sozinho
   const s = on ? restanteVez() : null;
   r.hidden = s == null;
   if (s != null) { r.textContent = s + ' s'; r.classList.toggle('pouco', s <= 5); }
@@ -6540,7 +6541,7 @@ setInterval(() => {
 const renderTorneio = render;
 render = function () {
   renderTorneio();
-  try { if (G && G.torneio && screen === 'game') { const l = $('#ptLbl'); if (l && !l.textContent.includes('Torneio')) l.textContent += ' · Torneio'; } } catch (e) {}
+  try { if (G && G.torneio && screen === 'game') { const l = $('#ptLbl'); if (l && !l.textContent.includes('Torneio')) l.textContent += ' · Torneio'; const e = $('#ends'); if (e) e.hidden = true; } } catch (e) {}
 };
 // Sala da mesa online (com os amigos): quem criou liga o modo torneio para todos
 function salaTorneio() {
@@ -6558,7 +6559,7 @@ function salaTorneio() {
   }
   el.hidden = false;
   el.classList.toggle('ligado', !!v.torneio);
-  el.innerHTML = `<span class="to-chk" aria-hidden="true">${v.torneio ? '✓' : ''}</span><span><b>Modo torneio ${v.torneio ? 'ligado' : 'desligado'}</b><small>20 s por jogada e precisa pedir o ponto.${v.dono ? '' : ' Quem criou a mesa escolhe.'}</small></span>`;
+  el.innerHTML = `<span class="to-chk" aria-hidden="true">${v.torneio ? '✓' : ''}</span><span><b>Modo torneio ${v.torneio ? 'ligado' : 'desligado'}</b><small>20 s por jogada e sem o contador das pontas.${v.dono ? '' : ' Quem criou a mesa escolhe.'}</small></span>`;
 }
 const renderSalaTorneio = renderSala;
 renderSala = function () { renderSalaTorneio(); try { salaTorneio(); } catch (e) {} };
@@ -6890,7 +6891,7 @@ function emocao(evs) {
     if (ev.type === 'batida') {
       const meu = ev.team === nos;
       setTimeout(() => {
-        carimbo(`<b>${ev.carroca ? 'BATEU DE CARROÇA!' : 'BATEU!'}</b><small>${esc(nome(ev.p))}</small>`, (meu ? 'nos' : 'eles') + ' batida');
+        carimbo(`<b>${ev.carroca ? 'BATEU DE<br>CARROÇA!' : 'BATEU!'}</b><small>${esc(nome(ev.p))}</small>`, (meu ? 'nos' : 'eles') + ' batida');
         tremerMesa(); if (meu) vibrar(ev.carroca ? [60, 50, 60, 50, 120] : [80, 60, 80]);
       }, 900);
     }

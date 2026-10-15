@@ -325,7 +325,7 @@ export class Mesa {
   // Pedir ponto: não muda a vez (nem o relógio de quem está jogando)
   async pontoPedido(p) {
     const m = this.m, G = m.G;
-    if (m.fase !== 'jogo' || !G || !G.torneio || G.phase !== 'play') return;
+    if (m.fase !== 'jogo' || !G || !G.pedirPonto || G.phase !== 'play') return;
     pedirPonto(G, p);
     m.seq++; m.ultimo = Date.now();
     this.agendar(); await this.salvar(); this.espalhar();

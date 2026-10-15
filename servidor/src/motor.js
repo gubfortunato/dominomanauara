@@ -155,8 +155,8 @@ function applyMove(st, p, mv) {
   st.passStreak = []; st.lastPlayer = p; st.lastKey = tkey(t); st.openMode = null;
   const pts = tableScore(st);   // soma das 4 pontas (bucho incluído)
   // modo torneio: o ponto fica esperando a dupla pedir
-  if (pts) { if (st.torneio) st.pedido = { team: TEAM(p), pts, p }; else addScore(st, TEAM(p), pts); }
-  st.events.push({ type: 'play', p, t, pts, team: TEAM(p), side: mv.side, pedir: !!(pts && st.torneio) });
+  if (pts) { if (st.pedirPonto) st.pedido = { team: TEAM(p), pts, p }; else addScore(st, TEAM(p), pts); }
+  st.events.push({ type: 'play', p, t, pts, team: TEAM(p), side: mv.side, pedir: !!(pts && st.pedirPonto) });
   if (!st.hands[p].length) {
     if (st.pedido) { addScore(st, st.pedido.team, st.pedido.pts); st.pedido = null; }   // na batida, o ponto da última pedra vale direto
     const carroca = isDbl(t);
