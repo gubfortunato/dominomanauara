@@ -968,6 +968,49 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 #goMesa.card{--wood-1:#1d6468;--wood-2:#0a2a2c;--wood-edge:#4f9a9a}
 #goOnline.card{--wood-1:#7a2a3a;--wood-2:#2e0d16;--wood-edge:#b0566a}
 #copaCard.card{--wood-1:#3d2c6e;--wood-2:#160e30}
+/* Mais emoção na mesa: carimbo no meio da mesa, mesa tremendo, última pedra piscando */
+.carimbo{position:absolute;left:50%;top:46%;z-index:6;display:grid;justify-items:center;gap:2px;padding:10px 18px;border-radius:16px;
+  background:rgba(20,14,10,.82);box-shadow:0 10px 30px -8px rgba(0,0,0,.6),inset 0 0 0 2px var(--glow);pointer-events:none;
+  transform:translate(-50%,-50%) scale(.4) rotate(-6deg);opacity:0;animation:carimbo 1.6s cubic-bezier(.2,1.4,.4,1) forwards;text-align:center;white-space:nowrap}
+.carimbo b{font-family:var(--font-display);font-weight:400;font-size:clamp(30px,10vw,44px);line-height:1;color:var(--glow);letter-spacing:.02em}
+.carimbo small{font-size:15px;font-weight:700;color:#f2e7d5}
+.carimbo.eles{box-shadow:0 10px 30px -8px rgba(0,0,0,.6),inset 0 0 0 2px #8fc7cf}
+.carimbo.eles b{color:#8fc7cf}
+.carimbo.batida b{font-size:clamp(28px,9vw,40px)}
+@keyframes carimbo{0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(-6deg)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.08) rotate(-3deg)}
+  30%{transform:translate(-50%,-50%) scale(1) rotate(-3deg)}80%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-3deg)}100%{opacity:0;transform:translate(-50%,-56%) scale(.96) rotate(-3deg)}}
+.table.treme{animation:treme .5s ease-in-out}
+@keyframes treme{0%,100%{transform:none}15%{transform:translate(-4px,1px) rotate(-.4deg)}30%{transform:translate(4px,-1px) rotate(.4deg)}45%{transform:translate(-3px,0)}60%{transform:translate(3px,1px)}75%{transform:translate(-1px,0)}}
+.seat.ultima{box-shadow:0 0 0 2px #ff8a5c,0 0 18px -2px rgba(255,138,92,.7);animation:ultima 1.1s ease-in-out infinite}
+.seat.ultima .sc{color:#ffb08a;font-weight:800}
+@keyframes ultima{0%,100%{box-shadow:0 0 0 2px #ff8a5c,0 0 10px -4px rgba(255,138,92,.5)}50%{box-shadow:0 0 0 2px #ffb08a,0 0 22px 0 rgba(255,138,92,.85)}}
+#hand.ultima{filter:drop-shadow(0 0 14px rgba(240,180,94,.75))}
+@media (prefers-reduced-motion:reduce){.carimbo{animation-duration:.01s;opacity:1;transform:translate(-50%,-50%)}.seat.ultima{animation:none}.table.treme{animation:none}}
+/* Missões do dia */
+#misCard.card{--wood-1:#3f5a1c;--wood-2:#18240a;--wood-edge:#8fb05a}
+.mis-lista{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px}
+.mis-lista li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:15.5px;line-height:1.3}
+.mis-ic{width:20px;height:20px;border-radius:50%;border:2px solid rgba(239,226,204,.55);display:grid;place-items:center;font-size:13px;font-weight:900;color:#1d2a0c}
+.mis-lista li.ok .mis-ic{background:#b7d97a;border-color:#b7d97a}
+.mis-lista li.ok .mis-tx{opacity:.75;text-decoration:line-through;text-decoration-thickness:1.5px}
+.mis-n{font-weight:800;font-size:14px;color:var(--glow)}
+.mis-folha{margin:10px 0 14px}
+.mis-folha li{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg-2);font-size:16px}
+.mis-folha .mis-ic{border-color:var(--line);color:#1d2a0c}
+.mis-resumo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 10px}
+.mis-resumo div{display:grid;justify-items:center;padding:10px;border-radius:14px;border:1.5px solid var(--line)}
+.mis-resumo b{font-family:var(--font-display);font-weight:400;font-size:30px;line-height:1.1}
+.mis-resumo small{color:var(--muted);font-size:13.5px}
+.mis-titulo{margin:4px 0 8px;font-size:16px}
+/* Vez de jogar com a cor da dupla: adversário em azul, parceiro em dourado (antes ficava tudo dourado e confundia) */
+.table .seat.turn:not(.nos){background:rgba(143,199,207,.2);box-shadow:0 0 0 3px #8fc7cf,0 0 20px rgba(143,199,207,.5);animation:vezEles 1.4s ease-in-out infinite}
+.table .seat.turn:not(.nos) .av{box-shadow:0 0 0 3px #8fc7cf}
+.table .seat.turn:not(.nos) .sc{color:#bfe6ec;font-weight:800}
+.table .seat.turn.nos{animation:vezNos 1.4s ease-in-out infinite}
+.table .seat.turn.nos .sc{font-weight:800}
+@keyframes vezEles{0%,100%{box-shadow:0 0 0 3px #8fc7cf,0 0 12px rgba(143,199,207,.35)}50%{box-shadow:0 0 0 3px #b9e2e8,0 0 24px rgba(143,199,207,.65)}}
+@keyframes vezNos{0%,100%{box-shadow:0 0 0 3px var(--glow),0 0 12px rgba(243,192,99,.3)}50%{box-shadow:0 0 0 3px #ffd98a,0 0 24px rgba(243,192,99,.6)}}
+@media (prefers-reduced-motion:reduce){.table .seat.turn{animation:none}}
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
@@ -2334,6 +2377,10 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.18', data: '14/10/2026', itens: ['Missões do dia: três desafios por dia, no jogo offline e no online. Cumpra os três para manter o foguinho dos dias seguidos e ganhar títulos e comidas novas para o avatar.',
+    'Mais emoção na mesa: carimbo no meio da mesa no galo, na batida, nas jogadas de 20 ou mais e na virada do placar, a mesa treme e a última pedra cai devagar.',
+    'Quem está com uma pedra só fica piscando: "Última pedra!". E a reta final da partida ganha aviso.', 'Jogando pela Copa 357, a mesa já vem a Manaus 357.', 'Cada jogo novo começa numa mesa diferente (offline, com os amigos e na mesa rápida). Quer outra? É só trocar antes de começar.',
+    'A vez de jogar agora tem a cor da dupla: adversário em azul, parceiro em dourado.'] },
   { v: '3.17', data: '14/10/2026', itens: ['Turmas: junte os amigos numa Turma com um código e chame pelo WhatsApp.',
     'Desafio das Confrarias, de 1º/11 a 20/12: cada vitória numa partida online contra alguém de outra Turma vale ponto. A campeã leva o título do ano; com 3 títulos, a Grande Taça.',
     'Na sala da mesa online aparece a Turma de cada um.', 'Todas as mesas liberadas para todo mundo, inclusive a Manaus 357 e a Igreja de São Sebastião.',
@@ -2565,6 +2612,9 @@ function avatarSVG(a) {
 }
 // Na mão: comidas e coisas de Manaus (desenhadas aqui, na frente do peito, do lado direito)
 const MAO_SVG = {
+  tapereba: "<g transform=\"translate(71 85)\"><path d=\"M-8 -12H8L6 13H-6Z\" fill=\"#fdf6e3\" fill-opacity=\".6\" stroke=\"#cfc7b6\" stroke-width=\".8\"/><path d=\"M-7.5 -5.5H7.5L6 12.3H-6Z\" fill=\"#f2b632\"/><path d=\"M-7.5 -5.5H7.5\" stroke=\"#f9d977\" stroke-width=\"1.4\"/><path d=\"M3.2 -16.5L-.8 -1\" stroke=\"#e8433a\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M-4.6 -1.5V8.5\" stroke=\"#fff\" stroke-opacity=\".45\" stroke-width=\"1.6\" stroke-linecap=\"round\"/><circle cx=\"-8.4\" cy=\"-12\" r=\"3.6\" fill=\"#f6a623\"/><path d=\"M-8.4 -15.4q1.5 -1.8 3 -1.4\" stroke=\"#4d7a3a\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/></g>",
+  acaicuia: "<g transform=\"translate(71 86)\"><path d=\"M-15.5 -3Q-15.5 11.5 0 11.5Q15.5 11.5 15.5 -3Z\" fill=\"#5a3418\"/><path d=\"M-13.5 1Q-11 9 0 9.6\" stroke=\"#7d4c27\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/><ellipse cx=\"0\" cy=\"-3\" rx=\"15.5\" ry=\"4.2\" fill=\"#2e0f2c\"/><ellipse cx=\"0\" cy=\"-3.5\" rx=\"13.4\" ry=\"3.1\" fill=\"#5b1f55\"/><g fill=\"#f4efe4\"><circle cx=\"-7\" cy=\"-4\" r=\".9\"/><circle cx=\"-4\" cy=\"-2.6\" r=\".8\"/><circle cx=\"-1\" cy=\"-4.6\" r=\".9\"/><circle cx=\"2.4\" cy=\"-3\" r=\".8\"/><circle cx=\"5.6\" cy=\"-4.3\" r=\".9\"/><circle cx=\"8.6\" cy=\"-2.8\" r=\".8\"/><circle cx=\"-9.6\" cy=\"-2.6\" r=\".7\"/><circle cx=\"0.6\" cy=\"-1.9\" r=\".7\"/></g><path d=\"M8 -9.5L3 -3\" stroke=\"#d9c7a8\" stroke-width=\"2\" stroke-linecap=\"round\"/></g>",
+  sorvete: "<g transform=\"translate(71 85)\"><path d=\"M-7.5 -1L0 16.5L7.5 -1Z\" fill=\"#d9a05b\"/><path d=\"M-5.6 2.2L2.6 9.8M-3.2 -1L5.2 6.6M5.6 2.2L-2.6 9.8M3.2 -1L-5.2 6.6\" stroke=\"#b57a3a\" stroke-width=\".9\"/><circle cx=\"0\" cy=\"-7\" r=\"8.4\" fill=\"#f3e6bf\"/><path d=\"M-8.4 -5.6q1.6 4 3.4 .6t3.4 1.6t3.4 -1t3.4 1.4t3.2 -2.4\" fill=\"#f3e6bf\"/><circle cx=\"-2.8\" cy=\"-10\" r=\"2\" fill=\"#fff\" fill-opacity=\".55\"/><path d=\"M1.5 -11.5q2.5 -1 3.5 1\" stroke=\"#c9a46b\" stroke-width=\".9\" fill=\"none\" stroke-linecap=\"round\"/></g>",
   palminha: "<g transform=\"translate(71 85)\"><g transform=\"rotate(-28)\"><rect x=\"-2.6\" y=\"-15\" width=\"5.2\" height=\"28\" rx=\"2.4\" fill=\"#b5783e\"/><path d=\"M-1 -13V11\" stroke=\"#d9a46a\" stroke-width=\"1.2\"/></g><g transform=\"rotate(30)\"><rect x=\"-2.6\" y=\"-15\" width=\"5.2\" height=\"28\" rx=\"2.4\" fill=\"#8e5a2c\"/><path d=\"M-1 -13V11\" stroke=\"#c08850\" stroke-width=\"1.2\"/></g><path d=\"M-12 -16l-3 -3M-8 -19l-1 -4M12 -16l3 -3M8 -19l1 -4\" stroke=\"#f6eedf\" stroke-width=\"1.4\" stroke-linecap=\"round\"/></g>",
   jaraqui: "<g transform=\"translate(71 85)\"><ellipse cx=\"0\" cy=\"4\" rx=\"16.5\" ry=\"5.2\" fill=\"#f4efe4\" stroke=\"#d3c8b3\" stroke-width=\".9\"/><path d=\"M-12 0C-8 -7.5 4 -8 8.5 -1.5C4 4.5 -8 5 -12 0Z\" fill=\"#c7cfd3\"/><path d=\"M-12 0C-8 -7.5 4 -8 8.5 -1.5C3 -4 -7 -4.2 -12 0Z\" fill=\"#5f6d74\"/><path d=\"M-5 -6.6L-2 -9.5L3 -9.2L4.5 -5.8Z\" fill=\"#4f5a60\"/><path d=\"M-6 -3.5L-4 2.5M-2 -4.5L0 2.8M2 -4.6L4 2.4\" stroke=\"#3b2a1c\" stroke-width=\"1\" stroke-linecap=\"round\" opacity=\".75\"/><path d=\"M8.5 -1.5L16 -8L14.5 -1.5L16 5Z\" fill=\"#f2c94c\"/><path d=\"M10.6 -3.6L15.3 -7.4M11.6 -1.5L14.8 -1.5M10.6 .6L15.3 3.8\" stroke=\"#1d1d1d\" stroke-width=\"1.3\"/><circle cx=\"-8.5\" cy=\"-1.8\" r=\"1.3\" fill=\"#fff\"/><circle cx=\"-8.6\" cy=\"-1.8\" r=\".65\" fill=\"#222\"/><path d=\"M-12 0q1.4 .8 2.6 .2\" stroke=\"#3b2a1c\" stroke-width=\".7\" fill=\"none\"/><g transform=\"translate(-10 7)\"><path d=\"M-6 0A6 3.6 0 0 0 6 0Z\" fill=\"#7a4a24\"/><ellipse cx=\"0\" cy=\"0\" rx=\"6\" ry=\"1.8\" fill=\"#f2c94c\"/><g fill=\"#f5d36a\" stroke=\"#d9a62a\" stroke-width=\".25\"><circle cx=\"-3\" cy=\"-.9\" r=\"1.2\"/><circle cx=\"-.6\" cy=\"-1.4\" r=\"1.2\"/><circle cx=\"1.8\" cy=\"-.9\" r=\"1.2\"/><circle cx=\"-1.8\" cy=\".2\" r=\"1.1\"/><circle cx=\"1\" cy=\".3\" r=\"1.1\"/></g></g><g transform=\"translate(11 7)\"><circle r=\"3\" fill=\"#7cbf3a\"/><circle r=\"2.3\" fill=\"#d9f0a8\"/><path d=\"M0 -2.3V2.3M-2.3 0H2.3M-1.6 -1.6L1.6 1.6M-1.6 1.6L1.6 -1.6\" stroke=\"#7cbf3a\" stroke-width=\".35\"/></g></g>",
   kikao: "<g transform=\"translate(71 86) rotate(-10)\"><path d=\"M-15 3L-17 9H17L15 3Z\" fill=\"#f4f1ea\" stroke=\"#d8d2c4\" stroke-width=\".6\"/><path d=\"M-16.5 2Q-16.5 7 -10 7H10Q16.5 7 16.5 2Z\" fill=\"#c98a45\"/><path d=\"M-18 -.6Q-19 1.6 -17.4 3H17.4Q19 1.6 18 -.6Z\" fill=\"#a8432a\"/><path d=\"M-17 .2H17\" stroke=\"#c4583a\" stroke-width=\".6\"/><path d=\"M-14.5 -1Q-7 -3.5 0 -1.6T14.5 -1.4L14 .2H-14Z\" fill=\"#e8d7b0\"/><g stroke=\"#f2c94c\" stroke-width=\".9\" stroke-linecap=\"round\"><path d=\"M-12 -2.6l2.2 -1M-8.5 -3.4l1.8 1M-5 -3.6l2 -1.1M-1.5 -3l1.7 -1.2M2 -3.4l2 .8M5.5 -3.2l1.8 -1.2M9 -2.8l2 -.9M12 -2.4l1.4 1\"/></g><g fill=\"#d63a2a\"><rect x=\"-10.5\" y=\"-2.2\" width=\"1.4\" height=\"1.2\"/><rect x=\"-3.5\" y=\"-2.6\" width=\"1.4\" height=\"1.2\"/><rect x=\"4\" y=\"-2.3\" width=\"1.4\" height=\"1.2\"/><rect x=\"10\" y=\"-2\" width=\"1.4\" height=\"1.2\"/></g><g fill=\"#3f8f3a\"><rect x=\"-7\" y=\"-2.3\" width=\"1.2\" height=\"1.1\"/><rect x=\"0.5\" y=\"-2.5\" width=\"1.2\" height=\"1.1\"/><rect x=\"7.5\" y=\"-2.1\" width=\"1.2\" height=\"1.1\"/></g><path d=\"M-13 -3.8l2 -1.4 2 1.4 2 -1.4 2 1.4 2 -1.4 2 1.4 2 -1.4 2 1.4 2 -1.4 2 1.4 2 -1.4 2 1.4\" stroke=\"#c0392b\" stroke-width=\".8\" fill=\"none\" stroke-linejoin=\"round\"/><path d=\"M-12 -4.6l2 1.2 2 -1.2 2 1.2 2 -1.2 2 1.2 2 -1.2 2 1.2 2 -1.2 2 1.2 2 -1.2 2 1.2\" stroke=\"#f0c419\" stroke-width=\".7\" fill=\"none\" stroke-linejoin=\"round\"/><path d=\"M-16.5 -1.2Q-16.5 -7 -10 -7.4H10Q16.5 -7 16.5 -1.2\" stroke=\"#b9773a\" stroke-width=\"1.8\" fill=\"none\" opacity=\".9\"/></g>",
@@ -2608,7 +2658,7 @@ const PARTES = {
   mao: [{ v: '', n: 'Nada' }, { v: 'tacaca', n: 'Cuia de tacacá', req: 'vit5' }, { v: 'tapioca', n: 'Tapioca com tucumã', req: 'galo1' },
     { v: 'xcaboquinho', n: 'X-caboquinho', req: 'vit10' }, { v: 'cupuacu', n: 'Cupuaçu', req: 'jogo3' }, { v: 'tambaqui', n: 'Tambaqui assado', req: 'vit25' },
     { v: 'jaraqui', n: 'Jaraqui com farinha do Uarini', req: 'galo5' }, { v: 'kikao', n: 'Kikão', req: 'par25' }, { v: 'pirarucu', n: 'Pirarucu de casaca', req: 'jogo10' },
-    { v: 'palminha', n: 'Palminha', req: 'par100' }],   // as duas madeiras que marcam o ritmo da toada
+    { v: 'palminha', n: 'Palminha', req: 'par100' }, { v: 'tapereba', n: 'Suco de taperebá', req: 'mis3' }, { v: 'acaicuia', n: 'Cuia de açaí', req: 'mis7' }, { v: 'sorvete', n: 'Sorvete de cupuaçu', req: 'mis15' }],   // as duas madeiras que marcam o ritmo da toada
   fundo: ['#e5a650', '#8fbcc2', '#86c98f', '#d9825b', '#e9c46a', '#c77dab', '#8fb3d9', '#e58a6c', '#a7c97a', '#f3d29b', '#bcd3ee', '#cfc2b0'].map(v => ({ v }))
 };
 const ORDEM_PARTES = ['pele', 'cabelo', 'cor', 'pelos', 'oculos', 'roupa', 'mao', 'fundo'];
@@ -3083,7 +3133,7 @@ $('#goOffline').addEventListener('click', () => {
 });
 
 // ---- Histórico neste celular (só de quem joga de verdade, cadeira 0) ----
-function blankTreino() { return { jogos: 0, vitorias: 0, partidas: 0, partidasVencidas: 0, maos: 0, batidas: 0, galos: 0 }; }
+function blankTreino() { return { jogos: 0, vitorias: 0, partidas: 0, partidasVencidas: 0, maos: 0, batidas: 0, galos: 0, missoesDias: 0 }; }
 function loadHist() { try { return Object.assign(blankTreino(), JSON.parse(store.get(HKEY) || '{}') || {}); } catch (e) { return blankTreino(); } }
 function bumpHist(fn) { const t = loadHist(); fn(t); store.set(HKEY, JSON.stringify(t)); }
 function trackOffline() {
@@ -4505,6 +4555,7 @@ function statusOnline() {
 // ---------- Sala: criar, entrar, esperar a turma ----------
 async function criarMesa() {
   const b = $('#salaCriar'); b.disabled = true; b.textContent = 'Criando…';
+  mesaDaVez();   // mesa nova, mesa diferente (quem criou troca na sala, se quiser)
   try {
     const r = await fetch(CONFIG.api + '/mesa/nova', { method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro() }) });
@@ -4534,6 +4585,7 @@ async function mesaRapida() {
   if (mesaGuardada()) { voltarMesa(); toast('Você ainda está nesta mesa. Para jogar em outra, saia dela primeiro.'); return; }
   if (ON.buscando) return;
   ON.buscando = true; ON.vista = null; ON.esperou = false;
+  mesaDaVez();
   show('sala');
   try {
     const r = await fetch(CONFIG.api + '/mesa/rapida', { method: 'POST', headers: { 'content-type': 'application/json' },
@@ -5991,6 +6043,9 @@ const CONQUISTAS = [
   { id: 'vit50', nome: 'Orgulho de Manaus', tx: 'Ganhe 50 partidas', feito: 'Ganhou 50 partidas', curto: '50 partidas', campo: 'partidasVencidas', meta: 50 },
   { id: 'par100', nome: 'Torcida fiel', tx: 'Jogue 100 partidas', feito: 'Jogou 100 partidas', curto: 'jogar 100', campo: 'partidas', meta: 100 },
   { id: 'mao300', nome: 'Hora do dominó', tx: 'Jogue 300 mãos', feito: 'Jogou 300 mãos', curto: '300 mãos', campo: 'maos', meta: 300 },
+  { id: 'mis3', nome: 'Missão dada é missão cumprida', tx: 'Cumpra as missões do dia em 3 dias', feito: 'Cumpriu as missões em 3 dias', curto: '3 dias de missão', campo: 'missoesDias', meta: 3 },
+  { id: 'mis7', nome: 'Freguês das missões', tx: 'Cumpra as missões do dia em 7 dias', feito: 'Cumpriu as missões em 7 dias', curto: '7 dias de missão', campo: 'missoesDias', meta: 7 },
+  { id: 'mis15', nome: 'Mestre das missões', tx: 'Cumpra as missões do dia em 15 dias', feito: 'Cumpriu as missões em 15 dias', curto: '15 dias de missão', campo: 'missoesDias', meta: 15 },
   { id: 'copa357', nome: 'Copa 357 Anos', tx: 'Jogue uma mão no aniversário de Manaus (24/10)', feito: 'Jogou no aniversário de Manaus', curto: '24/10', campo: 'copa357', meta: 1, evento: true }
 ];
 const CQKEY = 'dmz-conquistas-vistas', AVMKEY = 'dmz-avatar-montado';
@@ -6353,7 +6408,8 @@ function cardCopa() {
   const alvo = $('#goRapida');   // a Copa fica no alto, logo antes da mesa rápida
   if (!alvo) return;
   alvo.insertAdjacentHTML('beforebegin', `<button type="button" class="card wood copa-card" id="copaCard"><span class="ck">24/10 · Aniversário de Manaus</span><span class="ct">Copa 357 Anos</span><span class="cd">${esc(cd)}</span></button>`);
-  $('#copaCard').addEventListener('click', () => $('#goOffline').click());
+  // jogar pela Copa: a mesa fica a do aniversário (Manaus 357)
+  $('#copaCard').addEventListener('click', () => { try { escolherMesa('manaus357'); mesaFixaUmaVez = true; } catch (e) {} track('copa-jogar'); $('#goOffline').click(); });
 }
 const showResultCopa = showResult;
 showResult = function () { try { marcarCopa(); } catch (e) {} return showResultCopa.apply(this, arguments); };
@@ -6391,6 +6447,26 @@ $('#avatarGrid').addEventListener('click', e => {
 }, true);
 $('#apEstilo').addEventListener('click', () => abrirEstilo('apoio'));
 aplicarMesa();
+// Mesa da vez: cada jogo novo (offline, mesa com os amigos e mesa rápida) começa numa mesa diferente, passando por
+// todas antes de repetir. Quem quiser troca na hora: no "Trocar" antes de começar o jogo offline ou na sala (quem criou).
+const RODIZIO = 'dmz-mesas-rodizio';
+let mesaFixaUmaVez = false;   // a Copa 357 já escolheu a mesa: não troca desta vez
+function mesaDaVez() {
+  try {
+    if (mesaFixaUmaVez) { mesaFixaUmaVez = false; return; }
+    if (mesaAlheia()) return;
+    const livres = MESAS.filter(m => parteVisivel(m) && mesaLivre(m)).map(m => m.id);
+    let fila = []; try { fila = JSON.parse(store.get(RODIZIO) || '[]'); } catch (e) {}
+    fila = (Array.isArray(fila) ? fila : []).filter(id => livres.includes(id));
+    const atual = mesaEscolhida().id;
+    fila = fila.filter(id => id !== atual);   // nunca repete a mesa em que acabou de jogar
+    if (!fila.length) fila = livres.filter(id => id !== atual).sort(() => Math.random() - .5);
+    const prox = fila.shift();
+    store.set(RODIZIO, JSON.stringify(fila));
+    if (prox && prox !== atual) { if (prox === 'madeira') store.del(MCKEY); else store.set(MCKEY, prox); aplicarMesa(); }
+  } catch (e) {}
+}
+$('#goOffline').addEventListener('click', mesaDaVez);
 // Acabou o período das mesas liberadas: quem estava numa mesa ainda não conquistada volta para a Madeira, com um aviso (uma vez)
 (function () {
   if (mesasNaPromo() || store.get('dmz-promo-mesas-fim')) return;
@@ -6766,6 +6842,205 @@ receberOnline = function (m) {
   } catch (e) {}
 };
 
+// ===== Mais emoção na mesa =====
+// Carimbo no meio da mesa nos lances grandes (galo, batida, jogada de 20 ou mais, virada no placar), a mesa treme
+// no galo e na batida, a última pedra cai devagar, quem está com uma pedra só fica piscando ("Última pedra!") e
+// a reta final da partida ganha aviso. No Android o celular vibra de leve; no iPhone (que não deixa) fica só o visual.
+const EMO = { lider: null, chave: null, reta: {} };
+const emoReduz = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+function vibrar(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
+function carimbo(txt, tipo) {
+  const wrap = $('#boardWrap'); if (!wrap || screen !== 'game') return;
+  const el = document.createElement('div');
+  el.className = 'carimbo ' + (tipo || '');
+  el.innerHTML = txt;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 1700);
+}
+function tremerMesa() {
+  if (emoReduz()) return;
+  const t = $('.table'); if (!t) return;
+  t.classList.remove('treme'); void t.offsetWidth; t.classList.add('treme');
+  setTimeout(() => t.classList.remove('treme'), 600);
+}
+let batidaLenta = false;   // a última pedra da mão voa devagar (o voo lê isto)
+const announceEmo = announce;
+announce = function () {
+  const evs = (G && G.events) || [];
+  if (evs.some(e => e.type === 'batida')) batidaLenta = true;
+  announceEmo();
+  try { emocao(evs); } catch (e) {}
+};
+function emocao(evs) {
+  if (!G || screen !== 'game') return;
+  const nos = TEAM(base()), nome = p => p === base() ? 'Você' : G.names[p];
+  for (const ev of evs) {
+    if (ev.type === 'galo') {
+      const meu = ev.team === nos;
+      setTimeout(() => { carimbo(`<b>GALO!</b><small>${esc(nome(ev.p))} · +50</small>`, meu ? 'nos' : 'eles'); tremerMesa(); if (meu) vibrar([40, 60, 40]); }, 250);
+    }
+    if (ev.type === 'batida') {
+      const meu = ev.team === nos;
+      setTimeout(() => {
+        carimbo(`<b>${ev.carroca ? 'BATEU DE CARROÇA!' : 'BATEU!'}</b><small>${esc(nome(ev.p))}</small>`, (meu ? 'nos' : 'eles') + ' batida');
+        tremerMesa(); if (meu) vibrar(ev.carroca ? [60, 50, 60, 50, 120] : [80, 60, 80]);
+      }, 900);
+    }
+    if (ev.type === 'play' && ev.pts >= 20 && !ev.pedir) {
+      const fala = ev.pts >= 40 ? 'Telezé!' : ev.pts >= 30 ? 'Vô mermo!' : 'Chibata!';
+      setTimeout(() => carimbo(`<b>+${ev.pts}</b><small>${fala}</small>`, ev.team === nos ? 'nos' : 'eles'), 350);
+    }
+  }
+  // virada e reta final (uma vez por partida para cada dupla)
+  const chave = `${G.series ? G.series.join('-') : ''}:${G.partida}`;
+  if (EMO.chave !== chave) { EMO.chave = chave; EMO.lider = null; EMO.reta = {}; }
+  const sc = G.score, lider = sc[0] > sc[1] ? 0 : sc[1] > sc[0] ? 1 : EMO.lider;
+  if (EMO.lider != null && lider !== EMO.lider && Math.max(sc[0], sc[1]) >= 60 && !evs.some(e => e.type === 'batida' || e.type === 'fechado')) {
+    setTimeout(() => carimbo(lider === nos ? '<b>VIRADA!</b><small>Vocês passaram na frente</small>' : '<b>VIRARAM!</b><small>Eles passaram na frente</small>', lider === nos ? 'nos' : 'eles'), 600);
+  }
+  EMO.lider = lider;
+  for (const t of [0, 1]) {
+    if (!EMO.reta[t] && sc[t] >= TARGET - 30 && sc[t] < TARGET && G.phase === 'play') {
+      EMO.reta[t] = true;
+      const falta = TARGET - sc[t];
+      setTimeout(() => aviso('Reta final!', t === nos ? `Faltam ${falta} para vocês fecharem a partida` : `Eles estão a ${falta} de fechar a partida`, 2200), 900);
+    }
+  }
+}
+// Quem está com uma pedra só: o cartão pisca e avisa
+const renderEmo = render;
+render = function () {
+  renderEmo();
+  try {
+    if (!G) return;
+    for (const pos of [1, 2, 3]) {
+      const p = (base() + pos) % 4, el = $(`.seat[data-pos="${pos}"]`); if (!el) continue;
+      const ultima = !dealing && G.phase === 'play' && G.hands[p] && G.hands[p].length === 1;
+      el.classList.toggle('ultima', ultima);
+      if (ultima && !(G.turn === p)) el.querySelector('.sc').textContent = 'Última pedra!';
+    }
+    const minha = !dealing && G.phase === 'play' && seatMe != null && G.hands[seatMe] && G.hands[seatMe].length === 1;
+    const h = $('#hand'); if (h) h.classList.toggle('ultima', minha);
+  } catch (e) {}
+};
+
+// ===== Missões do dia =====
+// Três missões por dia (uma fácil, uma média e uma difícil), iguais para todo mundo no mesmo dia, que valem no jogo
+// offline e no online. Cumprir as três conta um "dia completo": a sequência de dias seguidos aparece com o foguinho,
+// os dias completos dão título (Caboco esforçado, Fera da calçada...) e, com 3, 7 e 15 dias, comidas novas para o avatar
+// (pelas conquistas). Tudo fica neste celular.
+const MIS_KEY = 'dmz-missoes';
+const MISSOES = {
+  facil: [{ id: 'maos3', tx: 'Jogue 3 mãos', meta: 3 }, { id: 'pts5', tx: 'Marque ponto 5 vezes', meta: 5 }, { id: 'bucho2', tx: 'Jogue 2 pedras no bucho', meta: 2 }],
+  media: [{ id: 'galo1', tx: 'Aplique 1 galo', meta: 1 }, { id: 'bat2', tx: 'Bata 2 vezes', meta: 2 }, { id: 'pts20', tx: 'Marque 20 ou mais numa jogada só', meta: 1 }, { id: 'parc', tx: 'Seu parceiro bate 1 vez', meta: 1 }],
+  dificil: [{ id: 'carroca', tx: 'Bata com uma carroça', meta: 1 }, { id: 'partida', tx: 'Ganhe 1 partida', meta: 1 }, { id: 'garagem', tx: 'Leve 15 ou mais de garagem', meta: 1 }]
+};
+const TITULOS_MIS = [[30, 'Rei da calçada'], [15, 'Mestre da taberna'], [5, 'Fera da calçada'], [1, 'Caboco esforçado']];
+const diaAntes = d => new Date(Date.parse(d + 'T12:00:00Z') - 86400000).toISOString().slice(0, 10);
+function missoesDoDia(dia) {
+  let h = 0; for (const ch of dia) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const de = (l, k) => l[(h >>> k) % l.length];
+  return [de(MISSOES.facil, 0), de(MISSOES.media, 5), de(MISSOES.dificil, 11)];
+}
+function misEstado() {
+  const hoje = diaManaus();
+  let s; try { s = JSON.parse(store.get(MIS_KEY) || 'null'); } catch (e) {}
+  if (!s || typeof s !== 'object') s = {};
+  if (s.dia !== hoje) { s.dia = hoje; s.prog = {}; s.completo = false; }
+  s.seguidos = s.seguidos || 0;
+  // sequência: vale se o último dia completo foi hoje ou ontem
+  if (s.ultimo !== hoje && s.ultimo !== diaAntes(hoje)) s.seguidos = 0;
+  return s;
+}
+function misGuardar(s) { store.set(MIS_KEY, JSON.stringify(s)); }
+const misTitulo = n => (TITULOS_MIS.find(([k]) => n >= k) || [0, ''])[1];
+const misPremios = () => [['mis3', 3], ['mis7', 7], ['mis15', 15]].map(([id, n]) => ({ n, nome: (premiosDe(id)[0] || {}).nome || '' }));
+// Conta as jogadas do dia (você é sempre a cadeira 0 aqui, offline e online)
+const misVistos = new WeakSet();
+function contarMissoes() {
+  const evs = G && G.events;
+  if (!evs || !evs.length || misVistos.has(evs)) return;
+  misVistos.add(evs);
+  const s = misEstado(), lista = missoesDoDia(s.dia), soma = {};
+  const mais = (id, n) => { soma[id] = (soma[id] || 0) + (n || 1); };
+  for (const ev of evs) {
+    if (ev.type === 'play' && ev.p === 0) {
+      if (ev.pts && !ev.pedir) { mais('pts5'); if (ev.pts >= 20) mais('pts20'); }
+      if (ev.side === 'U' || ev.side === 'D') mais('bucho2');
+    }
+    if (ev.type === 'ponto' && ev.p === 0) { mais('pts5'); if (ev.pts >= 20) mais('pts20'); }
+    if (ev.type === 'galo' && ev.p === 0) mais('galo1');
+    if (ev.type === 'batida' && ev.p === 0) { mais('bat2'); if (ev.carroca) mais('carroca'); }
+    if (ev.type === 'batida' && ev.p === 2) mais('parc');
+    if (ev.type === 'garagem' && ev.team === 0 && ev.pts >= 15) mais('garagem');
+    if (ev.type === 'batida' || ev.type === 'fechado') {
+      mais('maos3');
+      if (G.result && G.result.matchWinner === 0) mais('partida');
+    }
+  }
+  const novas = [];
+  for (const m of lista) {
+    if (!soma[m.id]) continue;
+    const antes = s.prog[m.id] || 0;
+    s.prog[m.id] = Math.min(m.meta, antes + soma[m.id]);
+    if (antes < m.meta && s.prog[m.id] >= m.meta) novas.push(m);
+  }
+  if (!novas.length) { misGuardar(s); return; }
+  let tudo = false;
+  if (!s.completo && lista.every(m => (s.prog[m.id] || 0) >= m.meta)) {
+    tudo = true; s.completo = true;
+    s.seguidos = s.ultimo === diaAntes(s.dia) ? s.seguidos + 1 : 1;
+    s.ultimo = s.dia;
+    bumpHist(t => { t.missoesDias = (t.missoesDias || 0) + 1; });
+  }
+  misGuardar(s);
+  track(tudo ? 'missoes-completas' : 'missao-cumprida');
+  setTimeout(() => toast(tudo ? `Missões do dia completas! 🔥 ${s.seguidos} ${s.seguidos === 1 ? 'dia' : 'dias seguidos'}`
+    : `🎯 Missão cumprida: ${novas.map(m => m.tx).join(' e ')}`), 1400);
+}
+const trackOfflineMis = trackOffline;
+trackOffline = function () { try { contarMissoes(); } catch (e) {} return trackOfflineMis.apply(this, arguments); };
+// Cartão no início
+(function () {
+  const alvo = $('#goResume'); if (!alvo) return;
+  alvo.insertAdjacentHTML('afterend', `<button type="button" class="card wood mis-card" id="misCard">
+    <span class="ck" id="misK">Missões do dia</span><span class="ct" id="misT"></span><ul class="mis-lista" id="misLista"></ul></button>`);
+  $('#misCard').addEventListener('click', abrirMissoes);
+})();
+function misLinhas(s) {
+  return missoesDoDia(s.dia).map(m => {
+    const n = s.prog[m.id] || 0, ok = n >= m.meta;
+    return `<li class="${ok ? 'ok' : ''}"><span class="mis-ic" aria-hidden="true">${ok ? '✓' : ''}</span><span class="mis-tx">${esc(m.tx)}</span><span class="mis-n">${ok ? 'feito' : `${n}/${m.meta}`}</span></li>`;
+  }).join('');
+}
+function desenharMissoes() {
+  const card = $('#misCard'); if (!card) return;
+  card.hidden = !profile;
+  if (card.hidden) return;
+  const s = misEstado(), feitas = missoesDoDia(s.dia).filter(m => (s.prog[m.id] || 0) >= m.meta).length;
+  $('#misK').textContent = 'Missões do dia' + (s.seguidos ? ` · 🔥 ${s.seguidos} ${s.seguidos === 1 ? 'dia' : 'dias'}` : '');
+  $('#misT').textContent = feitas === 3 ? 'Missões cumpridas! Volte amanhã' : `${feitas} de 3 cumpridas`;
+  $('#misLista').innerHTML = misLinhas(s);
+}
+function abrirMissoes() {
+  const s = misEstado(), total = loadHist().missoesDias || 0, tit = misTitulo(total);
+  const prox = misPremios().find(p => total < p.n);
+  const prox2 = TITULOS_MIS.slice().reverse().find(([k]) => total < k);
+  openSheet('info', `<p class="eyebrow">Missões do dia</p><h2 id="sheetTitle">${s.completo ? 'Cumpridas hoje!' : 'Bora cumprir?'}</h2>
+    <ul class="mis-lista mis-folha">${misLinhas(s)}</ul>
+    <div class="mis-resumo"><div><b>🔥 ${s.seguidos}</b><small>${s.seguidos === 1 ? 'dia seguido' : 'dias seguidos'}</small></div><div><b>${total}</b><small>${total === 1 ? 'dia completo' : 'dias completos'}</small></div></div>
+    ${tit ? `<p class="mis-titulo">Seu título: <b>${esc(tit)}</b></p>` : ''}
+    <p class="note">${prox ? `Com ${prox.n} dias completos você ganha uma comida nova para o avatar: ${esc(prox.nome)} (faltam ${prox.n - total}).` : 'Você já ganhou todas as comidas das missões.'}${prox2 ? ` Com ${prox2[0]} ${prox2[0] === 1 ? 'dia' : 'dias'}, o título ${esc(prox2[1])}.` : ''}</p>
+    <p class="note">As missões mudam à meia-noite e valem no jogo offline e no online. Cumpra as três no mesmo dia para contar um dia completo; dias seguidos aumentam o foguinho.</p>
+    <button type="button" class="primary" id="misJogar" style="width:100%">Jogar agora</button>
+    <button type="button" class="secondary" id="misFechar" style="width:100%;margin-top:8px">Fechar</button>`);
+  $('#misJogar').addEventListener('click', () => { closeSheet(); $('#goOffline').click(); });
+  $('#misFechar').addEventListener('click', closeSheet);
+  track('missoes-abertas');
+}
+const renderHomeMis = renderHome;
+renderHome = function () { renderHomeMis(); try { desenharMissoes(); } catch (e) {} };
+
 
 // ---- Desenho das peças ----
 function tileSVG(p, cls, shadow) {
@@ -6981,8 +7256,9 @@ function flyIn(pf) {
     const pos = (pf.p - base() + 4) % 4;
     const src = pos === 0 ? $('#hand') : $(`.seat[data-pos="${pos}"] .av`);
     const r = src.getBoundingClientRect();
-    sx = r.left + r.width / 2; sy = r.top + r.height / 2; s0 = .45; r0 = (Math.random() < .5 ? -1 : 1) * (20 + Math.random() * 20); dur = 560;
+    sx = r.left + r.width / 2; sy = r.top + r.height / 2; s0 = .45; r0 = (Math.random() < .5 ? -1 : 1) * (20 + Math.random() * 20); dur = batidaLenta ? 1150 : 560;
   }
+  batidaLenta = false;
   const tx = tr.left + tr.width / 2, ty = tr.top + tr.height / 2;
   const T = (x, y, sc, r) => `translate(${(x - tr.width / 2).toFixed(1)}px, ${(y - tr.height / 2).toFixed(1)}px) rotate(${r}deg) scale(${sc})`;
   flying = { key: pf.key }; g.classList.add('incoming'); g.classList.remove('fresh');

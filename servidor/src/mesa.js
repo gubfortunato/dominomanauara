@@ -28,7 +28,7 @@ const REACAO = { intervalo: 2000, porMinuto: 8, maior: 23 };   // reações: só
 const VIDA = 24 * 60 * 60 * 1000;    // a mesa some 24 h depois da última ação
 
 // Mesa (tema) escolhida por quem criou: todo mundo joga nela. Só o nome curto (madeira, ponte, teatro...).
-const temaOk = v => typeof v === 'string' && /^[a-z]{3,16}$/.test(v) ? v : null;
+const temaOk = v => typeof v === 'string' && /^[a-z][a-z0-9]{2,15}$/.test(v) ? v : null;   // manaus357 tem número
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 
 export class Mesa {
