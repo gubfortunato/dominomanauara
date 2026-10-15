@@ -1011,6 +1011,47 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 @keyframes vezEles{0%,100%{box-shadow:0 0 0 3px #8fc7cf,0 0 12px rgba(143,199,207,.35)}50%{box-shadow:0 0 0 3px #b9e2e8,0 0 24px rgba(143,199,207,.65)}}
 @keyframes vezNos{0%,100%{box-shadow:0 0 0 3px var(--glow),0 0 12px rgba(243,192,99,.3)}50%{box-shadow:0 0 0 3px #ffd98a,0 0 24px rgba(243,192,99,.6)}}
 @media (prefers-reduced-motion:reduce){.table .seat.turn{animation:none}}
+/* 3.20: cartões dos jogadores compactos (em pé, os três em cima): uma faixa fina, e a mesa ganha a altura que sobrou.
+   A etiqueta "Parceiro"/"Adversário" continua, menor, em cima da borda (e a cor também diz quem é quem). */
+@media (orientation: portrait){
+  body:not(.laterais) .table .seats{margin-top:8px;gap:5px}
+  body:not(.laterais) .table .seat{flex-direction:row;align-items:center;justify-content:flex-start;text-align:left;gap:7px;padding:3px 8px 3px 3px;border-radius:999px;min-height:0}
+  body:not(.laterais) .table .seat::before{top:-7px;font-size:8.5px;letter-spacing:.07em;padding:2px 6px 2px}
+  body:not(.laterais) .table .seat{padding-top:5px}
+  body:not(.laterais) .table .seat .av{width:30px;height:30px;font-size:12px}
+  body:not(.laterais) .table .seat .sinfo{display:grid;justify-items:start;min-width:0;gap:0;line-height:1.12}
+  body:not(.laterais) .table .seat .sn{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  body:not(.laterais) .table .seat .sc{font-size:11px;white-space:nowrap}
+}
+/* 3.20: nível — bolinha no avatar, faixa no início, folha e linha de experiência */
+.av[data-nv]::after{content:attr(data-nv);position:absolute;right:-7px;bottom:-5px;min-width:17px;height:17px;padding:0 3px;border-radius:9px;box-sizing:border-box;
+  background:var(--wood-2);color:var(--glow);border:1.5px solid var(--glow);font:800 10px/14px var(--font-body);text-align:center;letter-spacing:0}
+.nv-faixa{display:flex;align-items:center;gap:12px;width:100%;padding:10px 16px 10px 12px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);text-align:left;font:inherit;cursor:pointer}
+.nv-faixa:active{transform:scale(.99)}
+.nv-num{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--wood-2);color:var(--glow);font-family:var(--font-display);font-size:20px;box-shadow:inset 0 0 0 3px var(--glow)}
+.nv-tx{display:grid;gap:5px;min-width:0;flex:1}
+.nv-tx b{font-size:15px;line-height:1.15}
+.nv-tx small{font-size:12.5px;color:var(--muted)}
+.nv-barra{display:block;height:8px;border-radius:5px;background:var(--line);overflow:hidden}
+.nv-barra i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#d9822b,var(--glow))}
+.nv-grande{display:grid;gap:6px;margin:2px 0 14px}
+.nv-grande .nv-barra{height:12px}
+.nv-grande small{color:var(--muted)}
+.nv-lista{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px}
+.nv-lista li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;background:var(--bg-2);border:1px solid var(--line)}
+.nv-lista li b{color:var(--nos)}
+.nv-titulos li{opacity:.5}
+.nv-titulos li.ok{opacity:1;border-color:var(--nos)}
+.nv-titulos li span{color:var(--muted);font-size:13px}
+.xp-linha{margin:4px 0 10px;text-align:center;font-size:14.5px;color:var(--fg)}
+.xp-linha b{color:var(--nos)}
+.xp-linha span{color:var(--muted)}
+.festa .xp-linha{color:var(--wood-ink)}
+.festa .xp-linha b{color:var(--glow)}
+.me-av{position:relative;display:inline-block;vertical-align:-7px;margin-right:9px;line-height:0}
+.me-av img{margin-right:0;vertical-align:0}
+.me-av[data-nv]::after{content:attr(data-nv);position:absolute;right:-8px;bottom:-5px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;box-sizing:border-box;
+  background:var(--wood-2);color:var(--glow);border:1.5px solid var(--glow);font:800 9px/12px var(--font-body);text-align:center}
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
@@ -2377,6 +2418,10 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.20', data: '15/10/2026', itens: ['Níveis e títulos: cada jogo dá experiência (mão jogada, galo, batida, partida ganha e missões do dia) e você sobe do nível 1 ao 50, de Novato da calçada a Lenda de Manaus. O seu nível aparece no início e numa bolinha no avatar, e na mesa online todo mundo vê.',
+    'Quem já jogava começa com a experiência das partidas que já fez.',
+    'Cartões dos jogadores mais finos no alto da mesa: sobra espaço e as pedras ficam maiores, principalmente em celulares menores.',
+    'Missões do dia completas agora valem +50 de experiência (o título passou a ser o do nível).'] },
   { v: '3.19.2', data: '15/10/2026', itens: ['Modo torneio: o ponto agora entra sozinho, sem precisar pedir, e o contador das pontas some. Cada um soma as pontas de cabeça, como no torneio de verdade. Continua com 20 s por jogada.', 'O aviso de “Bateu de carroça!” agora cabe inteiro na mesa, em duas linhas.'] },
   { v: '3.19.1', data: '14/10/2026', itens: ['Mesa Ponta Negra: o hotel da ponta ficou como na foto.'] },
   { v: '3.19', data: '14/10/2026', itens: ['As conquistas voltaram todas, com prêmios novos para o avatar: camisa floral (Pé-quente), troféu do galo (Rei do galo), óculos dourados (Rei da batida), camisa do Teatro (Orgulho de Manaus) e a carroça de sena na mão (Hora do dominó).', 'As mesas continuam todas liberadas.'] },
@@ -4262,7 +4307,7 @@ function conectar(cod) {
   ws.onopen = () => {
     ON.tent = 0;
     let mesa = null; try { mesa = mesaEscolhida().id; } catch (e) {}
-    ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), mesa, fila: true }));   // fila: este app mostra a fila do ganha-chama
+    ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), mesa, fila: true }));   // fila: este app mostra a fila do ganha-chama
     clearInterval(ON.pingT);
     ON.pingT = setInterval(() => { try { if (ws.readyState === 1) ws.send('ping'); } catch (e) {} }, 25000);
     statusOnline();
@@ -4567,7 +4612,7 @@ async function criarMesa() {
   mesaDaVez();   // mesa nova, mesa diferente (quem criou troca na sala, se quiser)
   try {
     const r = await fetch(CONFIG.api + '/mesa/nova', { method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro() }) });
+      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel() }) });
     const j = await r.json().catch(() => ({}));
     if (r.status === 201 && j.codigo) { track('mesa-online-criada'); ON.vista = null; conectar(j.codigo); renderSala(); return; }
     toast(r.status === 429 ? 'Muitas mesas criadas agora. Tente de novo daqui a pouco.' : 'Não deu para criar a mesa. Tente de novo.');
@@ -4598,7 +4643,7 @@ async function mesaRapida() {
   show('sala');
   try {
     const r = await fetch(CONFIG.api + '/mesa/rapida', { method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro() }) });
+      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel() }) });
     const j = await r.json().catch(() => ({}));
     ON.buscando = false;
     if (r.ok && /^\d{5}$/.test(j.codigo || '')) { track('mesa-rapida'); ON.rapida = true; conectar(j.codigo); renderSala(); return; }
@@ -6936,15 +6981,14 @@ render = function () {
 // ===== Missões do dia =====
 // Três missões por dia (uma fácil, uma média e uma difícil), iguais para todo mundo no mesmo dia, que valem no jogo
 // offline e no online. Cumprir as três conta um "dia completo": a sequência de dias seguidos aparece com o foguinho,
-// os dias completos dão título (Caboco esforçado, Fera da calçada...) e, com 3, 7 e 15 dias, comidas novas para o avatar
-// (pelas conquistas). Tudo fica neste celular.
+// cumprir as três vale +50 de experiência (para o nível) e, com 3, 7 e 15 dias completos, vêm comidas novas para o avatar
+// (pelas conquistas). Desde a 3.20 o título é o do nível (as missões não têm mais título próprio). Tudo fica neste celular.
 const MIS_KEY = 'dmz-missoes';
 const MISSOES = {
   facil: [{ id: 'maos3', tx: 'Jogue 3 mãos', meta: 3 }, { id: 'pts5', tx: 'Marque ponto 5 vezes', meta: 5 }, { id: 'bucho2', tx: 'Jogue 2 pedras no bucho', meta: 2 }],
   media: [{ id: 'galo1', tx: 'Aplique 1 galo', meta: 1 }, { id: 'bat2', tx: 'Bata 2 vezes', meta: 2 }, { id: 'pts20', tx: 'Marque 20 ou mais numa jogada só', meta: 1 }, { id: 'parc', tx: 'Seu parceiro bate 1 vez', meta: 1 }],
   dificil: [{ id: 'carroca', tx: 'Bata com uma carroça', meta: 1 }, { id: 'partida', tx: 'Ganhe 1 partida', meta: 1 }, { id: 'garagem', tx: 'Leve 15 ou mais de garagem', meta: 1 }]
 };
-const TITULOS_MIS = [[30, 'Rei da calçada'], [15, 'Mestre da taberna'], [5, 'Fera da calçada'], [1, 'Caboco esforçado']];
 const diaAntes = d => new Date(Date.parse(d + 'T12:00:00Z') - 86400000).toISOString().slice(0, 10);
 function missoesDoDia(dia) {
   let h = 0; for (const ch of dia) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
@@ -6962,7 +7006,6 @@ function misEstado() {
   return s;
 }
 function misGuardar(s) { store.set(MIS_KEY, JSON.stringify(s)); }
-const misTitulo = n => (TITULOS_MIS.find(([k]) => n >= k) || [0, ''])[1];
 const misPremios = () => [['mis3', 3], ['mis7', 7], ['mis15', 15]].map(([id, n]) => ({ n, nome: (premiosDe(id)[0] || {}).nome || '' }));
 // Conta as jogadas do dia (você é sempre a cadeira 0 aqui, offline e online)
 const misVistos = new WeakSet();
@@ -7001,6 +7044,7 @@ function contarMissoes() {
     s.seguidos = s.ultimo === diaAntes(s.dia) ? s.seguidos + 1 : 1;
     s.ultimo = s.dia;
     bumpHist(t => { t.missoesDias = (t.missoesDias || 0) + 1; });
+    try { ganharXP(50); } catch (e) {}
   }
   misGuardar(s);
   track(tudo ? 'missoes-completas' : 'missao-cumprida');
@@ -7032,14 +7076,12 @@ function desenharMissoes() {
   $('#misLista').innerHTML = misLinhas(s);
 }
 function abrirMissoes() {
-  const s = misEstado(), total = loadHist().missoesDias || 0, tit = misTitulo(total);
+  const s = misEstado(), total = loadHist().missoesDias || 0;
   const prox = misPremios().find(p => total < p.n);
-  const prox2 = TITULOS_MIS.slice().reverse().find(([k]) => total < k);
   openSheet('info', `<p class="eyebrow">Missões do dia</p><h2 id="sheetTitle">${s.completo ? 'Cumpridas hoje!' : 'Bora cumprir?'}</h2>
     <ul class="mis-lista mis-folha">${misLinhas(s)}</ul>
     <div class="mis-resumo"><div><b>🔥 ${s.seguidos}</b><small>${s.seguidos === 1 ? 'dia seguido' : 'dias seguidos'}</small></div><div><b>${total}</b><small>${total === 1 ? 'dia completo' : 'dias completos'}</small></div></div>
-    ${tit ? `<p class="mis-titulo">Seu título: <b>${esc(tit)}</b></p>` : ''}
-    <p class="note">${prox ? `Com ${prox.n} dias completos você ganha uma comida nova para o avatar: ${esc(prox.nome)} (faltam ${prox.n - total}).` : 'Você já ganhou todas as comidas das missões.'}${prox2 ? ` Com ${prox2[0]} ${prox2[0] === 1 ? 'dia' : 'dias'}, o título ${esc(prox2[1])}.` : ''}</p>
+    <p class="note">Cumprir as três vale <b>+50 de experiência</b> para o seu nível. ${prox ? `Com ${prox.n} dias completos você ganha uma comida nova para o avatar: ${esc(prox.nome)} (faltam ${prox.n - total}).` : 'Você já ganhou todas as comidas das missões.'}</p>
     <p class="note">As missões mudam à meia-noite e valem no jogo offline e no online. Cumpra as três no mesmo dia para contar um dia completo; dias seguidos aumentam o foguinho.</p>
     <button type="button" class="primary" id="misJogar" style="width:100%">Jogar agora</button>
     <button type="button" class="secondary" id="misFechar" style="width:100%;margin-top:8px">Fechar</button>`);
@@ -7049,6 +7091,148 @@ function abrirMissoes() {
 }
 const renderHomeMis = renderHome;
 renderHome = function () { renderHomeMis(); try { desenharMissoes(); } catch (e) {} };
+
+// ===== Níveis e títulos =====
+// Cada jogo dá experiência (mão jogada, mão ganha, galo, batida, partida ganha, missões do dia), e a experiência sobe o
+// nível, de 1 a 50. A cada faixa de nível vem um título com cara de Manaus. O nível aparece numa bolinha no avatar,
+// na mesa (offline e online, para os outros verem) e numa faixa no início. Tudo fica neste celular; quem já jogava
+// começa com a experiência do que já tinha jogado.
+const NV_KEY = 'dmz-nivel';
+const NV_MAX = 50;
+const XP_DO_NIVEL = n => 100 + 20 * (n - 1);   // quanto falta do nível n para o n + 1
+const XP_REGRAS = [['Mão jogada', 5], ['Mão ganha pela sua dupla', 5], ['Galo seu', 10], ['Batida sua', 10], ['Batida de carroça', 15],
+  ['Partida ganha', 30], ['Missões do dia completas', 50]];
+const TITULOS_NV = [[50, 'Lenda de Manaus'], [40, 'Rei da calçada'], [30, 'Mestre da taberna'], [20, 'Galo de briga'],
+  [15, 'Dono do bucho'], [10, 'Batedor de esquina'], [5, 'Pedra solta'], [1, 'Novato da calçada']];
+const tituloNv = n => (TITULOS_NV.find(([k]) => n >= k) || TITULOS_NV[TITULOS_NV.length - 1])[1];
+function nivelDe(xp) {
+  let n = 1, resto = Math.max(0, Math.floor(xp || 0));
+  while (n < NV_MAX && resto >= XP_DO_NIVEL(n)) { resto -= XP_DO_NIVEL(n); n++; }
+  return { n, dentro: resto, precisa: n < NV_MAX ? XP_DO_NIVEL(n) : 0, titulo: tituloNv(n) };
+}
+function nvEstado() {
+  let s = null; try { s = JSON.parse(store.get(NV_KEY) || 'null'); } catch (e) {}
+  if (!s || typeof s !== 'object' || !isFinite(s.xp)) {
+    // quem já jogava antes dos níveis começa com a experiência do histórico
+    const t = loadHist();
+    const xp = (t.maos || 0) * 7 + (t.batidas || 0) * 10 + (t.galos || 0) * 10 + (t.partidasVencidas || 0) * 30 + (t.missoesDias || 0) * 50;
+    s = { xp, inicio: xp };
+    store.set(NV_KEY, JSON.stringify(s));
+  }
+  return s;
+}
+const meuNivel = () => nivelDe(nvEstado().xp).n;
+// Bolinha do nível no avatar dos robôs offline: sempre o mesmo para o mesmo nome
+function nivelDoRobo(nome) {
+  let h = 7; for (const ch of String(nome || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return 1 + Math.floor(Math.pow((h % 1000) / 1000, 1.8) * 24);
+}
+let xpDaMao = 0;
+function ganharXP(pts, porque) {
+  if (!pts) return;
+  const s = nvEstado(), antes = nivelDe(s.xp);
+  s.xp += pts; store.set(NV_KEY, JSON.stringify(s));
+  xpDaMao += pts;
+  const depois = nivelDe(s.xp);
+  try { desenharFaixaNv(); } catch (e) {}
+  if (depois.n > antes.n) {
+    track('nivel-' + depois.n);
+    const novo = depois.titulo !== antes.titulo;
+    setTimeout(() => aviso(`Nível ${depois.n}!`, novo ? `Novo título: ${depois.titulo}` : `Você é ${depois.titulo}. Bora pro nível ${depois.n + 1}!`, 3600), 2200);
+  }
+}
+// Conta a experiência das jogadas (você é sempre a cadeira 0, offline e online)
+const nvVistos = new WeakSet();
+function contarXP() {
+  const evs = G && G.events;
+  if (!evs || !evs.length || nvVistos.has(evs) || seatMe !== 0) return;
+  nvVistos.add(evs);
+  let pts = 0;
+  for (const ev of evs) {
+    if (ev.type === 'galo' && ev.p === 0) pts += 10;
+    if (ev.type === 'batida' && ev.p === 0) pts += ev.carroca ? 15 : 10;
+  }
+  const r = G.result;
+  if (G.phase === 'handEnd' && r && evs.some(e => e.type === 'batida' || e.type === 'fechado')) {
+    pts += 5;
+    const venceu = r.kind === 'batida' ? TEAM(r.p) : r.team;
+    if (venceu === 0) pts += 5;
+    if (r.matchWinner === 0) pts += 30;
+  }
+  ganharXP(pts);
+}
+const trackOfflineNv = trackOffline;
+trackOffline = function () { try { contarXP(); } catch (e) {} return trackOfflineNv.apply(this, arguments); };
+// Quanto ganhou na mão: uma linha no resultado da mão e na festa da partida
+function linhaXP(onde, como) {
+  if (!xpDaMao || !onde) return;
+  const v = nivelDe(nvEstado().xp);
+  onde.insertAdjacentHTML(como, `<p class="xp-linha"><b>+${xpDaMao}</b> de experiência · Nível ${v.n}${v.precisa ? ` <span>(${v.dentro}/${v.precisa})</span>` : ''}</p>`);
+  xpDaMao = 0;
+}
+const showResultNv = showResult;
+showResult = function () {
+  showResultNv.apply(this, arguments);
+  try { const b = $('#sheet #nextBtn'); if (b && !$('#sheet .xp-linha')) linhaXP(b, 'beforebegin'); } catch (e) {}
+};
+const festaNv = festa;
+festa = function () {
+  festaNv.apply(this, arguments);
+  try { const c = $('#festaCard'), v = c && c.querySelector('.xp-linha'); if (v) v.remove(); linhaXP($('#festaOk'), 'beforebegin'); } catch (e) {}
+};
+// Bolinha do nível nos cartões da mesa (offline: robôs com nível fixo; online: o nível que cada um mandou)
+const renderNv = render;
+render = function () {
+  renderNv.apply(this, arguments);
+  try {
+    if (!G) return;
+    for (const pos of [1, 2, 3]) {
+      const el = $(`.seat[data-pos="${pos}"] .av`); if (!el) continue;
+      const p = (base() + pos) % 4;
+      let nv = null;
+      if (mode === 'on' && typeof cadDe === 'function') { const c = cadDe(pos); nv = c ? c.nv || 1 : null; }
+      else if (G.names && G.names[p]) nv = nivelDoRobo(G.names[p]);
+      if (nv) el.dataset.nv = nv; else delete el.dataset.nv;
+    }
+    // o seu nível numa bolinha no seu avatar, no rodapé (o texto continua "Você · parceiro de ...")
+    const img = $('#meName > img');
+    if (img && seatMe === 0) { const w = document.createElement('span'); w.className = 'me-av'; w.dataset.nv = meuNivel(); img.replaceWith(w); w.appendChild(img); }
+  } catch (e) {}
+};
+// Faixa no início: nível, título e a barrinha até o próximo
+(function () {
+  const lead = $('#homeName') && $('#homeName').closest('p'); if (!lead) return;
+  lead.insertAdjacentHTML('afterend', `<button type="button" class="nv-faixa" id="nvFaixa" hidden>
+    <span class="nv-num" id="nvNum"></span><span class="nv-tx"><b id="nvTit"></b><span class="nv-barra"><i id="nvBar"></i></span><small id="nvFalta"></small></span></button>`);
+  $('#nvFaixa').addEventListener('click', abrirNivel);
+})();
+function desenharFaixaNv() {
+  const f = $('#nvFaixa'); if (!f) return;
+  f.hidden = !profile; if (f.hidden) return;
+  const v = nivelDe(nvEstado().xp);
+  $('#nvNum').textContent = v.n;
+  $('#nvTit').textContent = `Nível ${v.n} · ${v.titulo}`;
+  $('#nvBar').style.width = v.precisa ? `${Math.round(100 * v.dentro / v.precisa)}%` : '100%';
+  $('#nvFalta').textContent = v.precisa ? `Faltam ${v.precisa - v.dentro} de experiência para o nível ${v.n + 1}` : 'Nível máximo. Você é lenda!';
+}
+function abrirNivel() {
+  const v = nivelDe(nvEstado().xp);
+  const titulos = TITULOS_NV.slice().reverse().map(([k, t]) => `<li class="${v.n >= k ? 'ok' : ''}"><span>Nível ${k}</span><b>${esc(t)}</b></li>`).join('');
+  const regras = XP_REGRAS.map(([t, p]) => `<li><span>${esc(t)}</span><b>+${p}</b></li>`).join('');
+  openSheet('info', `<p class="eyebrow">Seu nível</p><h2 id="sheetTitle">Nível ${v.n} · ${esc(v.titulo)}</h2>
+    <div class="nv-grande"><span class="nv-barra"><i style="width:${v.precisa ? Math.round(100 * v.dentro / v.precisa) : 100}%"></i></span>
+    <small>${v.precisa ? `${v.dentro} de ${v.precisa} para o nível ${v.n + 1}` : 'Nível máximo'}</small></div>
+    <p class="es-gk">Como ganhar experiência</p><ul class="nv-lista">${regras}</ul>
+    <p class="es-gk">Títulos</p><ul class="nv-lista nv-titulos">${titulos}</ul>
+    <p class="note">Vale no jogo offline e no online. Na mesa online, todo mundo vê o seu nível na bolinha do avatar.</p>
+    <button type="button" class="primary" id="nvJogar" style="width:100%">Jogar agora</button>
+    <button type="button" class="secondary" id="nvFechar" style="width:100%;margin-top:8px">Fechar</button>`);
+  $('#nvJogar').addEventListener('click', () => { closeSheet(); $('#goOffline').click(); });
+  $('#nvFechar').addEventListener('click', closeSheet);
+  track('nivel-aberto');
+}
+const renderHomeNv = renderHome;
+renderHome = function () { renderHomeNv.apply(this, arguments); try { desenharFaixaNv(); } catch (e) {} };
 
 
 // ---- Desenho das peças ----

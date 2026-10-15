@@ -63,7 +63,7 @@ async function novaMesa(req, env, origin) {
   for (let k = 0; k < 8; k++) {
     const codigo = String(10000 + Math.floor(Math.random() * 90000));
     const stub = env.MESA.get(env.MESA.idFromName(codigo));
-    const res = await stub.fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, codigo }) });
+    const res = await stub.fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, nv: b.nv, codigo }) });
     if (res.status === 201) {
       await env.DB.prepare('INSERT INTO mesas_criadas (marca, criado_em) VALUES (?, ?)').bind(marca, Date.now()).run();
       return json({ codigo }, 201, origin);
@@ -80,7 +80,7 @@ async function mesaRapida(req, env, origin) {
   const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM mesas_criadas WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();
   if (r && r.n >= MESAS_POR_HORA) return json({ erro: 'muitas' }, 429, origin);
   const res = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila', { method: 'POST',
-    body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro }) });
+    body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro, nv: b.nv }) });
   const j = await res.json().catch(() => ({}));
   if (res.status === 201) await env.DB.prepare('INSERT INTO mesas_criadas (marca, criado_em) VALUES (?, ?)').bind(marca, Date.now()).run();
   return json(j, res.status === 201 ? 200 : res.status, origin);

@@ -28,6 +28,10 @@ const REACAO = { intervalo: 2000, porMinuto: 8, maior: 23 };   // reações: só
 const VIDA = 24 * 60 * 60 * 1000;    // a mesa some 24 h depois da última ação
 
 // Mesa (tema) escolhida por quem criou: todo mundo joga nela. Só o nome curto (madeira, ponte, teatro...).
+// Nível do jogador (1 a 50, vem do aparelho; não muda nada no jogo, só aparece no cartão). Robô ganha um nível
+// parecido com o de gente: quase sempre baixo ou médio, às vezes alto.
+const nivelOk = v => { const n = Math.floor(Number(v)); return n >= 1 && n <= 50 ? n : 1; };
+const nivelRobo = () => 1 + Math.floor(Math.pow(Math.random(), 1.8) * 24);
 const temaOk = v => typeof v === 'string' && /^[a-z][a-z0-9]{2,15}$/.test(v) ? v : null;   // manaus357 tem número
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 
@@ -105,7 +109,7 @@ export class Mesa {
     }
     for (let k = 0; k < 8; k++) {
       const codigo = String(10000 + Math.floor(Math.random() * 90000));
-      const r = await mesa(codigo).fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro, codigo, publica: true }) });
+      const r = await mesa(codigo).fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro, nv: b.nv, codigo, publica: true }) });
       if (r.status === 201) { l.unshift({ codigo, criada: agora }); return fim(codigo, true); }
       if (r.status === 400) return Response.json({ erro: 'dados' }, { status: 400 });
     }
@@ -177,7 +181,7 @@ export class Mesa {
     const av = /^[a-z0-9_-]{1,16}$/i.test(String(b.av || '')) ? String(b.av) : null;
     let bairro = limpa(b.bairro, 28);
     if (bairro.length < 2 || nomeOfensivo(bairro)) bairro = null;
-    return { id, nome, av, bairro, bot: false, saiu: false };
+    return { id, nome, av, bairro, nv: nivelOk(b.nv), bot: false, saiu: false };
   }
 
   // ---------- Mensagens dos celulares ----------
@@ -231,7 +235,7 @@ export class Mesa {
     const f = (m.fila || []).findIndex(c => c.id === quem.id);
     if (p < 0 && f >= 0) {
       // já estava na fila (voltou): continua esperando a vez
-      Object.assign(m.fila[f], { apoiador: quem.apoiador, doador: quem.doador, foto: quem.foto, turma: quem.turma });
+      Object.assign(m.fila[f], { apoiador: quem.apoiador, doador: quem.doador, foto: quem.foto, turma: quem.turma, nv: quem.nv });
       att.id = quem.id; ws.serializeAttachment(att);
       m.ultimo = Date.now(); await this.salvar(); this.espalhar();
       return;
@@ -240,7 +244,7 @@ export class Mesa {
       // voltou (ou abriu em outro aparelho): retoma a cadeira; se tinha saído, volta a jogar
       const c = m.cad[p];
       if (m.fase === 'espera') { c.nome = quem.nome; c.av = quem.av; c.bairro = quem.bairro; }
-      c.apoiador = quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma;
+      c.apoiador = quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv;
       if (c.saiu) { c.saiu = false; c.bot = false; }
     } else if (m.fase === 'espera') {
       p = this.cadeiraNaEspera();
@@ -365,7 +369,7 @@ export class Mesa {
     const usados = m.cad.filter(Boolean).map(c => c.nome.toLowerCase());
     const nomes = BOT_NAMES.filter(n => !usados.includes(n.toLowerCase()));
     const k = vazias[Math.floor(Math.random() * vazias.length)];
-    m.cad[k] = { id: null, nome: nomes[Math.floor(Math.random() * nomes.length)], av: null, bot: true, saiu: false };
+    m.cad[k] = { id: null, nome: nomes[Math.floor(Math.random() * nomes.length)], av: null, nv: nivelRobo(), bot: true, saiu: false };
   }
   // Robôs da turma nas cadeiras vazias, com nomes que ninguém da mesa está usando
   sentarRobos() {
@@ -373,7 +377,7 @@ export class Mesa {
     const usados = m.cad.filter(Boolean).map(c => c.nome.toLowerCase());
     const livres = BOT_NAMES.filter(n => !usados.includes(n.toLowerCase()));
     for (let i = livres.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [livres[i], livres[j]] = [livres[j], livres[i]]; }
-    m.cad = m.cad.map(c => c || { id: null, nome: livres.pop(), av: null, bot: true, saiu: false });
+    m.cad = m.cad.map(c => c || { id: null, nome: livres.pop(), av: null, nv: nivelRobo(), bot: true, saiu: false });
   }
   recusar(ws, cod) { this.enviar(ws, { t: 'erro', cod }); try { ws.close(4000, cod); } catch (e) {} }
   nomeUnico(nome, p) {
@@ -566,7 +570,7 @@ export class Mesa {
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, publica: !!m.publica, iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
-      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), on: c.bot ? true : this.conectado(p) } : null),
+      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p) } : null),
       jogo, agora: Date.now() };
   }
   enviar(ws, obj) { try { ws.send(JSON.stringify(obj)); } catch (e) {} }
