@@ -1,0 +1,23 @@
+commit 83e0b50 · 2026-10-16T20:19:15Z
+token (usuário): {"ok":true,"status":"active"}
+token (conta): {"ok":false,"status":null}
+subdomínio: gubfort
+wrangler: 4.151.1
+banco: f732778c-0b95-4c57-9811-da7b23322c82
+tabelas: código 0 🚣 Executed 32 queries in 2.39ms (0 rows read, 0 rows written)         "Total queries executed": 32,     "success": true, 
+publicar: código 0
+Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
+Uploaded api (6.87 sec)
+Deployed api triggers (3.04 sec)
+  https://api.gubfort.workers.dev
+chaves dos lembretes: 2 segredos já guardados
+saúde: {"ok":true,"servico":"dominomanauara","mesa":true,"pagamentos":true,"ia":true,"versao":"83e0b50"}
+mesa online: mesa 18255: fase espera, cadeira 0, 1 sentado
+ia das fotos: {"ia":true,"modelo":"@cf/meta/llama-4-scout-17b-16e-instruct","veredito":"aprovar","ms":3729}
+lembretes: {"chave_publica":true}
+asaas: chave guardada no Cloudflare (código 0)
+asaas conta: {"empresa":"Gustavo Bezerra Fortunato","site":null,"situacao":"APPROVED","erro":null}
+asaas aviso de pagamento (webhook): já cadastrado
+asaas cobrança de teste: {"abriu":true,"erro":null,"detalhe":null}
+asaas: cobrança de teste cancelada
+url: https://api.gubfort.workers.dev
