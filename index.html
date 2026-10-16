@@ -1468,6 +1468,16 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 @keyframes pulsaConvite{0%,100%{box-shadow:0 0 0 0 rgba(37,211,102,.55)}50%{box-shadow:0 0 0 8px rgba(37,211,102,0)}}
 @media (prefers-reduced-motion:reduce){.sala-convite.pulsa{animation:none}}
 
+/* 3.21: banner pequeno de apoio no topo do início */
+.ap-banner{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px 10px 10px;border-radius:16px;border:1.5px solid #c9a24a;
+  background:linear-gradient(100deg,#3d2815,#291a0d);color:#fff4de;text-align:left;cursor:pointer;font:inherit;box-shadow:0 8px 20px -14px rgba(0,0,0,.6)}
+.ap-banner:active{transform:scale(.99)}
+.ap-banner-ic{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#f3c25a;color:#2b1a0e;font-size:19px;line-height:1}
+.ap-banner-tx{flex:1;display:grid;gap:2px;min-width:0}
+.ap-banner-tx b{font-size:15.5px;font-weight:800;line-height:1.2;color:#f3c25a}
+.ap-banner-tx small{font-size:12.5px;line-height:1.3;color:#eadcc2}
+.ap-banner-vai{flex:none;font-size:26px;line-height:1;color:#f3c25a;padding-left:2px}
+
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
 #scrHome .sponsor{max-width:560px;width:100%;justify-self:center;margin-inline:auto}
@@ -1601,7 +1611,7 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
       <div class="foto-online" id="fotoOnline" hidden>
         <label class="dn-sw"><input type="checkbox" id="fotoOnlineSw"><span><b>Mostrar minha foto na mesa online</b><small id="fotoOnlineTx"></small></span></label>
       </div>
-      <button type="button" class="linkbtn foto-plano" id="fotoPlano" hidden>Com o Plano Apoiador, sua foto aparece na mesa online ›</button>
+      <button type="button" class="linkbtn foto-plano" id="fotoPlano" hidden>Sua foto na mesa online é para quem apoia o jogo: doe a partir de R$ 5 ou seja Apoiador ›</button>
       <p class="note" id="fotoNota">Com foto, os outros jogadores veem que você é gente de verdade: ela vai aparecer na mesa online, que está chegando. Não quer aparecer? Escolha um avatar.</p>
     </div>
     <div class="perfil-avisos" id="perfilAvisos" hidden><span id="perfilAvisosTx">🔔 Lembretes para jogar estão ligados.</span><button type="button" class="linkbtn" id="perfilAvisosOff">Desligar</button></div>
@@ -1615,6 +1625,7 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
       <button type="button" class="mechip" id="meChip" aria-label="Editar perfil: nome e foto"><span class="face" id="meChipFace"></span><span class="edit" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span></button>
     </div>
     <p class="lead">Fala, <b id="homeName"></b>. Bora pra mesa?</p>
+    <button type="button" class="ap-banner" id="apBanner" hidden><span class="ap-banner-ic" aria-hidden="true">★</span><span class="ap-banner-tx"><b id="apBannerT">Seja Apoiador</b><small id="apBannerS"></small></span><span class="ap-banner-vai" aria-hidden="true">›</span></button>
     <!-- Banner do patrocinador: primeira coisa da tela inicial -->
     <button type="button" class="rulescard" id="howBtn">
       <span class="rc-ic" id="rulesTile" aria-hidden="true"></span>
@@ -1766,18 +1777,11 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
       <p class="ap-niveis">♥ qualquer doação · ♥♥ a partir de R$ 30 · ♥♥♥ a partir de R$ 100, somando todas.</p>
       <p class="ap-cod" id="apDoaCodBox">Seu código de apoiador: <b id="apDoaCod"></b><small>Guarde. No celular novo, ele leva o selo e o avatar junto.</small></p>
     </div>
-    <p class="sala-lead" id="apLead">O Dominó Manauara é de graça e quer continuar assim, para a turma toda. Se o jogo está valendo a pena para você, ajude com o valor que der.</p>
-    <div class="ap-doacao">
-      <span class="ap-k">Faça uma doação</span>
-      <div class="ap-doa" id="apDoa">
-        <button type="button" data-p="doacao5"><b>R$ 5</b><span>Um cafezinho</span></button><button type="button" data-p="doacao10"><b>R$ 10</b><span>Um tacacá</span></button><button type="button" data-p="doacao20"><b>R$ 20</b><span>Um X&#8209;caboquinho</span><small>+ 30 dias de plano</small></button>
-      </div>
-      <div class="ap-doa-premio" id="apDoaPremio"></div>
-      <p class="note ap-nota">Pix ou cartão, na página segura do Asaas.</p>
-    </div>
+    <p class="sala-lead" id="apLead">O Dominó Manauara é de graça e quer continuar assim, para a turma toda. Com o Plano Apoiador você ganha uns extras e ajuda a manter a mesa de pé. Prefere só dar uma força? Faça uma doação.</p>
     <div class="ap-plano" id="apPlano">
-      <span class="ap-k">Quer uns extras? Plano Apoiador</span>
+      <span class="ap-k">Plano Apoiador</span>
       <ul class="ap-lista">
+        <li><span class="ap-ic" aria-hidden="true">◉</span><span><b>Sua foto na mesa online</b>, para a turma ver quem está jogando</span></li>
         <li><span class="ap-ic" aria-hidden="true">★</span><span><b>Selo de apoiador</b> ao lado do seu nome na mesa online</span></li>
         <li><span class="ap-ic" aria-hidden="true">✓</span><span><b>Jogo sem anúncios</b></span></li>
         <li><span class="ap-ic" aria-hidden="true">☺</span><span><b>Avatares exclusivos</b>: coroa, óculos escuros, bonés vermelho e azul de Parintins</span></li>
@@ -1788,6 +1792,14 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
         <button type="button" class="ap-preco destaque" data-p="anual"><em>Mais em conta</em><b>R$ 39,90</b><span>1 ano · sai por R$ 3,33 por mês</span></button>
       </div>
       <p class="note ap-nota">O plano também ajuda a manter o jogo de graça. Não renova sozinho: quando acabar, você escolhe se continua.</p>
+    </div>
+    <div class="ap-doacao">
+      <span class="ap-k">Ou faça uma doação</span>
+      <div class="ap-doa" id="apDoa">
+        <button type="button" data-p="doacao5"><b>R$ 5</b><span>Um cafezinho</span></button><button type="button" data-p="doacao10"><b>R$ 10</b><span>Um tacacá</span></button><button type="button" data-p="doacao20"><b>R$ 20</b><span>Um X&#8209;caboquinho</span><small>+ 30 dias de plano</small></button>
+      </div>
+      <div class="ap-doa-premio" id="apDoaPremio"></div>
+      <p class="note ap-nota">Pix ou cartão, na página segura do Asaas.</p>
     </div>
     <div class="ap-perso">
       <button type="button" class="secondary" id="apEstilo" style="width:100%">Escolher mesa e montar avatar</button>
@@ -2428,6 +2440,9 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.21', data: '16/10/2026', itens: ['Foto na mesa online agora é para quem apoia o jogo: Plano Apoiador ativo ou qualquer doação (a doação vale para sempre). Quem já tinha foto aprovada continua com ela.',
+    'Atalho "Seja Apoiador" no topo do início, no lugar do cartão grande lá embaixo.',
+    'Na tela de apoio, o Plano Apoiador vem primeiro, com a foto na mesa entre os extras; a doação vem logo depois.'] },
   { v: '3.20.5', data: '16/10/2026', itens: ['Correção: quem tinha uma mesa online guardada e voltava da página de pagamento (doação ou plano) era levado para a mesa online. Agora volta para onde estava. Ao recarregar o app dentro da mesa, continua voltando direto para ela.'] },
   { v: '3.20.4', data: '15/10/2026', itens: ['Doação e Plano Apoiador ligados para todos, por Pix ou cartão, na página segura do Asaas. O jogo continua de graça: o plano só dá extras visuais (selo, sem anúncios, avatares exclusivos e tudo do Personalizar liberado na hora).'] },
   { v: '3.20.3', data: '15/10/2026', itens: ['Partida nova (depois dos 200 pontos) agora começa com a carroça de sena, como o jogo novo.', 'As pedras ficam sempre centralizadas na mesa e maiores quando o jogo cresce: a mesa acompanha as pedras e reaproxima quando sobra espaço, deslizando suave.', 'Copa 357 Anos com a turma: embaixo do cartão da Copa tem "Chamar os amigos para a Copa", que já cria a mesa online na Manaus 357 e prepara o convite do WhatsApp.'] },
@@ -5173,7 +5188,7 @@ async function acompanharPedido(id, insistir) {
 }
 function obrigado(plano, ate) {
   const titulo = plano ? 'Você agora é Apoiador!' : 'Obrigado pela doação!';
-  const txt = plano ? (ate ? `Seu plano vale até ${dataBR(ate)}. Tudo do Personalizar já está liberado: mesas, comidas e a coroa no avatar.` : 'O plano ficou ligado no aparelho em que você tocou em pagar. Abra o jogo por lá.')
+  const txt = plano ? (ate ? `Seu plano vale até ${dataBR(ate)}. Já dá para mostrar a sua foto na mesa online (ligue no seu perfil), e tudo do Personalizar está liberado.` : 'O plano ficou ligado no aparelho em que você tocou em pagar. Abra o jogo por lá.')
     : 'Sua ajuda mantém o Dominó Manauara de graça para a turma toda.';
   openSheet('fb', `<p class="eyebrow">Apoie o jogo</p><h2 id="sheetTitle">${esc(titulo)}</h2><p>${esc(txt)}</p>
     ${plano && ate ? '<button type="button" class="primary" id="obgPerso">Personalizar agora</button>' : ''}
@@ -5187,7 +5202,7 @@ function obrigadoDoacao(j, meu, nivelAntes) {
   const n = meu ? nivelDoador() : 0, brinde = meu && j.brinde && j.ate;
   const avs = AVATARS.filter(a => a.doador);
   let txt = 'Sua ajuda mantém o Dominó Manauara de graça para a turma toda.';
-  if (n) txt += n > nivelAntes && nivelAntes > 0 ? ` Seu selo de doador subiu para ${coracoes(n)}!` : ` Você ganhou o selo ${coracoes(n)} na mesa online e o avatar do doador.`;
+  if (n) txt += n > nivelAntes && nivelAntes > 0 ? ` Seu selo de doador subiu para ${coracoes(n)}!` : ` Você ganhou o selo ${coracoes(n)} na mesa online e o avatar do doador, e já pode mostrar a sua foto na mesa online (ligue no seu perfil).`;
   openSheet('fb', `<p class="eyebrow">Apoie o jogo</p><h2 id="sheetTitle">Obrigado pela doação! ♥</h2><p>${esc(txt)}</p>
     ${n ? `<p class="ap-k" style="margin-top:4px">Avatar do doador</p><div class="obg-avs" id="obgAvs">${avs.map(a => `<button type="button" class="obg-av" data-av="${a.id}" aria-pressed="${!!(profile && profile.av === a.id)}" aria-label="Usar o avatar do doador"><img src="${avatarURI(a)}" alt=""><span>Usar</span></button>`).join('')}</div>` : ''}
     ${brinde ? `<p class="obg-brinde"><b>De presente:</b> 30 dias de Plano Apoiador, até ${esc(dataBR(j.ate))}. Sem anúncios e tudo do Personalizar liberado.</p><button type="button" class="primary" id="obgPerso">Personalizar agora</button>`
@@ -5253,7 +5268,7 @@ function renderApoioTela() {
     $('#apDoaCodBox').hidden = on || !d.codigo;
   }
   $('#apDoaPremio').hidden = !!dn;
-  if (!dn) $('#apDoaPremio').innerHTML = AVATARS.filter(a => a.doador).map(a => `<img src="${avatarURI(a)}" alt="">`).join('') + '<span>Quem doa ganha o selo ♥ na mesa online e o avatar do doador.</span>';
+  if (!dn) $('#apDoaPremio').innerHTML = AVATARS.filter(a => a.doador).map(a => `<img src="${avatarURI(a)}" alt="">`).join('') + '<span>Quem doa pode mostrar a foto na mesa online e ganha o selo ♥ e o avatar do doador.</span>';
   $('#apLead').hidden = on || !!dn;
   $('#apPlano').querySelector('.ap-k').textContent = on ? 'Renovar o Plano Apoiador' : 'Quer uns extras? Plano Apoiador';
   $$('#apPrecos .ap-preco span').forEach(s => { if (on && !s.dataset.orig) s.dataset.orig = s.textContent; });
@@ -5467,6 +5482,24 @@ renderHome = function () {
   const ver = podePedirApoio(true);
   $('#footApoio').hidden = !ver; $('#footApoioSep').hidden = !ver;
 };
+
+// ---------- Início: banner pequeno de apoio, logo no topo (3.21, no lugar do cartão grande lá embaixo) ----------
+// Sem plano: convida para o plano (foto na mesa e sem anúncios). Doador sem plano: só o plano (a foto ele já tem).
+// Com plano: some, e volta só nos últimos 5 dias para lembrar de renovar. Menor de 18 nunca vê.
+function renderApBanner() {
+  const b = $('#apBanner'); if (!b) return;
+  const p = planoLocal(), on = temPlano(), dias = on ? Math.ceil((p.ate - Date.now()) / 86400000) : 0;
+  let t = null, s = '';
+  if (!pagamentosAtivos() || !profile || menorDeIdade()) t = null;
+  else if (on) { if (dias <= 5) { t = `Seu plano acaba em ${dias} ${dias === 1 ? 'dia' : 'dias'}`; s = 'Renove para continuar com a foto na mesa e os extras.'; } }
+  else if (souDoador()) { t = 'Seja Apoiador'; s = 'Jogo sem anúncios e avatares exclusivos, por R$ 4,90.'; }
+  else { t = 'Seja Apoiador'; s = 'Sua foto na mesa e jogo sem anúncios, a partir de R$ 4,90.'; }
+  b.hidden = !t;
+  if (t) { $('#apBannerT').textContent = t; $('#apBannerS').textContent = s; }
+}
+$('#apBanner').addEventListener('click', () => { track('apoio-banner'); abrirApoio('home'); });
+const renderApoioBanner = renderApoio;
+renderApoio = function () { renderApoioBanner(); $('#apoioCard').hidden = true; renderApBanner(); };
 
 // ===== Patrocinadores cadastrados pelo dono (servidor) =====
 // Cada espaço (início, mesa, fim de partida, Monte a mesa) mostra um patrocinador no ar para aquele espaço;
@@ -6013,11 +6046,15 @@ $('#instaLink').addEventListener('click', () => track('instagram-inicio'));
 $('#footInsta').addEventListener('click', () => track('instagram-rodape'));
 
 // ===== Foto na mesa online =====
-// Qualquer adulto pode mostrar a foto (menor de 18 nunca). Uma IA confere na hora: foto comum aparece para os outros;
+// Quem apoia o jogo pode mostrar a foto (desde a 3.21; menor de 18 nunca). Uma IA confere na hora: foto comum aparece para os outros;
 // nudez, violência, ofensa, preconceito, política, droga e propaganda são recusadas. Na dúvida, o administrador olha.
 // Qualquer jogador pode denunciar: a foto sai da mesa na hora e volta para revisão. A foto aparece pequena, sem ampliar.
 const FOTOON = 'dmz-foto-online', FOTOENV = 'dmz-foto-enviada', FOTOESC = 'dmz-fotos-escondidas';
 let fotoStatus = null, fotoMotivo = null;
+// 3.21: a foto na mesa é para quem apoia (Plano Apoiador ativo ou qualquer doação). Quem já tinha foto aprovada antes
+// da regra mantém a foto atual: o servidor avisa isso no "liberada" do status. A trava de verdade fica no servidor.
+let fotoLibSrv = false;
+function fotoPode() { return (typeof temPlano === 'function' && temPlano()) || (typeof souDoador === 'function' && souDoador()) || fotoLibSrv; }
 function fotoOnlineLigada() { return store.get(FOTOON) === '1'; }
 const fotoMarca = f => f ? f.length + ':' + f.slice(-40) : '';
 function fotoOnlineURL(pub) { return CONFIG.api + '/foto/' + pub; }
@@ -6029,7 +6066,7 @@ async function fotoConferir() {
   if (!CONFIG.api || !fotoOnlineLigada()) { fotoStatus = null; return; }
   try {
     const r = await fetch(CONFIG.api + '/foto/status?aparelho=' + encodeURIComponent(meuId()));
-    if (r.ok) { const j = await r.json(); fotoStatus = j.status; fotoMotivo = j.motivo || null; if (screen === 'profile') renderFotoOnline(); }
+    if (r.ok) { const j = await r.json(); fotoStatus = j.status; fotoMotivo = j.motivo || null; fotoLibSrv = !!j.liberada; if (screen === 'profile') renderFotoOnline(); }
   } catch (e) {}
 }
 async function fotoEnviar() {
@@ -6044,6 +6081,7 @@ async function fotoEnviar() {
         : 'Foto enviada. Ela aparece na mesa online assim que for aprovada.');
       track('foto-online-' + fotoStatus); return;
     }
+    if (r.status === 403) { fotoLibSrv = false; toast('Sua foto na mesa online é para quem apoia o jogo. Doe a partir de R$ 5 ou seja Apoiador.'); return; }
     toast(r.status === 429 ? 'Muitas fotos hoje. Tente amanhã.' : 'Não deu para mandar a foto agora. Tente de novo.');
   } catch (e) { toast('Sem internet agora. A foto vai quando você salvar o perfil de novo.'); }
 }
@@ -6059,13 +6097,14 @@ const FOTO_TX = {
 };
 // No perfil: a chave aparece para quem tem foto e 18 anos ou mais
 function renderFotoOnline() {
-  const box = $('#fotoOnline');
-  box.hidden = !(CONFIG.api && draft.idade !== 'menor' && !!draft.photo);
-  $('#fotoPlano').hidden = true;
+  const box = $('#fotoOnline'), adulto = !!(CONFIG.api && draft.idade !== 'menor' && draft.photo), pode = fotoPode();
+  box.hidden = !(adulto && (pode || draft.fotoOnline));
+  $('#fotoPlano').hidden = !(adulto && !pode && typeof pagamentosAtivos === 'function' && pagamentosAtivos());
   if (box.hidden) return;
   $('#fotoOnlineSw').checked = !!draft.fotoOnline;
   const mudou = fotoMarca(draft.photo) !== store.get(FOTOENV);
-  $('#fotoOnlineTx').textContent = !draft.fotoOnline ? 'Os outros veem o seu avatar. Ligue para mandar a foto para aprovação.'
+  $('#fotoOnlineTx').textContent = !pode ? 'Sua foto só aparece na mesa online para quem apoia o jogo. Por enquanto, os outros veem o seu avatar.'
+    : !draft.fotoOnline ? 'Os outros veem o seu avatar. Ligue para mandar a foto para aprovação.'
     : mudou || !fotoStatus ? 'Ao salvar, a foto vai para aprovação. Depois de aprovada, aparece na mesa online.'
     : fotoStatus === 'recusada' && fotoMotivo ? `Não aprovada (${fotoMotivo}). Escolha outra foto: sem nudez, violência, ofensa, preconceito, política ou propaganda.`
     : FOTO_TX[fotoStatus] || FOTO_TX.pendente;
@@ -6081,7 +6120,7 @@ const renderProfileFoto = renderProfile;
 renderProfile = function () {
   renderProfileFoto();
   if (CONFIG.api && draft.idade !== 'menor')
-    $('#fotoNota').textContent = 'A foto fica neste celular. Na mesa online, os outros veem o seu avatar, ou a sua foto se você ligar a opção abaixo.';
+    $('#fotoNota').textContent = 'A foto fica neste celular. Na mesa online, os outros veem o seu avatar' + (fotoPode() ? ', ou a sua foto se você ligar a opção abaixo.' : '. A foto aparece lá para quem apoia o jogo.');
   renderFotoOnline();
 };
 $('#fotoOnlineSw').addEventListener('change', e => { draft.fotoOnline = e.target.checked; renderFotoOnline(); });
@@ -7316,7 +7355,7 @@ render = function () {
 // Faixa no início: nível, título e a barrinha até o próximo
 (function () {
   const lead = $('#homeName') && $('#homeName').closest('p'); if (!lead) return;
-  lead.insertAdjacentHTML('afterend', `<button type="button" class="nv-faixa" id="nvFaixa" hidden>
+  ($('#apBanner') || lead).insertAdjacentHTML('afterend', `<button type="button" class="nv-faixa" id="nvFaixa" hidden>
     <span class="nv-num" id="nvNum"></span><span class="nv-tx"><b id="nvTit"></b><span class="nv-barra"><i id="nvBar"></i></span><small id="nvFalta"></small></span></button>`);
   $('#nvFaixa').addEventListener('click', abrirNivel);
 })();

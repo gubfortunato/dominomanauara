@@ -3,10 +3,21 @@
 // propaganda são recusadas (e apagadas). Quando a IA fica em dúvida, a foto espera o administrador. Qualquer jogador
 // pode denunciar: a foto sai da mesa na hora, a IA olha de novo, e o administrador decide.
 // Menor de 18 anos nunca manda (o app nem oferece). Para os outros, a foto tem um código público próprio.
+// Desde a 3.21 a foto é para quem apoia: Plano Apoiador ativo ou qualquer doação paga. Quem já tinha foto aprovada
+// antes da regra mantém a foto atual; se trocar, vale a regra.
 import { moderar, MOTIVOS, TESTE } from './moderar.js';
 const MAX = 120000;   // base64 (≈ 90 KB)
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
-const espera = env => Number(env.IA_ESPERA ?? 600000);   // quanto esperar antes de pedir de novo para a IA
+const espera = env => Number(env.IA_ESPERA ?? 600000);
+export const FOTO_CORTE = Date.UTC(2026, 9, 16, 3, 0);   // 15/10/2026, 23h em Manaus: fotos aprovadas de antes disso continuam valendo
+const corte = env => Number(env.FOTO_CORTE || FOTO_CORTE);
+// Quem pode mostrar foto: plano ativo ou doação paga (qualquer valor, para sempre). Devolvida não conta.
+export async function fotoLiberada(env, aparelho) {
+  const p = await env.DB.prepare('SELECT ate FROM planos WHERE aparelho = ?').bind(aparelho).first();
+  if (p && p.ate > Date.now()) return true;
+  const d = await env.DB.prepare("SELECT 1 AS ok FROM pedidos WHERE aparelho = ? AND status = 'pago' AND produto LIKE 'doacao%' LIMIT 1").bind(aparelho).first();
+  return !!d;
+}   // quanto esperar antes de pedir de novo para a IA
 const hex = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b => b.toString(16).padStart(2, '0')).join('');
 // Passa a foto pela IA e aplica o resultado. denuncia: a foto foi denunciada (a IA só pode recusar; aprovar fica com o administrador)
 async function conferir(env, aparelho, denuncia) {
@@ -50,6 +61,7 @@ export async function enviar(req, env, origin, h) {
   if (!idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
   const m = String(b.dados || '').match(/^data:(image\/jpeg|image\/png|image\/webp);base64,([A-Za-z0-9+/=]+)$/);
   if (!m || m[2].length > MAX) return h.json({ erro: 'imagem' }, 400, origin);
+  if (!(await fotoLiberada(env, b.aparelho))) return h.json({ erro: 'apoio' }, 403, origin);   // foto nova: só para quem apoia
   const marca = await h.marcaDoDia(req, env);
   const t = await env.DB.prepare("SELECT COUNT(*) AS n FROM tentativas WHERE marca = ? AND tipo = 'foto' AND criado_em > ?").bind(marca, Date.now() - 86400000).first();
   if (t && t.n >= 8) return h.json({ erro: 'muitas' }, 429, origin);
@@ -64,12 +76,13 @@ export async function enviar(req, env, origin, h) {
 export async function status(env, origin, h, url, ctx) {
   const ap = url.searchParams.get('aparelho');
   if (!idOk(ap)) return h.json({ erro: 'aparelho' }, 400, origin);
-  const f = await env.DB.prepare('SELECT status FROM fotos WHERE aparelho = ?').bind(ap).first();
+  const f = await env.DB.prepare('SELECT status, criado_em FROM fotos WHERE aparelho = ?').bind(ap).first();
+  const liberada = (f && f.status === 'aprovada' && f.criado_em < corte(env)) || (await fotoLiberada(env, ap));
   if (f && f.status === 'pendente' && env.AI && ctx) {
     const i = await env.DB.prepare('SELECT tentou_em, veredito FROM fotos_ia WHERE aparelho = ?').bind(ap).first();
     if (!i || (!i.veredito && Date.now() - (i.tentou_em || 0) > espera(env))) ctx.waitUntil(conferir(env, ap, false).catch(() => {}));
   }
-  return h.json({ status: f ? f.status : null, motivo: f && f.status === 'recusada' ? await motivoDe(env, ap) : null }, 200, origin);
+  return h.json({ status: f ? f.status : null, motivo: f && f.status === 'recusada' ? await motivoDe(env, ap) : null, liberada: !!liberada }, 200, origin);
 }
 // POST /foto/apagar {aparelho}
 export async function apagar(req, env, origin, h) {
@@ -104,8 +117,10 @@ export async function denunciar(req, env, origin, h, ctx) {
 }
 // Para a mesa: a foto que os outros podem ver (aprovada)
 export async function fotoPublica(env, aparelho) {
-  const f = await env.DB.prepare("SELECT pub FROM fotos WHERE aparelho = ? AND status = 'aprovada'").bind(aparelho).first();
-  return f ? f.pub : null;
+  const f = await env.DB.prepare("SELECT pub, criado_em FROM fotos WHERE aparelho = ? AND status = 'aprovada'").bind(aparelho).first();
+  if (!f) return null;
+  if (f.criado_em < corte(env)) return f.pub;   // foto de antes da regra
+  return (await fotoLiberada(env, aparelho)) ? f.pub : null;
 }
 // ---------- Área do administrador ----------
 // GET /dono/fotos -> as que esperam aprovação e as denunciadas
