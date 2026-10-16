@@ -4,7 +4,7 @@
 // e, se demorar na vez dele, um robô joga por ele até voltar.
 // Mesa rápida: um objeto à parte (nome "fila") junta quem quer jogar com qualquer um. As mesas públicas
 // começam sozinhas depois de uma espera curta (robôs nas cadeiras vazias) e quem chega depois entra no lugar de um robô.
-import { newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, tkey, nomeOfensivo, BOT_NAMES, pedirPonto } from './motor.js';
+import { newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, reacaoRobo, tkey, nomeOfensivo, BOT_NAMES, pedirPonto } from './motor.js';
 import { nivelDoador } from './pagamentos.js';
 import { fotoPublica } from './fotos.js';
 import { pontuar, nomeDaTurma, apelido as apelidoNaTurma } from './turmas.js';
@@ -415,6 +415,7 @@ export class Mesa {
     if (!mv) return this.enviar(ws, { t: 'erro', cod: 'jogada' });
     applyMove(G, p, mv);
     await this.depoisDaAcao(null);
+    this.reacaoDosRobos();
   }
 
   async proxima(msg) {
@@ -508,18 +509,35 @@ export class Mesa {
     if (c.bot) {
       if (moves.length) applyMove(G, p, botChoose(G, p)); else applyPass(G, p);
       if (G.pedido) pedirPonto(G, p, true);   // robô sempre pede o ponto dele
-      return this.depoisDaAcao(null);
+      await this.depoisDaAcao(null);
+      return this.reacaoDosRobos();
     }
-    if (!moves.length) { applyPass(G, p); return this.depoisDaAcao(null); }
+    if (!moves.length) { applyPass(G, p); await this.depoisDaAcao(null); return this.reacaoDosRobos(); }
     // modo torneio: passou dos 20 s, o robô joga pela pessoa (e pede o ponto)
     const limite = G.torneio ? Math.min(this.T.torneio, this.conectado(p) ? this.T.torneio : this.T.ausente) : this.T.ausente;
     if ((G.torneio || !this.conectado(p)) && agora - m.turnoDesde >= limite - 50) {
       applyMove(G, p, botChoose(G, p));
       if (G.pedido) pedirPonto(G, p, true);
-      return this.depoisDaAcao(p);
+      await this.depoisDaAcao(p);
+      return this.reacaoDosRobos();
     }
     this.agendar(); await this.salvar();
     this.espalhar();   // atualiza quem está conectado
+  }
+  // Reações dos robôs (3.23): coerentes com o lance (galo, batida, ponto grande, passe) e com moderação. Só os robôs
+  // da turma do bairro; o robô que joga no lugar de quem saiu não fala por ninguém. O celular mostra no balão do robô.
+  reacaoDosRobos() {
+    const m = this.m, G = m && m.G;
+    if (!G || m.fase !== 'jogo') return;
+    const robos = m.cad.map((c, p) => c && c.bot && !c.saiu ? p : -1).filter(p => p >= 0);
+    if (!robos.length) return;
+    this.memRobos = this.memRobos || { ult: {}, global: 0 };
+    let r = null; try { r = reacaoRobo(G, G.events, robos, this.memRobos, Date.now()); } catch (e) {}
+    if (!r) return;
+    for (const ws of this.ctx.getWebSockets()) {
+      const a = ws.deserializeAttachment() || {};
+      if (a.id) this.enviar(ws, { t: 'reacao', p: r.p, k: r.k });
+    }
   }
   async depoisDaAcao(porRobo, extra) {
     const m = this.m;

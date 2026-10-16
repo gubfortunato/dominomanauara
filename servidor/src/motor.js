@@ -384,6 +384,125 @@ function armLayout(tiles, o, put) {
   }
 }
 
+// ===== Robô forte e reações dos robôs (3.23) =====
+// O robô forte pensa como jogador experiente: imagina vários jeitos de como as pedras escondidas podem estar
+// divididas (respeitando os números em que cada um já passou e quantas pedras cada um tem), simula o resto da mão
+// para cada jogada possível e escolhe a que mais rende para a dupla. Não vê a mão de ninguém.
+function botRapido(st, p, rnd) {   // usado só dentro da simulação: ponto na hora, bater, descartar pedra pesada
+  const mv = legalMoves(st, p), h = st.hands[p];
+  let best = mv[0], bv = -1e9;
+  for (const m of mv) {
+    const t = h[m.i], s = cloneT(st); place(s, t, m.side);
+    const v = tableScore(s) + (h.length === 1 ? 300 : 0) + pips(t) * 0.3 + (isDbl(t) ? 3 : 0) + rnd();
+    if (v > bv) { bv = v; best = m; }
+  }
+  return best;
+}
+function sortearMaos(st, p, rnd) {
+  const vistos = new Set(st.hands[p].map(tkey)); tableTiles(st).forEach(t => vistos.add(tkey(t)));
+  const resto = fullSet().filter(t => !vistos.has(tkey(t)));
+  const outros = [1, 2, 3].map(k => (p + k) % 4);
+  const ordem = outros.slice().sort((a, b) => (st.lacks[b] || []).length - (st.lacks[a] || []).length);
+  for (let tent = 0; tent < 60; tent++) {
+    const pool = resto.slice();
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    const maos = {}; let ok = true;
+    for (const q of ordem) {
+      const precisa = st.hands[q].length, falta = st.lacks[q] || [];
+      maos[q] = [];
+      for (let i = 0; i < pool.length && maos[q].length < precisa; i++) {
+        const t = pool[i]; if (falta.includes(t[0]) || falta.includes(t[1])) continue;
+        maos[q].push(t); pool.splice(i, 1); i--;
+      }
+      if (maos[q].length < precisa) { ok = false; break; }
+    }
+    if (ok) return maos;
+  }
+  return null;
+}
+function copiaParaSimular(st) {
+  const s = JSON.parse(JSON.stringify(Object.assign({}, st, { events: [], names: null, history: null })));
+  return s;
+}
+function botForte(st, p, n, rnd) {
+  rnd = rnd || Math.random; n = n || 100;
+  const mv = legalMoves(st, p);
+  if (mv.length <= 1) return mv[0] || null;
+  const tot = new Array(mv.length).fill(0), time = TEAM(p);
+  let feitas = 0;
+  for (let k = 0; k < n; k++) {
+    const maos = sortearMaos(st, p, rnd); if (!maos) break;
+    feitas++;
+    for (let i = 0; i < mv.length; i++) {
+      const s = copiaParaSimular(st);
+      for (const q in maos) s.hands[q] = maos[q].map(t => t.slice());
+      const a = s.score.slice();
+      applyMove(s, p, mv[i]); if (s.pedido && s.pedido.team === TEAM(p)) pedirPonto(s, p, true);
+      for (let g = 0; g < 120 && s.phase === 'play'; g++) {
+        const q = s.turn;
+        if (legalMoves(s, q).length) { applyMove(s, q, botRapido(s, q, rnd)); if (s.pedido && s.pedido.team === TEAM(q)) pedirPonto(s, q, true); }
+        else applyPass(s, q);
+      }
+      tot[i] += (s.score[time] - a[time]) - (s.score[1 - time] - a[1 - time]);
+    }
+  }
+  if (!feitas) return botChoose(st, p, rnd);
+  let b = 0; for (let i = 1; i < mv.length; i++) if (tot[i] > tot[b]) b = i;
+  return mv[b];
+}
+
+// Reações dos robôs: só em lance que importa, coerentes com quem é parceiro e quem é adversário, e com moderação
+// (cada robô no máximo uma vez a cada 30 s; entre dois robôs quaisquer, 8 s). Os números são a posição da frase na
+// lista de reações do jogo (a mesma da mesa online).
+const RX = { boaParceiro: 0, voMermo: 1, leseira: 2, bateLogo: 3, segura: 4, taFacil: 5, hojeGalo: 6, bora: 7, palmas: 8, risada: 9,
+  susto: 10, fogo: 11, caroco: 12, chibata: 13, teleze: 14, bubuia: 15, tacaca: 17, deuGalo: 18, abiu: 19, nemComNojo: 20, tucupi: 22 };
+function reacaoRobo(st, evs, robos, mem, agora, rnd) {
+  rnd = rnd || Math.random;
+  if (!evs || !evs.length || !robos || !robos.length) return null;
+  mem.ult = mem.ult || {};
+  const ehRobo = q => robos.includes(q), livre = (q, forte) => agora - (mem.ult[q] || 0) >= (forte ? 12000 : 30000);
+  if (agora - (mem.global || 0) < 8000) return null;
+  const sorteia = l => l[Math.floor(rnd() * l.length)];
+  const doTime = (time, quer) => robos.filter(q => TEAM(q) === time && (!quer || quer(q)));
+  const r = st.result;
+  let escolha = null;   // { p, k, chance, forte }
+  const ev = t => evs.find(e => e.type === t);
+  const galo = ev('galo'), batida = ev('batida'), jogada = ev('play'), passe = ev('pass');
+  if (r && r.matchWinner != null && (batida || ev('fechado'))) {
+    const q = sorteia(doTime(r.matchWinner) || []);
+    if (q != null) escolha = { p: q, k: sorteia([RX.tucupi, RX.taFacil, RX.fogo]), chance: 0.6, forte: true };
+  } else if (galo) {
+    const nossos = doTime(galo.team), deles = doTime(1 - galo.team);
+    if (nossos.length && rnd() < 0.75) escolha = { p: ehRobo(galo.p) ? galo.p : sorteia(nossos), k: sorteia([RX.deuGalo, RX.hojeGalo, RX.fogo]), chance: 0.8, forte: true };
+    else if (deles.length) escolha = { p: sorteia(deles), k: sorteia([RX.nemComNojo, RX.caroco, RX.susto]), chance: 0.5, forte: true };
+  } else if (batida) {
+    const bt = batida.team;
+    if (ehRobo(batida.p)) escolha = { p: batida.p, k: sorteia([RX.chibata, RX.segura, RX.voMermo]), chance: 0.6 };
+    else if (doTime(bt).length) escolha = { p: sorteia(doTime(bt)), k: sorteia([RX.boaParceiro, RX.palmas]), chance: 0.6 };
+    else if (doTime(1 - bt).length) escolha = { p: sorteia(doTime(1 - bt)), k: sorteia([RX.caroco, RX.teleze]), chance: 0.35 };
+  } else if (jogada && jogada.pts >= 20) {
+    const tm = TEAM(jogada.p);
+    if (ehRobo(jogada.p)) escolha = { p: jogada.p, k: sorteia([RX.chibata, RX.segura, RX.voMermo]), chance: 0.6 };
+    else if (doTime(tm).length) escolha = { p: sorteia(doTime(tm)), k: sorteia([RX.boaParceiro, RX.palmas]), chance: 0.6 };
+    if ((!escolha || rnd() < 0.4) && doTime(1 - tm).length) escolha = { p: sorteia(doTime(1 - tm)), k: sorteia([RX.caroco, RX.susto, RX.teleze]), chance: 0.4 };
+  } else if (passe && passe.pts && !passe.voided) {
+    // o adversário passou e a dupla do robô ganhou 20: provoca de leve, de vez em quando
+    const q = sorteia(doTime(passe.team));
+    if (q != null) escolha = { p: q, k: sorteia([RX.abiu, RX.risada, RX.bubuia]), chance: 0.15 };
+  } else if (jogada && st.phase === 'play') {
+    // o parceiro ficou com uma pedra só: "Bate logo!"
+    const parc = (jogada.p + 2) % 4;
+    if (st.hands[jogada.p].length === 1 && ehRobo(parc)) escolha = { p: parc, k: RX.bateLogo, chance: 0.04 };
+    else {
+      const tm = TEAM(jogada.p);
+      if (jogada.pts && st.score[tm] - st.score[1 - tm] >= 80 && doTime(tm).length) escolha = { p: sorteia(doTime(tm)), k: RX.taFacil, chance: 0.12 };
+    }
+  }
+  if (!escolha || escolha.p == null || !livre(escolha.p, escolha.forte) || rnd() >= escolha.chance) return null;
+  mem.ult[escolha.p] = agora; mem.global = agora;
+  return { p: escolha.p, k: escolha.k };
+}
+
 const NOME_RUIM_PARTE = ['porra', 'caralh', 'buceta', 'boceta', 'xoxota', 'xereca', 'piroca', 'punheta', 'siririca', 'arrombad',
   'filhodaputa', 'fdp', 'fodase', 'fodido', 'fudido', 'foder', 'putaria', 'vagabund', 'cuzao', 'cusao', 'vadia', 'prostitut',
   'traveco', 'retardad', 'nazista', 'hitler', 'estupr', 'pedofil', 'viadinho', 'porno', 'merda', 'bosta', 'cacete', 'pqp',
@@ -403,4 +522,4 @@ function nomeOfensivo(nome) {
   return NOME_RUIM_PALAVRA.some(w => tudo === w || tudoJ === junta(w) || palavras.some(p => p === w || junta(p) === junta(w)));
 }
 const BOT_NAMES = ["Raimundo", "Nonato", "Socorro", "Tonhão", "Chiquinho", "Graça", "Tião", "Conceição", "Bené", "Rosinha", "Zeca", "Arlindo", "Cleide", "Juca", "Lucinha", "Mané", "Dico", "Nazaré", "Mundico", "Dita", "Piaba", "Chica", "Curica", "Dorinha", "Valdir", "Zuleide", "Deco", "Tetê", "Dodó", "Ciça"];
-export { TEAM, TARGET, tkey, isDbl, pips, newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, openEnds, tableSum, nomeOfensivo, BOT_NAMES, pedirPonto };
+export { TEAM, TARGET, tkey, isDbl, pips, newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, botForte, reacaoRobo, openEnds, tableSum, nomeOfensivo, BOT_NAMES, pedirPonto };
