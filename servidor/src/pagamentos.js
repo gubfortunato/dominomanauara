@@ -64,6 +64,13 @@ async function contaDe(env, aparelho) {
   return { ate: p && p.ate ? p.ate : null, codigo: p ? p.codigo : null, doador: await doadorDe(env, aparelho) };
 }
 
+// O Asaas desliga a chave de API que fica 3 meses sem uso (e apaga em 6). Uma leitura por dia (só os dados da conta)
+// mantém a chave viva mesmo num mês sem vendas. Roda na rotina diária, só na passada das 21h UTC.
+export async function manterChaveAsaas(env) {
+  if (!env.ASAAS_API_KEY || new Date().getUTCHours() !== 21) return;
+  await asaas(env, '/myAccount/commercialInfo');
+}
+
 // POST /pagar {produto, aparelho} -> cria a página de pagamento do Asaas e devolve o link
 export async function pagar(req, env, origin, h) {
   if (!env.ASAAS_API_KEY) return h.json({ erro: 'sem-pagamento' }, 503, origin);
@@ -75,17 +82,19 @@ export async function pagar(req, env, origin, h) {
   const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM pedidos WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();
   if (r && r.n >= PEDIDOS_POR_HORA) return h.json({ erro: 'muitos' }, 429, origin);
   const id = hex(10), site = (env.SITE_URL || h.SITE).replace(/\/$/, '');
+  // Sem externalReference de propósito: a conta do Asaas é a mesma do alug+, e o aviso de pagamento do alug+ usa esse campo
+  // como id de usuário (sem ele, o alug+ ignora a cobrança). O pedido é achado pelo id do checkout.
   const res = await asaas(env, '/checkouts', 'POST', {
-    billingTypes: ['PIX', 'CREDIT_CARD'], chargeTypes: ['DETACHED'], minutesToExpire: 60, externalReference: id,
+    billingTypes: ['PIX', 'CREDIT_CARD'], chargeTypes: ['DETACHED'], minutesToExpire: 60,
     callback: { successUrl: `${site}/?pago=${id}`, cancelUrl: `${site}/?pago=cancelado`, expiredUrl: `${site}/?pago=expirado` },
     items: [{ name: prod.nome, description: prod.desc, quantity: 1, value: prod.valor }]
   });
-  if (res.status !== 200 || !res.j.link) {
+  if (res.status !== 200 || !res.j.link || !res.j.id) {
     const det = res.j && res.j.errors && res.j.errors[0] ? res.j.errors[0].description : 'código ' + res.status;
     return h.json({ erro: 'asaas', detalhe: String(det).slice(0, 200) }, 502, origin);
   }
   await env.DB.prepare('INSERT INTO pedidos (id, checkout, aparelho, produto, valor, status, criado_em, marca) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-    .bind(id, res.j.id || null, idOk(b.aparelho) ? b.aparelho : null, b.produto, prod.valor, 'aberto', Date.now(), marca).run();
+    .bind(id, String(res.j.id), idOk(b.aparelho) ? b.aparelho : null, b.produto, prod.valor, 'aberto', Date.now(), marca).run();
   return h.json({ pedido: id, link: res.j.link, checkout: res.j.id }, 201, origin);
 }
 
