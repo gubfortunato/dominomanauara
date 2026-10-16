@@ -250,9 +250,9 @@ function endHand(st, info) {
 function nextHand(st) {
   const r = st.result;
   if (r && r.matchWinner != null) {
-    // Jogo novo começa com a carroça de sena; partida nova segue com quem jogou a última pedra.
+    // Jogo novo e partida nova (depois dos 200) começam com a carroça de sena.
     if (r.gameWinner != null) { const fresh = newGame(st.names); fresh.torneio = st.torneio; Object.keys(st).forEach(k => delete st[k]); Object.assign(st, fresh); }
-    else { st.partida++; st.score = [0, 0]; st.handNo = 0; }
+    else { st.partida++; st.score = [0, 0]; st.handNo = 0; st.nextStart = { mode: 'sena' }; }
   }
   startHand(st);
 }

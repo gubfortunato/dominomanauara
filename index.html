@@ -1459,6 +1459,14 @@ html[data-mesa="igreja"] .table.wood{--wood-1:#4b5a6a;--wood-2:#1f2630;--wood-ed
   background:radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,.42)), linear-gradient(rgba(24,29,37,.66), rgba(24,29,37,.66)), var(--img-igreja-sw) center bottom/cover no-repeat, #1f2630}
 html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d0b22;--wood-edge:#c9a13a;
   background:radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,.42)), linear-gradient(rgba(10,8,26,.55), rgba(10,8,26,.36) 30%, rgba(10,8,26,.36)), var(--img-pontanegra-sw) center bottom/cover no-repeat, #0d0b22}
+/* 3.20.3: atalho da Copa com os amigos, logo embaixo do cartão da Copa */
+.copa-amigos{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:-6px;padding:12px 16px;border-radius:0 0 16px 16px;border:1.5px solid #c9a24a;border-top:0;
+  background:#2a1d52;color:#f3c25a;font:800 15px/1.2 var(--font-body);cursor:pointer}
+.copa-amigos svg{width:20px;height:20px;flex:none}
+.copa-amigos:active{transform:scale(.99)}
+.sala-convite.pulsa{animation:pulsaConvite 1.1s ease-in-out infinite}
+@keyframes pulsaConvite{0%,100%{box-shadow:0 0 0 0 rgba(37,211,102,.55)}50%{box-shadow:0 0 0 8px rgba(37,211,102,0)}}
+@media (prefers-reduced-motion:reduce){.sala-convite.pulsa{animation:none}}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -2227,9 +2235,9 @@ function endHand(st, info) {
 function nextHand(st) {
   const r = st.result;
   if (r && r.matchWinner != null) {
-    // Jogo novo começa com a carroça de sena; partida nova segue com quem jogou a última pedra.
+    // Jogo novo e partida nova (depois dos 200) começam com a carroça de sena.
     if (r.gameWinner != null) { const fresh = newGame(st.names); fresh.torneio = st.torneio; Object.keys(st).forEach(k => delete st[k]); Object.assign(st, fresh); }
-    else { st.partida++; st.score = [0, 0]; st.handNo = 0; }
+    else { st.partida++; st.score = [0, 0]; st.handNo = 0; st.nextStart = { mode: 'sena' }; }
   }
   startHand(st);
 }
@@ -2420,6 +2428,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.20.3', data: '15/10/2026', itens: ['Partida nova (depois dos 200 pontos) agora começa com a carroça de sena, como o jogo novo.', 'As pedras ficam sempre centralizadas na mesa e maiores quando o jogo cresce: a mesa acompanha as pedras e reaproxima quando sobra espaço, deslizando suave.', 'Copa 357 Anos com a turma: embaixo do cartão da Copa tem "Chamar os amigos para a Copa", que já cria a mesa online na Manaus 357 e prepara o convite do WhatsApp.'] },
   { v: '3.20.2', data: '15/10/2026', itens: ['O seu nível agora aparece ao lado do "Você", embaixo da mesa, sem ficar coberto pelo aviso de "Sua vez de jogar!".'] },
   { v: '3.20.1', data: '15/10/2026', itens: ['Novos títulos nos níveis 25 (Fera do bairro), 35 (Terror da mesa) e 45 (Cobra criada): sempre tem um próximo título por perto.',
     'Sequência de vitórias: a cada 3 partidas ganhas seguidas, +20 de experiência. Perder zera a sequência.',
@@ -4080,36 +4089,95 @@ function mostrarFala(b, t) {
 }
 
 
-// ---- Câmera da mesa: parada enquanto a fileira cabe; só afasta quando precisa de espaço, e nunca volta a aproximar na mesma mão ----
-// (antes ela recentralizava e mudava o zoom a cada jogada, e o vai e vem deixava o jogador tonto)
+// ---- Câmera da mesa (3.20.3): sempre centralizada nas pedras e o mais perto possível, deslizando suave ----
+// Antes ela ficava parada enquanto as pedras cabiam e só afastava (nunca reaproximava na mesma mão): as pedras ficavam
+// encostadas num canto e pequenas demais no fim da mão. Agora ela segue o centro das pedras e acerta o zoom, sempre
+// com uma animação curta (o vai e vem brusco era o que deixava tonto). Enquanto você arrasta, ela fica parada.
 let camMesa = null;
-function cameraMesa(minX, maxX, minY, maxY, Xmax, a) {
-  // Enquadra a mesa o mais perto possível (pedras grandes), e só mexe quando precisa:
-  // - não cabe a próxima pedra: afasta até caber, com uma folga para não mexer de novo na jogada seguinte;
-  // - sobrou muito espaço (dá para aumentar as pedras em mais de 30%): aproxima, uma vez;
-  // - no resto do tempo a mesa fica parada.
-  const m = 0.35, FOLGA = 1.03;   // margem e folga pequenas: pedras maiores quando a mesa enche
+function cameraMesa(minX, maxX, minY, maxY, Xmax, a, arrastando) {
+  const m = 0.35;
   const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
   let iw = Math.max(Math.min(2 * Xmax + 2.4, 13), maxX - minX + 2 * m), ih = Math.max(iw / a, maxY - minY + 2 * m);
   if (iw / ih < a) iw = ih * a; else ih = iw / a;
   const nova = k => ({ x: cx - iw * k / 2, y: cy - ih * k / 2, w: iw * k, h: ih * k, a, Xmax });
   const c = camMesa, n = G && G.chain ? G.chain.length : 0;
-  // recomeça na mão nova, ao girar o celular (proporção muda muito) ou se a largura da fileira mudou
+  // mão nova, celular girado ou fileira de outra largura: enquadra do zero
   if (!c || n <= 1 || Math.abs(c.a - a) / a > 0.08 || Math.abs(c.Xmax - Xmax) / Xmax > 0.05) return (camMesa = nova(1));
-  // diferença pequena de proporção (1 ou 2 pixels): só completa o lado que falta
-  if (Math.abs(c.a - a) > 1e-6) {
+  if (Math.abs(c.a - a) > 1e-6) {   // diferença pequena de proporção: só completa o lado que falta
     if (c.w / c.h < a) { const nw = c.h * a; c.x -= (nw - c.w) / 2; c.w = nw; } else { const nh = c.w / a; c.y -= (nh - c.h) / 2; c.h = nh; }
     c.a = a;
   }
-  const x0 = minX - m, x1 = maxX + m, y0 = minY - m, y1 = maxY + m;
-  const cabe = x0 >= c.x && x1 <= c.x + c.w && y0 >= c.y && y1 <= c.y + c.h;
-  if (cabe) return iw * FOLGA < c.w * 0.77 ? (camMesa = nova(FOLGA)) : c;
-  // não cabe, mas o tamanho atual comporta: só desliza o mínimo, sem mudar o tamanho das pedras
-  if (c.w >= x1 - x0 && c.h >= y1 - y0 && c.w <= iw * FOLGA * 1.3) {
-    c.x = Math.min(Math.max(c.x, x1 - c.w), x0); c.y = Math.min(Math.max(c.y, y1 - c.h), y0);
-    return c;
+  if (arrastando) {
+    // arrastando: não mexe (a ponta onde você vai soltar não pode fugir do dedo); só afasta se não couber
+    const cabe = minX - m >= c.x && maxX + m <= c.x + c.w && minY - m >= c.y && maxY + m <= c.y + c.h;
+    return cabe ? c : (camMesa = nova(1.04));
   }
-  return (camMesa = nova(FOLGA));
+  // o tamanho atual serve (as pedras cabem e não está longe demais): mantém o zoom e só centraliza
+  if (c.w >= iw && c.w <= iw * 1.08) return (camMesa = { x: cx - c.w / 2, y: cy - c.h / 2, w: c.w, h: c.w / a, a, Xmax });
+  // não cabe mais: afasta um pouco além do necessário (não mexe de novo na próxima jogada); sobrou espaço: aproxima
+  return (camMesa = nova(c.w < iw ? 1.04 : 1));
+}
+// Largura da fileira (até onde a linha vai antes de virar): escolhe a que deixa as pedras maiores nesta mesa,
+// testando as possíveis a cada jogada. Só troca se a ganhar pelo menos 6% (para não ficar rearrumando a mesa à toa);
+// enquanto você arrasta, não troca. Recomeça a cada mão com a largura de sempre.
+let xmAtual = null;
+function xmaxMelhor(W, H, a, Xpadrao) {
+  const n = G && G.chain ? G.chain.length : 0;
+  if (n <= 1 || xmAtual == null) return (xmAtual = Xpadrao);
+  if (drag && drag.moved) return xmAtual;
+  const m = 0.35;
+  const tam = X => {
+    const lay = layoutTable(G, X); let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    const g = p => { if (!p) return; const w = p.o === 'h' ? 1 : .5, h = p.o === 'h' ? .5 : 1; x0 = Math.min(x0, p.x - w); x1 = Math.max(x1, p.x + w); y0 = Math.min(y0, p.y - h); y1 = Math.max(y1, p.y + h); };
+    lay.main.forEach(g); (lay.U || []).forEach(g); (lay.D || []).forEach(g);
+    if (!isFinite(x0)) return 0;
+    let iw = Math.max(Math.min(2 * X + 2.4, 13), x1 - x0 + 2 * m), ih = Math.max(iw / a, y1 - y0 + 2 * m);
+    if (iw / ih < a) iw = ih * a;
+    return W / iw;
+  };
+  const atual = tam(xmAtual);
+  let melhor = xmAtual, bs = atual;
+  for (let X = 3.5; X <= 12.001; X += 0.5) { const t = tam(X); if (t > bs + 1e-9) { bs = t; melhor = X; } }
+  if (bs > atual * 1.06) xmAtual = melhor;
+  return xmAtual;
+}
+// Quando a mesa se rearruma (largura da fileira nova), as pedras deslizam para o lugar novo em vez de pular
+let posAnt = new Map();
+function deslizarPedras(svg, posMain, bTiles) {
+  const novo = new Map();
+  (G.chain || []).forEach((c, i) => { if (posMain[i]) novo.set(tkey([c.a, c.b]), posMain[i]); });
+  (bTiles || []).forEach(b => novo.set(b.key, b.pos));
+  const reduz = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduz && G.chain.length > 1 && Element.prototype.animate) for (const [k, p] of novo) {
+    const q = posAnt.get(k); if (!q || (Math.abs(q.x - p.x) < 1e-6 && Math.abs(q.y - p.y) < 1e-6 && q.o === p.o)) continue;
+    const g = svg.querySelector('.tk' + k); if (!g) continue;
+    if (q.o === p.o) g.animate([{ transform: `translate(${q.x - p.x}px, ${q.y - p.y}px)` }, { transform: 'translate(0px, 0px)' }], { duration: 340, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    else g.animate([{ opacity: 0.2 }, { opacity: 1 }], { duration: 340 });
+  }
+  posAnt = novo;
+}
+// Põe o enquadramento na mesa deslizando (≈ 1/4 de segundo). O valor final já fica marcado na hora, para quem mede a
+// mesa logo em seguida (o voo da pedra) mirar no lugar certo.
+let vbAnim = null;
+function porVistaMesa(svg, vb) {
+  const fim = [vb.x, vb.y, vb.w, vb.h], txt = v => v.map(f2).join(' ');
+  const atual = (svg.getAttribute('viewBox') || '').split(/\s+/).map(Number);
+  const reduz = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (vbAnim && vbAnim.fim.every((v, k) => Math.abs(v - fim[k]) < 1e-3)) return;   // já indo para lá
+  const de = vbAnim ? vbAnim.agora.slice() : atual;
+  if (vbAnim) cancelAnimationFrame(vbAnim.raf);
+  vbAnim = null;
+  svg.setAttribute('viewBox', txt(fim));
+  const mudou = de.length === 4 && de.every(isFinite) && de.some((v, k) => Math.abs(v - fim[k]) > 0.02);
+  if (!mudou || reduz || screen !== 'game') return;
+  const t0 = performance.now(), D = 260, ease = x => 1 - Math.pow(1 - x, 3);
+  const passo = agora => {
+    const e = ease(Math.min(1, (agora - t0) / D)), v = de.map((x, k) => x + (fim[k] - x) * e);
+    if (vbAnim) vbAnim.agora = v;
+    svg.setAttribute('viewBox', txt(v));
+    if (e < 1 && vbAnim) vbAnim.raf = requestAnimationFrame(passo); else vbAnim = null;
+  };
+  vbAnim = { fim, agora: de, raf: requestAnimationFrame(passo) };
 }
 
 // ---- Lembretes para jogar (notificações push) ----
@@ -4673,6 +4741,9 @@ function voltarMesa() {
   ON.vista = null; conectar(cod); show('sala');
 }
 function conviteTexto(cod) {
+  // na mesa da Copa (Manaus 357, até o dia 24/10), o convite fala da festa
+  if (ON.vista && ON.vista.tema === 'manaus357' && typeof COPA !== 'undefined' && Date.now() < COPA.fim)
+    return `🎉 Manaus faz 357 anos! Bora celebrar com uma partida de dominó? Entra na minha mesa da Copa 357 Anos no Dominó Manauara:\n${SITE_URL}#mesa=${cod}\n\nOu abra o app e digite o número da mesa: *${cod}*`;
   return `🁫 Bora jogar dominó comigo? Entra na minha mesa no Dominó Manauara:\n${SITE_URL}#mesa=${cod}\n\nOu abra o app e digite o número da mesa: *${cod}*`;
 }
 const NOME_POS = ['Você', 'Adversário', 'Parceiro', 'Adversário'];
@@ -6458,6 +6529,7 @@ festa = function (r, depois) {
 // Cartão da Copa no início (até o fim do dia 24/10)
 function cardCopa() {
   const velho = $('#copaCard'); if (velho) velho.remove();
+  const velhoAm = $('#copaAmigos'); if (velhoAm) velhoAm.remove();
   if (Date.now() >= COPA.fim || !profile) return;
   const ganhou = copaGanha(), hoje = copaHoje();
   const dias = Math.ceil((Date.parse(COPA.dia + 'T00:00:00-04:00') - Date.now()) / 86400000);
@@ -6470,6 +6542,22 @@ function cardCopa() {
   alvo.insertAdjacentHTML('beforebegin', `<button type="button" class="card wood copa-card" id="copaCard"><span class="ck">24/10 · Aniversário de Manaus</span><span class="ct">Copa 357 Anos</span><span class="cd">${esc(cd)}</span></button>`);
   // jogar pela Copa: a mesa fica a do aniversário (Manaus 357)
   $('#copaCard').addEventListener('click', () => { try { escolherMesa('manaus357'); mesaFixaUmaVez = true; } catch (e) {} track('copa-jogar'); $('#goOffline').click(); });
+  // Atalho para jogar a Copa com a turma: cria a mesa online já na Manaus 357 e destaca o convite do WhatsApp
+  // (o modo torneio fica desligado; quem criou liga na sala, se quiser)
+  if (typeof onlineAtivo === 'function' && onlineAtivo()) {
+    $('#copaCard').insertAdjacentHTML('afterend', `<button type="button" class="copa-amigos" id="copaAmigos"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm-8 1a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm8 1c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4Zm-8 .5c-.4 0-.9 0-1.4.1A4.6 4.6 0 0 1 8.6 17v2H1v-1.7c0-2 3.5-3.8 7-3.8Z"/></svg>Chamar os amigos para a Copa</button>`);
+    $('#copaAmigos').addEventListener('click', copaComAmigos);
+  }
+}
+async function copaComAmigos() {
+  track('copa-amigos');
+  try { escolherMesa('manaus357'); mesaFixaUmaVez = true; } catch (e) {}
+  $('#goOnline').click();
+  if (screen !== 'sala' || (ON.ativo && ON.cod)) return;   // já estava numa mesa: volta para ela
+  await criarMesa();
+  if (!ON.cod) return;
+  toast('Mesa da Copa criada! Agora chame a turma no WhatsApp.');
+  const z = $('#salaConvite'); if (z) { z.classList.add('pulsa'); setTimeout(() => z.classList.remove('pulsa'), 7000); }
 }
 const showResultCopa = showResult;
 showResult = function () { try { marcarCopa(); } catch (e) {} return showResultCopa.apply(this, arguments); };
@@ -7193,6 +7281,8 @@ const festaNv = festa;
 festa = function () {
   festaNv.apply(this, arguments);
   try { const c = $('#festaCard'), v = c && c.querySelector('.xp-linha'); if (v) v.remove(); linhaXP($('#festaOk'), 'beforebegin'); } catch (e) {}
+  // regra da saída na partida seguinte (3.20.3): sempre a carroça de sena
+  try { const c = $('#festaCard'); if (c && !c.querySelector('.festa-sena')) $('#festaOk').insertAdjacentHTML('beforebegin', '<p class="festa-cq festa-sena">A próxima partida começa com a carroça de sena.</p>'); } catch (e) {}
 };
 // Bolinha do nível nos cartões da mesa (offline: robôs com nível fixo; online: o nível que cada um mandou)
 const renderNv = render;
@@ -7420,6 +7510,7 @@ function renderBoard() {
   const base = Math.sqrt(112 * a) / 2;
   const pin = G.chain.length && G.chain[G.center].a === G.chain[G.center].b;
   Xmax = pin ? Math.max(5.5, Math.min(12, base * 1.2)) : Math.max(3.5, Math.min(10, base));   // fileira mais curta: a mesa usa a altura e as pedras ficam maiores
+  Xmax = xmaxMelhor(W, H, a, Xmax);   // 3.20.3: a largura que deixa as pedras maiores nesta mesa
   const lay = layoutTable(G, Xmax), pos = lay.main;
   const bTiles = [];
   for (const k of ['U', 'D']) ((G.bucho && G.bucho[k]) || []).forEach((t, j) => bTiles.push({ key: tkey([t.n, t.f]), pos: lay[k][j] }));
@@ -7429,8 +7520,8 @@ function renderBoard() {
   const grow = p => { const w = p.o === 'h' ? 1 : .5, h = p.o === 'h' ? .5 : 1; minX = Math.min(minX, p.x - w); maxX = Math.max(maxX, p.x + w); minY = Math.min(minY, p.y - h); maxY = Math.max(maxY, p.y + h); };
   pos.forEach(grow); bTiles.forEach(b => grow(b.pos)); if (showZones) zones.forEach(z => grow(z.pos));
   if (!isFinite(minX)) { minX = -1; maxX = 1; minY = -1; maxY = 1; }
-  const vb = cameraMesa(minX, maxX, minY, maxY, Xmax, a);
-  svg.setAttribute('viewBox', `${f2(vb.x)} ${f2(vb.y)} ${f2(vb.w)} ${f2(vb.h)}`);
+  const vb = cameraMesa(minX, maxX, minY, maxY, Xmax, a, showZones);
+  porVistaMesa(svg, vb);
   let html = '';
   if (!G.chain.length && !showZones && !dealing) {
     const ev = (G.events || []).find(e => e.type === 'start');
@@ -7447,6 +7538,7 @@ function renderBoard() {
       <text class="z-tx" x="${f2(p.x)}" y="${f2(p.y + .15)}">${z.side === 'C' ? 'solte aqui' : z.side === 'U' || z.side === 'D' ? 'bucho' : 'ponta'}</text></g>`;
   });
   svg.innerHTML = html;
+  try { deslizarPedras(svg, pos, bTiles); } catch (e) {}
   if (showZones) drag.zones = $$('#board .zone').map(g => ({ side: g.dataset.side, el: g.querySelector('.z-body'), g }));
   if (pendingFly) { const pf = pendingFly; pendingFly = null; flyIn(pf); }
 }
@@ -7724,7 +7816,7 @@ function showResult() {
       detail += `Garagem: ${r.garagemSum} pontos na mão de ${seatMe != null && TEAM(seatMe) === opp ? 'vocês' : duo(opp)}`;
       detail += r.garagem ? `${r.garagem !== r.garagemSum ? ` (vale ${r.garagem})` : ''}, que vão para ${teamName(TEAM(r.p))}. ` : ', que não chega a 5. ';
     }
-    detail += `Na próxima mão, ${r.p === seatMe ? 'você sai' : G.names[r.p] + ' sai'} com qualquer carroça.`;
+    detail += r.matchWinner != null ? 'Na próxima partida, sai quem tiver a carroça de sena.' : `Na próxima mão, ${r.p === seatMe ? 'você sai' : G.names[r.p] + ' sai'} com qualquer carroça.`;
   } else {
     title = 'Jogo fechado';
     detail = `Pontos na mão: ${teamName(0)} ${r.sums[0]}, ${teamName(1)} ${r.sums[1]}. `;
@@ -7765,7 +7857,7 @@ function showResult() {
 const RULES_HTML = `  <p class="eyebrow">Como se joga</p><h2 id="sheetTitle">Regras</h2>
   <ol class="rules">
     <li>Duas duplas, parceiros um de frente para o outro. Sete pedras para cada, sem monte. A vez gira pela esquerda.</li>
-    <li>Todo <b>jogo novo</b> começa com quem tem a <b>carroça de sena</b> (6|6). Nas outras mãos, inclusive na troca de partida, sai <b>quem bateu</b> na mão anterior, com qualquer carroça. Quem não tem carroça perde a vez e dá <b>20</b> aos adversários, e a saída passa para o próximo; <b>a saída é sempre com carroça</b>. Depois de <b>jogo fechado</b>, sai de novo quem tem a carroça de sena.</li>
+    <li>Todo <b>jogo novo</b> e toda <b>partida nova</b> (depois dos 200 pontos) começam com quem tem a <b>carroça de sena</b> (6|6). Nas outras mãos, sai <b>quem bateu</b> na mão anterior, com qualquer carroça. Quem não tem carroça perde a vez e dá <b>20</b> aos adversários, e a saída passa para o próximo; <b>a saída é sempre com carroça</b>. Depois de <b>jogo fechado</b>, sai de novo quem tem a carroça de sena.</li>
     <li><b>Pontos na mesa:</b> se a soma das pontas (incluindo o bucho) der múltiplo de 5, a dupla de quem jogou marca a soma. Carroça na ponta conta dobrado.</li>
     <li><b>Bucho:</b> a carroça de saída abre os dois lados depois que as duas pontas dela já têm pedra. Cada lado do bucho entra na soma das pontas assim que recebe a primeira pedra.</li>
     <li><b>Passe:</b> vale 20 para a dupla de quem jogou por último. Se quem passa é o parceiro de quem jogou, ninguém marca.</li>
