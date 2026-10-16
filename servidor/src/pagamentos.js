@@ -7,9 +7,9 @@ const DIA = 86400000;
 export const PRODUTOS = {
   // 3.22: um jeito só de apoiar. Cada valor compra tempo de Apoiador (foto na mesa, selo ★, avatares exclusivos e o
   // Personalizar liberado) e soma para o selo ♥, que fica para sempre. Quanto mais, mais tempo e mais barato o mês.
-  apoio5: { nome: 'Apoio ao Dominó Manauara · 1 mês', desc: 'Dominó Manauara: 1 mês de Apoiador (foto na mesa online, selo, avatares exclusivos e tudo do Personalizar liberado) e, para sempre, o selo ♥ e o avatar do doador.', valor: 5, dias: 31 },
-  apoio12: { nome: 'Apoio ao Dominó Manauara · 3 meses', desc: 'Dominó Manauara: 3 meses de Apoiador (foto na mesa online, selo, avatares exclusivos e tudo do Personalizar liberado) e, para sempre, o selo ♥ e o avatar do doador.', valor: 12, dias: 92 },
-  apoio40: { nome: 'Apoio ao Dominó Manauara · 1 ano', desc: 'Dominó Manauara: 1 ano de Apoiador (foto na mesa online, selo, avatares exclusivos e tudo do Personalizar liberado) e, para sempre, o selo ♥ e o avatar do doador.', valor: 40, dias: 366 },
+  apoio5: { nome: 'Doação ao Dominó Manauara · 1 mês de Apoiador', desc: 'Dominó Manauara: 1 mês de Apoiador (foto na mesa online, selo, avatares exclusivos e tudo do Personalizar liberado) e, para sempre, o selo ♥ e o avatar do doador.', valor: 5, dias: 31 },
+  apoio12: { nome: 'Doação ao Dominó Manauara · 3 meses de Apoiador', desc: 'Dominó Manauara: 3 meses de Apoiador (foto na mesa online, selo, avatares exclusivos e tudo do Personalizar liberado) e, para sempre, o selo ♥ e o avatar do doador.', valor: 12, dias: 92 },
+  apoio40: { nome: 'Doação ao Dominó Manauara · 1 ano de Apoiador', desc: 'Dominó Manauara: 1 ano de Apoiador (foto na mesa online, selo, avatares exclusivos e tudo do Personalizar liberado) e, para sempre, o selo ♥ e o avatar do doador.', valor: 40, dias: 366 },
   // antigos (até a 3.21): continuam valendo para os pedidos já feitos e para algum celular que ainda não atualizou
   mensal: { nome: 'Plano Apoiador · 30 dias', desc: 'Dominó Manauara: sua foto na mesa online, selo de apoiador, avatares exclusivos e tudo do Personalizar liberado na hora, por 30 dias.', valor: 4.90, dias: 31 },
   anual: { nome: 'Plano Apoiador · 1 ano', desc: 'Dominó Manauara: sua foto na mesa online, selo de apoiador, avatares exclusivos e tudo do Personalizar liberado na hora, por 1 ano.', valor: 39.90, dias: 366 },

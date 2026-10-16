@@ -1779,13 +1779,13 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
       <p class="ap-cod">Código do seu plano: <b id="apCod"></b><small>Guarde. No celular novo, ele leva o plano junto.</small></p>
     </div>
     <div class="ap-ativo ap-doador wood" id="apDoador" hidden>
-      <span class="ck">Seu selo <span id="apDoaNivel" class="ap-cor-heart"></span></span>
+      <span class="ck">Seu selo de doador <span id="apDoaNivel" class="ap-cor-heart"></span></span>
       <p class="ap-ate" id="apDoaTx"></p>
       <div class="ap-avs ap-doa-avs" id="apDoaAvs"></div>
-      <p class="ap-niveis">♥ qualquer valor · ♥♥ a partir de R$ 30 · ♥♥♥ a partir de R$ 100, somando todos os apoios.</p>
+      <p class="ap-niveis">♥ qualquer doação · ♥♥ a partir de R$ 30 · ♥♥♥ a partir de R$ 100, somando todas.</p>
       <p class="ap-cod" id="apDoaCodBox">Seu código de apoiador: <b id="apDoaCod"></b><small>Guarde. No celular novo, ele leva o selo e o avatar junto.</small></p>
     </div>
-    <p class="sala-lead" id="apLead">O Dominó Manauara é de graça e quer continuar assim, para a turma toda. Quem apoia vira Apoiador por um tempo e ganha uns extras. Quanto mais apoia, mais tempo.</p>
+    <p class="sala-lead" id="apLead">O Dominó Manauara é de graça e quer continuar assim, para a turma toda. Quem doa ganha um tempo de Apoiador, com uns extras. Quanto maior a doação, mais tempo.</p>
     <div class="ap-plano" id="apPlano">
       <span class="ap-k" id="apPlanoK">Enquanto for Apoiador</span>
       <ul class="ap-lista">
@@ -1794,15 +1794,15 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
         <li><span class="ap-ic" aria-hidden="true">☺</span><span><b>Avatares exclusivos</b>: coroa, óculos escuros, bonés vermelho e azul de Parintins</span></li>
         <li><span class="ap-ic" aria-hidden="true">◼</span><span><b>Personalizar liberado na hora</b>: o que se ganha com conquistas, sem esperar</span></li>
       </ul>
-      <span class="ap-k">E para sempre</span>
+      <span class="ap-k">E para sempre, como doador</span>
       <div class="ap-doa-premio" id="apDoaPremio"></div>
-      <span class="ap-k" id="apEscolhaK">Escolha como apoiar</span>
+      <span class="ap-k" id="apEscolhaK">Faça uma doação</span>
       <div class="ap-precos ap-tempos" id="apPrecos">
         <button type="button" class="ap-preco" data-p="apoio5"><b>R$ 5</b><span>1 mês</span><small>Um cafezinho</small></button>
         <button type="button" class="ap-preco" data-p="apoio12"><b>R$ 12</b><span>3 meses</span><small>Um tacacá</small></button>
         <button type="button" class="ap-preco destaque" data-p="apoio40"><em>Mais em conta</em><b>R$ 40</b><span>1 ano</span><small>R$ 3,33 por mês</small></button>
       </div>
-      <p class="note ap-nota">Pago uma vez, por Pix ou cartão, na página segura do Asaas. Não renova sozinho: quando acabar, você escolhe se continua.</p>
+      <p class="note ap-nota">Cada doação vira tempo de Apoiador, somado ao que você já tiver. Paga uma vez, por Pix ou cartão, na página segura do Asaas. Não renova sozinha.</p>
     </div>
     <div class="ap-perso">
       <button type="button" class="secondary" id="apEstilo" style="width:100%">Escolher mesa e montar avatar</button>
@@ -2443,6 +2443,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.22.1', data: '16/10/2026', itens: ['Doação de volta com esse nome: R$ 5, R$ 12 ou R$ 40, e cada doação dá tempo de Apoiador (1 mês, 3 meses ou 1 ano). O selo de doador ♥ e o avatar do doador ficam para sempre.', 'O app se atualiza mais rápido: confere a versão nova direto no servidor ao abrir e ao voltar para ele, avisa "Atualizando para a versão…" e recarrega sozinho quando você está no início (na partida, espera acabar).'] },
   { v: '3.22', data: '16/10/2026', itens: ['Apoiar ficou mais simples: um jeito só, em que quanto mais você apoia, mais tempo de Apoiador ganha (1 mês, 3 meses ou 1 ano). Enquanto for Apoiador: foto na mesa online, selo ★, avatares exclusivos e o Personalizar liberado. Para sempre: o selo ♥, que cresce com o total apoiado, e o avatar do doador.',
     'Quem doou até hoje continua com a foto na mesa para sempre, como prometido.'] },
   { v: '3.21.2', data: '16/10/2026', itens: ['Início: o atalho "Seja Apoiador" ficou mais simples, sem falar de valores; Missões do dia logo abaixo de Monte a sua Turma; Regras logo acima do botão de chamar os amigos pelo WhatsApp.'] },
@@ -5179,7 +5180,7 @@ async function acompanharPedido(id, insistir) {
         track('pago-' + j.produto);
         const nivelAntes = nivelDoador();
         if (meu) guardarConta(j);
-        if (j.plano) { obrigado(true, meu ? j.ate : null, nivelAntes); if (!meu) conferirPlano(true); }
+        if (j.plano) { obrigado(true, meu ? j.ate : null, nivelAntes, j.produto); if (!meu) conferirPlano(true); }
         else { store.set(AKEY, new Date().toISOString().slice(0, 10)); obrigadoDoacao(j, meu, nivelAntes); }
         acompanhando = null;
         if (screen === 'home') renderHome(); else if (screen === 'apoio') renderApoioTela();
@@ -5193,9 +5194,9 @@ async function acompanharPedido(id, insistir) {
   if (insistir && pedidoGuardado()) toast('Assim que o pagamento for confirmado, o plano liga sozinho. Pode jogar enquanto isso.');
   acompanhando = null;
 }
-function obrigado(plano, ate, nivelAntes) {
-  const titulo = plano ? 'Você agora é Apoiador!' : 'Obrigado pela doação!';
-  const nv = nivelDoador(), selo = plano && ate && nv > (nivelAntes || 0) ? (nivelAntes ? ` Seu selo subiu para ${coracoes(nv)}!` : ` E ganhou, para sempre, o selo ${coracoes(nv)} e o avatar do doador.`) : '';
+function obrigado(plano, ate, nivelAntes, produto) {
+  const titulo = plano ? (/^apoio/.test(produto || '') ? 'Obrigado pela doação! ♥' : 'Você agora é Apoiador!') : 'Obrigado pela doação!';
+  const nv = nivelDoador(), selo = plano && ate && nv > (nivelAntes || 0) ? (nivelAntes ? ` Seu selo de doador subiu para ${coracoes(nv)}!` : ` E ganhou, para sempre, o selo de doador ${coracoes(nv)} e o avatar do doador.`) : '';
   const txt = plano ? (ate ? `Você é Apoiador até ${dataBR(ate)}. Já dá para mostrar a sua foto na mesa online (ligue no seu perfil), e tudo do Personalizar está liberado.${selo}` : 'O apoio ficou no aparelho em que você tocou em pagar. Abra o jogo por lá.')
     : 'Sua ajuda mantém o Dominó Manauara de graça para a turma toda.';
   openSheet('fb', `<p class="eyebrow">Apoie o jogo</p><h2 id="sheetTitle">${esc(titulo)}</h2><p>${esc(txt)}</p>
@@ -5269,15 +5270,15 @@ function renderApoioTela() {
   $('#apDoador').hidden = !dn;
   if (dn) {
     $('#apDoaNivel').textContent = coracoes(dn);
-    $('#apDoaTx').textContent = `Apoiando desde ${mesAno(d.desde || d.ultima || Date.now())} · ${reais(d.total)} no total${d.n > 1 ? ` em ${d.n} apoios` : ''}. Obrigado!`;
+    $('#apDoaTx').textContent = `Doador desde ${mesAno(d.desde || d.ultima || Date.now())} · ${reais(d.total)} doados${d.n > 1 ? ` em ${d.n} doações` : ''}. Obrigado!`;
     $('#apDoaAvs').innerHTML = AVATARS.filter(a => a.doador).map(a =>
       `<button type="button" class="ap-av" data-av="${a.id}" aria-pressed="${!!(profile && profile.av === a.id)}" aria-label="Avatar do doador"><img src="${avatarURI(a)}" alt=""></button>`).join('');
     $('#apDoaCod').textContent = codigoBonito(d.codigo);
     $('#apDoaCodBox').hidden = on || !d.codigo;
   }
-  $('#apDoaPremio').innerHTML = AVATARS.filter(a => a.doador).map(a => `<img src="${avatarURI(a)}" alt="">`).join('') + '<span>O selo ♥ na mesa online, que cresce com o total apoiado, e o avatar do doador.</span>';
+  $('#apDoaPremio').innerHTML = AVATARS.filter(a => a.doador).map(a => `<img src="${avatarURI(a)}" alt="">`).join('') + '<span>O selo de doador ♥ na mesa online, que cresce com o total doado, e o avatar do doador.</span>';
   $('#apLead').hidden = on || !!dn;
-  $('#apEscolhaK').textContent = on ? 'Quer mais tempo? Escolha abaixo' : 'Escolha como apoiar';
+  $('#apEscolhaK').textContent = on ? 'Quer mais tempo? Faça outra doação' : 'Faça uma doação';
   $$('#apPrecos .ap-preco span').forEach(s => { if (on && !s.dataset.orig) s.dataset.orig = s.textContent; });
   $('#apPrecos').classList.toggle('renovar', on);
   const avLivre = on || souAdmin();
@@ -7994,6 +7995,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
+const APP_BUILD = '3.22.1-b1d2a037';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -8001,11 +8003,13 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
       let lastCheck = Date.now();
-      const check = () => { lastCheck = Date.now(); if (navigator.onLine !== false) reg.update().catch(() => {}); };
+      const check = () => { lastCheck = Date.now(); if (navigator.onLine !== false) { reg.update().catch(() => {}); conferirVersao(); } };
+      // 3.22.1: ao voltar para o app confere de novo depois de 15 s (antes era 1 min) e, com ele aberto, a cada 10 min
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && Date.now() - lastCheck > 60 * 1000) check();
+        if (document.visibilityState === 'visible' && Date.now() - lastCheck > 15 * 1000) check();
       });
-      setInterval(check, 30 * 60 * 1000);
+      setInterval(check, 10 * 60 * 1000);
+      setTimeout(conferirVersao, 3000);
     }).catch(() => {});
   });
   // Versão nova chegou: troca na hora; no meio do jogo, de um formulário ou de uma janela aberta, espera ficar livre.
@@ -8013,7 +8017,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   let hadController = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!hadController) { hadController = true; return; }
-    if (screen === 'game' || screen === 'sala' || screen === 'profile' || sheetKind) { window.__reloadWhenFree = true; return; }
+    if (!livreParaAtualizar()) { window.__reloadWhenFree = true; return; }
     recarregar();
   });
   // Saiu do app com uma versão nova esperando (e fora da mesa): troca sem ninguém ver.
@@ -8021,6 +8025,58 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     if (document.visibilityState === 'hidden' && window.__reloadWhenFree && screen !== 'game') recarregar();
   });
 }
+// ---- Versão nova sem esperar o cache do GitHub (3.22.1) ----
+// O GitHub guarda o sw.js por até 10 minutos, então o service worker pode demorar a ver a versão nova. Aqui o app
+// confere um arquivinho (versao.txt) sempre direto do servidor; se a versão mudou e a pessoa está livre (fora da
+// partida, da sala, do perfil e sem janela aberta), avisa e recarrega pedindo a página nova. Na partida, espera acabar.
+// Proteção: no máximo 2 tentativas por versão a cada 10 minutos (sem ficar recarregando se a rede devolver a velha).
+let novaVersao = null;
+function livreParaAtualizar() { return !(screen === 'game' || screen === 'sala' || screen === 'profile' || sheetKind); }
+async function conferirVersao() {
+  if (APP_BUILD.startsWith('__') || !('fetch' in window)) return;
+  try {
+    const r = await fetch('versao.txt?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    const v = (await r.text()).trim();
+    if (!/^[\w.-]{3,40}$/.test(v) || v === APP_BUILD) return;
+    novaVersao = v;
+    atualizarQuandoLivre();
+  } catch (e) {}
+}
+function tentativasVersao(v, somar) {
+  let t = null; try { t = JSON.parse(sessionStorage.getItem('dmz-tentou-versao') || 'null'); } catch (e) {}
+  if (!t || t.v !== v || Date.now() - t.t > 10 * 60 * 1000) t = { v, n: 0, t: Date.now() };
+  if (somar) { t.n++; try { sessionStorage.setItem('dmz-tentou-versao', JSON.stringify(t)); } catch (e) {} }
+  return t.n;
+}
+function atualizarQuandoLivre() {
+  if (!novaVersao || tentativasVersao(novaVersao) >= 2) return;
+  if (!livreParaAtualizar() || document.visibilityState !== 'visible') { window.__reloadWhenFree = true; return; }
+  toast(`Atualizando para a versão ${novaVersao.split('-')[0]}…`);
+  setTimeout(() => { if (livreParaAtualizar()) recarregarNovo(); else window.__reloadWhenFree = true; }, 1400);
+}
+function recarregarNovo(destino) {
+  if (!novaVersao || tentativasVersao(novaVersao) >= 2) { recarregarBase(destino); return; }
+  tentativasVersao(novaVersao, true);
+  saveGame();
+  const ir = destino || (screen === 'game' ? 'home' : screen);
+  try { if (profile) sessionStorage.setItem('dmz-voltar', JSON.stringify({ tela: ir, t: Date.now() })); } catch (e) {}
+  const url = location.pathname + '?v=' + encodeURIComponent(novaVersao) + location.hash;   // ?v= faz o servidor mandar a página nova
+  if (reduzMov() || document.visibilityState !== 'visible') { location.replace(url); return; }
+  document.documentElement.classList.add('recarregando');
+  setTimeout(() => location.replace(url), 260);
+}
+// Toda recarga do app (a da troca de tela com versão esperando, a do service worker) pede a página nova quando já se
+// sabe que existe uma (até 2 vezes por versão); senão, recarrega normal.
+const recarregarBase = recarregar;
+recarregar = function (destino) { if (novaVersao && tentativasVersao(novaVersao) < 2) return recarregarNovo(destino); return recarregarBase.apply(this, arguments); };
+// Tira o ?v= do endereço depois que a página nova abriu
+(function () {
+  const q = new URLSearchParams(location.search);
+  if (!q.has('v')) return;
+  q.delete('v');
+  try { history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } catch (e) {}
+})();
 // Versão: mostra no início e avisa quando o app acabou de se atualizar.
 $$('.appver').forEach(el => { el.textContent = APP_VERSION; });
 (function () {
