@@ -244,7 +244,7 @@ async function lembretesPlano(env) {
     ORDER BY p.ate LIMIT 8`).bind(agora, agora + 3 * DIA).all();
   const lista = results || [];
   for (const s of lista) await env.DB.prepare('INSERT OR IGNORE INTO lembretes_plano (aparelho, ate, enviado_em) VALUES (?, ?, ?)').bind(s.aparelho, s.ate, agora).run();
-  return mandarPara(lista, s => ({ titulo: 'Seu Plano Apoiador está acabando', texto: `Ele vale até ${diaMes(s.ate)}. Toque para renovar e continuar com os seus extras.`, url: '/?apoio=renovar' }), env);
+  return mandarPara(lista, s => ({ titulo: 'Seu tempo de Apoiador está acabando', texto: `Ele vale até ${diaMes(s.ate)}. Toque para continuar com a foto na mesa e os extras.`, url: '/?apoio=renovar' }), env);
 }
 async function donoAvisos(req, env, origin) {
   if (!(await ehDono(req, env))) return json({ erro: 'nao-autorizado' }, 401, origin);

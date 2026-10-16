@@ -219,7 +219,7 @@ export class Mesa {
   async apoiador(id) {
     try {
       const p = await this.env.DB.prepare('SELECT ate FROM planos WHERE aparelho = ?').bind(id).first();
-      const d = await this.env.DB.prepare("SELECT COALESCE(SUM(valor), 0) AS t FROM pedidos WHERE aparelho = ? AND status = 'pago' AND produto LIKE 'doacao%'").bind(id).first();
+      const d = await this.env.DB.prepare("SELECT COALESCE(SUM(valor), 0) AS t FROM pedidos WHERE aparelho = ? AND status = 'pago'").bind(id).first();
       let foto = null; try { foto = await fotoPublica(this.env, id); } catch (e) {}
       let turma = null; try { turma = await nomeDaTurma(this.env, id); } catch (e) {}
       return { apoiador: !!(p && p.ate > Date.now()), doador: nivelDoador((d && d.t) || 0), foto, turma };

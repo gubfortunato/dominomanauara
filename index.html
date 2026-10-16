@@ -1477,6 +1477,15 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .ap-banner-tx small{font-size:12.5px;line-height:1.3;color:#eadcc2}
 .ap-banner-vai{flex:none;font-size:26px;line-height:1;color:#f3c25a;padding-left:2px}
 
+/* 3.22: três jeitos de apoiar (1 mês, 3 meses, 1 ano) */
+.ap-tempos{grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px}
+.ap-tempos .ap-preco{padding:16px 4px 12px;gap:1px}
+.ap-tempos .ap-preco b{font-size:23px}
+.ap-tempos .ap-preco span{font-size:15px;color:var(--fg)}
+.ap-tempos .ap-preco small{font-size:12px;line-height:1.25;font-weight:700;color:var(--muted)}
+.ap-tempos .ap-preco em{font-size:10px;padding:4px 7px 3px}
+#apPlano .ap-k{margin-top:6px}
+
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
 #scrHome .sponsor{max-width:560px;width:100%;justify-self:center;margin-inline:auto}
@@ -1610,7 +1619,7 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
       <div class="foto-online" id="fotoOnline" hidden>
         <label class="dn-sw"><input type="checkbox" id="fotoOnlineSw"><span><b>Mostrar minha foto na mesa online</b><small id="fotoOnlineTx"></small></span></label>
       </div>
-      <button type="button" class="linkbtn foto-plano" id="fotoPlano" hidden>Sua foto na mesa online é para quem apoia o jogo: doe a partir de R$ 5 ou seja Apoiador ›</button>
+      <button type="button" class="linkbtn foto-plano" id="fotoPlano" hidden>Sua foto na mesa online é para Apoiadores. Veja como apoiar ›</button>
       <p class="note" id="fotoNota">Com foto, os outros jogadores veem que você é gente de verdade: ela vai aparecer na mesa online, que está chegando. Não quer aparecer? Escolha um avatar.</p>
     </div>
     <div class="perfil-avisos" id="perfilAvisos" hidden><span id="perfilAvisosTx">🔔 Lembretes para jogar estão ligados.</span><button type="button" class="linkbtn" id="perfilAvisosOff">Desligar</button></div>
@@ -1738,7 +1747,7 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
   <section class="screen panel" id="scrPatro" hidden>
     <button type="button" class="backbtn" id="ptBack">← Voltar</button>
     <div><p class="kicker">Área do administrador</p><h2 class="brand" style="font-size:30px">Patrocinadores</h2></div>
-    <p class="note pt-ajuda">Quem está no ar aparece nos espaços escolhidos. Se mais de um dividir o mesmo espaço, eles se revezam. Espaço sem patrocinador mostra o alug+. Quem tem o Plano Apoiador não vê anúncio.</p>
+    <p class="note pt-ajuda">Quem está no ar aparece nos espaços escolhidos. Se mais de um dividir o mesmo espaço, eles se revezam. Espaço sem patrocinador mostra o alug+.</p>
     <div class="dn-seg" id="ptDias" role="group" aria-label="Período dos números"><button type="button" data-d="7" aria-pressed="false">7 dias</button><button type="button" data-d="30" aria-pressed="true">30 dias</button><button type="button" data-d="90" aria-pressed="false">90 dias</button></div>
     <button type="button" class="primary" id="ptNovo">+ Novo patrocinador</button>
     <div class="pt-lista" id="ptLista"></div>
@@ -1770,34 +1779,30 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
       <p class="ap-cod">Código do seu plano: <b id="apCod"></b><small>Guarde. No celular novo, ele leva o plano junto.</small></p>
     </div>
     <div class="ap-ativo ap-doador wood" id="apDoador" hidden>
-      <span class="ck">Doador <span id="apDoaNivel" class="ap-cor-heart"></span></span>
+      <span class="ck">Seu selo <span id="apDoaNivel" class="ap-cor-heart"></span></span>
       <p class="ap-ate" id="apDoaTx"></p>
       <div class="ap-avs ap-doa-avs" id="apDoaAvs"></div>
-      <p class="ap-niveis">♥ qualquer doação · ♥♥ a partir de R$ 30 · ♥♥♥ a partir de R$ 100, somando todas.</p>
+      <p class="ap-niveis">♥ qualquer valor · ♥♥ a partir de R$ 30 · ♥♥♥ a partir de R$ 100, somando todos os apoios.</p>
       <p class="ap-cod" id="apDoaCodBox">Seu código de apoiador: <b id="apDoaCod"></b><small>Guarde. No celular novo, ele leva o selo e o avatar junto.</small></p>
     </div>
-    <p class="sala-lead" id="apLead">O Dominó Manauara é de graça e quer continuar assim, para a turma toda. Com o Plano Apoiador você ganha uns extras e ajuda a manter a mesa de pé. Prefere só dar uma força? Faça uma doação.</p>
+    <p class="sala-lead" id="apLead">O Dominó Manauara é de graça e quer continuar assim, para a turma toda. Quem apoia vira Apoiador por um tempo e ganha uns extras. Quanto mais apoia, mais tempo.</p>
     <div class="ap-plano" id="apPlano">
-      <span class="ap-k">Plano Apoiador</span>
+      <span class="ap-k" id="apPlanoK">Enquanto for Apoiador</span>
       <ul class="ap-lista">
         <li><span class="ap-ic" aria-hidden="true">◉</span><span><b>Sua foto na mesa online</b>, para a turma ver quem está jogando</span></li>
         <li><span class="ap-ic" aria-hidden="true">★</span><span><b>Selo de apoiador</b> ao lado do seu nome na mesa online</span></li>
         <li><span class="ap-ic" aria-hidden="true">☺</span><span><b>Avatares exclusivos</b>: coroa, óculos escuros, bonés vermelho e azul de Parintins</span></li>
-        <li><span class="ap-ic" aria-hidden="true">◼</span><span><b>Tudo liberado na hora</b>: comidas que se ganham jogando e avatares com coroa</span></li>
+        <li><span class="ap-ic" aria-hidden="true">◼</span><span><b>Personalizar liberado na hora</b>: o que se ganha com conquistas, sem esperar</span></li>
       </ul>
-      <div class="ap-precos" id="apPrecos">
-        <button type="button" class="ap-preco" data-p="mensal"><b>R$ 4,90</b><span>30 dias</span></button>
-        <button type="button" class="ap-preco destaque" data-p="anual"><em>Mais em conta</em><b>R$ 39,90</b><span>1 ano · sai por R$ 3,33 por mês</span></button>
-      </div>
-      <p class="note ap-nota">O plano também ajuda a manter o jogo de graça. Não renova sozinho: quando acabar, você escolhe se continua.</p>
-    </div>
-    <div class="ap-doacao">
-      <span class="ap-k">Ou faça uma doação</span>
-      <div class="ap-doa" id="apDoa">
-        <button type="button" data-p="doacao5"><b>R$ 5</b><span>Um cafezinho</span></button><button type="button" data-p="doacao10"><b>R$ 10</b><span>Um tacacá</span></button><button type="button" data-p="doacao20"><b>R$ 20</b><span>Um X&#8209;caboquinho</span><small>+ 30 dias de plano</small></button>
-      </div>
+      <span class="ap-k">E para sempre</span>
       <div class="ap-doa-premio" id="apDoaPremio"></div>
-      <p class="note ap-nota">Pix ou cartão, na página segura do Asaas.</p>
+      <span class="ap-k" id="apEscolhaK">Escolha como apoiar</span>
+      <div class="ap-precos ap-tempos" id="apPrecos">
+        <button type="button" class="ap-preco" data-p="apoio5"><b>R$ 5</b><span>1 mês</span><small>Um cafezinho</small></button>
+        <button type="button" class="ap-preco" data-p="apoio12"><b>R$ 12</b><span>3 meses</span><small>Um tacacá</small></button>
+        <button type="button" class="ap-preco destaque" data-p="apoio40"><em>Mais em conta</em><b>R$ 40</b><span>1 ano</span><small>R$ 3,33 por mês</small></button>
+      </div>
+      <p class="note ap-nota">Pago uma vez, por Pix ou cartão, na página segura do Asaas. Não renova sozinho: quando acabar, você escolhe se continua.</p>
     </div>
     <div class="ap-perso">
       <button type="button" class="secondary" id="apEstilo" style="width:100%">Escolher mesa e montar avatar</button>
@@ -1806,7 +1811,7 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
     </div>
     <details class="ap-trazer" id="apTrazerBox">
       <summary>Já apoio em outro celular</summary>
-      <p class="note">Digite o código que aparece no outro celular, em "Apoie o jogo". Ele traz o plano e o selo de doador.</p>
+      <p class="note">Digite o código que aparece no outro celular, em "Apoie o jogo". Ele traz o seu tempo de Apoiador e o selo ♥.</p>
       <div class="sala-cod"><input type="text" id="apTrazerCod" maxlength="9" placeholder="ABCD-1234" autocomplete="off" autocapitalize="characters" spellcheck="false"><button type="button" class="secondary" id="apTrazer">Trazer</button></div>
     </details>
   </section>
@@ -2438,6 +2443,8 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.22', data: '16/10/2026', itens: ['Apoiar ficou mais simples: um jeito só, em que quanto mais você apoia, mais tempo de Apoiador ganha (1 mês, 3 meses ou 1 ano). Enquanto for Apoiador: foto na mesa online, selo ★, avatares exclusivos e o Personalizar liberado. Para sempre: o selo ♥, que cresce com o total apoiado, e o avatar do doador.',
+    'Quem doou até hoje continua com a foto na mesa para sempre, como prometido.'] },
   { v: '3.21.2', data: '16/10/2026', itens: ['Início: o atalho "Seja Apoiador" ficou mais simples, sem falar de valores; Missões do dia logo abaixo de Monte a sua Turma; Regras logo acima do botão de chamar os amigos pelo WhatsApp.'] },
   { v: '3.21.1', data: '16/10/2026', itens: ['Os anúncios dos patrocinadores aparecem para todos, com ou sem Plano Apoiador. O plano continua com foto na mesa online, selo ★, avatares exclusivos e tudo do Personalizar liberado na hora.'] },
   { v: '3.21', data: '16/10/2026', itens: ['Foto na mesa online agora é para quem apoia o jogo: Plano Apoiador ativo ou qualquer doação (a doação vale para sempre). Quem já tinha foto aprovada continua com ela.',
@@ -3014,7 +3021,7 @@ const CAM = '<svg viewBox="0 0 24 24" class="cam" aria-hidden="true"><path d="M3
 const FOTO_NOTA = 'A foto fica só neste celular, para você se ver na mesa. Na mesa online, os outros veem um avatar.';
 function avatarBtn(a, i) {
   const exclusivo = a.premium || a.doador, trancado = exclusivo && !avatarLivre(a);
-  const rotulo = a.doador ? 'Avatar do doador' : a.premium ? 'Avatar exclusivo do Plano Apoiador' : a.nome || 'Avatar ' + (i + 1);
+  const rotulo = a.doador ? 'Avatar do doador' : a.premium ? 'Avatar exclusivo de Apoiador' : a.nome || 'Avatar ' + (i + 1);
   const selo = trancado ? '<i class="av-lock" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg></i>'
     : a.doador ? '<i class="av-star av-heart" aria-hidden="true">♥</i>' : a.premium ? '<i class="av-star" aria-hidden="true">★</i>' : '';
   return `<button type="button" class="avbtn${exclusivo ? ' premium' : ''}${a.doador ? ' doador' : ''}${trancado ? ' trancado' : ''}" role="radio" aria-checked="${draft.av === a.id}" data-av="${a.id}" aria-label="${rotulo}${trancado ? ', trancado' : ''}"><span class="face">${selo}<img src="${avatarURI(a)}" alt=""></span></button>`;
@@ -3042,7 +3049,7 @@ function renderProfile() {
     + AVATARS.filter(avatarComum).map((a, i) => avatarBtn(a, i)).join('')
     // do doador e do Plano Apoiador: só aparecem quando dá para apoiar (ou para quem já tem)
     + secaoAvatares(a => a.doador, () => typeof souDoador === 'function' && souDoador(), '♥ Seus avatares de doador', '🔒 De quem doa, com qualquer valor')
-    + secaoAvatares(a => a.premium, () => typeof temPlano === 'function' && temPlano(), '★ Seus avatares de Apoiador', '🔒 Exclusivos do Plano Apoiador');
+    + secaoAvatares(a => a.premium, () => typeof temPlano === 'function' && temPlano(), '★ Seus avatares de Apoiador', '🔒 Exclusivos de Apoiador');
   $('#photoTools').hidden = !ph;
   renderPerfilAvisos();
 }
@@ -3055,7 +3062,7 @@ $('#avatarGrid').addEventListener('click', e => {
   const b = e.target.closest('.avbtn'); if (!b) return;
   if (b.dataset.av === 'foto' && !draft.photo) { $('#photoInput').click(); return; }
   if (b.classList.contains('trancado')) {
-    toast(b.classList.contains('doador') ? 'Esse avatar é de quem doa, com qualquer valor.' : 'Esse avatar é do Plano Apoiador.');
+    toast(b.classList.contains('doador') ? 'Esse avatar é de quem já apoiou o jogo, com qualquer valor.' : 'Esse avatar é para Apoiadores.');
     if (typeof abrirApoio === 'function') abrirApoio('profile', b.classList.contains('doador') ? null : 'plano');
     return;
   }
@@ -5172,7 +5179,7 @@ async function acompanharPedido(id, insistir) {
         track('pago-' + j.produto);
         const nivelAntes = nivelDoador();
         if (meu) guardarConta(j);
-        if (j.plano) { obrigado(true, meu ? j.ate : null); if (!meu) conferirPlano(true); }
+        if (j.plano) { obrigado(true, meu ? j.ate : null, nivelAntes); if (!meu) conferirPlano(true); }
         else { store.set(AKEY, new Date().toISOString().slice(0, 10)); obrigadoDoacao(j, meu, nivelAntes); }
         acompanhando = null;
         if (screen === 'home') renderHome(); else if (screen === 'apoio') renderApoioTela();
@@ -5186,9 +5193,10 @@ async function acompanharPedido(id, insistir) {
   if (insistir && pedidoGuardado()) toast('Assim que o pagamento for confirmado, o plano liga sozinho. Pode jogar enquanto isso.');
   acompanhando = null;
 }
-function obrigado(plano, ate) {
+function obrigado(plano, ate, nivelAntes) {
   const titulo = plano ? 'Você agora é Apoiador!' : 'Obrigado pela doação!';
-  const txt = plano ? (ate ? `Seu plano vale até ${dataBR(ate)}. Já dá para mostrar a sua foto na mesa online (ligue no seu perfil), e tudo do Personalizar está liberado.` : 'O plano ficou ligado no aparelho em que você tocou em pagar. Abra o jogo por lá.')
+  const nv = nivelDoador(), selo = plano && ate && nv > (nivelAntes || 0) ? (nivelAntes ? ` Seu selo subiu para ${coracoes(nv)}!` : ` E ganhou, para sempre, o selo ${coracoes(nv)} e o avatar do doador.`) : '';
+  const txt = plano ? (ate ? `Você é Apoiador até ${dataBR(ate)}. Já dá para mostrar a sua foto na mesa online (ligue no seu perfil), e tudo do Personalizar está liberado.${selo}` : 'O apoio ficou no aparelho em que você tocou em pagar. Abra o jogo por lá.')
     : 'Sua ajuda mantém o Dominó Manauara de graça para a turma toda.';
   openSheet('fb', `<p class="eyebrow">Apoie o jogo</p><h2 id="sheetTitle">${esc(titulo)}</h2><p>${esc(txt)}</p>
     ${plano && ate ? '<button type="button" class="primary" id="obgPerso">Personalizar agora</button>' : ''}
@@ -5205,8 +5213,8 @@ function obrigadoDoacao(j, meu, nivelAntes) {
   if (n) txt += n > nivelAntes && nivelAntes > 0 ? ` Seu selo de doador subiu para ${coracoes(n)}!` : ` Você ganhou o selo ${coracoes(n)} na mesa online e o avatar do doador, e já pode mostrar a sua foto na mesa online (ligue no seu perfil).`;
   openSheet('fb', `<p class="eyebrow">Apoie o jogo</p><h2 id="sheetTitle">Obrigado pela doação! ♥</h2><p>${esc(txt)}</p>
     ${n ? `<p class="ap-k" style="margin-top:4px">Avatar do doador</p><div class="obg-avs" id="obgAvs">${avs.map(a => `<button type="button" class="obg-av" data-av="${a.id}" aria-pressed="${!!(profile && profile.av === a.id)}" aria-label="Usar o avatar do doador"><img src="${avatarURI(a)}" alt=""><span>Usar</span></button>`).join('')}</div>` : ''}
-    ${brinde ? `<p class="obg-brinde"><b>De presente:</b> 30 dias de Plano Apoiador, até ${esc(dataBR(j.ate))}. Selo ★, avatares exclusivos e tudo do Personalizar liberado.</p><button type="button" class="primary" id="obgPerso">Personalizar agora</button>`
-      : temPlano() ? '' : `<p class="obg-ponte">Quer apoiar todo mês? Com o Plano Apoiador, por R$ 4,90, você ainda ganha o selo ★, avatares exclusivos e libera tudo do Personalizar na hora.</p><button type="button" class="secondary" id="obgPlano" style="width:100%">Conhecer o Plano Apoiador</button>`}
+    ${brinde ? `<p class="obg-brinde"><b>De presente:</b> 30 dias de Apoiador, até ${esc(dataBR(j.ate))}. Foto na mesa, selo ★, avatares exclusivos e tudo do Personalizar liberado.</p><button type="button" class="primary" id="obgPerso">Personalizar agora</button>`
+      : ''}
     <button type="button" class="secondary" id="obgOk" style="width:100%;margin-top:10px">Fechar</button>`);
   const box = $('#obgAvs');
   if (box) box.addEventListener('click', e => {
@@ -5253,7 +5261,7 @@ function renderApoioTela() {
   $('#apAtivo').hidden = !on;
   if (on) {
     const dias = Math.ceil((p.ate - Date.now()) / 86400000);
-    $('#apAte').textContent = `Seu plano vale até ${dataBR(p.ate)}` + (dias <= 5 ? ` (faltam ${dias} ${dias === 1 ? 'dia' : 'dias'}). Para continuar, é só renovar abaixo.` : '. Obrigado!');
+    $('#apAte').textContent = `Você é Apoiador até ${dataBR(p.ate)}` + (dias <= 5 ? ` (faltam ${dias} ${dias === 1 ? 'dia' : 'dias'}). Para continuar, é só escolher abaixo.` : '. Obrigado!');
     $('#apCod').textContent = codigoBonito(p.codigo);
     $('#apCod').closest('.ap-cod').hidden = !p.codigo;
   }
@@ -5261,16 +5269,15 @@ function renderApoioTela() {
   $('#apDoador').hidden = !dn;
   if (dn) {
     $('#apDoaNivel').textContent = coracoes(dn);
-    $('#apDoaTx').textContent = `Apoiando desde ${mesAno(d.desde || d.ultima || Date.now())} · ${reais(d.total)} doados${d.n > 1 ? ` em ${d.n} doações` : ''}. Obrigado!`;
+    $('#apDoaTx').textContent = `Apoiando desde ${mesAno(d.desde || d.ultima || Date.now())} · ${reais(d.total)} no total${d.n > 1 ? ` em ${d.n} apoios` : ''}. Obrigado!`;
     $('#apDoaAvs').innerHTML = AVATARS.filter(a => a.doador).map(a =>
       `<button type="button" class="ap-av" data-av="${a.id}" aria-pressed="${!!(profile && profile.av === a.id)}" aria-label="Avatar do doador"><img src="${avatarURI(a)}" alt=""></button>`).join('');
     $('#apDoaCod').textContent = codigoBonito(d.codigo);
     $('#apDoaCodBox').hidden = on || !d.codigo;
   }
-  $('#apDoaPremio').hidden = !!dn;
-  if (!dn) $('#apDoaPremio').innerHTML = AVATARS.filter(a => a.doador).map(a => `<img src="${avatarURI(a)}" alt="">`).join('') + '<span>Quem doa pode mostrar a foto na mesa online e ganha o selo ♥ e o avatar do doador.</span>';
+  $('#apDoaPremio').innerHTML = AVATARS.filter(a => a.doador).map(a => `<img src="${avatarURI(a)}" alt="">`).join('') + '<span>O selo ♥ na mesa online, que cresce com o total apoiado, e o avatar do doador.</span>';
   $('#apLead').hidden = on || !!dn;
-  $('#apPlano').querySelector('.ap-k').textContent = on ? 'Renovar o Plano Apoiador' : 'Quer uns extras? Plano Apoiador';
+  $('#apEscolhaK').textContent = on ? 'Quer mais tempo? Escolha abaixo' : 'Escolha como apoiar';
   $$('#apPrecos .ap-preco span').forEach(s => { if (on && !s.dataset.orig) s.dataset.orig = s.textContent; });
   $('#apPrecos').classList.toggle('renovar', on);
   const avLivre = on || souAdmin();
@@ -5279,7 +5286,6 @@ function renderApoioTela() {
   $('#apTrazerBox').hidden = on;
 }
 $('#apPrecos').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (b) pagarProduto(b.dataset.p, b); });
-$('#apDoa').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (b) pagarProduto(b.dataset.p, b); });
 $('#apDoaAvs').addEventListener('click', e => {
   const b = e.target.closest('[data-av]'); if (!b || !profile) return;
   profile.av = b.dataset.av; store.set(PKEY, JSON.stringify(profile));
@@ -5287,7 +5293,7 @@ $('#apDoaAvs').addEventListener('click', e => {
 });
 $('#apAvs').addEventListener('click', e => {
   const b = e.target.closest('[data-av]'); if (!b) return;
-  if (b.classList.contains('trancado')) { toast('Esse avatar é do Plano Apoiador.'); return; }
+  if (b.classList.contains('trancado')) { toast('Esse avatar é para Apoiadores.'); return; }
   if (!profile) return;
   profile.av = b.dataset.av; store.set(PKEY, JSON.stringify(profile));   // PKEY = chave do perfil
   renderApoioTela(); toast('Avatar trocado!');
@@ -5301,7 +5307,7 @@ $('#apTrazer').addEventListener('click', async () => {
     const j = await r.json().catch(() => ({}));
     if (r.ok && (j.ate || j.doador)) {
       guardarConta(j); $('#apTrazerCod').value = ''; renderApoioTela();
-      toast(j.ate > Date.now() ? `Pronto! Plano trazido, vale até ${dataBR(j.ate)}.` : 'Pronto! Seu selo de doador veio junto.');
+      toast(j.ate > Date.now() ? `Pronto! Seu tempo de Apoiador veio junto, vale até ${dataBR(j.ate)}.` : 'Pronto! Seu selo ♥ veio junto.');
     }
     else toast(r.status === 404 ? 'Não achei esse código. Confira no outro celular.' : r.status === 429 ? 'Muitas tentativas. Tente de novo mais tarde.' : 'Não deu agora. Tente de novo.');
   } catch (e) { toast('Sem internet agora.'); }
@@ -5425,7 +5431,7 @@ function conviteRenovar() {
   return { fase, chave: p.ate + ':' + fase, quando: d <= 0 ? 'hoje' : d === 1 ? 'amanhã' : `em ${d} dias` };
 }
 // Agradecimento na volta: 60 dias depois da última doação, uma vez por doação (e no máximo um convite por semana)
-const DOACAO_DE = { 5: 'do seu cafezinho', 10: 'do seu tacacá', 20: 'do seu X‑caboquinho' };
+const DOACAO_DE = { 5: 'do seu cafezinho', 10: 'do seu tacacá', 12: 'do seu tacacá', 20: 'do seu X‑caboquinho' };
 function conviteVolta() {
   if (!pagamentosAtivos() || menorDeIdade() || temPlano()) return null;
   const d = doadorLocal(); if (!d || !d.ultima) return null;
@@ -5441,8 +5447,8 @@ function renderConvite() {
   const rn = conviteRenovar();
   if (rn) {
     Object.assign(box.dataset, { tipo: 'renovar', chave: rn.chave }); box.hidden = false; sim.textContent = 'Renovar';
-    $('#apConviteTx').innerHTML = rn.fase === 'antes' ? `<b>Seu Plano Apoiador acaba ${rn.quando}.</b> Quer renovar e continuar com os seus extras?`
-      : '<b>Seu Plano Apoiador acabou.</b> Sentiu falta dos extras? Dá para renovar quando quiser.';
+    $('#apConviteTx').innerHTML = rn.fase === 'antes' ? `<b>Seu tempo de Apoiador acaba ${rn.quando}.</b> Quer continuar com a foto na mesa e os extras?`
+      : '<b>Seu tempo de Apoiador acabou.</b> Sentiu falta dos extras? Dá para voltar quando quiser.';
     return;
   }
   const vt = conviteVolta();
@@ -5491,8 +5497,8 @@ function renderApBanner() {
   const p = planoLocal(), on = temPlano(), dias = on ? Math.ceil((p.ate - Date.now()) / 86400000) : 0;
   let t = null, s = '';
   if (!pagamentosAtivos() || !profile || menorDeIdade()) t = null;
-  else if (on) { if (dias <= 5) { t = `Seu plano acaba em ${dias} ${dias === 1 ? 'dia' : 'dias'}`; s = 'Renove para continuar com a foto na mesa e os extras.'; } }
-  else if (souDoador()) { t = 'Seja Apoiador'; s = 'Selo ★, avatares exclusivos e tudo do Personalizar liberado.'; }
+  else if (on) { if (dias <= 5) { t = `Seu apoio acaba em ${dias} ${dias === 1 ? 'dia' : 'dias'}`; s = 'Continue para manter a foto na mesa e os extras.'; } }
+  else if (souDoador()) { t = 'Seja Apoiador de novo'; s = 'Sua foto na mesa online e avatares exclusivos.'; }
   else { t = 'Seja Apoiador'; s = 'Sua foto na mesa online e avatares exclusivos.'; }
   b.hidden = !t;
   if (t) { $('#apBannerT').textContent = t; $('#apBannerS').textContent = s; }
@@ -6054,7 +6060,7 @@ let fotoStatus = null, fotoMotivo = null;
 // 3.21: a foto na mesa é para quem apoia (Plano Apoiador ativo ou qualquer doação). Quem já tinha foto aprovada antes
 // da regra mantém a foto atual: o servidor avisa isso no "liberada" do status. A trava de verdade fica no servidor.
 let fotoLibSrv = false;
-function fotoPode() { return (typeof temPlano === 'function' && temPlano()) || (typeof souDoador === 'function' && souDoador()) || fotoLibSrv; }
+function fotoPode() { return (typeof temPlano === 'function' && temPlano()) || fotoLibSrv; }   // 3.22: doação antiga vem pelo servidor (fotoLibSrv)
 function fotoOnlineLigada() { return store.get(FOTOON) === '1'; }
 const fotoMarca = f => f ? f.length + ':' + f.slice(-40) : '';
 function fotoOnlineURL(pub) { return CONFIG.api + '/foto/' + pub; }
@@ -6063,10 +6069,11 @@ function fotoOnlineImg(c, cls) {
   return `<img class="${cls || ''} foto-online" draggable="false" src="${esc(fotoOnlineURL(c.foto))}" data-pub="${esc(c.foto)}" data-nome="${esc(c.nome)}" alt="Foto de ${esc(c.nome)}">`;
 }
 async function fotoConferir() {
-  if (!CONFIG.api || !fotoOnlineLigada()) { fotoStatus = null; return; }
+  if (!CONFIG.api) { fotoStatus = null; return; }
+  if (!fotoOnlineLigada()) fotoStatus = null;
   try {
     const r = await fetch(CONFIG.api + '/foto/status?aparelho=' + encodeURIComponent(meuId()));
-    if (r.ok) { const j = await r.json(); fotoStatus = j.status; fotoMotivo = j.motivo || null; fotoLibSrv = !!j.liberada; if (screen === 'profile') renderFotoOnline(); }
+    if (r.ok) { const j = await r.json(); if (fotoOnlineLigada()) { fotoStatus = j.status; fotoMotivo = j.motivo || null; } fotoLibSrv = !!j.liberada; if (screen === 'profile') renderFotoOnline(); }
   } catch (e) {}
 }
 async function fotoEnviar() {
@@ -6081,7 +6088,7 @@ async function fotoEnviar() {
         : 'Foto enviada. Ela aparece na mesa online assim que for aprovada.');
       track('foto-online-' + fotoStatus); return;
     }
-    if (r.status === 403) { fotoLibSrv = false; toast('Sua foto na mesa online é para quem apoia o jogo. Doe a partir de R$ 5 ou seja Apoiador.'); return; }
+    if (r.status === 403) { fotoLibSrv = false; toast('Sua foto na mesa online é para Apoiadores.'); return; }
     toast(r.status === 429 ? 'Muitas fotos hoje. Tente amanhã.' : 'Não deu para mandar a foto agora. Tente de novo.');
   } catch (e) { toast('Sem internet agora. A foto vai quando você salvar o perfil de novo.'); }
 }
@@ -6245,7 +6252,7 @@ function faltaTexto(id) {
   const c = conquistaDe(id); if (!c) return '';
   const f = c.meta - progressoConquista(c);
   // quem não quer esperar libera na hora com o Plano Apoiador (só aparece com os pagamentos ligados)
-  return minusc(c.tx) + (f > 0 && c.meta > 1 ? ` (faltam ${f})` : '') + (pagamentosAtivos() && !temPlano() && !c.evento ? ', ou libere na hora com o Plano Apoiador' : '');
+  return minusc(c.tx) + (f > 0 && c.meta > 1 ? ` (faltam ${f})` : '') + (pagamentosAtivos() && !temPlano() && !c.evento ? ', ou libere na hora sendo Apoiador' : '');
 }
 // Liberado? Grátis; por conquista (ou com o plano); só do plano
 // o administrador testa tudo liberado
@@ -6438,7 +6445,7 @@ function renderEstilo() {
   usar.disabled = travadas.length > 0 || code === meuAvAgora();
   usar.textContent = travadas.length ? 'Ainda não liberado' : code === meuAvAgora() ? '✓ Este é o seu avatar' : 'Usar este avatar';
   trava.hidden = !travadas.length;
-  trava.innerHTML = travadas.map(p => `<span>${esc(p.n)}: ${p.plano ? 'vem com o Plano Apoiador' : esc(faltaTexto(p.req))}.</span>`).join('');
+  trava.innerHTML = travadas.map(p => `<span>${esc(p.n)}: ${p.plano ? 'é para Apoiadores' : esc(faltaTexto(p.req))}.</span>`).join('');
   renderMesas(); renderConquistas();
 }
 function renderMesas(el) {
@@ -6471,7 +6478,7 @@ $('#esOps').addEventListener('click', e => {
   const b = e.target.closest('.es-op'); if (!b) return;
   const k = b.dataset.k, i = +b.dataset.i, p = PARTES[k][i];
   esDraft[k] = i;
-  if (!parteLivre(p)) toast(p.plano ? `${p.n}: vem com o Plano Apoiador.` : `${p.n}: ${faltaTexto(p.req)} para liberar.`);
+  if (!parteLivre(p)) toast(p.plano ? `${p.n}: é para Apoiadores.` : `${p.n}: ${faltaTexto(p.req)} para liberar.`);
   renderEstilo();
 });
 $('#esUsar').addEventListener('click', () => {
@@ -6488,7 +6495,7 @@ $('#esUsar').addEventListener('click', () => {
 function escolherMesa(id, avisar) {
   const m = MESAS.find(x => x.id === id); if (!m) return false;
   if (mesaAlheia()) { toast('Na mesa online, quem escolhe a mesa é quem criou.'); return false; }
-  if (!mesaLivre(m)) { toast(m.plano ? `A mesa ${m.nome} vem com o Plano Apoiador.` : `Para liberar a mesa ${m.nome}: ${faltaTexto(m.req)}.`); return false; }
+  if (!mesaLivre(m)) { toast(m.plano ? `A mesa ${m.nome} é para Apoiadores.` : `Para liberar a mesa ${m.nome}: ${faltaTexto(m.req)}.`); return false; }
   if (m.id === 'madeira') store.del(MCKEY); else store.set(MCKEY, m.id);
   // quem criou a mesa online troca para todo mundo
   if (emMesaOnline() && ON.vista.dono && ON.vista.tema !== m.id && mandar({ t: 'mesa', id: m.id })) ON.vista.tema = m.id;
@@ -6670,7 +6677,7 @@ $('#goOffline').addEventListener('click', mesaDaVez);
   const m = MESAS.find(x => x.id === store.get(MCKEY));
   if (!m || mesaLivre(m) || m.epoca || m.evento) return;
   store.set('dmz-promo-mesas-fim', '1');
-  setTimeout(() => toast(`Acabou o período das mesas liberadas. Para ter a mesa ${m.nome} de novo: ${m.req ? faltaTexto(m.req) : 'Plano Apoiador'}.`), 2500);
+  setTimeout(() => toast(`Acabou o período das mesas liberadas. Para ter a mesa ${m.nome} de novo: ${m.req ? faltaTexto(m.req) : 'ser Apoiador'}.`), 2500);
 })();
 
 // ===== Modo torneio: 20 s por jogada e sem o contador das pontas =====

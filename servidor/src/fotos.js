@@ -11,11 +11,14 @@ const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
 const espera = env => Number(env.IA_ESPERA ?? 600000);
 export const FOTO_CORTE = Date.UTC(2026, 9, 16, 3, 0);   // 15/10/2026, 23h em Manaus: fotos aprovadas de antes disso continuam valendo
 const corte = env => Number(env.FOTO_CORTE || FOTO_CORTE);
-// Quem pode mostrar foto: plano ativo ou doação paga (qualquer valor, para sempre). Devolvida não conta.
+// Quem pode mostrar foto: quem está com tempo de Apoiador. Desde a 3.22 a doação não dá mais foto para sempre; quem
+// doou antes disso (era a regra da 3.21) continua com a foto para sempre. Devolvida não conta.
+export const DOACAO_CORTE = Date.UTC(2026, 9, 16, 18, 0);   // 16/10/2026, 14h em Manaus
+const corteDoacao = env => Number(env.DOACAO_CORTE || DOACAO_CORTE);
 export async function fotoLiberada(env, aparelho) {
   const p = await env.DB.prepare('SELECT ate FROM planos WHERE aparelho = ?').bind(aparelho).first();
   if (p && p.ate > Date.now()) return true;
-  const d = await env.DB.prepare("SELECT 1 AS ok FROM pedidos WHERE aparelho = ? AND status = 'pago' AND produto LIKE 'doacao%' LIMIT 1").bind(aparelho).first();
+  const d = await env.DB.prepare("SELECT 1 AS ok FROM pedidos WHERE aparelho = ? AND status = 'pago' AND produto LIKE 'doacao%' AND pago_em < ? LIMIT 1").bind(aparelho, corteDoacao(env)).first();
   return !!d;
 }   // quanto esperar antes de pedir de novo para a IA
 const hex = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b => b.toString(16).padStart(2, '0')).join('');

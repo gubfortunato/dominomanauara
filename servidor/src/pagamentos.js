@@ -5,6 +5,12 @@
 // quem paga preenche tudo na página do Asaas. Aqui fica só o código do aparelho, o produto, o valor e as datas.
 const DIA = 86400000;
 export const PRODUTOS = {
+  // 3.22: um jeito só de apoiar. Cada valor compra tempo de Apoiador (foto na mesa, selo ★, avatares exclusivos e o
+  // Personalizar liberado) e soma para o selo ♥, que fica para sempre. Quanto mais, mais tempo e mais barato o mês.
+  apoio5: { nome: 'Apoio ao Dominó Manauara · 1 mês', desc: 'Dominó Manauara: 1 mês de Apoiador (foto na mesa online, selo, avatares exclusivos e tudo do Personalizar liberado) e, para sempre, o selo ♥ e o avatar do doador.', valor: 5, dias: 31 },
+  apoio12: { nome: 'Apoio ao Dominó Manauara · 3 meses', desc: 'Dominó Manauara: 3 meses de Apoiador (foto na mesa online, selo, avatares exclusivos e tudo do Personalizar liberado) e, para sempre, o selo ♥ e o avatar do doador.', valor: 12, dias: 92 },
+  apoio40: { nome: 'Apoio ao Dominó Manauara · 1 ano', desc: 'Dominó Manauara: 1 ano de Apoiador (foto na mesa online, selo, avatares exclusivos e tudo do Personalizar liberado) e, para sempre, o selo ♥ e o avatar do doador.', valor: 40, dias: 366 },
+  // antigos (até a 3.21): continuam valendo para os pedidos já feitos e para algum celular que ainda não atualizou
   mensal: { nome: 'Plano Apoiador · 30 dias', desc: 'Dominó Manauara: sua foto na mesa online, selo de apoiador, avatares exclusivos e tudo do Personalizar liberado na hora, por 30 dias.', valor: 4.90, dias: 31 },
   anual: { nome: 'Plano Apoiador · 1 ano', desc: 'Dominó Manauara: sua foto na mesa online, selo de apoiador, avatares exclusivos e tudo do Personalizar liberado na hora, por 1 ano.', valor: 39.90, dias: 366 },
   doacao5: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter o jogo de graça. Quem doa pode mostrar a foto na mesa online.', valor: 5 },
@@ -49,12 +55,12 @@ async function ligarPlano(env, aparelho, dias) {
 }
 async function garantirConta(env, aparelho) { if (!(await planoDe(env, aparelho))) await novaConta(env, aparelho, 0); }
 
-// Doador: quanto já doou (só doações), desde quando apoia (qualquer pagamento) e a última doação
+// Selo ♥: soma de todos os apoios pagos (desde a 3.22 qualquer pagamento conta; antes, só as doações), desde quando e o último
 export const nivelDoador = t => t >= 100 ? 3 : t >= 30 ? 2 : t > 0 ? 1 : 0;
 export async function doadorDe(env, aparelho) {
-  const r = await env.DB.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(valor), 0) AS total, MAX(pago_em) AS ultima FROM pedidos WHERE aparelho = ? AND status = 'pago' AND produto LIKE 'doacao%'").bind(aparelho).first();
+  const r = await env.DB.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(valor), 0) AS total, MAX(pago_em) AS ultima FROM pedidos WHERE aparelho = ? AND status = 'pago'").bind(aparelho).first();
   if (!r || !r.n) return null;
-  const u = await env.DB.prepare("SELECT valor FROM pedidos WHERE aparelho = ? AND status = 'pago' AND produto LIKE 'doacao%' ORDER BY pago_em DESC LIMIT 1").bind(aparelho).first();
+  const u = await env.DB.prepare("SELECT valor FROM pedidos WHERE aparelho = ? AND status = 'pago' ORDER BY pago_em DESC LIMIT 1").bind(aparelho).first();
   const d = await env.DB.prepare("SELECT MIN(pago_em) AS desde FROM pedidos WHERE aparelho = ? AND status = 'pago'").bind(aparelho).first();
   const total = Math.round(r.total * 100) / 100;
   return { n: r.n, total, desde: d && d.desde, ultima: r.ultima, ultimoValor: u ? u.valor : null, nivel: nivelDoador(total) };
