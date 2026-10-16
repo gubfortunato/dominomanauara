@@ -2399,7 +2399,7 @@ const CONFIG = {
   // Estatística anônima (Umami Cloud): o "Website ID" do painel. Vazio: nada é contado.
   umamiId: '52db3c75-c2b5-4f28-b0b4-eb0fce4cecb0',
   api: 'https://api.gubfort.workers.dev',
-  pagamentos: false,   // Plano Apoiador e doação: ligar depois que a chave do Asaas estiver no ar (o dono já vê antes, para testar)    // Servidor do jogo (Cloudflare): mensagens do Fale com a gente; depois ranking e mesa online
+  pagamentos: true,   // Plano Apoiador e doação ligados para todos desde a 3.20.4 (chave do Asaas no ar e pagamento real testado)    // Servidor do jogo (Cloudflare): mensagens do Fale com a gente; depois ranking e mesa online
   // Área do dono: o link do painel do Umami, cifrado. Só abre com a senha do dono (nunca fica no código).
   dono: {it: 600000, salt: 'Rsv+TFmbGp/qqRK3SjZflA==', iv: 'rbh9acXT08e5qqKS', data: 'pGUT+l1pDLcf1hbMgRRqvf36nSmWePJDvuuU7kFRbuuuHqmguqUMq8Q+aZdHQiAH9kIlbTbE1cDAdtlo97Q7q+oPJOoiPQl2MWKiWe/dBx7kDWxvEDUhoBz1Dknq9aX+fenYQUMD1il6Py4DJY/+qphQmQrKnwGP9KLGLwQeEQ=='},
   patrocinio: {
@@ -2428,6 +2428,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.20.4', data: '15/10/2026', itens: ['Doação e Plano Apoiador ligados para todos, por Pix ou cartão, na página segura do Asaas. O jogo continua de graça: o plano só dá extras visuais (selo, sem anúncios, avatares exclusivos e tudo do Personalizar liberado na hora).'] },
   { v: '3.20.3', data: '15/10/2026', itens: ['Partida nova (depois dos 200 pontos) agora começa com a carroça de sena, como o jogo novo.', 'As pedras ficam sempre centralizadas na mesa e maiores quando o jogo cresce: a mesa acompanha as pedras e reaproxima quando sobra espaço, deslizando suave.', 'Copa 357 Anos com a turma: embaixo do cartão da Copa tem "Chamar os amigos para a Copa", que já cria a mesa online na Manaus 357 e prepara o convite do WhatsApp.'] },
   { v: '3.20.2', data: '15/10/2026', itens: ['O seu nível agora aparece ao lado do "Você", embaixo da mesa, sem ficar coberto pelo aviso de "Sua vez de jogar!".'] },
   { v: '3.20.1', data: '15/10/2026', itens: ['Novos títulos nos níveis 25 (Fera do bairro), 35 (Terror da mesa) e 45 (Cobra criada): sempre tem um próximo título por perto.',
@@ -3606,6 +3607,7 @@ function renderDono() {
   $('#dnKeyTrocar').textContent = temChave ? 'Trocar a chave do Umami' : 'Tenho o plano Pro do Umami: colar a chave';
   $('#dnSemContar').checked = !!dono.semContar;
   $('#dnTestePag').checked = !!dono.testePagamentos;
+  $('#dnTestePag').closest('label').hidden = !!CONFIG.pagamentos;   // com os pagamentos ligados para todos, o teste não muda nada
   $$('#dnRange button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.r === dnRange)));
   dnAoVivo(); dnCarregar();
   clearInterval(dnTimer);
@@ -5306,7 +5308,7 @@ renderApoio = function () {
     $('#apoioVals').innerHTML = '<button type="button" class="ap-ir" data-ir="plano">Conhecer o Plano Apoiador</button><button type="button" class="ap-ir ap-ir2" data-ir="apoio">Doar de novo</button>';
   } else {
     $('#apoioK').textContent = 'Apoie o jogo';
-    $('#apoioTxt').textContent = 'O Dominó Manauara é de graça e quer continuar assim. Com o valor que der, você ajuda a manter a mesa de pé. Quer extras? O Plano Apoiador dá selo na mesa, jogo sem anúncios, avatares e cores de mesa exclusivos.';
+    $('#apoioTxt').textContent = 'O Dominó Manauara é de graça e quer continuar assim. Com o valor que der, você ajuda a manter a mesa de pé. Quer extras? O Plano Apoiador dá selo na mesa, jogo sem anúncios, avatares exclusivos e tudo do Personalizar liberado na hora.';
     $('#apoioVals').innerHTML = '<button type="button" class="ap-ir" data-ir="apoio">Doar a partir de R$ 5</button><button type="button" class="ap-ir ap-ir2" data-ir="plano">Conhecer o Plano Apoiador</button>';
   }
   if (menorDeIdade()) card.hidden = true;
