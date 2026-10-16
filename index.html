@@ -2438,6 +2438,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.21.2', data: '16/10/2026', itens: ['Início: o atalho "Seja Apoiador" ficou mais simples, sem falar de valores; Missões do dia logo abaixo de Monte a sua Turma; Regras logo acima do botão de chamar os amigos pelo WhatsApp.'] },
   { v: '3.21.1', data: '16/10/2026', itens: ['Os anúncios dos patrocinadores aparecem para todos, com ou sem Plano Apoiador. O plano continua com foto na mesa online, selo ★, avatares exclusivos e tudo do Personalizar liberado na hora.'] },
   { v: '3.21', data: '16/10/2026', itens: ['Foto na mesa online agora é para quem apoia o jogo: Plano Apoiador ativo ou qualquer doação (a doação vale para sempre). Quem já tinha foto aprovada continua com ela.',
     'Atalho "Seja Apoiador" no topo do início, no lugar do cartão grande lá embaixo.',
@@ -5484,15 +5485,15 @@ renderHome = function () {
 
 // ---------- Início: banner pequeno de apoio, logo no topo (3.21, no lugar do cartão grande lá embaixo) ----------
 // Sem plano: convida para o plano (foto na mesa e avatares). Doador sem plano: só o plano (a foto ele já tem).
-// Com plano: some, e volta só nos últimos 5 dias para lembrar de renovar. Menor de 18 nunca vê.
+// Com plano: some, e volta só nos últimos 5 dias para lembrar de renovar. Menor de 18 nunca vê. Sem falar de valores (3.21.2).
 function renderApBanner() {
   const b = $('#apBanner'); if (!b) return;
   const p = planoLocal(), on = temPlano(), dias = on ? Math.ceil((p.ate - Date.now()) / 86400000) : 0;
   let t = null, s = '';
   if (!pagamentosAtivos() || !profile || menorDeIdade()) t = null;
   else if (on) { if (dias <= 5) { t = `Seu plano acaba em ${dias} ${dias === 1 ? 'dia' : 'dias'}`; s = 'Renove para continuar com a foto na mesa e os extras.'; } }
-  else if (souDoador()) { t = 'Seja Apoiador'; s = 'Selo ★, avatares exclusivos e tudo do Personalizar, por R$ 4,90.'; }
-  else { t = 'Seja Apoiador'; s = 'Sua foto na mesa e avatares exclusivos, a partir de R$ 4,90.'; }
+  else if (souDoador()) { t = 'Seja Apoiador'; s = 'Selo ★, avatares exclusivos e tudo do Personalizar liberado.'; }
+  else { t = 'Seja Apoiador'; s = 'Sua foto na mesa online e avatares exclusivos.'; }
   b.hidden = !t;
   if (t) { $('#apBannerT').textContent = t; $('#apBannerS').textContent = s; }
 }
@@ -7396,6 +7397,18 @@ renderHome = function () { renderHomeNv.apply(this, arguments); try { desenharFa
   const eu = $('#meName');
   if (eu) eu.addEventListener('click', e => { if (e.target.closest('.me-nv, .me-name img')) { const v = nivelDe(nvEstado().xp); toast(`Você · Nível ${v.n} · ${v.titulo}`); } });
 })();
+
+// ===== Ajustes de ordem na tela de início (3.21.2) =====
+// Missões do dia logo abaixo de "Monte a sua Turma" e Regras logo acima do botão de chamar os amigos pelo WhatsApp.
+// (Os cartões são criados por vários módulos; aqui só se muda a posição, depois de cada desenho do início.)
+function ordenarInicio() {
+  const tu = $('#turmaCard'), mi = $('#misCard'), re = $('#howBtn'), wa = $('#shareApp');
+  if (tu && mi && tu.nextElementSibling !== mi) tu.after(mi);
+  if (re && wa && wa.previousElementSibling !== re) wa.before(re);
+}
+const renderHomeOrdem = renderHome;
+renderHome = function () { renderHomeOrdem.apply(this, arguments); try { ordenarInicio(); } catch (e) {} };
+ordenarInicio();
 
 
 // ---- Desenho das peças ----
