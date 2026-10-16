@@ -2428,6 +2428,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.20.5', data: '16/10/2026', itens: ['Correção: quem tinha uma mesa online guardada e voltava da página de pagamento (doação ou plano) era levado para a mesa online. Agora volta para onde estava. Ao recarregar o app dentro da mesa, continua voltando direto para ela.'] },
   { v: '3.20.4', data: '15/10/2026', itens: ['Doação e Plano Apoiador ligados para todos, por Pix ou cartão, na página segura do Asaas. O jogo continua de graça: o plano só dá extras visuais (selo, sem anúncios, avatares exclusivos e tudo do Personalizar liberado na hora).'] },
   { v: '3.20.3', data: '15/10/2026', itens: ['Partida nova (depois dos 200 pontos) agora começa com a carroça de sena, como o jogo novo.', 'As pedras ficam sempre centralizadas na mesa e maiores quando o jogo cresce: a mesa acompanha as pedras e reaproxima quando sobra espaço, deslizando suave.', 'Copa 357 Anos com a turma: embaixo do cartão da Copa tem "Chamar os amigos para a Copa", que já cria a mesa online na Manaus 357 e prepara o convite do WhatsApp.'] },
   { v: '3.20.2', data: '15/10/2026', itens: ['O seu nível agora aparece ao lado do "Você", embaixo da mesa, sem ficar coberto pelo aviso de "Sua vez de jogar!".'] },
@@ -4373,7 +4374,7 @@ const cadDe = pos => ON.vista ? ON.vista.cad[(pos + ON.vista.minha) % 4] : null;
 function wsURL(cod) { return CONFIG.api.replace(/^http/, 'ws') + '/mesa/' + cod + '/ws'; }
 function conectar(cod) {
   ON.cod = cod; ON.ativo = true; store.set(MKEY, cod);
-  try { sessionStorage.setItem('dmz-mesa-viva', cod); } catch (e) {}
+  marcarMesaViva();
   clearTimeout(ON.reT);
   if (ON.ws && ON.ws.readyState <= 1) return;
   statusOnline();
@@ -4837,8 +4838,15 @@ addEventListener('hashchange', () => {
 });
 
 // Telas: o aviso de conexão acompanha a troca de tela; a sala se desenha ao abrir.
+// "Mesa viva" (3.20.5): só enquanto a pessoa está NA tela da mesa ou da partida online. Assim, ao recarregar ali
+// (versão nova), ela volta sozinha para a mesa; mas quem está no início, na doação ou em outra tela fica onde está
+// (antes, voltar da página de pagamento do Asaas jogava a pessoa na mesa online).
+function naTelaDaMesa() { return screen === 'sala' || (screen === 'game' && mode === 'on'); }
+function marcarMesaViva() {
+  try { if (ON.cod && naTelaDaMesa()) sessionStorage.setItem('dmz-mesa-viva', ON.cod); else sessionStorage.removeItem('dmz-mesa-viva'); } catch (e) {}
+}
 const showBase = show;
-show = function (name) { showBase(name); statusOnline(); };
+show = function (name) { showBase(name); statusOnline(); marcarMesaViva(); };
 // Recarregou no meio da mesa (versão nova do app): volta sozinho para ela.
 (function () {
   let viva = null; try { viva = sessionStorage.getItem('dmz-mesa-viva'); } catch (e) {}
