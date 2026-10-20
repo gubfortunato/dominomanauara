@@ -78,3 +78,7 @@ CREATE TABLE IF NOT EXISTS cortesias (aparelho TEXT PRIMARY KEY, nivel INTEGER N
 CREATE TABLE IF NOT EXISTS bloqueios (aparelho TEXT PRIMARY KEY, nome TEXT, motivo TEXT, em INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS jogadores_vistos (aparelho TEXT PRIMARY KEY, nome TEXT, av TEXT, mesa TEXT, visto_em INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS jogadores_vistos_em ON jogadores_vistos (visto_em);
+
+-- "No app agora" (3.26): em que parte do jogo cada pessoa está (o app avisa a cada minuto); some depois de 1 dia
+CREATE TABLE IF NOT EXISTS presenca (aparelho TEXT PRIMARY KEY, nome TEXT, av TEXT, nv INTEGER, tela TEXT, modo TEXT, detalhe TEXT, menor INTEGER NOT NULL DEFAULT 0, visto_em INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS presenca_visto ON presenca (visto_em);

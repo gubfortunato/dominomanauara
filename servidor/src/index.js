@@ -7,6 +7,7 @@ import { atuais, imagem, contar, donoLista, donoImagem, donoSalvar, donoApagar }
 import * as fotos from './fotos.js';
 import * as turmas from './turmas.js';
 import * as vivo from './vivo.js';
+import * as presenca from './presenca.js';
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos } from './bloqueio.js';
 export { Mesa };
 
@@ -337,6 +338,8 @@ export default {
       const pa = url.pathname.match(/^\/dono\/patrocinadores\/(\d+)\/apagar$/);
       if (pa && req.method === 'POST') return await donoApagar(req, env, origin, HP, Number(pa[1]));
       // "Hoje no Dominó Manauara": números do dia
+      if (url.pathname === '/presenca' && req.method === 'POST') return await presenca.avisar(req, env, origin, H);
+      if (url.pathname === '/dono/presenca' && req.method === 'GET') return await presenca.donoPresenca(req, env, origin, H);
       if (url.pathname === '/vivo/hoje' && req.method === 'GET') return await vivo.hoje(env, origin, H);
       if (url.pathname === '/vivo/mesas' && req.method === 'GET') { const r = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila/vivo'); return json(await r.json(), 200, origin); }
       if (url.pathname === '/vivo/conta' && req.method === 'POST') return await vivo.conta(req, env, origin, H);
@@ -356,7 +359,7 @@ export default {
   },
   // Agendado (Cron do Cloudflare): lembretes no fim da tarde de Manaus (e a leitura diária que mantém a chave do Asaas ativa).
   async scheduled(evento, env, ctx) {
-    ctx.waitUntil((async () => { try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env); } catch (e) {} try { await fotos.moderarPendentes(env); } catch (e) {} try { await turmas.fecharDesafio(env); } catch (e) {} try { await manterChaveAsaas(env); } catch (e) {} try { await vivo.limparVivo(env); } catch (e) {} try { await limparVistos(env); } catch (e) {} await lembretesDoDia(env); })());
+    ctx.waitUntil((async () => { try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env); } catch (e) {} try { await fotos.moderarPendentes(env); } catch (e) {} try { await turmas.fecharDesafio(env); } catch (e) {} try { await manterChaveAsaas(env); } catch (e) {} try { await vivo.limparVivo(env); } catch (e) {} try { await limparVistos(env); } catch (e) {} try { await presenca.limparPresenca(env); } catch (e) {} await lembretesDoDia(env); })());
   }
 };
 export { lembretesDoDia, lembretesPlano, lembreteDaData };

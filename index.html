@@ -1064,6 +1064,9 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
   body:has(#scrGame:not([hidden])) .shell{max-width:min(1040px, 76vw)}
 }
 @media (orientation: landscape) and (min-width: 1100px) and (min-height: 900px){ :root{--tw:78px} }
+/* 3.26: aviso de versão nova (sem travar o app) */
+.versao-nova{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:60;padding:10px 16px;border-radius:999px;border:0;background:var(--wood-2);color:var(--wood-ink);font:inherit;font-size:14.5px;box-shadow:0 6px 20px var(--shadow);cursor:pointer;white-space:nowrap}
+.versao-nova b{color:var(--glow)}
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
@@ -1556,6 +1559,30 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .vivo-p{white-space:normal}
 .vivo-on{color:var(--ok);font-weight:800}
 .vivo-tx small.vivo-info{font-size:11.5px;white-space:normal}
+/* 3.26: "Agora na calçada" para todos — dá para entrar (tem robô) ou mesa cheia */
+.vivo-mesa{grid-template-rows:auto auto}
+.vivo-st{grid-column:1 / -1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 10px;border-radius:10px;font-size:13.5px;font-weight:800}
+.vivo-entra{background:var(--nos);color:#fff}
+.vivo-entra span{font-size:10px}
+.vivo-cheia-st{background:transparent;border:1.5px dashed var(--line);color:var(--muted)}
+.vivo-cheia-st span{color:#e5484d;font-size:10px}
+.vivo-mesa.cheia{opacity:1;cursor:default;background:var(--bg-2)}
+.vivo-mesa.cheia:active{transform:none}
+.vivo-mesa.cheia .vivo-sw,.vivo-mesa.cheia .vivo-pl{opacity:.75}
+.vivo-mesa.livre{border-color:var(--nos)}
+.vivo-ver{justify-self:start;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+/* 3.26: administrador — calçada enxuta e "No app agora" */
+.vivo-gl{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:14px;line-height:1.3}
+.vivo-g{font-weight:800;color:var(--fg);white-space:nowrap}
+.vivo-g::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;border:1.5px solid var(--muted);vertical-align:1px}
+.vivo-g.on::before{background:var(--ok);border-color:var(--ok)}
+.vivo-rb{color:var(--muted);font-weight:700;white-space:nowrap}
+.vivo-pres{display:grid;gap:4px;padding-top:6px;border-top:1px solid var(--line)}
+.vivo-pk{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--nos)}
+.vivo-pl2{list-style:none;margin:0;padding:0;display:grid;gap:3px;font-size:13.5px}
+.vivo-pl2 li{line-height:1.35}
+.vivo-pl2 li span{color:var(--muted)}
+.vivo-pl2 li em{font-style:normal;font-size:11px;font-weight:800;color:#e5484d;text-transform:uppercase}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -2636,6 +2663,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.26', data: '20/10/2026', itens: ['Atualização sem travar: ao abrir o app, a versão nova entra na hora; se você já está jogando ou mexendo, aparece "Versão nova pronta · Atualizar" e ela entra com um toque (ou sozinha quando você sair do app). Antes a tela apagava e travava no meio do uso.'] },
   { v: '3.25.1', data: '20/10/2026', itens: ['Ajustes na área do administrador.'] },
   { v: '3.25', data: '20/10/2026', itens: ['Mesa mais fácil de entender: as fileiras seguem retas e só viram perto da borda, a mesa não se rearruma no meio da mão e o bucho fica com os dois lados descendo iguais.',
     'Dá para jogar tocando: toque na pedra (ela sobe) e toque na ponta. Arrastando ou tocando, só aparecem as pontas onde a pedra encaixa. Ideia do Seu Raimundo, pelo "Fale com a gente". Obrigado!',
@@ -3153,7 +3181,6 @@ function toast(msg) {
 const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Anuncie', 'Apoio', 'Patro', 'Instalar', 'Estilo'];
 let showTimer = null;
 function show(name) {
-  if (window.__reloadWhenFree && name !== 'game') { recarregar(name); return; }
   screen = name;
   const next = $('#scr' + name[0].toUpperCase() + name.slice(1));
   const cur = SCREENS.map(s => $('#scr' + s)).find(el => !el.hidden && el !== next && !el.classList.contains('fade-out'));
@@ -6240,9 +6267,7 @@ function recarregar(destino) {
   saveGame();
   const ir = destino || screen;
   try { if (profile) sessionStorage.setItem('dmz-voltar', JSON.stringify({ tela: ir, t: Date.now() })); } catch (e) {}
-  if (reduzMov() || document.visibilityState !== 'visible') { location.reload(); return; }
-  document.documentElement.classList.add('recarregando');
-  setTimeout(() => location.reload(), 260);
+  location.reload();   // 3.26: sem apagar a tela (a página atual continua aparecendo até a nova estar pronta)
 }
 function telaInicial() {
   let v = null;
@@ -7826,9 +7851,15 @@ show = function (name) {
 // Em cima delas, "Hoje no Dominó Manauara": os números de verdade do dia (partidas terminadas, galos e batidas de
 // carroça de quem jogou, offline e online), vindos do servidor. Com poucas partidas no dia, a linha nem aparece.
 // 3.24.3: por enquanto o cartão só aparece no modo administrador (para o dono avaliar); a contagem do dia segue para todos.
-const vivoMostra = () => souAdmin();
-function vivoVisivel() { const c = $('#vivoCard'); if (c) c.hidden = !vivoMostra(); }
-const VIVO = { mesas: [], timer: null, buscadoEm: 0, buscando: false };
+// 3.26: pronto para todo mundo (VIVO_PUBLICO), sem os detalhes do administrador: cada mesa diz quantas pessoas e quantos
+// robôs, e deixa claro se dá para entrar (tem robô: toque e entre no lugar dele) ou se está cheia (só gente, sem toque).
+// O administrador vê os detalhes e pode ver o cartão do jeito que os jogadores verão ("Ver como os jogadores veem").
+// Menor de 18 não vê (a mesa rápida é para maiores).
+const VIVO_PUBLICO = false;
+const vivoMostra = () => souAdmin() || (VIVO_PUBLICO && !!CONFIG.api && !!profile && profile.idade !== 'menor');
+const vivoDetalhes = () => souAdmin() && !VIVO.comoJogador;
+function vivoVisivel() { const c = $('#vivoCard'); if (c) c.hidden = !vivoMostra(); const b = $('#vivoVer'); if (b) { b.hidden = !souAdmin(); b.textContent = VIVO.comoJogador ? 'Ver com os detalhes de administrador' : 'Ver como os jogadores veem'; } }
+const VIVO = { mesas: [], timer: null, buscadoEm: 0, buscando: false, comoJogador: false };
 const VIVO_MIN = 10;   // a linha "Hoje" só aparece a partir de 10 partidas no dia
 let vivoHojeEm = 0;
 async function vivoHoje() {
@@ -7900,32 +7931,52 @@ function vivoDesenha() {
   box.innerHTML = VIVO.mesas.map((v, i) => {
     const m = MESAS.find(x => x.id === v.tema) || MESAS[0], c = v.cad || [];
     const rosto = p => { const x = c[p]; if (!x) return '<i></i>'; const a = !x.bot && typeof avatarDe === 'function' ? avatarDe(x.av) : null; const src = x.bot ? botFaceURI(x.nome) : a ? avatarURI(a) : ''; return src ? `<img src="${src}" alt="">` : `<i>${esc((x.nome || '?')[0])}</i>`; };
-    // 3.25.1: fica claro quem é gente e quem é robô (o robô aparece apagado, com "robô" do lado)
     const tipo = p => (c[p] || {}).tipo || ((c[p] || {}).bot ? 'robo' : 'pessoa');
-    const nome = p => { const x = c[p]; if (!x) return '—'; const t = tipo(p);
-      return t === 'pessoa' ? `<b class="vivo-gente">${esc(x.nome)}</b>` : t === 'fora' ? `<b class="vivo-gente">${esc(x.nome)}</b> <i class="vivo-r">sem conexão</i>`
-        : `<span class="vivo-robo">${esc(t === 'saiu' ? x.nome : x.nome)} <i class="vivo-r">${t === 'saiu' ? 'saiu, robô no lugar' : 'robô'}</i></span>`; };
-    const nPessoas = [0, 1, 2, 3].filter(p => ['pessoa', 'fora'].includes(tipo(p))).length, nRobos = 4 - nPessoas;
-    // 3.25.1: só para o administrador — quem é a gente de verdade (apelido, nível, bairro e se está conectado)
-    const gente = [0, 1, 2, 3].filter(p => ['pessoa', 'fora'].includes(tipo(p))).map(p => { const x = c[p];
-      return `<span class="vivo-p"><b>${esc(x.nome)}</b> Nv ${x.nv || 1}${x.bairro ? ' · ' + esc(x.bairro) : ''} · ${tipo(p) === 'pessoa' ? '<span class="vivo-on">conectado</span>' : 'sem conexão'}</span>`; });
-    const quente = Date.now() - v.quando < 4000, livre = v.livres > 0;
-    return `<button type="button" class="vivo-mesa${livre ? '' : ' cheia'}" data-i="${i}"${livre ? '' : ' aria-disabled="true"'}>
-      <span class="vivo-sw" style="background:${fundoMesa(m)}"></span>
-      <span class="vivo-tx"><b>${esc(m.nome)}${livre ? '' : ' <small class="vivo-tag">cheia</small>'}</b>
+    const ehGente = p => ['pessoa', 'fora'].includes(tipo(p));
+    const nPessoas = [0, 1, 2, 3].filter(ehGente).length, nRobos = 4 - nPessoas;
+    const quente = Date.now() - v.quando < 4000, livre = v.livres > 0, adm = vivoDetalhes(), lugares = v.livres || 0;
+    const placar = `<span class="vivo-pl"><span class="vivo-rostos">${rosto(0)}${rosto(2)}</span><b>${(v.placar || [0, 0])[0]} × ${(v.placar || [0, 0])[1]}</b><span class="vivo-rostos">${rosto(1)}${rosto(3)}</span></span>`;
+    const estado = livre
+      ? `<span class="vivo-st vivo-entra"><span aria-hidden="true">▶</span> Toque para entrar · ${lugares} ${lugares === 1 ? 'lugar com robô' : 'lugares com robô'}</span>`
+      : `<span class="vivo-st vivo-cheia-st"><span aria-hidden="true">●</span> Mesa cheia · não dá para entrar</span>`;
+    const abre = `<button type="button" class="vivo-mesa${livre ? ' livre' : ' cheia'}" data-i="${i}"${livre ? '' : ' aria-disabled="true"'} aria-label="${esc(m.nome)}: ${nPessoas} ${nPessoas === 1 ? 'pessoa' : 'pessoas'}, ${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}. ${livre ? 'Toque para entrar' : 'Mesa cheia'}">
+      <span class="vivo-sw" style="background:${fundoMesa(m)}"></span>`;
+    if (adm) {
+      // 3.26: enxuto — as pessoas numa linha (bolinha verde: conectada; vazia: sem conexão) e os robôs só na conta
+      const gente = [0, 1, 2, 3].filter(ehGente).map(p => `<span class="vivo-g${tipo(p) === 'pessoa' ? ' on' : ''}">${esc(c[p].nome)}</span>`).join('');
+      return `${abre}<span class="vivo-tx"><b>${esc(m.nome)}</b>
+          <span class="vivo-gl">${gente}${nRobos ? `<span class="vivo-rb">+${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}</span>` : ''}</span>
+          <small class="vivo-info">Mesa ${esc(v.codigo)} · partida ${v.partida || 1}</small></span>${placar}${estado}</button>`;
+    }
+    const nome = p => { const x = c[p]; if (!x) return '—'; return ehGente(p) ? `<b class="vivo-gente">${esc(x.nome)}</b>` : `<span class="vivo-robo">${esc(x.nome)} <i class="vivo-r">robô</i></span>`; };
+    return `${abre}<span class="vivo-tx"><b>${esc(m.nome)}</b>
         <small class="vivo-conta">${nPessoas} ${nPessoas === 1 ? 'pessoa' : 'pessoas'} · ${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}</small>
         <small class="vivo-nomes">${nome(0)} e ${nome(2)} × ${nome(1)} e ${nome(3)}</small>
-        ${gente.length ? `<span class="vivo-pessoas">${gente.join('')}</span>` : ''}
-        <small class="vivo-info">Mesa ${esc(v.codigo)} · partida ${v.partida || 1}, mão ${v.mao || 1}${v.criada ? ` · aberta ${vivoQuando(v.criada)}` : ''}</small>
-        <em class="${quente ? 'quente' : ''}">${esc(v.txt)}</em></span>
-      <span class="vivo-pl"><span class="vivo-rostos">${rosto(0)}${rosto(2)}</span><b>${(v.placar || [0, 0])[0]} × ${(v.placar || [0, 0])[1]}</b><span class="vivo-rostos">${rosto(1)}${rosto(3)}</span></span>
-    </button>`;
+        <em class="${quente ? 'quente' : ''}">${esc(v.txt)}</em></span>${placar}${estado}</button>`;
   }).join('');
+}
+// 3.26: só o administrador — "No app agora": onde cada pessoa está no jogo (o app de cada um avisa a cada minuto)
+const PRES_TELA = { who: 'na entrada', home: 'no início', setup: 'escolhendo a partida', sala: 'na sala da mesa online', profile: 'no perfil',
+  apoio: 'em Apoie o jogo', estilo: 'em Personalizar', fale: 'no Fale com a gente', anuncie: 'em Anuncie', patro: 'em Patrocínio', instalar: 'em Como instalar', dono: 'na área do administrador' };
+const presOnde = x => x.tela === 'game' ? (x.modo === 'on' ? 'na mesa online' : 'jogando offline') : PRES_TELA[x.tela] || 'no app';
+let presBuscadoEm = 0;
+async function vivoPresenca(agora) {
+  const box = $('#vivoPres'); if (!box) return;
+  box.hidden = !vivoDetalhes();
+  if (box.hidden || (!agora && Date.now() - presBuscadoEm < 10000)) return;
+  presBuscadoEm = Date.now();
+  try {
+    const j = await dnMsgPedir('/dono/presenca');
+    const l = j.agora || [], meu = meuId();
+    const n = l.length + (j.menores || 0);
+    box.innerHTML = `<span class="vivo-pk">No app agora · ${n} ${n === 1 ? 'pessoa' : 'pessoas'}${j.menores ? ` (${j.menores} ${j.menores === 1 ? 'menor de 18, sem nome' : 'menores de 18, sem nome'})` : ''}</span>` +
+      (l.length ? `<ul class="vivo-pl2">${l.slice(0, 15).map(x => `<li><b>${esc(x.nome || 'Sem apelido')}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span>${x.bloq ? ' <em>bloqueado</em>' : ''}</li>`).join('')}${l.length > 15 ? `<li><span>e mais ${l.length - 15}</span></li>` : ''}</ul>` : '');
+  } catch (e) {}
 }
 function vivoTique() {
   vivoVisivel();
   if (!vivoMostra() || screen !== 'home' || document.visibilityState !== 'visible') return;
-  vivoHoje(); vivoMesas();
+  vivoHoje(); vivoMesas(); vivoPresenca();
 }
 // Entrar numa mesa da lista: mesmo cuidado da mesa rápida (maiores de 18, uma mesa por vez); senta no lugar de um robô
 function entrarAoVivo(codigo) {
@@ -7941,20 +7992,23 @@ function entrarAoVivo(codigo) {
   if (!ref) return;
   ref.insertAdjacentHTML('afterend', `<section class="vivo" id="vivoCard" hidden aria-label="Mesas rápidas jogando agora">
     <div class="vivo-cab"><span class="vivo-ponto" aria-hidden="true"></span><b>Agora na calçada</b><small>mesas rápidas jogando agora</small></div>
+    <button type="button" class="vivo-ver" id="vivoVer" hidden>Ver como os jogadores veem</button>
     <div class="vivo-hoje" id="vivoHoje" hidden></div>
     <div class="vivo-lista" id="vivoLista"></div>
-    <p class="vivo-pe" id="vivoPe" hidden>Toque numa mesa para entrar no lugar de um robô.</p></section>`);
+    <p class="vivo-pe" id="vivoPe" hidden>Toque numa mesa para entrar no lugar de um robô.</p>
+    <div class="vivo-pres" id="vivoPres" hidden></div></section>`);
   vivoDesenha();
   VIVO.timer = setInterval(vivoTique, 2000);
   vivoVisivel();
-  if (vivoMostra()) { vivoHoje(); vivoMesas(true); }
+  if (vivoMostra()) { vivoHoje(); vivoMesas(true); setTimeout(() => vivoPresenca(true), 1500); }
   const renderHomeVivo = renderHome;
   renderHome = function () { const r = renderHomeVivo.apply(this, arguments); try { vivoVisivel(); if (vivoMostra()) vivoMesas(); } catch (e) {} return r; };
+  $('#vivoVer').addEventListener('click', () => { VIVO.comoJogador = !VIVO.comoJogador; vivoVisivel(); vivoDesenha(); vivoPresenca(true); });
   $('#vivoLista').addEventListener('click', e => {
     if (e.target.closest('#vivoAbrir')) { track('vivo-abrir'); mesaRapida(); return; }
     const b = e.target.closest('[data-i]'); if (!b) return;
     const v = VIVO.mesas[Number(b.dataset.i)]; if (!v) return;
-    if (!(v.livres > 0)) { toast('Essa mesa está cheia agora.'); return; }
+    if (!(v.livres > 0)) { toast('Essa mesa está cheia: só tem gente de verdade. Escolha uma com robô ou abra uma mesa rápida.'); return; }
     entrarAoVivo(v.codigo);
   });
 })();
@@ -8064,6 +8118,43 @@ renderDono = function () { const r = renderDonoJog.apply(this, arguments); try {
     });
   });
 })();
+
+// ===== "No app agora" (3.26) =====
+// Enquanto o app está na tela, avisa o servidor a cada minuto (e logo depois de trocar de tela) em que parte do jogo a
+// pessoa está, para o administrador ver o movimento. Vai o código aleatório do aparelho, o apelido, o avatar, o nível e
+// a tela (com o placar, numa partida). Menor de 18 manda só que está no app, sem apelido nem avatar.
+let presT = null, presUlt = 0, presTela = '';
+function presDetalhe() {
+  try {
+    if (screen === 'game' && G && G.score) {
+      const pl = `${G.score[TEAM(seatMe || 0)]} × ${G.score[1 - TEAM(seatMe || 0)]}`;
+      if (mode === 'on') return `mesa ${ON.cod || ''} · ${pl}`;
+      const m = typeof mesaEscolhida === 'function' ? mesaEscolhida() : null;
+      return `${m && m.nome ? m.nome + ' · ' : ''}${pl}`;
+    }
+    if (screen === 'sala') return ON.cod ? `mesa ${ON.cod}` : 'procurando mesa';
+  } catch (e) {}
+  return '';
+}
+function presAvisar(forcar) {
+  if (!CONFIG.api || !profile || document.visibilityState !== 'visible') return;
+  const agora = Date.now();
+  if (!forcar && agora - presUlt < 55000) return;
+  presUlt = agora; presTela = screen;
+  const menor = profile.idade === 'menor';
+  const corpo = { aparelho: meuId(), tela: screen, modo: screen === 'game' ? mode : null, menor, nv: typeof meuNivel === 'function' ? meuNivel() : 1,
+    nome: menor ? null : me, av: menor ? null : (typeof meuAv === 'function' ? meuAv() : null), detalhe: menor ? null : presDetalhe() };
+  fetch(CONFIG.api + '/presenca', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo), keepalive: true }).catch(() => {});
+}
+setInterval(() => presAvisar(false), 60000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') presAvisar(true); });
+const showPresenca = show;
+show = function () {
+  const r = showPresenca.apply(this, arguments);
+  clearTimeout(presT); presT = setTimeout(() => { if (screen !== presTela) presAvisar(true); }, 3000);
+  return r;
+};
+setTimeout(() => presAvisar(true), 2500);
 
 
 // ---- Desenho das peças ----
@@ -8643,7 +8734,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.25.1-b4942a82';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.26-6d3b5f88';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -8660,17 +8751,16 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
       setTimeout(conferirVersao, 3000);
     }).catch(() => {});
   });
-  // Versão nova chegou: troca na hora; no meio do jogo, de um formulário ou de uma janela aberta, espera ficar livre.
-  // (a primeira instalação também dispara a troca; essa não tem versão velha para substituir)
+  // Service worker novo assumiu: a página só precisa recarregar se ainda for a versão velha (quem já abriu a nova pelo
+  // versao.txt não recarrega de novo — era a segunda "travada" seguida). Quem decide é o conferirVersao.
   let hadController = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!hadController) { hadController = true; return; }
-    if (!livreParaAtualizar()) { window.__reloadWhenFree = true; return; }
-    recarregar();
+    conferirVersao();
   });
   // Saiu do app com uma versão nova esperando (e fora da mesa): troca sem ninguém ver.
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden' && window.__reloadWhenFree && screen !== 'game') recarregar();
+    if (document.visibilityState === 'hidden' && window.__reloadWhenFree && livreParaAtualizar()) recarregar();
   });
 }
 // ---- Versão nova sem esperar o cache do GitHub (3.22.1) ----
@@ -8678,8 +8768,19 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 // confere um arquivinho (versao.txt) sempre direto do servidor; se a versão mudou e a pessoa está livre (fora da
 // partida, da sala, do perfil e sem janela aberta), avisa e recarrega pedindo a página nova. Na partida, espera acabar.
 // Proteção: no máximo 2 tentativas por versão a cada 10 minutos (sem ficar recarregando se a rede devolver a velha).
-let novaVersao = null;
+// 3.26: atualizar sem travar. Antes a tela apagava e recarregava no meio do uso (às vezes duas vezes seguidas: pelo
+// versao.txt e de novo quando o service worker novo assumia), e com internet lenta ficava vários segundos parada.
+// Agora: logo ao abrir o app (antes de mexer), atualiza na hora, sem apagar a tela; se você já está usando, aparece
+// "Versão nova pronta · Atualizar" (um toque) e, se não tocar, ela entra sozinha quando você sair do app.
+let novaVersao = null, recarregando = false, mexeu = false;
+const abriuEm = Date.now();
+addEventListener('pointerdown', () => { mexeu = true; }, { capture: true, once: true });
 function livreParaAtualizar() { return !(screen === 'game' || screen === 'sala' || screen === 'profile' || sheetKind); }
+function avisoVersaoNova() {
+  if (document.getElementById('versaoNova')) return;
+  document.body.insertAdjacentHTML('beforeend', '<button type="button" class="versao-nova" id="versaoNova">Versão nova pronta · <b>Atualizar</b></button>');
+  $('#versaoNova').addEventListener('click', () => { if (livreParaAtualizar()) recarregarNovo(); else toast('Termine a partida (ou feche a janela aberta) e toque de novo.'); });
+}
 async function conferirVersao() {
   if (APP_BUILD.startsWith('__') || !('fetch' in window)) return;
   try {
@@ -8699,20 +8800,28 @@ function tentativasVersao(v, somar) {
 }
 function atualizarQuandoLivre() {
   if (!novaVersao || tentativasVersao(novaVersao) >= 2) return;
-  if (!livreParaAtualizar() || document.visibilityState !== 'visible') { window.__reloadWhenFree = true; return; }
-  toast(`Atualizando para a versão ${novaVersao.split('-')[0]}…`);
-  setTimeout(() => { if (livreParaAtualizar()) recarregarNovo(); else window.__reloadWhenFree = true; }, 1400);
+  window.__reloadWhenFree = true;   // entra sozinha quando sair do app
+  const logoAoAbrir = !mexeu && Date.now() - abriuEm < 15000;
+  if (logoAoAbrir && livreParaAtualizar() && document.visibilityState === 'visible') {
+    toast(`Atualizando para a versão ${novaVersao.split('-')[0]}…`);
+    setTimeout(() => { if (!mexeu && livreParaAtualizar()) recarregarNovo(); else avisoVersaoNova(); }, 900);
+    return;
+  }
+  avisoVersaoNova();
 }
 function recarregarNovo(destino) {
-  if (!novaVersao || tentativasVersao(novaVersao) >= 2) { recarregarBase(destino); return; }
+  if (recarregando) return;
+  if (!novaVersao || tentativasVersao(novaVersao) >= 2) { recarregando = true; recarregarBase(destino); return; }
+  recarregando = true;
   tentativasVersao(novaVersao, true);
   saveGame();
   const ir = destino || (screen === 'game' ? 'home' : screen);
   try { if (profile) sessionStorage.setItem('dmz-voltar', JSON.stringify({ tela: ir, t: Date.now() })); } catch (e) {}
   const url = location.pathname + '?v=' + encodeURIComponent(novaVersao) + location.hash;   // ?v= faz o servidor mandar a página nova
-  if (reduzMov() || document.visibilityState !== 'visible') { location.replace(url); return; }
-  document.documentElement.classList.add('recarregando');
-  setTimeout(() => location.replace(url), 260);
+  // sem apagar a tela: a página atual continua aparecendo até a nova estar pronta
+  location.replace(url);
+  // se por algum motivo a troca não acontecer (sem internet, por exemplo), a tela segue funcionando
+  setTimeout(() => { recarregando = false; }, 8000);
 }
 // Toda recarga do app (a da troca de tela com versão esperando, a do service worker) pede a página nova quando já se
 // sabe que existe uma (até 2 vezes por versão); senão, recarrega normal.

@@ -295,8 +295,9 @@ export class Mesa {
       quem.nome = this.nomeUnico(quem.nome, p);
       m.cad[p] = quem;
     } else {
-      // jogo já começou: entra no lugar de um robô da turma, se houver
+      // jogo já começou: entra no lugar de um robô da turma, se houver (na mesa rápida, também no de quem saiu de vez)
       p = m.cad.findIndex(c => c && c.bot && !c.saiu);
+      if (p < 0 && m.publica) p = m.cad.findIndex(c => c && c.bot);
       if (p < 0) return (m.publica || !msg.fila) ? this.recusar(ws, 'cheia') : this.entrarNaFila(ws, att, quem);
       quem.nome = this.nomeUnico(quem.nome, p);
       m.cad[p] = quem; m.G.names[p] = quem.nome;
