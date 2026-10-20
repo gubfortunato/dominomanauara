@@ -82,3 +82,9 @@ CREATE INDEX IF NOT EXISTS jogadores_vistos_em ON jogadores_vistos (visto_em);
 -- "No app agora" (3.26): em que parte do jogo cada pessoa está (o app avisa a cada minuto); some depois de 1 dia
 CREATE TABLE IF NOT EXISTS presenca (aparelho TEXT PRIMARY KEY, nome TEXT, av TEXT, nv INTEGER, tela TEXT, modo TEXT, detalhe TEXT, menor INTEGER NOT NULL DEFAULT 0, visto_em INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS presenca_visto ON presenca (visto_em);
+
+-- Ranking da calçada (3.29): partidas online ganhas e jogadas (inteiras) por pessoa, por semana (S2026-10-19) e por mês
+-- (M2026-10); quem pediu para não aparecer fica em ranking_fora
+CREATE TABLE IF NOT EXISTS ranking (periodo TEXT NOT NULL, aparelho TEXT NOT NULL, nome TEXT, av TEXT, nv INTEGER, ganhas INTEGER NOT NULL DEFAULT 0, jogadas INTEGER NOT NULL DEFAULT 0, atualizado INTEGER NOT NULL, PRIMARY KEY (periodo, aparelho));
+CREATE INDEX IF NOT EXISTS ranking_top ON ranking (periodo, ganhas DESC, jogadas, atualizado);
+CREATE TABLE IF NOT EXISTS ranking_fora (aparelho TEXT PRIMARY KEY, em INTEGER NOT NULL);

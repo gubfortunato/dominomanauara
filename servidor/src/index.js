@@ -8,6 +8,7 @@ import * as fotos from './fotos.js';
 import * as turmas from './turmas.js';
 import * as vivo from './vivo.js';
 import * as presenca from './presenca.js';
+import * as rk from './ranking.js';
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos } from './bloqueio.js';
 export { Mesa };
 
@@ -339,6 +340,9 @@ export default {
       if (pa && req.method === 'POST') return await donoApagar(req, env, origin, HP, Number(pa[1]));
       // "Hoje no Dominó Manauara": números do dia
       if (url.pathname === '/presenca' && req.method === 'POST') return await presenca.avisar(req, env, origin, H);
+      // Ranking da calçada (3.29)
+      if (url.pathname === '/ranking' && req.method === 'GET') return await rk.ranking(req, env, origin, H, url);
+      if (url.pathname === '/ranking/fora' && req.method === 'POST') return await rk.sairDoRanking(req, env, origin, H);
       if (url.pathname === '/dono/presenca' && req.method === 'GET') return await presenca.donoPresenca(req, env, origin, H);
       if (url.pathname === '/vivo/hoje' && req.method === 'GET') return await vivo.hoje(env, origin, H);
       if (url.pathname === '/dono/mesas' && req.method === 'GET') {
@@ -363,7 +367,7 @@ export default {
   },
   // Agendado (Cron do Cloudflare): lembretes no fim da tarde de Manaus (e a leitura diária que mantém a chave do Asaas ativa).
   async scheduled(evento, env, ctx) {
-    ctx.waitUntil((async () => { try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env); } catch (e) {} try { await fotos.moderarPendentes(env); } catch (e) {} try { await turmas.fecharDesafio(env); } catch (e) {} try { await manterChaveAsaas(env); } catch (e) {} try { await vivo.limparVivo(env); } catch (e) {} try { await limparVistos(env); } catch (e) {} try { await presenca.limparPresenca(env); } catch (e) {} await lembretesDoDia(env); })());
+    ctx.waitUntil((async () => { try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env); } catch (e) {} try { await fotos.moderarPendentes(env); } catch (e) {} try { await turmas.fecharDesafio(env); } catch (e) {} try { await manterChaveAsaas(env); } catch (e) {} try { await vivo.limparVivo(env); } catch (e) {} try { await limparVistos(env); } catch (e) {} try { await presenca.limparPresenca(env); } catch (e) {} await lembretesDoDia(env);  try { await rk.limparRanking(env); } catch (e) {} })());
   }
 };
 export { lembretesDoDia, lembretesPlano, lembreteDaData };

@@ -1771,6 +1771,47 @@ body.assistindo #menuBtn,body.assistindo #passBtn{visibility:hidden}
 #filaAssistir{width:100%}
 /* A pedra de costas na mão (de quem assiste) usa a classe "back", a mesma do fundo das janelas — aqui volta a ser pedra */
 #hand .ht.back{position:relative;inset:auto;z-index:auto;display:block;background:none;animation:none}
+/* 3.29: conquistas à vista — cartão no Perfil, linha no cartão do nível e "falta pouco" no fim da mão */
+.cq-card{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:14px;width:100%;padding:14px 16px 14px 14px;border-radius:16px;border:1.5px solid var(--nos);background:color-mix(in srgb,var(--nos) 8%,var(--bg-2));color:var(--fg);font:inherit;text-align:left;cursor:pointer}
+.cq-card:active{transform:scale(.99)}
+.cq-ic{display:grid;place-items:center;width:52px;height:52px;border-radius:14px;background:var(--bg);font-size:26px;overflow:hidden}
+.cq-ic svg,.cq-ic img{width:46px;height:46px;display:block}
+.cq-tx{display:grid;gap:3px;min-width:0}
+.cq-k{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--nos)}
+.cq-tx b{font-size:16px;font-weight:800;line-height:1.25}
+.cq-tx small{font-size:13px;color:var(--muted);font-weight:600;line-height:1.35}
+.cq-bar{display:block;height:7px;border-radius:99px;background:color-mix(in srgb,var(--fg) 12%,transparent);overflow:hidden;margin:3px 0 1px}
+.cq-bar i{display:block;height:100%;border-radius:inherit;background:var(--nos)}
+.cq-tx small.cq-premio{color:var(--fg)}
+.cq-go{font-size:24px;color:var(--muted)}
+.nv-cq{display:block;margin-top:4px;font-size:12.5px;font-weight:700;color:var(--nos);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cq-falta{margin:6px 0 0;font-size:14px;line-height:1.4;text-align:center}
+.cq-falta span{color:var(--muted)}
+/* 3.29: Ranking da calçada */
+.rk{display:grid;gap:10px;margin-top:6px;padding:16px 14px 12px;border-radius:18px;border:1.5px solid var(--line);background:var(--bg-2)}
+.rk-cab{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.rk-cab h3{margin:0;font-family:var(--font-display);font-weight:400;font-size:21px}
+.rk-abas{display:inline-flex;padding:3px;border-radius:999px;background:var(--bg);border:1px solid var(--line)}
+.rk-abas button{border:0;background:none;color:var(--muted);font:inherit;font-size:13.5px;font-weight:800;padding:6px 14px;border-radius:999px;cursor:pointer;min-height:34px}
+.rk-abas button[aria-selected="true"]{background:var(--nos);color:#fff}
+.rk-ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.rk-ol li{display:grid;grid-template-columns:34px 36px minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:var(--bg)}
+.rk-ol li.podio{background:color-mix(in srgb,var(--glow) 16%,var(--bg))}
+.rk-ol li.eu{box-shadow:0 0 0 2px var(--nos) inset}
+.rk-pos{font-size:15px;font-weight:800;text-align:center;color:var(--muted)}
+.rk-ol li.podio .rk-pos{font-size:22px}
+.rk-face img,.rk-face i{display:block;width:36px;height:36px;border-radius:50%;background:var(--line)}
+.rk-nome{display:grid;min-width:0}
+.rk-nome b{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk-nome small{font-size:12px;color:var(--muted);font-weight:700}
+.rk-voce{display:inline-block;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--nos)}
+.rk-pts{display:grid;justify-items:end;text-align:right}
+.rk-pts b{font-size:14.5px;font-weight:800;white-space:nowrap}
+.rk-pts small{font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+.rk-vazio{margin:0;display:grid;gap:3px;padding:14px;border-radius:12px;border:1px dashed var(--line);text-align:center;font-size:14px;color:var(--muted)}
+.rk-vazio b{color:var(--fg)}
+.rk-meu{margin:0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--nos) 10%,var(--bg));font-size:14px;text-align:center}
+.rk-sair{justify-self:center;font-size:13px}
 </style>
 </head>
 <body>
@@ -2811,6 +2852,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.29', data: '20/10/2026', itens: ['Ranking da calçada: na aba Calçada, os 20 que mais ganharam partidas na mesa online na semana e no mês, e a sua posição.', 'Conquistas à vista: no Perfil, a próxima conquista com a barrinha e o prêmio; no Jogar, a próxima no cartão do nível; e no fim da mão, quando falta pouco.', 'Os níveis ficaram mais difíceis de subir, principalmente os altos. Ninguém perdeu o nível que já tinha.'] },
   { v: '3.28', data: '20/10/2026', itens: ['Modo espectador: na fila do ganha-chama, toque em "Assistir a partida" e veja os amigos jogando. Quando chegar a sua vez, você entra sozinho.', 'Na Calçada, cada mesa rápida tem o botão "Assistir". Quem assiste vê a mesa e o placar, nunca a mão de ninguém.', 'Quem está jogando vê quantas pessoas estão assistindo.'] },
   { v: '3.27.1', data: '20/10/2026', itens: ['Arrastar a pedra ficou mais certeiro: ela só entra se você soltar em cima da ponta marcada. Longe da ponta, ela volta para a mão, sem jogar no lugar errado.', 'Dica: dá para tocar na pedra e depois na ponta, sem arrastar.', 'O app pede ao celular para guardar o seu progresso, e avisa quem abriu o jogo dentro do Instagram ou do Facebook (por lá o progresso pode se perder).', 'O Mundico saiu da turma do bairro: fica o Tião.', 'Ajustes de espaço no Perfil e na aba Mais.'] },
   { v: '3.27.0', data: '20/10/2026', itens: ['Menu novo embaixo da tela: Jogar, Calçada, Perfil e Mais. O início ficou só com o que leva à mesa.', 'Calçada: veja as mesas rápidas jogando agora, com o placar e quantos lugares vagos têm. Toque numa mesa com lugar vago e entre no lugar de um robô.', 'Mais: Regras, Fale com a gente, Instagram, Apoie o jogo e o resto, tudo num lugar só. Seu histórico agora fica no Perfil.'] },
@@ -4888,7 +4930,7 @@ function conectar(cod) {
   ws.onopen = () => {
     ON.tent = 0;
     let mesa = null; try { mesa = mesaEscolhida().id; } catch (e) {}
-    ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), mesa, fila: true }));   // fila: este app mostra a fila do ganha-chama
+    ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), mesa, fila: true, menor: !!(profile && profile.idade === 'menor') }));   // fila: este app mostra a fila do ganha-chama
     clearInterval(ON.pingT);
     ON.pingT = setInterval(() => { try { if (ws.readyState === 1) ws.send('ping'); } catch (e) {} }, 25000);
     statusOnline();
@@ -7781,8 +7823,11 @@ renderHome = function () { renderHomeMis(); try { desenharMissoes(); } catch (e)
 // começa com a experiência do que já tinha jogado.
 const NV_KEY = 'dmz-nivel';
 const NV_MAX = 50;
-const XP_DO_NIVEL = n => 100 + 20 * (n - 1);   // quanto falta do nível n para o n + 1
-const XP_REGRAS = [['Mão jogada', 5], ['Mão ganha pela sua dupla', 5], ['Galo seu', 10], ['Batida sua', 10], ['Batida de carroça', 15],
+// quanto falta do nível n para o n + 1. 3.29 (o dono achou que subia rápido demais): cada nível custa bem mais que o
+// anterior (antes: 100 + 20 por nível). Quem já tinha nível não cai: a experiência é convertida (veja nvEstado).
+const XP_DO_NIVEL = n => 100 + 30 * (n - 1) + 5 * (n - 1) * (n - 1);
+const XP_DO_NIVEL_V1 = n => 100 + 20 * (n - 1);
+const XP_REGRAS = [['Mão jogada', 2], ['Mão ganha pela sua dupla', 3], ['Galo seu', 10], ['Batida sua', 10], ['Batida de carroça', 15],
   ['Partida ganha', 30], ['3 partidas ganhas seguidas', 20], ['Missões do dia completas', 50]];
 // um título a cada 5 níveis (desde a 3.20.1 também no 25, 35 e 45, para nunca ficar muito tempo sem novidade)
 const TITULOS_NV = [[50, 'Lenda de Manaus'], [45, 'Cobra criada'], [40, 'Rei da calçada'], [35, 'Terror da mesa'], [30, 'Mestre da taberna'],
@@ -7800,6 +7845,15 @@ function nvEstado() {
     const t = loadHist();
     const xp = (t.maos || 0) * 7 + (t.batidas || 0) * 10 + (t.galos || 0) * 10 + (t.partidasVencidas || 0) * 30 + (t.missoesDias || 0) * 50;
     s = { xp, inicio: xp };
+    store.set(NV_KEY, JSON.stringify(s));
+  }
+  if (s.curva !== 2) {
+    // 3.29: converte para a curva nova sem ninguém cair de nível (o mesmo nível e o mesmo pedaço da barrinha)
+    let n = 1, resto = Math.max(0, Math.floor(s.xp || 0));
+    while (n < NV_MAX && resto >= XP_DO_NIVEL_V1(n)) { resto -= XP_DO_NIVEL_V1(n); n++; }
+    let xp = 0; for (let k = 1; k < n; k++) xp += XP_DO_NIVEL(k);
+    if (n < NV_MAX) xp += Math.floor(resto / XP_DO_NIVEL_V1(n) * XP_DO_NIVEL(n));
+    s.xpV1 = s.xp; s.xp = xp; s.curva = 2;
     store.set(NV_KEY, JSON.stringify(s));
   }
   return s;
@@ -7845,9 +7899,9 @@ function contarXP() {
   }
   const r = G.result;
   if (G.phase === 'handEnd' && r && evs.some(e => e.type === 'batida' || e.type === 'fechado')) {
-    pts += 5;
+    pts += 2;   // 3.29: mão jogada (era 5)
     const venceu = r.kind === 'batida' ? TEAM(r.p) : r.team;
-    if (venceu === 0) pts += 5;
+    if (venceu === 0) pts += 3;   // 3.29: mão ganha pela dupla (era 5)
     if (r.matchWinner === 0 && !rb.partida) pts += 30;
     // sequência de partidas ganhas: a cada 3 seguidas, +20 (perder zera)
     if (r.matchWinner != null && !rb.partida) {
@@ -8747,6 +8801,152 @@ leaveGame = function () { if (ON.assistindo) { assistirParar(); return; } return
   desenharFila = function (v) { desenharFilaBase.apply(this, arguments); const b = $('#filaAssistir'); if (b) b.hidden = !(v && v.fase === 'jogo' && v.jogo); };
 })();
 
+// ===== Conquistas à vista (3.29) =====
+// O dono achou as conquistas muito escondidas (só em Perfil → Personalizar). Agora:
+// 1) no Perfil, um cartão "Conquistas · 2 de 19" com a próxima conquista, a barrinha e o prêmio;
+// 2) no Jogar, uma linha no cartão do nível: "Próxima conquista: Batedor · 7 de 10";
+// 3) no fim da mão e da partida, quando falta pouco (70% ou mais): "Falta pouco: Batedor · 8 de 10".
+function proximaConquista() {
+  try {
+    const t = loadHist(), lista = CONQUISTAS.filter(conquistaVisivel);
+    const faltam = lista.filter(c => progressoConquista(c, t) < c.meta);
+    if (!faltam.length) return { c: null, feitas: lista.length, total: lista.length };
+    // a mais perto de sair (a de data, enquanto vale, vem primeiro)
+    faltam.sort((a, b) => (b.evento ? 1 : 0) - (a.evento ? 1 : 0) || progressoConquista(b, t) / b.meta - progressoConquista(a, t) / a.meta || a.meta - b.meta);
+    const c = faltam[0];
+    return { c, n: progressoConquista(c, t), feitas: lista.length - faltam.length, total: lista.length };
+  } catch (e) { return null; }
+}
+const premioDaConquista = c => { try { return juntaE(premiosDe(c.id).map(premioFrase)); } catch (e) { return ''; } };
+function abrirConquistas(deOnde) {
+  abrirEstilo(deOnde || 'profile');
+  setTimeout(() => { const el = $('#esConq'); if (el) el.scrollIntoView({ block: 'start', behavior: reduzMov() ? 'auto' : 'smooth' }); }, 320);
+  track('conquistas-abertas');
+}
+// ---- cartão no Perfil ----
+(function () {
+  const ref = $('#myTreino'), pTit = $('#scrProfile h2'), cab = pTit && pTit.parentElement !== $('#scrProfile') ? pTit.parentElement : pTit;
+  const html = '<button type="button" class="cq-card" id="cqCard" hidden></button>';
+  if (ref && ref.closest('#scrProfile')) ref.insertAdjacentHTML('afterend', html); else if (cab) cab.insertAdjacentHTML('afterend', html);
+  $('#cqCard').addEventListener('click', () => abrirConquistas('profile'));
+})();
+function desenharCqCard() {
+  const box = $('#cqCard'); if (!box) return;
+  const p = proximaConquista(); box.hidden = !p || !profile; if (box.hidden) return;
+  let ic = '🏆';
+  try { if (p.c) { const pr = premiosDe(p.c.id)[0]; if (pr) ic = iconePremio(pr, esBase()); } } catch (e) {}
+  box.innerHTML = `<span class="cq-ic" aria-hidden="true">${ic}</span><span class="cq-tx"><span class="cq-k">Conquistas · ${p.feitas} de ${p.total}</span>`
+    + (p.c ? `<b>Próxima: ${esc(p.c.nome)}</b><small>${esc(p.c.tx)} · ${p.n} de ${p.c.meta}</small><span class="cq-bar" aria-hidden="true"><i style="width:${Math.round(100 * p.n / p.c.meta)}%"></i></span>`
+      + (premioDaConquista(p.c) ? `<small class="cq-premio">Prêmio: ${esc(premioDaConquista(p.c))}</small>` : '')
+      : '<b>Você ganhou todas!</b><small>Lenda da calçada.</small>')
+    + `</span><span class="cq-go" aria-hidden="true">›</span>`;
+}
+// ---- linha no cartão do nível (Jogar) ----
+(function () {
+  const f = $('#nvFaixa'), tx = f && f.querySelector('.nv-tx'); if (!tx) return;
+  tx.insertAdjacentHTML('beforeend', '<small class="nv-cq" id="nvCq" hidden></small>');
+})();
+function desenharNvCq() {
+  const el = $('#nvCq'); if (!el) return;
+  const p = proximaConquista(); el.hidden = !p || !p.c; if (el.hidden) return;
+  el.textContent = `🏆 Próxima conquista: ${p.c.nome} · ${p.n} de ${p.c.meta}`;
+}
+// ---- "falta pouco" no fim da mão e da partida ----
+// a conquista (de várias etapas) mais perto de sair, se já passou de 70%
+function quaseConquista() {
+  try {
+    const t = loadHist();
+    const l = CONQUISTAS.filter(conquistaVisivel).filter(c => c.meta >= 2).map(c => ({ c, n: progressoConquista(c, t) })).filter(x => x.n < x.c.meta && x.n / x.c.meta >= 0.7);
+    l.sort((a, b) => b.n / b.c.meta - a.n / a.c.meta || a.c.meta - b.c.meta);
+    return l[0] || null;
+  } catch (e) { return null; }
+}
+function linhaFaltaPouco(onde, como) {
+  if (!onde) return;
+  const p = quaseConquista(); if (!p) return;
+  const f = p.c.meta - p.n, pr = premioDaConquista(p.c);
+  onde.insertAdjacentHTML(como, `<p class="cq-falta">🏆 Falta pouco: <b>${esc(p.c.nome)}</b> · ${p.n} de ${p.c.meta}${pr ? ` <span>(prêmio: ${esc(pr)})</span>` : ''}</p>`);
+}
+const showResultMetas = showResult;
+showResult = function () {
+  showResultMetas.apply(this, arguments);
+  try { if (!$('#sheet .cq-falta')) { const x = $('#sheet .xp-linha') || $('#sheet #nextBtn'); if (x) linhaFaltaPouco(x, x.classList.contains('xp-linha') ? 'afterend' : 'beforebegin'); } } catch (e) {}
+};
+const festaMetas = festa;
+festa = function () {
+  festaMetas.apply(this, arguments);
+  try { const c = $('#festaCard'); if (c && !c.querySelector('.cq-falta')) linhaFaltaPouco($('#festaOk'), 'beforebegin'); } catch (e) {}
+};
+// atualiza ao mostrar o Perfil e o início
+const showMetas = show;
+show = function (name) { const r = showMetas.apply(this, arguments); try { if (name === 'profile') desenharCqCard(); } catch (e) {} return r; };
+const renderHomeMetas = renderHome;
+renderHome = function () { const r = renderHomeMetas.apply(this, arguments); try { desenharNvCq(); } catch (e) {} return r; };
+
+// ===== Ranking da calçada (3.29) =====
+// Na aba Calçada, embaixo das mesas: os 20 que mais ganharam partidas na mesa online na semana (vira na segunda-feira)
+// e no mês, e a sua posição. Quem conta é o servidor (só partidas jogadas inteiras; offline não entra). Menor de 18 não
+// entra; dá para pedir para não aparecer.
+const RK = { aba: 'semana', dados: null, em: 0, buscando: false };
+const RK_MEDALHA = ['🥇', '🥈', '🥉'];
+async function rkBuscar(agora) {
+  if (!CONFIG.api || RK.buscando || (!agora && Date.now() - RK.em < 60000)) return;
+  RK.buscando = true; RK.em = Date.now();
+  try { RK.dados = await (await fetch(CONFIG.api + '/ranking?aparelho=' + encodeURIComponent(meuId()), { cache: 'no-store' })).json(); rkDesenhar(); } catch (e) {}
+  RK.buscando = false;
+}
+function rkRosto(av) { try { const a = avatarDe(av); return a ? `<img src="${avatarURI(a)}" alt="">` : '<i></i>'; } catch (e) { return '<i></i>'; } }
+const rkVit = n => `${n} ${n === 1 ? 'vitória' : 'vitórias'}`;
+function rkDesenhar() {
+  const box = $('#rkLista'); if (!box) return;
+  $$('#rkAbas button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.aba === RK.aba)));
+  const d = RK.dados, p = d && d[RK.aba];
+  if (!p) { box.innerHTML = '<p class="rk-vazio">Carregando…</p>'; return; }
+  const fim = new Date(p.fim - 1), quando = RK.aba === 'semana' ? 'A semana vira na segunda-feira.' : `O mês fecha no dia ${fim.getDate()}.`;
+  if (!p.top.length) box.innerHTML = `<p class="rk-vazio"><b>Ninguém ganhou partida online ${RK.aba === 'semana' ? 'esta semana' : 'este mês'} ainda.</b><span>Ganhe uma e apareça aqui primeiro!</span></p>`;
+  else box.innerHTML = `<ol class="rk-ol">${p.top.map(x => `<li class="${x.eu ? 'eu' : ''}${x.pos <= 3 ? ' podio' : ''}">
+      <span class="rk-pos">${x.pos <= 3 ? RK_MEDALHA[x.pos - 1] : x.pos + 'º'}</span><span class="rk-face">${rkRosto(x.av)}</span>
+      <span class="rk-nome"><b>${esc(x.nome)}${x.eu ? ' <small class="rk-voce">você</small>' : ''}</b><small>Nível ${x.nv || 1}</small></span>
+      <span class="rk-pts"><b>${rkVit(x.ganhas)}</b><small>em ${x.jogadas} ${x.jogadas === 1 ? 'partida' : 'partidas'}</small></span></li>`).join('')}</ol>`;
+  const eu = p.eu, meu = $('#rkMeu');
+  meu.hidden = !(eu || d.fora);
+  if (d.fora) meu.innerHTML = 'Você não aparece no ranking. <button type="button" class="linkbtn" id="rkVoltar">Voltar a aparecer</button>';
+  else if (eu) meu.innerHTML = eu.pos ? `Você está em <b>${eu.pos}º</b> · ${rkVit(eu.ganhas)} em ${eu.jogadas} ${eu.jogadas === 1 ? 'partida' : 'partidas'}` : `Você jogou ${eu.jogadas} ${eu.jogadas === 1 ? 'partida' : 'partidas'} e ainda não ganhou ${RK.aba === 'semana' ? 'esta semana' : 'este mês'}. Bora!`;
+  $('#rkNota').textContent = `Conta as partidas ganhas na mesa online, jogadas do começo ao fim. ${quando}`;
+  $('#rkSair').hidden = !!d.fora;
+  const v = $('#rkVoltar'); if (v) v.addEventListener('click', () => rkFora(false));
+}
+async function rkFora(fora) {
+  try {
+    const r = await fetch(CONFIG.api + '/ranking/fora', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ aparelho: meuId(), fora }) });
+    if (!r.ok) throw new Error();
+    track(fora ? 'ranking-saiu' : 'ranking-voltou');
+    toast(fora ? 'Pronto: você não aparece mais no ranking.' : 'Pronto: você volta a aparecer no ranking.');
+    rkBuscar(true);
+  } catch (e) { toast('Sem internet agora. Tente de novo.'); }
+}
+(function () {
+  const ref = $('#calcNota'); if (!ref) return;
+  ref.insertAdjacentHTML('afterend', `<section class="rk" id="rkCard" aria-labelledby="rkTit">
+    <div class="rk-cab"><h3 id="rkTit">🏆 Ranking da calçada</h3>
+      <div class="rk-abas" id="rkAbas" role="tablist"><button type="button" role="tab" data-aba="semana" aria-selected="true">Semana</button><button type="button" role="tab" data-aba="mes" aria-selected="false">Mês</button></div></div>
+    <div id="rkLista"><p class="rk-vazio">Carregando…</p></div>
+    <p class="rk-meu" id="rkMeu" hidden></p>
+    <p class="aba-nota" id="rkNota"></p>
+    <button type="button" class="linkbtn rk-sair" id="rkSair">Não quero aparecer no ranking</button></section>`);
+  $('#rkAbas').addEventListener('click', e => { const b = e.target.closest('[data-aba]'); if (!b) return; RK.aba = b.dataset.aba; track('ranking-' + RK.aba); rkDesenhar(); });
+  $('#rkSair').addEventListener('click', () => {
+    openSheet('info', `<p class="eyebrow">Ranking da calçada</p><h2 id="sheetTitle">Não aparecer no ranking?</h2>
+      <p>O seu apelido some do ranking da semana e do mês. Você continua jogando normalmente e pode voltar a aparecer quando quiser.</p>
+      <button type="button" class="primary" id="rkSairSim" style="width:100%">Não quero aparecer</button><button type="button" class="secondary" id="rkSairNao" style="width:100%;margin-top:8px">Cancelar</button>`);
+    $('#rkSairNao').addEventListener('click', closeSheet);
+    $('#rkSairSim').addEventListener('click', () => { closeSheet(); rkFora(true); });
+  });
+  const showRk = show;
+  show = function (name) { const r = showRk.apply(this, arguments); try { if (name === 'calcada') rkBuscar(true); } catch (e) {} return r; };
+  setInterval(() => { if (screen === 'calcada' && document.visibilityState === 'visible') rkBuscar(); }, 15000);
+})();
+
 
 // ---- Desenho das peças ----
 function tileSVG(p, cls, shadow) {
@@ -9329,7 +9529,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.28-d69bd15a';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.29-b007ee48';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

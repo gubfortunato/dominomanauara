@@ -9,6 +9,7 @@ import { nivelDoador, cortesiaDe } from './pagamentos.js';
 import { fotoPublica } from './fotos.js';
 import { pontuar, nomeDaTurma, apelido as apelidoNaTurma } from './turmas.js';
 import { somarVivo } from './vivo.js';
+import { somarRanking } from './ranking.js';
 import { bloqueado, visto } from './bloqueio.js';
 
 const TEMPO = {
@@ -254,7 +255,7 @@ export class Mesa {
     const av = /^[a-z0-9_-]{1,16}$/i.test(String(b.av || '')) ? String(b.av) : null;
     let bairro = limpa(b.bairro, 28);
     if (bairro.length < 2 || nomeOfensivo(bairro)) bairro = null;
-    return { id, nome, av, bairro, nv: nivelOk(b.nv), bot: false, saiu: false };
+    return { id, nome, av, bairro, nv: nivelOk(b.nv), bot: false, saiu: false, menor: !!b.menor };
   }
 
   // ---------- Mensagens dos celulares ----------
@@ -320,7 +321,7 @@ export class Mesa {
       // voltou (ou abriu em outro aparelho): retoma a cadeira; se tinha saído, volta a jogar
       const c = m.cad[p];
       if (m.fase === 'espera') { c.nome = quem.nome; c.av = quem.av; c.bairro = quem.bairro; }
-      c.apoiador = quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv;
+      c.apoiador = quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv; c.menor = quem.menor;
       if (c.saiu) { c.saiu = false; c.bot = false; }
     } else if (m.fase === 'espera') {
       p = this.cadeiraNaEspera();
@@ -412,7 +413,7 @@ export class Mesa {
     // quem criou foi para a fila: quem ficou na mesa passa a mandar nela
     if (!m.cad.some(c => c && c.id === m.dono)) { const h = m.cad.find(c => c && !c.bot && c.id); if (h) m.dono = h.id; }
     const torneio = m.G.torneio;
-    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = torneio; startHand(m.G); m.robo = null;
+    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = torneio; startHand(m.G); m.robo = null; this.inicioDePartida();
     m.troca = { seq: m.seq + 1, entraram, sairam, ficam: [0, 1, 2, 3].filter(k => k % 2 === w).map(k => m.cad[k].nome) };
     return true;
   }
@@ -495,7 +496,7 @@ export class Mesa {
     const m = this.m;
     if (m.fase !== 'espera') return;
     this.sentarRobos();
-    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = !!m.torneio && !m.publica; startHand(m.G); m.robo = null;
+    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = !!m.torneio && !m.publica; startHand(m.G); m.robo = null; this.inicioDePartida();
     m.fase = 'jogo'; m.seq++; m.porRobo = null; m.iniciaEm = null;
     m.ultimo = m.turnoDesde = Date.now();
     this.agendar(this.T.distribuir);
@@ -679,6 +680,7 @@ export class Mesa {
     const m = this.m;
     await this.contarDesafio();
     await this.contarVivo();
+    await this.contarRanking();
     if (await this.encerrarSeVazia()) return;
     m.seq++; m.porRobo = porRobo; m.ultimo = m.turnoDesde = Date.now();
     this.agendar(extra);
@@ -721,8 +723,23 @@ export class Mesa {
     if (!m.robo) m.robo = { mao: [false, false, false, false], partida: [false, false, false, false] };
     m.robo.mao[p] = true; m.robo.partida[p] = true;
   }
+  // Ranking (3.29): quem estava em cada cadeira quando a partida começou (só conta quem jogou a partida inteira)
+  inicioDePartida() { const m = this.m; m.naPartida = m.cad.map(c => c && !c.bot && c.id ? c.id : null); }
+  async contarRanking() {
+    const m = this.m, G = m.G, r = G && G.result;
+    if (!G || G.phase !== 'handEnd' || !r || r.matchWinner == null || r.ranking) return;
+    r.ranking = true;
+    const quem = [];
+    m.cad.forEach((c, p) => {
+      if (!c || c.bot || !c.id || !m.naPartida || m.naPartida[p] !== c.id || (m.robo && m.robo.partida[p])) return;
+      quem.push({ id: c.id, nome: c.nome, av: c.av, nv: c.nv, menor: !!c.menor, ganhou: p % 2 === r.matchWinner });
+    });
+    if (quem.length) { try { await somarRanking(this.env, quem); } catch (e) {} }
+  }
   novaMaoRobo(novaPartida) {
-    const m = this.m; if (!m.robo) return;
+    const m = this.m;
+    if (novaPartida) this.inicioDePartida();
+    if (!m.robo) return;
     m.robo.mao = [false, false, false, false];
     if (novaPartida) m.robo.partida = [false, false, false, false];
   }
