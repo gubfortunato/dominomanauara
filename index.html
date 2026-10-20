@@ -1067,6 +1067,8 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 /* 3.26: aviso de versão nova (sem travar o app) */
 .versao-nova{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:60;padding:10px 16px;border-radius:999px;border:0;background:var(--wood-2);color:var(--wood-ink);font:inherit;font-size:14.5px;box-shadow:0 6px 20px var(--shadow);cursor:pointer;white-space:nowrap}
 .versao-nova b{color:var(--glow)}
+/* 3.27.1: a ponta que vai receber a pedra fica bem marcada durante o arraste */
+.zone.over .z-body{fill:rgba(243,192,99,.55);stroke-width:.14;stroke-dasharray:none}
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
@@ -1653,28 +1655,36 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
   .abas{background:color-mix(in srgb,var(--bg-2) 92%,transparent);-webkit-backdrop-filter:saturate(1.3) blur(12px);backdrop-filter:saturate(1.3) blur(12px)}
 }
 .abas-in{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;max-width:560px;margin:0 auto;padding-inline:max(6px, env(safe-area-inset-left,0px)) max(6px, env(safe-area-inset-right,0px))}
-.aba{position:relative;display:grid;justify-items:center;align-content:center;gap:3px;min-height:60px;padding:9px 2px 7px;border:0;background:none;color:var(--muted);font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.aba-ic{position:relative;display:grid;place-items:center;width:30px;height:27px;transition:transform .12s}
-.aba-ic svg{width:25px;height:25px;display:block}
-.aba:active .aba-ic{transform:scale(.9)}
-.aba-nm{font-size:12.5px;font-weight:700;line-height:1.1;white-space:nowrap}
+/* 3.27.1: botões redesenhados — a aba marcada ganha uma pílula atrás do ícone e o ícone fica cheio; traço mais grosso;
+   "Calçada" com o ícone de turma; bolinha de "tem mesa com vaga" sem o halo */
+.aba{position:relative;display:grid;justify-items:center;align-content:center;gap:4px;min-height:62px;padding:8px 2px 6px;border:0;background:none;color:var(--muted);font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.aba-ic{position:relative;display:grid;place-items:center;width:60px;height:32px;border-radius:999px;transition:background-color .2s, transform .12s}
+.aba-ic svg{width:24px;height:24px;display:block;overflow:visible}
+.aba:active .aba-ic{transform:scale(.94)}
+.aba-nm{font-size:12.5px;font-weight:700;line-height:1.1;white-space:nowrap;letter-spacing:.01em}
 .aba.on{color:var(--nos)}
-.aba.on .aba-nm{font-weight:800}
-.aba.on::before{content:'';position:absolute;top:-1px;left:50%;width:36px;height:3px;border-radius:0 0 4px 4px;background:var(--nos);transform:translateX(-50%)}
-.aba:focus-visible{outline:2px solid var(--glow);outline-offset:-4px;border-radius:12px}
-.aba-face{width:27px;height:27px;border-radius:50%;overflow:hidden;display:grid;place-items:center;box-shadow:0 0 0 1.5px var(--line)}
+.aba.on .aba-ic{background:color-mix(in srgb,var(--nos) 17%,transparent)}
+.aba.on .aba-nm{font-weight:800;color:var(--fg)}
+.aba .ic-c{fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.aba .ic-p{fill:currentColor}
+.aba .ic-l{stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.aba.on .ic-c{fill:currentColor}
+.aba.on .ic-p{fill:var(--bg-2)}
+.aba.on .ic-l{stroke:var(--bg-2)}
+.aba:focus-visible{outline:2px solid var(--glow);outline-offset:-4px;border-radius:14px}
+.aba-face{width:26px;height:26px;border-radius:50%;overflow:hidden;display:grid;place-items:center;box-shadow:0 0 0 1.5px var(--line)}
 .aba-face img{width:100%;height:100%;object-fit:cover;display:block}
-.aba-face svg{width:25px;height:25px}
+.aba-face svg{width:22px;height:22px}
 .aba.on .aba-face{box-shadow:0 0 0 2px var(--nos)}
-.aba-vivo{position:absolute;top:-3px;right:-7px;width:10px;height:10px;border-radius:50%;background:#e5484d;border:2px solid var(--bg-2);animation:vivoPulsa 1.6s infinite}
+.aba-vivo{position:absolute;top:2px;right:13px;width:9px;height:9px;border-radius:50%;background:#e5484d;box-shadow:0 0 0 2px var(--bg-2)}
 body.com-abas{--panel-pb:100px}
 body.com-abas #profileBack{display:none}
 .so-mais{display:none!important}
 @media (orientation: landscape) and (max-height: 560px){
-  .aba{min-height:50px;padding:6px 2px 5px;grid-auto-flow:column;align-items:center;gap:6px}
+  .aba{min-height:50px;padding:6px 2px 5px;grid-auto-flow:column;align-items:center;gap:4px}
+  .aba-ic{width:44px;height:30px}
   body.com-abas{--panel-pb:76px}
 }
-@media (prefers-reduced-motion: reduce){.aba-vivo{animation:none}}
 
 /* Cabeçalho das telas do menu */
 .aba-cab{display:grid;gap:4px}
@@ -1722,6 +1732,23 @@ body.com-abas #profileBack{display:none}
 .vivo-rostos i.vivo-anon{background:var(--line) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='9' r='4' fill='%23ffffff' fill-opacity='.8'/%3E%3Cpath d='M4 22c.8-4.6 4-7 8-7s7.2 2.4 8 7z' fill='%23ffffff' fill-opacity='.8'/%3E%3C/svg%3E") center/86% no-repeat}
 .vivo-rostos i.vivo-anon.bot{opacity:.5}
 .vivo-gp{font-weight:800;color:var(--fg);white-space:nowrap}
+/* 3.27.1: o "AO VIVO" fica rente à borda da tela, que corta o que passa dela: o pulso dessa bolinha é menor e ela
+   sai um pouco da borda (antes aparecia pela metade) */
+.aba-cab .kicker .vivo-ponto{margin-left:5px;animation-name:vivoPulsaP}
+@keyframes vivoPulsaP{0%{box-shadow:0 0 0 0 rgba(229,72,77,.55)}70%{box-shadow:0 0 0 5px rgba(229,72,77,0)}100%{box-shadow:0 0 0 0 rgba(229,72,77,0)}}
+/* 3.27.1: aviso de quem abriu o jogo dentro do Instagram/Facebook */
+.dentro-app{display:grid;gap:4px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--alert);background:color-mix(in srgb,var(--alert) 10%,var(--bg-2));font-size:14px;line-height:1.4;color:var(--fg)}
+.dentro-app b:first-child{font-size:15px}
+/* 3.27.1: mais respiro na aba Mais */
+.mais-lista{gap:14px}
+.mais-it{min-height:76px;padding:14px 18px 14px 14px;gap:16px}
+#scrMais .aba-cab{margin-bottom:6px}
+.mais-pe .note{margin-top:14px}
+/* 3.27.1 (escolha do dono, "3ª linha"): cada ícone fica sobre um círculo suave; a aba marcada ganha a pílula */
+.aba-ic{isolation:isolate}
+.aba-ic::before{content:'';position:absolute;left:50%;top:50%;width:48px;height:48px;transform:translate(-50%,-50%);border-radius:50%;z-index:-1;pointer-events:none;
+  background:radial-gradient(circle, color-mix(in srgb,var(--fg) 11%,transparent) 0%, color-mix(in srgb,var(--fg) 7%,transparent) 42%, transparent 70%)}
+.aba.on .aba-ic::before{display:none}
 </style>
 </head>
 <body>
@@ -2762,6 +2789,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.27.1', data: '20/10/2026', itens: ['Arrastar a pedra ficou mais certeiro: ela só entra se você soltar em cima da ponta marcada. Longe da ponta, ela volta para a mão, sem jogar no lugar errado.', 'Dica: dá para tocar na pedra e depois na ponta, sem arrastar.', 'O app pede ao celular para guardar o seu progresso, e avisa quem abriu o jogo dentro do Instagram ou do Facebook (por lá o progresso pode se perder).', 'O Mundico saiu da turma do bairro: fica o Tião.', 'Ajustes de espaço no Perfil e na aba Mais.'] },
   { v: '3.27.0', data: '20/10/2026', itens: ['Menu novo embaixo da tela: Jogar, Calçada, Perfil e Mais. O início ficou só com o que leva à mesa.', 'Calçada: veja as mesas rápidas jogando agora, com o placar e quantos lugares vagos têm. Toque numa mesa com lugar vago e entre no lugar de um robô.', 'Mais: Regras, Fale com a gente, Instagram, Apoie o jogo e o resto, tudo num lugar só. Seu histórico agora fica no Perfil.'] },
   { v: '3.26.4', data: '20/10/2026', itens: ['Agora na calçada: a mesa mostra quantos lugares vagos tem para você entrar.'] },
   { v: '3.26.3', data: '20/10/2026', itens: ['A versão nova entra sozinha, sem precisar tocar em nada: ao abrir o app, quando você para um instante no início ou quando sai do app (nunca no meio da partida).', 'Ajustes na área do administrador.'] },
@@ -3177,7 +3205,7 @@ const BOTS = [
   { name: 'Dico', av: { bg: '#a7c97a', skin: SKIN.jambo, style: 'chapeu', hc: HAIR.preto, shirt: '#3d6b4f' } },   // o caboco do interior
   // mais nomes e apelidos da terra
   { name: 'Nazaré', av: { bg: '#c7a0d8', skin: SKIN.moreno, style: 'coque', hc: HAIR.branco, oculos: true, shirt: '#8e3b46' } },
-  { name: 'Mundico', av: { bg: '#d8b56a', skin: SKIN.jambo, style: 'bone', cap: '#1f4e79', hc: HAIR.grisalho, bigode: HAIR.grisalho, shirt: '#e8dcc4' } },
+  // 3.27.1: o Mundico saiu de novo (pedido do dono, como na 3.7): fica o Tião. Jogo guardado com ele usa o rosto do Tião.
   { name: 'Dita', av: { bg: '#f1b38a', skin: SKIN.escuro, style: 'cacheado', hc: HAIR.grisalho, shirt: '#2e7d6b' } },
   { name: 'Piaba', av: { bg: '#8fc1d9', skin: SKIN.medio, style: 'raspado', hc: HAIR.preto, shirt: '#f0c046' } },
   { name: 'Chica', av: { bg: '#e9a3b3', skin: SKIN.jambo, style: 'longo', hc: HAIR.preto, shirt: '#5a3d7a' } },
@@ -8305,10 +8333,13 @@ let abaVolta = null;   // sub-tela aberta pela aba Mais: o "Voltar" dela volta p
 const ABA_RAIZ = ['home', 'calcada', 'profile', 'mais'];
 let abaUltima = 'home';   // nas telas de dentro (Monte a mesa, Apoie, Personalizar...), fica marcada a aba de onde você veio
 const ABA_IC = {
-  home: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M6.5 12h11" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="7.2" r="1.35" fill="currentColor"/><circle cx="9.8" cy="15" r="1.2" fill="currentColor"/><circle cx="14.2" cy="18" r="1.2" fill="currentColor"/></svg>',
-  calcada: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="3.4" r="1.7" fill="currentColor"/><circle cx="12" cy="20.6" r="1.7" fill="currentColor"/><circle cx="3.4" cy="12" r="1.7" fill="currentColor"/><circle cx="20.6" cy="12" r="1.7" fill="currentColor"/></svg>',
-  profile: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="4.2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M4 21c.8-4.2 4-6.6 8-6.6s7.2 2.4 8 6.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
-  mais: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+  // pedra de dominó (cheia quando a aba está marcada)
+  home: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="ic-c" x="6.5" y="2.5" width="11" height="19" rx="3"/><path class="ic-l" d="M8.5 12h7"/><circle class="ic-p" cx="12" cy="7.3" r="1.45"/><circle class="ic-p" cx="9.9" cy="15.1" r="1.3"/><circle class="ic-p" cx="14.1" cy="18" r="1.3"/></svg>',
+  // a turma reunida
+  calcada: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="ic-c" cx="12" cy="7.4" r="3.3"/><path class="ic-c" d="M5.8 20.5c.5-3.8 3-6 6.2-6s5.7 2.2 6.2 6z"/><circle class="ic-c" cx="4.6" cy="10" r="2.1"/><circle class="ic-c" cx="19.4" cy="10" r="2.1"/><path class="ic-c" d="M1.3 19c.3-2.6 1.6-4.1 3.5-4.3M22.7 19c-.3-2.6-1.6-4.1-3.5-4.3"/></svg>',
+  profile: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="ic-c" cx="12" cy="8.2" r="4.2"/><path class="ic-c" d="M4 21c.8-4.2 4-6.6 8-6.6s7.2 2.4 8 6.6z"/></svg>',
+  // quatro quadradinhos: "mais coisas"
+  mais: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="ic-c" x="3.5" y="3.5" width="7" height="7" rx="2"/><rect class="ic-c" x="13.5" y="3.5" width="7" height="7" rx="2"/><rect class="ic-c" x="3.5" y="13.5" width="7" height="7" rx="2"/><rect class="ic-c" x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>'
 };
 const MAIS_IC = {
   dono: '<svg viewBox="0 0 24 24"><path d="M4 19V10m5.3 9V5m5.4 14v-7M20 19V8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
@@ -8322,7 +8353,18 @@ const MAIS_IC = {
 };
 const abaDe = tela => (MENU_ABAS.find(a => a.telas.includes(tela)) || {}).id || null;
 const abaComPerfil = () => !!(profile && profile.idade);
-let tecladoAberto = false;
+// 3.27.1 (bug da 3.27: o menu sumia e não voltava): antes era uma marca "teclado aberto" que ficava presa quando a tela
+// trocava com um campo em foco (o campo escondido não avisa que saiu do foco). Agora confere na hora: só esconde o menu
+// se tem um campo de texto em foco, visível, na tela atual.
+const CAMPO_TEXTO = 'input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=button]):not([type=submit]):not([type=file]), textarea';
+// E o teclado só conta se ele está mesmo na tela: a área visível encolheu (no computador não tem teclado na tela)
+const tecladoAgora = () => {
+  const a = document.activeElement;
+  if (!(a && a.matches && a.matches(CAMPO_TEXTO) && a.offsetParent !== null && !a.closest('[hidden]'))) return false;
+  if (!(window.matchMedia && matchMedia('(pointer: coarse)').matches)) return false;
+  const vv = window.visualViewport;
+  return vv ? window.innerHeight - vv.height > 120 : true;
+};
 function abasMontar() {
   if ($('#abas')) return;
   const nav = document.createElement('nav');
@@ -8351,13 +8393,14 @@ const reduzMovAbas = () => !!(window.matchMedia && window.matchMedia('(prefers-r
 function abasAtualiza(tela) {
   const nav = $('#abas'); if (!nav) return;
   const aba = ABA_RAIZ.includes(tela) ? tela : abaDe(tela) ? (abaVolta === 'mais' ? 'mais' : abaUltima) : null;
-  const ver = !!aba && abaComPerfil() && !tecladoAberto;
+  const ver = !!aba && abaComPerfil() && !tecladoAgora();
   nav.hidden = !ver;
   document.body.classList.toggle('com-abas', ver);
   if (!ver) return;
   $$('#abas .aba').forEach(b => { const on = b.dataset.aba === aba; b.classList.toggle('on', on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   const calc = $('#aba-calcada'); if (calc) calc.hidden = !vivoMostra();
-  const face = $('#abaFace'); if (face) { const uri = myFaceURI(); face.innerHTML = uri ? `<img src="${uri}" alt="">` : ABA_IC.profile; }
+  // o rosto só é redesenhado quando muda (redesenhar no meio de um toque fazia o toque em "Perfil" se perder)
+  const face = $('#abaFace'); if (face) { const uri = myFaceURI() || ''; if (face.dataset.uri !== uri) { face.dataset.uri = uri; face.innerHTML = uri ? `<img src="${uri}" alt="">` : ABA_IC.profile; } }
   abasVivo();
 }
 // Aviso no início ("2 mesas jogando agora") e a bolinha da aba Calçada, a partir da última busca das mesas
@@ -8419,8 +8462,9 @@ function abasMaisClique(k) {
     abasMaisClique(b.dataset.k);
   });
   // histórico do celular: vai para o Perfil, logo abaixo do título
-  const mt = $('#myTreino'), pTit = $('#scrProfile h2') || $('#scrProfile .kicker');
-  if (mt && pTit) pTit.after(mt);
+  // 3.27.1: depois do bloco do título (antes ficava colado no título, sem o espaço entre os blocos da tela)
+  const mt = $('#myTreino'), pTit = $('#scrProfile h2') || $('#scrProfile .kicker'), pCab = pTit && pTit.parentElement !== $('#scrProfile') ? pTit.parentElement : pTit;
+  if (mt && pCab) pCab.after(mt);
   // aviso no início: mesas jogando agora (leva para a Calçada)
   const ref = $('#nvFaixa') || $('#apBanner');
   if (ref) ref.insertAdjacentHTML('afterend', `<button type="button" class="calc-aviso" id="calcAviso" hidden><span class="vivo-ponto" aria-hidden="true"></span><span class="calc-aviso-tx"><b id="calcAvisoT"></b><small id="calcAvisoS"></small></span><span class="calc-aviso-go" aria-hidden="true">›</span></button>`);
@@ -8433,8 +8477,9 @@ function abasMaisClique(k) {
   const vivoDesenhaAbas = vivoDesenha;
   vivoDesenha = function () { const r = vivoDesenhaAbas.apply(this, arguments); try { abasVivo(); } catch (e) {} return r; };
   // teclado aberto (campo de texto em foco): o menu sai da frente
-  document.addEventListener('focusin', e => { if (e.target.matches && e.target.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]), textarea')) { tecladoAberto = true; abasAtualiza(screen); } });
-  document.addEventListener('focusout', () => { setTimeout(() => { const a = document.activeElement; if (!(a && a.matches && a.matches('input, textarea'))) { tecladoAberto = false; abasAtualiza(screen); } }, 60); });
+  if (window.visualViewport) visualViewport.addEventListener('resize', () => abasAtualiza(screen));
+  document.addEventListener('focusin', e => { if (e.target.matches && e.target.matches(CAMPO_TEXTO)) abasAtualiza(screen); });
+  document.addEventListener('focusout', e => { if (e.target.matches && e.target.matches(CAMPO_TEXTO)) setTimeout(() => abasAtualiza(screen), 60); });
 })();
 const showAbas = show;
 show = function (name) {
@@ -8446,11 +8491,59 @@ show = function (name) {
   if (name === 'mais') renderMais();
   if (name === 'calcada') { try { vivoVisivel(); vivoDesenha(); vivoHoje(); vivoMesas(true); setTimeout(() => vivoPresenca(true), 300); } catch (e) {} }
   if (name === 'profile') { try { renderMyTreino(); } catch (e) {} }
+  // trocando de tela, o campo em foco (se tiver) sai do foco: ele fica na tela de antes
+  try { const a = document.activeElement; if (a && a.matches && a.matches(CAMPO_TEXTO)) a.blur(); } catch (e) {}
   const r = showAbas.apply(this, arguments.length > 1 ? [name, ...[...arguments].slice(1)] : [name]);
   abasAtualiza(name);
+  setTimeout(() => abasAtualiza(screen), 300);   // depois da troca suave de tela, confere de novo
   return r;
 };
 abasAtualiza(screen);
+
+// ===== Guardar o progresso no celular (3.27.1) =====
+// Feedback de jogador: "sempre que eu entro preciso criar uma conta nova e perco meus acessórios e níveis". O progresso
+// fica no navegador do celular; ele se perde quando o jogo é aberto dentro do Instagram/Facebook/TikTok (o navegador
+// de dentro desses apps não guarda) e o navegador pode apagar os dados de sites pouco usados. Aqui:
+// 1) o app pede ao navegador para guardar os dados de vez (navigator.storage.persist), sem perguntar nada à pessoa;
+// 2) quem abriu dentro de outro app vê um aviso para abrir no navegador (Safari/Chrome) e instalar.
+// (A conta com e-mail, para levar tudo para outro celular, vem numa versão seguinte.)
+const NAV_DENTRO = /FBAN|FBAV|FB_IAB|Instagram|Line\/|musical_ly|BytedanceWebview|Snapchat|LinkedInApp|Twitter for/i;
+const dentroDeApp = () => NAV_DENTRO.test(navigator.userAgent || '');
+const nomeDoApp = () => { const u = navigator.userAgent || ''; return /Instagram/i.test(u) ? 'Instagram' : /FBAN|FBAV|FB_IAB/i.test(u) ? 'Facebook' : /musical_ly|Bytedance/i.test(u) ? 'TikTok' : 'outro'; };
+const dentroDo = () => { const n = nomeDoApp(); return n === 'outro' ? 'de outro app' : 'do ' + n; };
+(async function () {
+  try {
+    if (!navigator.storage || !navigator.storage.persist || dentroDeApp()) return;
+    if (await navigator.storage.persisted()) return;
+    const ok = await navigator.storage.persist();
+    track(ok ? 'dados-guardados' : 'dados-sem-garantia');
+  } catch (e) {}
+})();
+(function () {
+  if (!dentroDeApp()) return;
+  const ios = typeof isIOS === 'function' && isIOS();
+  const como = ios ? 'Toque nos três pontinhos (•••) e escolha <b>Abrir no navegador</b>.' : 'Toque nos três pontinhos (⋮) e escolha <b>Abrir no Chrome</b> (ou no navegador).';
+  const html = `<div class="dentro-app" role="note"><b>Você abriu o jogo dentro ${dentroDo()}</b><span>Por aqui o seu nível, os acessórios e o histórico podem se perder. ${como} Depois, instale o app na tela de início.</span></div>`;
+  const lead = $('#homeName') && $('#homeName').closest('p');
+  if (lead) lead.insertAdjacentHTML('afterend', html);
+  const acoes = $('#scrWho .entry-actions');
+  if (acoes) acoes.insertAdjacentHTML('beforebegin', html);
+  track('aberto-dentro-de-app', { app: nomeDoApp() });
+})();
+// ===== Dica de jogar tocando (3.27.1) =====
+// Desde a 3.25 dá para tocar na pedra e depois na ponta, sem arrastar; quase ninguém sabia. Na primeira vez em que
+// for a sua vez numa partida, aparece a dica uma vez só.
+const renderDica = render;
+render = function () {
+  const r = renderDica.apply(this, arguments);
+  try {
+    if (!store.get('dmz-dica-tocar') && screen === 'game' && G && G.phase === 'play' && typeof myTurnNow === 'function' && myTurnNow()) {
+      store.set('dmz-dica-tocar', '1');
+      setTimeout(() => toast('Dica: você pode arrastar a pedra até a ponta, ou tocar na pedra e depois na ponta marcada.'), 600);
+    }
+  } catch (e) {}
+  return r;
+};
 
 
 // ---- Desenho das peças ----
@@ -8831,12 +8924,16 @@ function placeGhostTile(x, y) {
 function nearestZone(x, y) {
   const br = $('#boardWrap').getBoundingClientRect();
   if (x < br.left - 24 || x > br.right + 24 || y < br.top - 40 || y > br.bottom + 24) return null;
-  let best = null, bd = Infinity;
+  let best = null, bd = Infinity, seg = Infinity;
   for (const z of drag.zones) {
-    const r = z.el.getBoundingClientRect(), zx = r.left + r.width / 2, zy = r.top + r.height / 2;
-    const d = Math.hypot(zx - x, zy - y);
-    if (d < bd) { bd = d; best = z.side; }
+    // distância até o retângulo da ponta (zero quando a pedra está em cima dela)
+    const r = z.el.getBoundingClientRect();
+    const d = Math.hypot(Math.max(r.left - x, 0, x - r.right), Math.max(r.top - y, 0, y - r.bottom));
+    if (d < bd) { seg = bd; bd = d; best = z.side; } else if (d < seg) seg = d;
   }
+  const alcance = Math.max(56, ((drag.el && drag.el.getBoundingClientRect().height) || 80) * 0.9);
+  if (bd > alcance) return null;                           // longe das pontas: não joga
+  if (bd > 0 && seg !== Infinity && seg - bd < 18) return null;   // no meio do caminho entre duas pontas: não adivinha
   return best;
 }
 function endDrag() {
@@ -8877,7 +8974,7 @@ function onDragEnd(e) {
   if (moved && drag.el) { const r = drag.el.getBoundingClientRect(); lastDrop = { x: r.left + r.width / 2, y: r.top + r.height / 2, t: Date.now() }; }
   endDrag();
   if (!moved) { tocarPedra(i); return; }
-  if (!myTurnNow() || !side) { render(); return; }
+  if (!myTurnNow() || !side) { render(); if (myTurnNow()) $('#feed').textContent = 'Solte a pedra em cima da ponta marcada. Ou toque na pedra e depois na ponta.'; return; }
   const mv = legalMoves(G, seatMe).find(m => m.i === i && m.side === side);
   if (mv) { humanPlay(mv); return; }
   render();
@@ -9030,7 +9127,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.27.0-ce190101';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.27.1-59ac20cb';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
