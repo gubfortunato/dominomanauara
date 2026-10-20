@@ -1583,6 +1583,8 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .vivo-pl2 li{line-height:1.35}
 .vivo-pl2 li span{color:var(--muted)}
 .vivo-pl2 li em{font-style:normal;font-size:11px;font-weight:800;color:#e5484d;text-transform:uppercase}
+.vivo-pjan{font-size:12px;color:var(--muted);margin-top:-2px}
+.vivo-ha{font-size:11.5px;color:var(--muted);font-weight:700;white-space:nowrap}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -2663,6 +2665,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.26.1', data: '20/10/2026', itens: ['A versão nova também entra sozinha com o app aberto, sem precisar fechar: no primeiro momento em que você para no início (sem estar numa partida).', 'Ajustes na área do administrador.'] },
   { v: '3.26', data: '20/10/2026', itens: ['Atualização sem travar: ao abrir o app, a versão nova entra na hora; se você já está jogando ou mexendo, aparece "Versão nova pronta · Atualizar" e ela entra com um toque (ou sozinha quando você sair do app). Antes a tela apagava e travava no meio do uso.'] },
   { v: '3.25.1', data: '20/10/2026', itens: ['Ajustes na área do administrador.'] },
   { v: '3.25', data: '20/10/2026', itens: ['Mesa mais fácil de entender: as fileiras seguem retas e só viram perto da borda, a mesa não se rearruma no meio da mão e o bucho fica com os dois lados descendo iguais.',
@@ -7967,10 +7970,13 @@ async function vivoPresenca(agora) {
   presBuscadoEm = Date.now();
   try {
     const j = await dnMsgPedir('/dono/presenca');
-    const l = j.agora || [], meu = meuId();
-    const n = l.length + (j.menores || 0);
-    box.innerHTML = `<span class="vivo-pk">No app agora · ${n} ${n === 1 ? 'pessoa' : 'pessoas'}${j.menores ? ` (${j.menores} ${j.menores === 1 ? 'menor de 18, sem nome' : 'menores de 18, sem nome'})` : ''}</span>` +
-      (l.length ? `<ul class="vivo-pl2">${l.slice(0, 15).map(x => `<li><b>${esc(x.nome || 'Sem apelido')}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span>${x.bloq ? ' <em>bloqueado</em>' : ''}</li>`).join('')}${l.length > 15 ? `<li><span>e mais ${l.length - 15}</span></li>` : ''}</ul>` : '');
+    const l = j.agora || [], meu = meuId(), ref = j.agoraServidor || Date.now();
+    const n = l.length + (j.menores || 0) + (j.semCadastro || 0);
+    // 3.26.1: janela de 5 min (como o Umami), "há X min" de cada um, e quem está na entrada sem cadastro na contagem
+    const ha = ms => { const m = Math.floor((ref - ms) / 60000); return m < 1 ? 'agora' : `há ${m} min`; };
+    const extras = [j.semCadastro ? `${j.semCadastro} na entrada, sem cadastro` : '', j.menores ? `${j.menores} ${j.menores === 1 ? 'menor de 18' : 'menores de 18'}, sem nome` : ''].filter(Boolean);
+    box.innerHTML = `<span class="vivo-pk">No app agora · ${n} ${n === 1 ? 'pessoa' : 'pessoas'}</span><small class="vivo-pjan">nos últimos 5 minutos${extras.length ? ' · ' + extras.join(' · ') : ''}</small>` +
+      (l.length ? `<ul class="vivo-pl2">${l.slice(0, 15).map(x => `<li><b>${esc(x.nome || 'Sem apelido')}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span> <small class="vivo-ha">${ha(x.visto_em)}</small>${x.bloq ? ' <em>bloqueado</em>' : ''}</li>`).join('')}${l.length > 15 ? `<li><span>e mais ${l.length - 15}</span></li>` : ''}</ul>` : '');
   } catch (e) {}
 }
 function vivoTique() {
@@ -8137,13 +8143,14 @@ function presDetalhe() {
   return '';
 }
 function presAvisar(forcar) {
-  if (!CONFIG.api || !profile || document.visibilityState !== 'visible') return;
+  if (!CONFIG.api || document.visibilityState !== 'visible') return;
   const agora = Date.now();
   if (!forcar && agora - presUlt < 55000) return;
   presUlt = agora; presTela = screen;
-  const menor = profile.idade === 'menor';
+  // 3.26.1: quem ainda não fez o cadastro (na entrada) também avisa, sem apelido — entra só na contagem
+  const menor = !!profile && profile.idade === 'menor', anonimo = menor || !profile;
   const corpo = { aparelho: meuId(), tela: screen, modo: screen === 'game' ? mode : null, menor, nv: typeof meuNivel === 'function' ? meuNivel() : 1,
-    nome: menor ? null : me, av: menor ? null : (typeof meuAv === 'function' ? meuAv() : null), detalhe: menor ? null : presDetalhe() };
+    nome: anonimo ? null : me, av: anonimo ? null : (typeof meuAv === 'function' ? meuAv() : null), detalhe: anonimo ? null : presDetalhe() };
   fetch(CONFIG.api + '/presenca', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo), keepalive: true }).catch(() => {});
 }
 setInterval(() => presAvisar(false), 60000);
@@ -8734,7 +8741,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.26-6d3b5f88';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.26.1-2f9d0082';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -8771,10 +8778,21 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 // 3.26: atualizar sem travar. Antes a tela apagava e recarregava no meio do uso (às vezes duas vezes seguidas: pelo
 // versao.txt e de novo quando o service worker novo assumia), e com internet lenta ficava vários segundos parada.
 // Agora: logo ao abrir o app (antes de mexer), atualiza na hora, sem apagar a tela; se você já está usando, aparece
-// "Versão nova pronta · Atualizar" (um toque) e, se não tocar, ela entra sozinha quando você sair do app.
-let novaVersao = null, recarregando = false, mexeu = false;
+// "Versão nova pronta · Atualizar" (um toque) e, se não tocar, ela entra sozinha quando você parar no início ou sair do app.
+// 3.26.1: e sem precisar fechar o app — com ele aberto, a versão nova entra sozinha no primeiro momento parado no
+// início (20 s sem tocar em nada, fora da partida, da sala, do perfil e sem janela aberta).
+let novaVersao = null, recarregando = false, mexeu = false, ultimoToque = Date.now();
 const abriuEm = Date.now();
 addEventListener('pointerdown', () => { mexeu = true; }, { capture: true, once: true });
+['pointerdown', 'keydown', 'wheel', 'touchmove'].forEach(ev => addEventListener(ev, () => { ultimoToque = Date.now(); }, { capture: true, passive: true }));
+setInterval(() => {
+  if (!novaVersao || recarregando || tentativasVersao(novaVersao) >= 2) return;
+  if (document.visibilityState !== 'visible' || !livreParaAtualizar() || !['home', 'who'].includes(screen)) return;
+  if (Date.now() - ultimoToque < 20000) return;
+  toast(`Atualizando para a versão ${novaVersao.split('-')[0]}…`);
+  const marca = ultimoToque;
+  setTimeout(() => { if (ultimoToque === marca && livreParaAtualizar() && ['home', 'who'].includes(screen)) recarregarNovo(); }, 1500);
+}, 5000);
 function livreParaAtualizar() { return !(screen === 'game' || screen === 'sala' || screen === 'profile' || sheetKind); }
 function avisoVersaoNova() {
   if (document.getElementById('versaoNova')) return;

@@ -20,14 +20,16 @@ export async function avisar(req, env, origin, h) {
       Math.max(1, Math.min(50, Math.floor(Number(b.nv) || 1))), tela, modo, menor ? null : limpa(b.detalhe, 60) || null, menor ? 1 : 0, Date.now()).run();
   return h.json({ ok: true }, 200, origin);
 }
-// GET /dono/presenca -> quem esteve no app nos últimos 3 minutos
+// GET /dono/presenca -> quem esteve no app nos últimos 5 minutos (a mesma janela do "online" do Umami)
 export async function donoPresenca(req, env, origin, h) {
   if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
   const { results } = await env.DB.prepare(`SELECT p.aparelho, p.nome, p.av, p.nv, p.tela, p.modo, p.detalhe, p.menor, p.visto_em,
       (SELECT 1 FROM bloqueios b WHERE b.aparelho = p.aparelho) AS bloq
-    FROM presenca p WHERE p.visto_em > ? ORDER BY p.visto_em DESC LIMIT 80`).bind(Date.now() - 3 * 60000).all();
+    FROM presenca p WHERE p.visto_em > ? ORDER BY p.visto_em DESC LIMIT 120`).bind(Date.now() - 5 * 60000).all();
   const lista = results || [];
-  return h.json({ agora: lista.filter(x => !x.menor), menores: lista.filter(x => x.menor).length }, 200, origin);
+  // 3.26.1: quem está na entrada sem cadastro (sem apelido) entra só na contagem, como os menores
+  return h.json({ agora: lista.filter(x => !x.menor && x.nome), menores: lista.filter(x => x.menor).length,
+    semCadastro: lista.filter(x => !x.menor && !x.nome).length, agoraServidor: Date.now() }, 200, origin);
 }
 // No agendado: some quem não aparece há mais de 1 dia
 export async function limparPresenca(env) {
