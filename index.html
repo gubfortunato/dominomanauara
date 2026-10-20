@@ -2596,6 +2596,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.24.3', data: '20/10/2026', itens: ['"Agora na calçada" sai do início por enquanto (volta depois de mais ajustes).'] },
   { v: '3.24.2', data: '20/10/2026', itens: ['Termos e Privacidade abrem dentro do jogo, no mesmo jeito das Regras, e fechar volta para onde você estava.', 'A primeira pedra da mão já aparece no tamanho certo (antes ela vinha pequena e crescia na segunda jogada).'] },
   { v: '3.24.1', data: '20/10/2026', itens: ['Lembretes ligados por padrão: o app pede a permissão logo no início (o iPhone exige um toque em "Permitir", com o app na tela de início), pede de novo se a pergunta não apareceu e religa sozinho se o aparelho perder a inscrição. Para desligar, é no seu perfil.'] },
   { v: '3.24', data: '20/10/2026', itens: ['Novo no início: "Agora na calçada", três mesas da turma do bairro jogando em lugares de Manaus, com placar e lances ao vivo. Toque numa mesa para sentar no lugar de um deles.',
@@ -7654,6 +7655,9 @@ ordenarInicio();
 // nunca apresentada como gente online. Só roda com o início aberto e o app na tela.
 // Em cima delas, "Hoje no Dominó Manauara": os números de verdade do dia (partidas terminadas, galos e batidas de
 // carroça de quem jogou, offline e online), vindos do servidor. Com poucas partidas no dia, a linha nem aparece.
+// 3.24.3: por enquanto o cartão só aparece no modo administrador (para o dono avaliar); a contagem do dia segue para todos.
+const vivoMostra = () => souAdmin();
+function vivoVisivel() { const c = $('#vivoCard'); if (c) c.hidden = !vivoMostra(); }
 const VIVO = { mesas: [], timer: null, vez: 0 };
 const VIVO_MIN = 10;   // a linha "Hoje" só aparece a partir de 10 partidas no dia
 let vivoHojeEm = 0;
@@ -7730,7 +7734,8 @@ function vivoDesenha() {
   }).join('');
 }
 function vivoTique() {
-  if (screen !== 'home' || document.visibilityState !== 'visible' || !VIVO.mesas.length) return;
+  vivoVisivel();
+  if (!vivoMostra() || screen !== 'home' || document.visibilityState !== 'visible' || !VIVO.mesas.length) return;
   vivoHoje();
   const i = VIVO.vez++ % VIVO.mesas.length, v = VIVO.mesas[i];
   let txt = null;
@@ -7753,7 +7758,7 @@ function vivoTique() {
 (function () {
   const ref = $('#nvFaixa') || $('#apBanner') || ($('#homeName') && $('#homeName').closest('p'));
   if (!ref) return;
-  ref.insertAdjacentHTML('afterend', `<section class="vivo" id="vivoCard" aria-label="A turma do bairro jogando agora">
+  ref.insertAdjacentHTML('afterend', `<section class="vivo" id="vivoCard" hidden aria-label="A turma do bairro jogando agora">
     <div class="vivo-cab"><span class="vivo-ponto" aria-hidden="true"></span><b>Agora na calçada</b><small>a turma do bairro jogando</small></div>
     <div class="vivo-hoje" id="vivoHoje" hidden></div>
     <div class="vivo-lista" id="vivoLista"></div>
@@ -7762,7 +7767,10 @@ function vivoTique() {
   vivoSorteia(VIVO_LUGARES, 3).forEach(l => { const v = vivoNovaMesa(l, usados); usados.push(...v.st.names); VIVO.mesas.push(v); });
   vivoDesenha();
   VIVO.timer = setInterval(vivoTique, 1800);
-  vivoHoje();
+  vivoVisivel();
+  if (vivoMostra()) vivoHoje();
+  const renderHomeVivo = renderHome;
+  renderHome = function () { const r = renderHomeVivo.apply(this, arguments); try { vivoVisivel(); } catch (e) {} return r; };
   $('#vivoLista').addEventListener('click', e => {
     const b = e.target.closest('[data-i]'); if (!b) return;
     const v = VIVO.mesas[Number(b.dataset.i)]; if (!v) return;
@@ -8383,7 +8391,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.24.2-e48237cf';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.24.3-3b70fc0c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
