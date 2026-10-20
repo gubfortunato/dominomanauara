@@ -1512,6 +1512,13 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .vivo-rostos img{width:22px;height:22px;border-radius:50%;box-shadow:0 0 0 2px var(--bg)}
 .vivo-rostos img + img{margin-left:-6px}
 .vivo-pe{margin:0;font-size:12.5px;color:var(--muted);text-align:center}
+/* 3.24.2: Termos e Privacidade na janela do jogo */
+.legal{margin:6px 0 16px;font-size:16.5px;line-height:1.55}
+.legal h3{margin:20px 0 6px;font-size:18px;font-weight:800;color:var(--fg)}
+.legal p{margin:0 0 10px}
+.legal ul{margin:0 0 10px;padding-left:20px;display:grid;gap:6px}
+.legal .muted{color:var(--muted);font-size:14.5px}
+.legal a{color:var(--nos);font-weight:700}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -2589,6 +2596,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.24.2', data: '20/10/2026', itens: ['Termos e Privacidade abrem dentro do jogo, no mesmo jeito das Regras, e fechar volta para onde você estava.', 'A primeira pedra da mão já aparece no tamanho certo (antes ela vinha pequena e crescia na segunda jogada).'] },
   { v: '3.24.1', data: '20/10/2026', itens: ['Lembretes ligados por padrão: o app pede a permissão logo no início (o iPhone exige um toque em "Permitir", com o app na tela de início), pede de novo se a pergunta não apareceu e religa sozinho se o aparelho perder a inscrição. Para desligar, é no seu perfil.'] },
   { v: '3.24', data: '20/10/2026', itens: ['Novo no início: "Agora na calçada", três mesas da turma do bairro jogando em lugares de Manaus, com placar e lances ao vivo. Toque numa mesa para sentar no lugar de um deles.',
     'E, quando o dia está movimentado, os números de verdade de hoje no Dominó Manauara: partidas, galos e batidas de carroça de quem jogou.',
@@ -4324,10 +4332,12 @@ function cameraMesa(minX, maxX, minY, maxY, Xmax, a, arrastando) {
 // Largura da fileira (até onde a linha vai antes de virar): escolhe a que deixa as pedras maiores nesta mesa,
 // testando as possíveis a cada jogada. Só troca se a ganhar pelo menos 6% (para não ficar rearrumando a mesa à toa);
 // enquanto você arrasta, não troca. Recomeça a cada mão com a largura de sempre.
+// 3.24.2: a escolha já vale para a primeira pedra (antes ela aparecia pequena e crescia na segunda jogada).
 let xmAtual = null;
 function xmaxMelhor(W, H, a, Xpadrao) {
   const n = G && G.chain ? G.chain.length : 0;
-  if (n <= 1 || xmAtual == null) return (xmAtual = Xpadrao);
+  if (!n || xmAtual == null) xmAtual = Xpadrao;
+  if (!n) return xmAtual;
   if (drag && drag.moved) return xmAtual;
   const m = 0.35;
   const tam = X => {
@@ -7762,6 +7772,40 @@ function vivoTique() {
   });
 })();
 
+// ===== Termos e Privacidade dentro do app (3.24.2) =====
+// Antes os links abriam a página à parte: no app instalado, "Voltar ao jogo" recarregava o app e caía no início
+// (perdendo o perfil ou o formulário que estava aberto), e a página tinha outro visual. Agora abrem na janela de baixo,
+// do mesmo jeito das Regras, e fechar volta exatamente para onde você estava. As páginas continuam no site para quem
+// chega por fora (e servem de reserva se a leitura falhar).
+const LEGAL = { 'termos.html': 'Termos de uso', 'privacidade.html': 'Privacidade' };
+const legalPronto = {};
+async function abrirLegal(arq) {
+  try {
+    let html = legalPronto[arq];
+    if (!html) {
+      const r = await fetch(arq); if (!r.ok) throw new Error('http-' + r.status);
+      const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+      const main = doc.querySelector('main'); if (!main) throw new Error('sem-main');
+      main.querySelectorAll('.back, script, style').forEach(e => e.remove());
+      const h1 = main.querySelector('h1'), titulo = h1 ? h1.textContent.trim() : LEGAL[arq];
+      if (h1) h1.remove();
+      main.querySelectorAll('h2').forEach(h => { const n = doc.createElement('h3'); n.textContent = h.textContent; h.replaceWith(n); });
+      main.querySelectorAll('a[href]').forEach(a => { if (!LEGAL[a.getAttribute('href')]) { a.target = '_blank'; a.rel = 'noopener'; } });
+      html = legalPronto[arq] = `<p class="eyebrow">Dominó Manauara</p><h2 id="sheetTitle">${esc(titulo)}</h2><div class="legal">${main.innerHTML}</div>`;
+    }
+    openSheet('legal', html + '<button type="button" class="primary" id="closeLegal">Fechar</button>');
+    $('#sheet').scrollTop = 0;
+    $('#closeLegal').addEventListener('click', closeSheet);
+    track('legal-' + arq.replace('.html', ''));
+  } catch (e) { location.href = arq; }
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[href]'); if (!a) return;
+  const arq = a.getAttribute('href'); if (!LEGAL[arq]) return;
+  e.preventDefault(); e.stopPropagation();
+  abrirLegal(arq);
+}, true);
+
 
 // ---- Desenho das peças ----
 function tileSVG(p, cls, shadow) {
@@ -8339,7 +8383,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.24.1-c10500f6';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.24.2-e48237cf';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
