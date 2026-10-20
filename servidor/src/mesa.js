@@ -56,7 +56,8 @@ export class Mesa {
     if (url.pathname === '/reservar' && req.method === 'POST') return this.reservar(await req.json());
     if (url.pathname === '/fila' && req.method === 'POST') return this.naFila(await req.json());
     if (url.pathname === '/fila/status') return Response.json(await this.statusFila());
-    if (url.pathname === '/fila/vivo') return Response.json(await this.mesasAoVivo());
+    if (url.pathname === '/fila/vivo') return Response.json(await this.mesasAoVivo(!!url.searchParams.get('todas')));
+    if (url.pathname === '/fila/ativa' && req.method === 'POST') return Response.json(await this.mesaAtiva(await req.json()));
     if (url.pathname === '/expulsar' && req.method === 'POST') return Response.json(await this.expulsar(await req.json()));
     if (url.pathname === '/info' && url.searchParams.get('vivo')) return Response.json(this.infoVivo());
     if (url.pathname === '/info') {
@@ -140,20 +141,37 @@ export class Mesa {
   }
   // 3.25: "Agora na calçada" — as mesas rápidas que estão jogando agora com pelo menos uma pessoa de verdade conectada
   // (mesa só de robôs não aparece). Só mesas públicas (as com os amigos são por convite e não aparecem). Guardado 5 s.
-  async mesasAoVivo() {
+  // 3.26.3: toda mesa em jogo se registra aqui (ao começar, a cada partida nova e quando alguém entra), mesmo as com os
+  // amigos e as que passam de 1 hora. A lista para os jogadores mostra só as mesas rápidas; o administrador vê todas.
+  async mesaAtiva(b) {
+    const codigo = String((b && b.codigo) || ''); if (!/^\d{5}$/.test(codigo)) return { ok: false };
     const agora = Date.now();
-    if (this.vivoCache && agora - this.vivoCache.t < 5000) return this.vivoCache.v;
-    const l = ((await this.ctx.storage.get('abertas')) || []).filter(x => agora - x.criada < FILA.idade);
+    let l = ((await this.ctx.storage.get('ativas')) || []).filter(x => x.codigo !== codigo && agora - x.t < 3 * 3600000);
+    l.unshift({ codigo, publica: !!b.publica, t: agora });
+    await this.ctx.storage.put('ativas', l.slice(0, 60));
+    return { ok: true };
+  }
+  async mesasAoVivo(todas) {
+    const agora = Date.now(), k = todas ? 'vivoCacheT' : 'vivoCache';
+    if (this[k] && agora - this[k].t < 4000) return this[k].v;
+    const ativas = (await this.ctx.storage.get('ativas')) || [];
+    const abertas = ((await this.ctx.storage.get('abertas')) || []).filter(x => agora - x.criada < FILA.idade).map(x => ({ codigo: x.codigo, publica: true }));
+    const vistas = new Set(), l = [];
+    for (const x of ativas.concat(abertas)) { if (vistas.has(x.codigo) || (!todas && !x.publica)) continue; vistas.add(x.codigo); l.push(x); }
     const mesas = [];
     for (const x of l) {
       try {
         const j = await (await this.env.MESA.get(this.env.MESA.idFromName(x.codigo)).fetch('https://mesa/info?vivo=1')).json();
-        if (j && j.existe && j.publica && j.fase === 'jogo' && j.on > 0) mesas.push(Object.assign({ codigo: x.codigo }, j));
+        if (j && j.existe && (j.publica || todas) && j.fase === 'jogo' && j.on > 0) mesas.push(Object.assign({ codigo: x.codigo }, j));
       } catch (e) {}
-      if (mesas.length >= 6) break;
+      if (mesas.length >= (todas ? 12 : 6)) break;
     }
-    this.vivoCache = { t: agora, v: { mesas } };
-    return this.vivoCache.v;
+    this[k] = { t: agora, v: { mesas } };
+    return this[k].v;
+  }
+  async registrarAtiva() {
+    const m = this.m; if (!m || !m.codigo) return;
+    try { await this.env.MESA.get(this.env.MESA.idFromName('fila')).fetch('https://mesa/fila/ativa', { method: 'POST', body: JSON.stringify({ codigo: m.codigo, publica: !!m.publica }) }); } catch (e) {}
   }
   infoVivo() {
     const m = this.viva();
@@ -311,6 +329,7 @@ export class Mesa {
     if (m.fase === 'jogo') this.agendar();
     await this.salvar();
     this.espalhar();
+    if (m.fase === 'jogo') await this.registrarAtiva();
   }
   // ---------- Ganha-chama (mesa com os amigos) ----------
   // Mesa cheia: quem chega (com app que já mostra a fila: msg.fila) entra na fila e espera. No fim de cada partida, a dupla que perdeu vai para o fim da fila
@@ -448,6 +467,7 @@ export class Mesa {
     m.ultimo = m.turnoDesde = Date.now();
     this.agendar(this.T.distribuir);
     await this.salvar(); this.espalhar();
+    await this.registrarAtiva();
   }
 
   async jogar(ws, p, msg) {
@@ -475,6 +495,7 @@ export class Mesa {
     nextHand(G);
     this.novaMaoRobo(r && r.matchWinner != null);
     await this.depoisDaAcao(null, this.T.distribuir);
+    if (r && r.matchWinner != null) await this.registrarAtiva();
   }
 
   async sair(ws, p) {

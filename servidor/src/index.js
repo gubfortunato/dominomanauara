@@ -341,6 +341,10 @@ export default {
       if (url.pathname === '/presenca' && req.method === 'POST') return await presenca.avisar(req, env, origin, H);
       if (url.pathname === '/dono/presenca' && req.method === 'GET') return await presenca.donoPresenca(req, env, origin, H);
       if (url.pathname === '/vivo/hoje' && req.method === 'GET') return await vivo.hoje(env, origin, H);
+      if (url.pathname === '/dono/mesas' && req.method === 'GET') {
+        if (!(await ehDono(req, env))) return json({ erro: 'nao-autorizado' }, 401, origin);
+        const r = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila/vivo?todas=1'); return json(await r.json(), 200, origin);
+      }
       if (url.pathname === '/vivo/mesas' && req.method === 'GET') { const r = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila/vivo'); return json(await r.json(), 200, origin); }
       if (url.pathname === '/vivo/conta' && req.method === 'POST') return await vivo.conta(req, env, origin, H);
       if (url.pathname === '/avisos/chave' && req.method === 'GET') return json({ chave: env.VAPID_PUBLIC || null }, env.VAPID_PUBLIC ? 200 : 503, origin);
