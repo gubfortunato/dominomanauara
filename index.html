@@ -2667,6 +2667,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.26.4', data: '20/10/2026', itens: ['Agora na calçada: a mesa mostra quantos lugares vagos tem para você entrar.'] },
   { v: '3.26.3', data: '20/10/2026', itens: ['A versão nova entra sozinha, sem precisar tocar em nada: ao abrir o app, quando você para um instante no início ou quando sai do app (nunca no meio da partida).', 'Ajustes na área do administrador.'] },
   { v: '3.26.2', data: '20/10/2026', itens: ['Ajustes na área do administrador.'] },
   { v: '3.26.1', data: '20/10/2026', itens: ['A versão nova também entra sozinha com o app aberto, sem precisar fechar: no primeiro momento em que você para no início (sem estar numa partida).', 'Ajustes na área do administrador.'] },
@@ -7946,7 +7947,7 @@ function vivoDesenha() {
     const convite = v.publica === false, quente = Date.now() - v.quando < 4000, livre = v.livres > 0 && !convite, adm = vivoDetalhes(), lugares = v.livres || 0;
     const placar = `<span class="vivo-pl"><span class="vivo-rostos">${rosto(0)}${rosto(2)}</span><b>${(v.placar || [0, 0])[0]} × ${(v.placar || [0, 0])[1]}</b><span class="vivo-rostos">${rosto(1)}${rosto(3)}</span></span>`;
     const estado = convite ? `<span class="vivo-st vivo-cheia-st vivo-convite"><span aria-hidden="true">●</span> Mesa com os amigos · só por convite</span>` : livre
-      ? `<span class="vivo-st vivo-entra"><span aria-hidden="true">▶</span> Toque para entrar · ${lugares} ${lugares === 1 ? 'lugar com robô' : 'lugares com robô'}</span>`
+      ? `<span class="vivo-st vivo-entra"><span aria-hidden="true">▶</span> Toque para entrar · ${lugares} ${lugares === 1 ? 'lugar vago' : 'lugares vagos'}</span>`
       : `<span class="vivo-st vivo-cheia-st"><span aria-hidden="true">●</span> Mesa cheia · não dá para entrar</span>`;
     const abre = `<button type="button" class="vivo-mesa${livre ? ' livre' : ' cheia'}" data-i="${i}"${livre ? '' : ' aria-disabled="true"'} aria-label="${esc(m.nome)}: ${nPessoas} ${nPessoas === 1 ? 'pessoa' : 'pessoas'}, ${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}. ${livre ? 'Toque para entrar' : 'Mesa cheia'}">
       <span class="vivo-sw" style="background:${fundoMesa(m)}"></span>`;
@@ -8755,7 +8756,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.26.3-dd77f7c2';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.26.4-a66c10fe';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
