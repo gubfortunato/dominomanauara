@@ -6,10 +6,13 @@ const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 const TELAS = ['who', 'home', 'setup', 'game', 'sala', 'profile', 'apoio', 'estilo', 'fale', 'anuncie', 'patro', 'instalar', 'dono'];
 
-// POST /presenca {aparelho, nome, av, nv, tela, modo, detalhe, menor}
+// 3.26.2: em tempo real — o app avisa a cada 20 s e na hora em que troca de tela; ao sair do app (ou fechar), avisa
+// que saiu ({saiu: true}, mandado como texto pelo sendBeacon) e some da lista na hora.
+// POST /presenca {aparelho, nome, av, nv, tela, modo, detalhe, menor} ou {aparelho, saiu: true}
 export async function avisar(req, env, origin, h) {
-  let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
-  if (!idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
+  let b; try { b = JSON.parse(await req.text()); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
+  if (!b || !idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
+  if (b.saiu) { await env.DB.prepare('UPDATE presenca SET visto_em = 0 WHERE aparelho = ?').bind(b.aparelho).run(); return h.json({ ok: true }, 200, origin); }
   const menor = !!b.menor;
   const tela = TELAS.includes(b.tela) ? b.tela : 'home';
   const modo = ['off', 'on'].includes(b.modo) ? b.modo : null;
@@ -20,12 +23,12 @@ export async function avisar(req, env, origin, h) {
       Math.max(1, Math.min(50, Math.floor(Number(b.nv) || 1))), tela, modo, menor ? null : limpa(b.detalhe, 60) || null, menor ? 1 : 0, Date.now()).run();
   return h.json({ ok: true }, 200, origin);
 }
-// GET /dono/presenca -> quem esteve no app nos últimos 5 minutos (a mesma janela do "online" do Umami)
+// GET /dono/presenca -> quem está com o app aberto agora (avisou nos últimos 50 s e não saiu)
 export async function donoPresenca(req, env, origin, h) {
   if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
   const { results } = await env.DB.prepare(`SELECT p.aparelho, p.nome, p.av, p.nv, p.tela, p.modo, p.detalhe, p.menor, p.visto_em,
       (SELECT 1 FROM bloqueios b WHERE b.aparelho = p.aparelho) AS bloq
-    FROM presenca p WHERE p.visto_em > ? ORDER BY p.visto_em DESC LIMIT 120`).bind(Date.now() - 5 * 60000).all();
+    FROM presenca p WHERE p.visto_em > ? ORDER BY p.visto_em DESC LIMIT 120`).bind(Date.now() - 50000).all();
   const lista = results || [];
   // 3.26.1: quem está na entrada sem cadastro (sem apelido) entra só na contagem, como os menores
   return h.json({ agora: lista.filter(x => !x.menor && x.nome), menores: lista.filter(x => x.menor).length,

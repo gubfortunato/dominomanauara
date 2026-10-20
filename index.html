@@ -1585,6 +1585,7 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .vivo-pl2 li em{font-style:normal;font-size:11px;font-weight:800;color:#e5484d;text-transform:uppercase}
 .vivo-pjan{font-size:12px;color:var(--muted);margin-top:-2px}
 .vivo-ha{font-size:11.5px;color:var(--muted);font-weight:700;white-space:nowrap}
+.vivo-ponto-p{display:inline-block;width:8px;height:8px;margin-right:6px;vertical-align:1px}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -2665,6 +2666,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.26.2', data: '20/10/2026', itens: ['Ajustes na área do administrador.'] },
   { v: '3.26.1', data: '20/10/2026', itens: ['A versão nova também entra sozinha com o app aberto, sem precisar fechar: no primeiro momento em que você para no início (sem estar numa partida).', 'Ajustes na área do administrador.'] },
   { v: '3.26', data: '20/10/2026', itens: ['Atualização sem travar: ao abrir o app, a versão nova entra na hora; se você já está jogando ou mexendo, aparece "Versão nova pronta · Atualizar" e ela entra com um toque (ou sozinha quando você sair do app). Antes a tela apagava e travava no meio do uso.'] },
   { v: '3.25.1', data: '20/10/2026', itens: ['Ajustes na área do administrador.'] },
@@ -7966,17 +7968,16 @@ let presBuscadoEm = 0;
 async function vivoPresenca(agora) {
   const box = $('#vivoPres'); if (!box) return;
   box.hidden = !vivoDetalhes();
-  if (box.hidden || (!agora && Date.now() - presBuscadoEm < 10000)) return;
+  if (box.hidden || (!agora && Date.now() - presBuscadoEm < 4000)) return;
   presBuscadoEm = Date.now();
   try {
     const j = await dnMsgPedir('/dono/presenca');
     const l = j.agora || [], meu = meuId(), ref = j.agoraServidor || Date.now();
     const n = l.length + (j.menores || 0) + (j.semCadastro || 0);
-    // 3.26.1: janela de 5 min (como o Umami), "há X min" de cada um, e quem está na entrada sem cadastro na contagem
-    const ha = ms => { const m = Math.floor((ref - ms) / 60000); return m < 1 ? 'agora' : `há ${m} min`; };
+    // 3.26.2: tempo real — só quem está com o app aberto agora; quem sai some na hora
     const extras = [j.semCadastro ? `${j.semCadastro} na entrada, sem cadastro` : '', j.menores ? `${j.menores} ${j.menores === 1 ? 'menor de 18' : 'menores de 18'}, sem nome` : ''].filter(Boolean);
-    box.innerHTML = `<span class="vivo-pk">No app agora · ${n} ${n === 1 ? 'pessoa' : 'pessoas'}</span><small class="vivo-pjan">nos últimos 5 minutos${extras.length ? ' · ' + extras.join(' · ') : ''}</small>` +
-      (l.length ? `<ul class="vivo-pl2">${l.slice(0, 15).map(x => `<li><b>${esc(x.nome || 'Sem apelido')}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span> <small class="vivo-ha">${ha(x.visto_em)}</small>${x.bloq ? ' <em>bloqueado</em>' : ''}</li>`).join('')}${l.length > 15 ? `<li><span>e mais ${l.length - 15}</span></li>` : ''}</ul>` : '');
+    box.innerHTML = `<span class="vivo-pk"><span class="vivo-ponto vivo-ponto-p" aria-hidden="true"></span>No app agora · ${n} ${n === 1 ? 'pessoa' : 'pessoas'}</span>${extras.length ? `<small class="vivo-pjan">${extras.join(' · ')}</small>` : ''}` +
+      (l.length ? `<ul class="vivo-pl2">${l.slice(0, 15).map(x => `<li><b>${esc(x.nome || 'Sem apelido')}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span>${x.bloq ? ' <em>bloqueado</em>' : ''}</li>`).join('')}${l.length > 15 ? `<li><span>e mais ${l.length - 15}</span></li>` : ''}</ul>` : '');
   } catch (e) {}
 }
 function vivoTique() {
@@ -8126,7 +8127,7 @@ renderDono = function () { const r = renderDonoJog.apply(this, arguments); try {
 })();
 
 // ===== "No app agora" (3.26) =====
-// Enquanto o app está na tela, avisa o servidor a cada minuto (e logo depois de trocar de tela) em que parte do jogo a
+// Enquanto o app está na tela, avisa o servidor a cada 20 s (e logo depois de trocar de tela) em que parte do jogo a
 // pessoa está, para o administrador ver o movimento. Vai o código aleatório do aparelho, o apelido, o avatar, o nível e
 // a tela (com o placar, numa partida). Menor de 18 manda só que está no app, sem apelido nem avatar.
 let presT = null, presUlt = 0, presTela = '';
@@ -8145,7 +8146,7 @@ function presDetalhe() {
 function presAvisar(forcar) {
   if (!CONFIG.api || document.visibilityState !== 'visible') return;
   const agora = Date.now();
-  if (!forcar && agora - presUlt < 55000) return;
+  if (!forcar && agora - presUlt < 18000) return;
   presUlt = agora; presTela = screen;
   // 3.26.1: quem ainda não fez o cadastro (na entrada) também avisa, sem apelido — entra só na contagem
   const menor = !!profile && profile.idade === 'menor', anonimo = menor || !profile;
@@ -8153,15 +8154,23 @@ function presAvisar(forcar) {
     nome: anonimo ? null : me, av: anonimo ? null : (typeof meuAv === 'function' ? meuAv() : null), detalhe: anonimo ? null : presDetalhe() };
   fetch(CONFIG.api + '/presenca', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo), keepalive: true }).catch(() => {});
 }
-setInterval(() => presAvisar(false), 60000);
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') presAvisar(true); });
+// 3.26.2: tempo real — a cada 20 s, na hora em que troca de tela e, ao sair do app, avisa que saiu
+setInterval(() => presAvisar(false), 20000);
+function presSaiu() {
+  if (!CONFIG.api) return;
+  const corpo = JSON.stringify({ aparelho: meuId(), saiu: true });
+  try { if (navigator.sendBeacon && navigator.sendBeacon(CONFIG.api + '/presenca', new Blob([corpo], { type: 'text/plain' }))) return; } catch (e) {}
+  fetch(CONFIG.api + '/presenca', { method: 'POST', headers: { 'content-type': 'text/plain' }, body: corpo, keepalive: true }).catch(() => {});
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') presAvisar(true); else presSaiu(); });
+addEventListener('pagehide', presSaiu);
 const showPresenca = show;
 show = function () {
   const r = showPresenca.apply(this, arguments);
-  clearTimeout(presT); presT = setTimeout(() => { if (screen !== presTela) presAvisar(true); }, 3000);
+  clearTimeout(presT); presT = setTimeout(() => { if (screen !== presTela) presAvisar(true); }, 800);
   return r;
 };
-setTimeout(() => presAvisar(true), 2500);
+setTimeout(() => presAvisar(true), 1500);
 
 
 // ---- Desenho das peças ----
@@ -8741,7 +8750,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.26.1-2f9d0082';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.26.2-22a97eaf';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
