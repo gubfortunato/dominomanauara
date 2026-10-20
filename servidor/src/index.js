@@ -2,11 +2,12 @@
 // Caixa de mensagens "Fale com a gente", lembretes para jogar (Web Push), painel do dono e mesa online por convite.
 import { enviarPush } from './webpush.js';
 import { Mesa } from './mesa.js';
-import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolver, manterChaveAsaas } from './pagamentos.js';
+import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolver, manterChaveAsaas, donoCortesia } from './pagamentos.js';
 import { atuais, imagem, contar, donoLista, donoImagem, donoSalvar, donoApagar } from './patrocinadores.js';
 import * as fotos from './fotos.js';
 import * as turmas from './turmas.js';
 import * as vivo from './vivo.js';
+import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos } from './bloqueio.js';
 export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
@@ -58,6 +59,7 @@ async function marcaDoDia(req, env) {
 async function novaMesa(req, env, origin) {
   let b;
   try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
+  if (await bloqueado(env, b && b.id)) return json({ erro: 'bloqueado' }, 403, origin);
   const marca = await marcaDoDia(req, env);
   const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM mesas_criadas WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();
   if (r && r.n >= MESAS_POR_HORA) return json({ erro: 'muitas' }, 429, origin);
@@ -77,6 +79,7 @@ async function novaMesa(req, env, origin) {
 async function mesaRapida(req, env, origin) {
   let b;
   try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
+  if (await bloqueado(env, b && b.id)) return json({ erro: 'bloqueado' }, 403, origin);
   const marca = await marcaDoDia(req, env);
   const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM mesas_criadas WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();
   if (r && r.n >= MESAS_POR_HORA) return json({ erro: 'muitas' }, 429, origin);
@@ -306,6 +309,10 @@ export default {
       if (url.pathname === '/plano/trazer' && req.method === 'POST') return await trazerPlano(req, env, origin, H);
       if (url.pathname === '/asaas/webhook' && req.method === 'POST') return await webhook(req, env, origin, H);
       if (url.pathname === '/dono/pagamentos' && req.method === 'GET') return await donoPagamentos(req, env, origin, H);
+      if (url.pathname === '/dono/cortesia' && req.method === 'POST') return await donoCortesia(req, env, origin, H);
+      if (url.pathname === '/dono/jogadores' && req.method === 'GET') return await donoJogadores(req, env, origin, H);
+      if (url.pathname === '/dono/bloquear' && req.method === 'POST') return await donoBloquear(req, env, origin, H);
+      if (url.pathname === '/dono/desbloquear' && req.method === 'POST') return await donoDesbloquear(req, env, origin, H);
       const dv = url.pathname.match(/^\/dono\/pagamentos\/([0-9a-f]{20})\/devolver$/);
       if (dv && req.method === 'POST') return await donoDevolver(req, env, origin, H, dv[1]);
       // Foto na mesa online (Plano Apoiador)
@@ -331,6 +338,7 @@ export default {
       if (pa && req.method === 'POST') return await donoApagar(req, env, origin, HP, Number(pa[1]));
       // "Hoje no Dominó Manauara": números do dia
       if (url.pathname === '/vivo/hoje' && req.method === 'GET') return await vivo.hoje(env, origin, H);
+      if (url.pathname === '/vivo/mesas' && req.method === 'GET') { const r = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila/vivo'); return json(await r.json(), 200, origin); }
       if (url.pathname === '/vivo/conta' && req.method === 'POST') return await vivo.conta(req, env, origin, H);
       if (url.pathname === '/avisos/chave' && req.method === 'GET') return json({ chave: env.VAPID_PUBLIC || null }, env.VAPID_PUBLIC ? 200 : 503, origin);
       if (url.pathname === '/avisos/inscrever' && req.method === 'POST') return await avisosInscrever(req, env, origin);
@@ -348,7 +356,7 @@ export default {
   },
   // Agendado (Cron do Cloudflare): lembretes no fim da tarde de Manaus (e a leitura diária que mantém a chave do Asaas ativa).
   async scheduled(evento, env, ctx) {
-    ctx.waitUntil((async () => { try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env); } catch (e) {} try { await fotos.moderarPendentes(env); } catch (e) {} try { await turmas.fecharDesafio(env); } catch (e) {} try { await manterChaveAsaas(env); } catch (e) {} try { await vivo.limparVivo(env); } catch (e) {} await lembretesDoDia(env); })());
+    ctx.waitUntil((async () => { try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env); } catch (e) {} try { await fotos.moderarPendentes(env); } catch (e) {} try { await turmas.fecharDesafio(env); } catch (e) {} try { await manterChaveAsaas(env); } catch (e) {} try { await vivo.limparVivo(env); } catch (e) {} try { await limparVistos(env); } catch (e) {} await lembretesDoDia(env); })());
   }
 };
 export { lembretesDoDia, lembretesPlano, lembreteDaData };

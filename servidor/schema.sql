@@ -70,3 +70,11 @@ CREATE TABLE IF NOT EXISTS desafio_campeas (edicao INTEGER PRIMARY KEY, turma TE
 CREATE TABLE IF NOT EXISTS vivo_dia (dia TEXT PRIMARY KEY, partidas INTEGER NOT NULL DEFAULT 0, galos INTEGER NOT NULL DEFAULT 0, carrocas INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS vivo_envios (marca TEXT NOT NULL, criado_em INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS vivo_envios_marca ON vivo_envios (marca, criado_em);
+
+-- Cortesia do dono (3.25): o aparelho do administrador fica com selo de doador e tempo de Apoiador, sem pagamento
+CREATE TABLE IF NOT EXISTS cortesias (aparelho TEXT PRIMARY KEY, nivel INTEGER NOT NULL DEFAULT 1, desde INTEGER NOT NULL);
+
+-- Bloqueio de jogadores pelo administrador (3.25) e a lista de quem jogou online nos últimos dias (para bloquear)
+CREATE TABLE IF NOT EXISTS bloqueios (aparelho TEXT PRIMARY KEY, nome TEXT, motivo TEXT, em INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS jogadores_vistos (aparelho TEXT PRIMARY KEY, nome TEXT, av TEXT, mesa TEXT, visto_em INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS jogadores_vistos_em ON jogadores_vistos (visto_em);

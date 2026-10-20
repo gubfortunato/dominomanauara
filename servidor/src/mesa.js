@@ -5,10 +5,11 @@
 // Mesa rápida: um objeto à parte (nome "fila") junta quem quer jogar com qualquer um. As mesas públicas
 // começam sozinhas depois de uma espera curta (robôs nas cadeiras vazias) e quem chega depois entra no lugar de um robô.
 import { newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, reacaoRobo, tkey, nomeOfensivo, BOT_NAMES, pedirPonto } from './motor.js';
-import { nivelDoador } from './pagamentos.js';
+import { nivelDoador, cortesiaDe } from './pagamentos.js';
 import { fotoPublica } from './fotos.js';
 import { pontuar, nomeDaTurma, apelido as apelidoNaTurma } from './turmas.js';
 import { somarVivo } from './vivo.js';
+import { bloqueado, visto } from './bloqueio.js';
 
 const TEMPO = {
   jogada: 4500,      // robô: espera antes de jogar (igual ao jogo offline)
@@ -21,7 +22,8 @@ const TEMPO = {
   espera: 20000,     // mesa rápida: espera por mais gente antes de começar com robôs
   cheia: 2500,       // mesa rápida completa: começa logo (dá tempo de ver quem sentou)
   sentaRobo: 5000,   // (mesas abertas antes da troca) faltando 5 s, a turma começa a sentar
-  entreRobos: 1300   // (mesas abertas antes da troca) intervalo entre um robô e outro
+  entreRobos: 1300,  // (mesas abertas antes da troca) intervalo entre um robô e outro
+  vazia: 180000      // 3.25: fim de mão sem nenhuma pessoa conectada: espera 3 min e encerra a mesa
 };
 const FILA = { mesas: 20, idade: 60 * 60 * 1000 };   // mesas rápidas lembradas pela fila e por quanto tempo
 const SILENCIO = 50000;
@@ -54,6 +56,9 @@ export class Mesa {
     if (url.pathname === '/reservar' && req.method === 'POST') return this.reservar(await req.json());
     if (url.pathname === '/fila' && req.method === 'POST') return this.naFila(await req.json());
     if (url.pathname === '/fila/status') return Response.json(await this.statusFila());
+    if (url.pathname === '/fila/vivo') return Response.json(await this.mesasAoVivo());
+    if (url.pathname === '/expulsar' && req.method === 'POST') return Response.json(await this.expulsar(await req.json()));
+    if (url.pathname === '/info' && url.searchParams.get('vivo')) return Response.json(this.infoVivo());
     if (url.pathname === '/info') {
       const m = this.viva();
       return Response.json(m ? { existe: true, fase: m.fase, publica: !!m.publica, humanos: m.cad.filter(c => c && !c.bot).length, livres: m.cad.filter(c => !c || (c.bot && !c.saiu)).length } : { existe: false });
@@ -133,12 +138,42 @@ export class Mesa {
     this.resumo = { t: agora, v: { pessoas, mesas, esperando } };
     return this.resumo.v;
   }
+  // 3.25: "Agora na calçada" — as mesas rápidas que estão jogando agora com pelo menos uma pessoa de verdade conectada
+  // (mesa só de robôs não aparece). Só mesas públicas (as com os amigos são por convite e não aparecem). Guardado 5 s.
+  async mesasAoVivo() {
+    const agora = Date.now();
+    if (this.vivoCache && agora - this.vivoCache.t < 5000) return this.vivoCache.v;
+    const l = ((await this.ctx.storage.get('abertas')) || []).filter(x => agora - x.criada < FILA.idade);
+    const mesas = [];
+    for (const x of l) {
+      try {
+        const j = await (await this.env.MESA.get(this.env.MESA.idFromName(x.codigo)).fetch('https://mesa/info?vivo=1')).json();
+        if (j && j.existe && j.publica && j.fase === 'jogo' && j.on > 0) mesas.push(Object.assign({ codigo: x.codigo }, j));
+      } catch (e) {}
+      if (mesas.length >= 6) break;
+    }
+    this.vivoCache = { t: agora, v: { mesas } };
+    return this.vivoCache.v;
+  }
+  infoVivo() {
+    const m = this.viva();
+    if (!m || !m.G) return { existe: !!m, fase: m ? m.fase : null };
+    const G = m.G, evs = G.events || [];
+    const ev = ['galo', 'batida', 'play', 'pass'].map(t => evs.find(e => e.type === t)).find(Boolean) || null;
+    return { existe: true, fase: m.fase, publica: !!m.publica, tema: m.tema || null,
+      on: m.cad.filter((c, p) => c && !c.bot && this.conectado(p)).length,
+      livres: m.cad.filter(c => c && c.bot).length,
+      cad: m.cad.map(c => c ? { nome: c.nome, bot: !!c.bot, av: c.bot ? null : c.av || null } : null),
+      placar: G.score, lance: ev ? { type: ev.type, p: ev.p, pts: ev.pts || 0, carroca: !!ev.carroca, voided: !!ev.voided } : null };
+  }
+
   // Senta alguém da fila numa mesa pública (200), ou diz que não deu agora (409) ou que a mesa não serve mais (410)
   async reservar(b) {
     const m = this.viva();
     if (!m || !m.publica) return Response.json({ erro: 'nao' }, { status: 410 });
     const quem = this.pessoa(b);
     if (!quem) return Response.json({ erro: 'dados' }, { status: 400 });
+    if (await bloqueado(this.env, quem.id)) return Response.json({ erro: 'bloqueado' }, { status: 403 });
     let p = m.cad.findIndex(c => c && c.id === quem.id);
     if (p >= 0) {
       const c = m.cad[p];
@@ -223,13 +258,15 @@ export class Mesa {
       const d = await this.env.DB.prepare("SELECT COALESCE(SUM(valor), 0) AS t FROM pedidos WHERE aparelho = ? AND status = 'pago'").bind(id).first();
       let foto = null; try { foto = await fotoPublica(this.env, id); } catch (e) {}
       let turma = null; try { turma = await nomeDaTurma(this.env, id); } catch (e) {}
-      return { apoiador: !!(p && p.ate > Date.now()), doador: nivelDoador((d && d.t) || 0), foto, turma };
+      let ct = null; try { ct = await cortesiaDe(this.env, id); } catch (e) {}
+      return { apoiador: !!(p && p.ate > Date.now()), doador: Math.max(nivelDoador((d && d.t) || 0), (ct && ct.nivel) || 0), foto, turma };
     } catch (e) { return { apoiador: false, doador: 0, foto: null, turma: null }; }
   }
   async entrar(ws, att, msg) {
     const m = this.m;
     const quem = this.pessoa(msg);
     if (!quem) return this.enviar(ws, { t: 'erro', cod: 'dados' });
+    if (await bloqueado(this.env, quem.id)) return this.recusar(ws, 'bloqueado');
     Object.assign(quem, await this.apoiador(quem.id));
     try { await apelidoNaTurma(this.env, quem.id, quem.nome); } catch (e) {}
     let p = m.cad.findIndex(c => c && c.id === quem.id);
@@ -260,6 +297,7 @@ export class Mesa {
       m.cad[p] = quem; m.G.names[p] = quem.nome;
     }
     att.id = quem.id; ws.serializeAttachment(att);
+    try { await visto(this.env, quem, m.codigo); } catch (e) {}
     if (!m.dono || !m.cad.some(c => c && c.id === m.dono && !c.bot)) m.dono = quem.id;
     // a mesa de quem criou vale para todos (até ele trocar)
     if (!m.tema && m.dono === quem.id && temaOk(msg.mesa)) m.tema = msg.mesa;
@@ -316,7 +354,7 @@ export class Mesa {
     // quem criou foi para a fila: quem ficou na mesa passa a mandar nela
     if (!m.cad.some(c => c && c.id === m.dono)) { const h = m.cad.find(c => c && !c.bot && c.id); if (h) m.dono = h.id; }
     const torneio = m.G.torneio;
-    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = torneio; startHand(m.G);
+    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = torneio; startHand(m.G); m.robo = null;
     m.troca = { seq: m.seq + 1, entraram, sairam, ficam: [0, 1, 2, 3].filter(k => k % 2 === w).map(k => m.cad[k].nome) };
     return true;
   }
@@ -399,7 +437,7 @@ export class Mesa {
     const m = this.m;
     if (m.fase !== 'espera') return;
     this.sentarRobos();
-    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = !!m.torneio && !m.publica; startHand(m.G);
+    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = !!m.torneio && !m.publica; startHand(m.G); m.robo = null;
     m.fase = 'jogo'; m.seq++; m.porRobo = null; m.iniciaEm = null;
     m.ultimo = m.turnoDesde = Date.now();
     this.agendar(this.T.distribuir);
@@ -426,9 +464,10 @@ export class Mesa {
     if (r && r.matchWinner != null && !m.publica) {
       const w = r.matchWinner;
       m.fica = m.fica && m.fica.team === w ? { team: w, n: m.fica.n + 1 } : { team: w, n: 1 };
-      if ((m.fila || []).length && this.ganhaChama(w)) return this.depoisDaAcao(null, this.T.distribuir);
+      if ((m.fila || []).length && this.ganhaChama(w)) { this.novaMaoRobo(true); return this.depoisDaAcao(null, this.T.distribuir); }
     }
     nextHand(G);
+    this.novaMaoRobo(r && r.matchWinner != null);
     await this.depoisDaAcao(null, this.T.distribuir);
   }
 
@@ -459,6 +498,35 @@ export class Mesa {
     await this.salvar(); this.espalhar();
   }
 
+  // 3.25: o administrador bloqueou alguém: sai da mesa na hora e um robô da turma assume a cadeira (com nome de robô)
+  async expulsar(b) {
+    const m = this.viva(); if (!m) return { id: null };
+    const p = Number.isInteger(b.cadeira) ? b.cadeira : m.cad.findIndex(c => c && c.id && c.id === b.id);
+    const c = p >= 0 && p < 4 ? m.cad[p] : null;
+    if (!c || !c.id || (c.bot && !c.saiu)) return { id: null };
+    const id = c.id, nome = c.nome;
+    for (const ws of this.ctx.getWebSockets()) {
+      const a = ws.deserializeAttachment() || {};
+      if (a.id === id) { this.enviar(ws, { t: 'erro', cod: 'bloqueado' }); a.id = null; ws.serializeAttachment(a); try { ws.close(4003, 'bloqueado'); } catch (e) {} }
+    }
+    if (m.fase === 'espera') m.cad[p] = null;
+    else {
+      const usados = m.cad.filter(Boolean).map(x => x.nome.toLowerCase());
+      const livres = BOT_NAMES.filter(n => !usados.includes(n.toLowerCase()));
+      const robo = livres[Math.floor(Math.random() * livres.length)] || 'Juca';
+      m.cad[p] = { id: null, nome: robo, av: null, nv: nivelRobo(), bot: true, saiu: false };
+      if (m.G) m.G.names[p] = robo;
+    }
+    m.fila = (m.fila || []).filter(x => x.id !== id);
+    const humanos = m.cad.filter(x => x && !x.bot);
+    if (!humanos.length) { await this.apagar(); return { id, nome }; }
+    if (!humanos.some(x => x.id === m.dono)) m.dono = humanos[0].id;
+    m.ultimo = Date.now();
+    if (m.fase === 'jogo') this.agendar();
+    await this.salvar(); this.espalhar();
+    return { id, nome };
+  }
+
   // Reação rápida: frase pronta (o celular sabe o texto pelo número). Sem gravar nada; com limite por pessoa.
   reagir(p, k) {
     if (this.m.fase !== 'jogo' || !Number.isInteger(k) || k < 0 || k > REACAO.maior) return;
@@ -480,6 +548,7 @@ export class Mesa {
       const robo = this.horaDoRobo();
       m.proximo = m.cad.some(c => !c) && robo < m.iniciaEm ? robo : m.iniciaEm;
     }
+    if (m.fase === 'jogo' && G && G.phase === 'handEnd' && !this.alguemOnline()) m.proximo = Date.now() + this.T.vazia;
     if (m.fase === 'jogo' && G && G.phase === 'play') {
       const p = G.turn, c = m.cad[p], tem = legalMoves(G, p).length > 0, agora = Date.now();
       let espera;
@@ -497,6 +566,10 @@ export class Mesa {
     if (!m) return;
     const agora = Date.now();
     if (m.ultimo + VIDA <= agora) { await this.apagar(); return; }
+    if (m.fase === 'jogo' && m.G && m.G.phase === 'handEnd') {
+      if (!this.alguemOnline() && m.proximo && agora >= m.proximo - 50) { await this.apagar(); return; }
+      this.agendar(); await this.salvar(); return;
+    }
     if (m.fase === 'espera' && m.publica && m.iniciaEm && agora >= m.iniciaEm - 50) return this.comecarPublica();
     if (m.fase === 'espera' && m.publica && m.iniciaEm && m.cad.some(c => !c) && agora >= this.horaDoRobo() - 50) {
       this.sentarUmRobo(); m.ultimo = agora;
@@ -508,6 +581,7 @@ export class Mesa {
     if (!m.proximo || agora < m.proximo - 50 || m.fase !== 'jogo') { this.agendar(); return; }
     const G = m.G, p = G.turn, c = m.cad[p], moves = legalMoves(G, p);
     if (c.bot) {
+      this.marcarRobo(p);
       if (moves.length) applyMove(G, p, botChoose(G, p)); else applyPass(G, p);
       if (G.pedido) pedirPonto(G, p, true);   // robô sempre pede o ponto dele
       await this.depoisDaAcao(null);
@@ -517,6 +591,7 @@ export class Mesa {
     // modo torneio: passou dos 20 s, o robô joga pela pessoa (e pede o ponto)
     const limite = G.torneio ? Math.min(this.T.torneio, this.conectado(p) ? this.T.torneio : this.T.ausente) : this.T.ausente;
     if ((G.torneio || !this.conectado(p)) && agora - m.turnoDesde >= limite - 50) {
+      this.marcarRobo(p);
       applyMove(G, p, botChoose(G, p));
       if (G.pedido) pedirPonto(G, p, true);
       await this.depoisDaAcao(p);
@@ -544,6 +619,7 @@ export class Mesa {
     const m = this.m;
     await this.contarDesafio();
     await this.contarVivo();
+    if (await this.encerrarSeVazia()) return;
     m.seq++; m.porRobo = porRobo; m.ultimo = m.turnoDesde = Date.now();
     this.agendar(extra);
     await this.salvar(); this.espalhar();
@@ -565,6 +641,30 @@ export class Mesa {
     const v = m.vivo || { g: 0, c: 0 };
     m.vivo = { g: 0, c: 0 };
     try { await somarVivo(this.env, r.matchWinner != null ? 1 : 0, Math.min(v.g, 6), Math.min(v.c, 2)); } catch (e) {}
+  }
+
+  // 3.25: mesa sem ninguém. Quando todos saíram ou estão sem conexão, os robôs só terminam a mão. No fim da partida a
+  // mesa é encerrada na hora; no fim de uma mão qualquer, espera 3 min por alguém voltar e encerra. Assim quem abrir o
+  // app depois não cai de volta numa mesa de robôs.
+  alguemOnline() { return (this.m.cad || []).some((c, p) => c && !c.bot && c.id && this.conectado(p)); }
+  async encerrarSeVazia() {
+    const m = this.m, G = m && m.G, r = G && G.result;
+    if (!m || m.fase !== 'jogo' || !G || G.phase !== 'handEnd' || !r || this.alguemOnline()) return false;
+    if (r.matchWinner != null) { await this.apagar(); return true; }
+    return false;   // fim de mão: o relógio confere de novo daqui a 3 min (agendar)
+  }
+
+  // 3.25: experiência só para quem jogou de verdade. Guarda, por cadeira, se o robô jogou por ela nesta mão e nesta
+  // partida; cada celular recebe só a marca da própria cadeira (o app não dá experiência da mão ou da partida marcada).
+  marcarRobo(p) {
+    const m = this.m;
+    if (!m.robo) m.robo = { mao: [false, false, false, false], partida: [false, false, false, false] };
+    m.robo.mao[p] = true; m.robo.partida[p] = true;
+  }
+  novaMaoRobo(novaPartida) {
+    const m = this.m; if (!m.robo) return;
+    m.robo.mao = [false, false, false, false];
+    if (novaPartida) m.robo.partida = [false, false, false, false];
   }
 
   // Desafio das Confrarias: fim de partida online, quem ganhou leva ponto para a Turma (se perdeu alguém de outra Turma)
@@ -609,6 +709,7 @@ export class Mesa {
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, publica: !!m.publica, iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
       cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p) } : null),
+      robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
       jogo, agora: Date.now() };
   }
   enviar(ws, obj) { try { ws.send(JSON.stringify(obj)); } catch (e) {} }

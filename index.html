@@ -1012,8 +1012,9 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 @keyframes vezNos{0%,100%{box-shadow:0 0 0 3px var(--glow),0 0 12px rgba(243,192,99,.3)}50%{box-shadow:0 0 0 3px #ffd98a,0 0 24px rgba(243,192,99,.6)}}
 @media (prefers-reduced-motion:reduce){.table .seat.turn{animation:none}}
 /* 3.20: cartões dos jogadores compactos (em pé, os três em cima): uma faixa fina, e a mesa ganha a altura que sobrou.
-   A etiqueta "Parceiro"/"Adversário" continua, menor, em cima da borda (e a cor também diz quem é quem). */
-@media (orientation: portrait){
+   A etiqueta "Parceiro"/"Adversário" continua, menor, em cima da borda (e a cor também diz quem é quem).
+   3.25: também em tablet deitado, notebook e desktop (antes os cartões ficavam altos e a mesa, baixinha). */
+@media (orientation: portrait), (orientation: landscape) and (min-height: 561px){
   body:not(.laterais) .table .seats{margin-top:8px;gap:5px}
   body:not(.laterais) .table .seat{flex-direction:row;align-items:center;justify-content:flex-start;text-align:left;gap:7px;padding:3px 8px 3px 3px;border-radius:999px;min-height:0}
   body:not(.laterais) .table .seat::before{top:-7px;font-size:8.5px;letter-spacing:.07em;padding:2px 6px 2px}
@@ -1055,6 +1056,14 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
   background:var(--wood-2);color:var(--glow);border:1.5px solid var(--glow);font:800 10px/14px var(--font-body);letter-spacing:0}
 .me-name img{cursor:pointer}
 .bubble::before{left:calc(50% - var(--ponta, 0px))}
+/* 3.25: pedra escolhida com um toque (as pontas certas aparecem na mesa) */
+.ht.escolhida{transform:translateY(-12px);filter:drop-shadow(0 0 0 transparent) drop-shadow(0 6px 10px var(--shadow));outline:3px solid var(--glow);outline-offset:2px}
+#board .zone{cursor:pointer}
+/* 3.25: notebook e desktop — na mesa, o jogo usa mais da largura da tela (antes era uma coluna de 720 px no meio) */
+@media (orientation: landscape) and (min-width: 1100px) and (min-height: 561px){
+  body:has(#scrGame:not([hidden])) .shell{max-width:min(1040px, 76vw)}
+}
+@media (orientation: landscape) and (min-width: 1100px) and (min-height: 900px){ :root{--tw:78px} }
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
@@ -1519,6 +1528,24 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .legal ul{margin:0 0 10px;padding-left:20px;display:grid;gap:6px}
 .legal .muted{color:var(--muted);font-size:14.5px}
 .legal a{color:var(--nos);font-weight:700}
+/* 3.25: "Agora na calçada" com mesas de verdade */
+.vivo-vazio{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px;border-radius:14px;border:1px dashed var(--line);font-size:14px;color:var(--muted);font-weight:600}
+.vivo-abrir{padding:9px 14px;border-radius:999px;border:0;background:var(--nos);color:#fff;font:inherit;font-weight:800;font-size:14px;cursor:pointer}
+.vivo-mesa.cheia{opacity:.7}
+.vivo-tag{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.vivo-rostos i{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--line);font-size:11px;font-style:normal;font-weight:800;box-shadow:0 0 0 2px var(--bg)}
+.vivo-rostos i + i,.vivo-rostos img + i,.vivo-rostos i + img{margin-left:-6px}
+/* 3.25: administrador — jogadores da mesa online e bloqueio */
+.dn-joglista{list-style:none;margin:6px 0 10px;padding:0;display:grid;gap:6px}
+.dn-joglista li{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:12px;background:rgba(0,0,0,.18)}
+.dn-joglista li.bloq{opacity:.6}
+.dn-jog-r img,.dn-jog-r i{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--wood-2);font-style:normal;font-weight:800}
+.dn-jog-t{display:grid;flex:1;min-width:0}
+.dn-jog-t b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dn-jog-t small{color:var(--wood-muted);font-size:12.5px}
+.dn-jog-st{font-size:12px;font-weight:800;color:#e58a6c;text-transform:uppercase}
+.dn-jog-b{white-space:nowrap}
+.dn-jog-vazio{color:var(--wood-muted)}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -2360,10 +2387,10 @@ function layoutTable(T, Xmax) {
   if (c.a === c.b) {
     res.main[center] = { x: 0, y: 0, o: 'v', v1: c.a, v2: c.b };
     armLayout(right, { x: 0.5, y: 0, dir: 1, vdir: 1, lo: 2, hi: Xmax }, toMain);
-    armLayout(left, { x: -0.5, y: 0, dir: -1, vdir: -1, lo: -Xmax, hi: -2 }, toMain);
+    armLayout(left, { x: -0.5, y: 0, dir: -1, vdir: 1, lo: -Xmax, hi: -2 }, toMain);
     const asArm = arr => (arr || []).map(t => ({ near: t.n, far: t.f }));
-    armLayout(asArm(bu.D), { mode: 'col', colX: 0, colEnd: 1, dir: 1, vdir: 1, lo: -Xmax, hi: -0.5, firstNeed: 3 }, (t, p) => res.D.push(p));
-    armLayout(asArm(bu.U), { mode: 'col', colX: 0, colEnd: -1, dir: -1, vdir: -1, lo: 0.5, hi: Xmax, firstNeed: 3 }, (t, p) => res.U.push(p));
+    armLayout(asArm(bu.D), { mode: 'col', colX: 0, colEnd: 1, dir: 1, vdir: 1, lo: -Xmax, hi: -0.5, firstNeed: 99 }, (t, p) => res.D.push(p));
+    armLayout(asArm(bu.U), { mode: 'col', colX: 0, colEnd: -1, dir: -1, vdir: -1, lo: 0.5, hi: Xmax, firstNeed: colunaBucho(Xmax) }, (t, p) => res.U.push(p));
   } else {
     res.main[center] = { x: 0, y: 0, o: 'h', v1: c.a, v2: c.b };
     armLayout(right, { x: 1, y: 0, dir: 1, vdir: 1, lo: -Xmax, hi: Xmax }, toMain);
@@ -2371,6 +2398,9 @@ function layoutTable(T, Xmax) {
   }
   return res;
 }
+// altura das colunas do bucho: acompanha a largura da fileira e a proporção da mesa (deitada, a coluna é mais curta)
+let mesaA = 0.83;
+function colunaBucho(Xmax) { return Math.max(3, Math.min(Xmax * 1.1, Xmax / (mesaA || 0.83) * 0.95)); }
 function layoutChain(chain, center, Xmax) { return layoutTable({ chain, center }, Xmax).main; }
 // Carroça sempre atravessada e centrada na pedra em que encaixou; a linha segue reto do outro lado dela.
 // Se a fileira acaba logo depois de uma carroça, a linha desce (ou sobe) a partir da ponta da carroça.
@@ -2596,6 +2626,13 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.25', data: '20/10/2026', itens: ['Mesa mais fácil de entender: as fileiras seguem retas e só viram perto da borda, a mesa não se rearruma no meio da mão e o bucho fica com os dois lados descendo iguais.',
+    'Dá para jogar tocando: toque na pedra (ela sobe) e toque na ponta. Arrastando ou tocando, só aparecem as pontas onde a pedra encaixa. Ideia do Seu Raimundo, pelo "Fale com a gente". Obrigado!',
+    'A pedra jogada já chega na mesa do lado certo, sem virar ao pousar.',
+    'Um aviso de cada vez: passe, virada, galo e "Reta final!" não aparecem mais um em cima do outro.',
+    'Na mesa online: no fim da partida dá para sair da mesa; mesa sem ninguém conectado é encerrada no fim da partida (ninguém volta preso numa mesa de robôs); e mão em que o robô jogou no seu lugar não dá experiência.',
+    'Apelidos ofensivos: o filtro ficou bem mais rígido. A reação "Joga logo, caboco!" virou "Bom jogo, turma!".',
+    'Tablet deitado, notebook e computador: a mesa usa mais da tela.'] },
   { v: '3.24.3', data: '20/10/2026', itens: ['"Agora na calçada" sai do início por enquanto (volta depois de mais ajustes).'] },
   { v: '3.24.2', data: '20/10/2026', itens: ['Termos e Privacidade abrem dentro do jogo, no mesmo jeito das Regras, e fechar volta para onde você estava.', 'A primeira pedra da mão já aparece no tamanho certo (antes ela vinha pequena e crescia na segunda jogada).'] },
   { v: '3.24.1', data: '20/10/2026', itens: ['Lembretes ligados por padrão: o app pede a permissão logo no início (o iPhone exige um toque em "Permitir", com o app na tela de início), pede de novo se a pergunta não apareceu e religa sozinho se o aparelho perder a inscrição. Para desligar, é no seu perfil.'] },
@@ -3063,10 +3100,18 @@ const NOME_RUIM_PARTE = ['porra', 'caralh', 'buceta', 'boceta', 'xoxota', 'xerec
   'traveco', 'retardad', 'nazista', 'hitler', 'estupr', 'pedofil', 'viadinho', 'porno', 'merda', 'bosta', 'cacete', 'pqp',
   'tomarnocu', 'paunocu', 'vaitomar', 'safad', 'piranh',
   // de Manaus (estudo de cultura): ofensa, termo sexual, xingamento e violência
-  'baitola', 'quenga', 'acochar', 'lazarent', 'chabocar', 'malaco', 'galeros', 'abestad', 'baiacu', 'perreche', 'jorgetexas'];
+  'baitola', 'quenga', 'acochar', 'lazarent', 'chabocar', 'malaco', 'galeros', 'abestad', 'baiacu', 'perreche', 'jorgetexas',
+  // 3.25: mais termos sexuais e xingamentos (o "Pica Dura" passou), inclusive grudados ("PicaDura", "PauDuro")
+  'piroc', 'bucet', 'xerec', 'xoxot', 'pauduro', 'paugross', 'picadura', 'picagross', 'picamole', 'picudo', 'rolud', 'rolao', 'putinh', 'putona',
+  'tesao', 'tezao', 'tesud', 'boquet', 'bronha', 'cuzinh', 'cusinh', 'chifrud', 'transar', 'transand', 'orgia', 'sexo', 'xvideo', 'pornhub',
+  'onlyfans', 'pepek', 'xaninh', 'grelinh', 'bundinh', 'bundud', 'rabud', 'peitud', 'gozad', 'enrab', 'rapariga', 'desgrac', 'imbecil',
+  'idiota', 'mongoloid', 'aleijad', 'vagab', 'arromb', 'fuck', 'shit', 'pussy', 'bitch', 'whore', 'nigg', 'slut', 'boobs'];
 // Curtas: só barram como palavra separada (para não pegar "Cunha" ou "Disputa").
 const NOME_RUIM_PALAVRA = ['cu', 'puta', 'putas', 'puto', 'foda', 'fode', 'rola', 'xota', 'viado', 'veado', 'bicha', 'sapatao',
-  'crioulo', 'corno', 'otario', 'babaca', 'anus', 'penis', 'vagina', 'kct', 'vsf', 'tnc', 'fdps', 'teba', 'cui', 'tobo'];
+  'crioulo', 'corno', 'otario', 'babaca', 'anus', 'penis', 'vagina', 'kct', 'vsf', 'tnc', 'fdps', 'teba', 'cui', 'tobo',
+  'pica', 'pau', 'piru', 'xana', 'ppk', 'grelo', 'bunda', 'bundao', 'rabo', 'peitos', 'peitao', 'teta', 'tetas', 'chupa', 'chupar', 'mamar',
+  'mamada', 'gozar', 'gozo', 'gostosa', 'gostoso', 'gostosao', 'gostosinha', 'sexy', 'sex', 'anal', 'nude', 'nudes', 'broxa', 'cachorra',
+  'vaca', 'cagao', 'cagar', 'dick', 'cock', 'tits'];
 function nomeOfensivo(nome) {
   const junta = s => s.replace(/(.)\1+/g, '$1');
   const leet = { '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', '@': 'a', '$': 's', '!': 'i' };
@@ -3645,6 +3690,7 @@ function openDonoLogin(deNovo) {
     dono = Object.assign(dono || { semContar: true }, { share: r.share });
     if (r.admin) dono.admin = r.admin;
     donoSalvar();
+    try { garantirCortesia(); } catch (e) {}
     closeSheet(); if (screen === 'dono') renderDono(); else show('dono');
   });
 }
@@ -3925,6 +3971,17 @@ $('#dnSair').addEventListener('click', () => {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && screen === 'dono') dnAoVivo();
 });
+// 3.25: o aparelho do administrador fica como doador e Apoiador (cortesia, sem pagamento): uma vez por aparelho
+async function garantirCortesia() {
+  if (!souAdmin() || !CONFIG.api || store.get('dmz-cortesia') === meuId()) return;
+  try {
+    const r = await fetch(CONFIG.api + '/dono/cortesia', { method: 'POST', headers: { 'content-type': 'application/json', 'x-admin-key': dono.admin }, body: JSON.stringify({ aparelho: meuId() }) });
+    if (!r.ok) return;
+    guardarConta(await r.json()); store.set('dmz-cortesia', meuId());
+    if (screen === 'home') renderHome();
+  } catch (e) {}
+}
+setTimeout(() => { try { garantirCortesia(); } catch (e) {} }, 3000);
 
 // ---- Fale com a gente: a mensagem vai para o servidor e aparece na Área do dono ----
 const SAIDA = 'dmz-saida';   // mensagens esperando internet
@@ -4246,7 +4303,7 @@ renderEntry = function () {
 // Falas da turma na entrada: metade com termos de Manaus (só do Amazonas), intercaladas e curtas para o balão caber na tela
 const FALAS = ['Bora, maninho!', 'Ê, caroço!', '10 pontos!', 'Chibata, bati!', 'Senta aí, %!', 'Chibata!', 'Quem sai?', 'Tá de bubuia?',
   'Passei!', 'Leseira, passei!', 'Mais 5!', 'Vô mermo!', 'Joga, %!', 'Telezé!', '20 na mesa!',
-  'Bati!', 'Leseira baré!', 'Fechou!', 'Joga logo, caboco!', 'Carroça!', 'Tô brocado!', '15 na mesa!', 'Bora uma partida?'];
+  'Bati!', 'Leseira baré!', 'Fechou!', 'Carroça!', 'Tô brocado!', '15 na mesa!', 'Bora uma partida?'];
 let falaIdx = Math.floor(Math.random() * FALAS.length);
 setInterval(() => {
   if (screen !== 'who' || document.visibilityState !== 'visible') return;
@@ -4261,8 +4318,13 @@ setInterval(() => {
 }, 3200);
 // O balão fica centrado em quem fala, mas nunca sai da tela (nos lados, ele chega para dentro e a ponta continua apontando).
 // 3.24: o limite é a área que realmente aparece (a tela de entrada corta 16 px antes da borda), não só a largura da tela.
+function larguraDaTela() {
+  // a menor das medidas: em alguns celulares a "largura da janela" cresce junto com o que vaza (inclusive o próprio balão)
+  const d = document.documentElement.clientWidth, v = window.visualViewport && visualViewport.width, s = window.screen && screen.width;
+  return Math.min(innerWidth, d || innerWidth, v || innerWidth, s && s < innerWidth ? s : innerWidth);
+}
 function limitesVisiveis(el) {
-  let esq = 0, dir = innerWidth;
+  let esq = 0, dir = larguraDaTela();
   for (let a = el.parentElement; a && a !== document.body && a !== document.documentElement; a = a.parentElement) {
     if (getComputedStyle(a).overflowX === 'visible') continue;
     const r = a.getBoundingClientRect(); esq = Math.max(esq, r.left); dir = Math.min(dir, r.right);
@@ -4307,10 +4369,12 @@ bubble = function (p) {
 // encostadas num canto e pequenas demais no fim da mão. Agora ela segue o centro das pedras e acerta o zoom, sempre
 // com uma animação curta (o vai e vem brusco era o que deixava tonto). Enquanto você arrasta, ela fica parada.
 let camMesa = null;
+const CAM_MIN = 9.4;
 function cameraMesa(minX, maxX, minY, maxY, Xmax, a, arrastando) {
   const m = 0.35;
   const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
-  let iw = Math.max(Math.min(2 * Xmax + 2.4, 13), maxX - minX + 2 * m), ih = Math.max(iw / a, maxY - minY + 2 * m);
+  // 3.25: o mais perto possível no começo da mão (pedras grandes); a câmera vai se afastando conforme a fileira cresce
+  let iw = Math.max(CAM_MIN, maxX - minX + 2 * m), ih = Math.max(iw / a, maxY - minY + 2 * m);
   if (iw / ih < a) iw = ih * a; else ih = iw / a;
   const nova = k => ({ x: cx - iw * k / 2, y: cy - ih * k / 2, w: iw * k, h: ih * k, a, Xmax });
   const c = camMesa, n = G && G.chain ? G.chain.length : 0;
@@ -4333,35 +4397,25 @@ function cameraMesa(minX, maxX, minY, maxY, Xmax, a, arrastando) {
 // Largura da fileira (até onde a linha vai antes de virar): escolhe a que deixa as pedras maiores nesta mesa,
 // testando as possíveis a cada jogada. Só troca se a ganhar pelo menos 6% (para não ficar rearrumando a mesa à toa);
 // enquanto você arrasta, não troca. Recomeça a cada mão com a largura de sempre.
-// 3.24.2: a escolha já vale para a primeira pedra (antes ela aparecia pequena e crescia na segunda jogada).
+// 3.25: a largura é a mesma a mão inteira (antes ela mudava no meio da mão para deixar as pedras maiores, e a mesa
+// se rearrumava e embolava). Só muda se a mesa mudar bastante de formato (celular girado).
 let xmAtual = null;
 function xmaxMelhor(W, H, a, Xpadrao) {
   const n = G && G.chain ? G.chain.length : 0;
-  if (!n || xmAtual == null) xmAtual = Xpadrao;
-  if (!n) return xmAtual;
-  if (drag && drag.moved) return xmAtual;
-  const m = 0.35;
-  const tam = X => {
-    const lay = layoutTable(G, X); let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
-    const g = p => { if (!p) return; const w = p.o === 'h' ? 1 : .5, h = p.o === 'h' ? .5 : 1; x0 = Math.min(x0, p.x - w); x1 = Math.max(x1, p.x + w); y0 = Math.min(y0, p.y - h); y1 = Math.max(y1, p.y + h); };
-    lay.main.forEach(g); (lay.U || []).forEach(g); (lay.D || []).forEach(g);
-    if (!isFinite(x0)) return 0;
-    let iw = Math.max(Math.min(2 * X + 2.4, 13), x1 - x0 + 2 * m), ih = Math.max(iw / a, y1 - y0 + 2 * m);
-    if (iw / ih < a) iw = ih * a;
-    return W / iw;
-  };
-  const atual = tam(xmAtual);
-  let melhor = xmAtual, bs = atual;
-  for (let X = 3.5; X <= 12.001; X += 0.5) { const t = tam(X); if (t > bs + 1e-9) { bs = t; melhor = X; } }
-  if (bs > atual * 1.06) xmAtual = melhor;
+  if (!n || xmAtual == null || Math.abs(Xpadrao - xmAtual) / xmAtual > 0.15) xmAtual = Xpadrao;
   return xmAtual;
 }
 // Quando a mesa se rearruma (largura da fileira nova), as pedras deslizam para o lugar novo em vez de pular
 let posAnt = new Map();
+// 3.25: onde (e com que lado para cima) cada pedra está desenhada agora. A pedra que voa até a mesa usa isso para já
+// chegar do jeito certo (antes ela voava com os números na ordem da fileira e virava ao pousar).
+let posAtual = new Map();
+function posDaPedra(k) { return posAtual.get(k) || null; }
 function deslizarPedras(svg, posMain, bTiles) {
   const novo = new Map();
   (G.chain || []).forEach((c, i) => { if (posMain[i]) novo.set(tkey([c.a, c.b]), posMain[i]); });
   (bTiles || []).forEach(b => novo.set(b.key, b.pos));
+  posAtual = novo;
   const reduz = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!reduz && G.chain.length > 1 && Element.prototype.animate) for (const [k, p] of novo) {
     const q = posAnt.get(k); if (!q || (Math.abs(q.x - p.x) < 1e-6 && Math.abs(q.y - p.y) < 1e-6 && q.o === p.o)) continue;
@@ -4394,6 +4448,45 @@ function porVistaMesa(svg, vb) {
   };
   vbAnim = { fim, agora: de, raf: requestAnimationFrame(passo) };
 }
+
+// ---- 3.25: pontas certas e jogar tocando (ideia do Seu Raimundo, pelo "Fale com a gente") ----
+// Ao pegar uma pedra, só ficam marcadas as pontas onde ela encaixa. E quem tem dificuldade de arrastar pode tocar
+// na pedra (ela sobe e as pontas certas aparecem) e depois tocar na ponta.
+let escolha = null;   // { i, t: a pedra (para conferir que ainda é a mesma) }
+function pedraEscolhida() {
+  if (!escolha) return null;
+  const h = G && seatMe != null && G.hands[seatMe];
+  if (!h || !h[escolha.i] || tkey(h[escolha.i]) !== escolha.k || !myTurnNow() || G.phase !== 'play') { escolha = null; return null; }
+  return escolha;
+}
+function ladosDaPedra(i) { return legalMoves(G, seatMe).filter(m => m.i === i).map(m => m.side); }
+function zonasDaPedra(zs) {
+  const i = drag && drag.moved ? drag.i : pedraEscolhida() ? escolha.i : null;
+  if (i == null || !G || seatMe == null) return zs;
+  const ok = ladosDaPedra(i);
+  return zs.filter(z => ok.includes(z.side));
+}
+function tocarPedra(i) {
+  if (!myTurnNow()) { render(); return; }
+  if (escolha && escolha.i === i) { escolha = null; render(); $('#feed').textContent = 'Toque numa pedra para jogar, ou arraste até a ponta.'; return; }
+  const lados = ladosDaPedra(i);
+  if (!lados.length) { escolha = null; render(); shakeTile(i, G.chain.length ? 'Essa pedra não encaixa em nenhuma ponta.' : 'Essa pedra não pode abrir a mão.'); return; }
+  escolha = { i, k: tkey(G.hands[seatMe][i]) };
+  render();
+  $('#feed').textContent = lados.length === 1 ? 'Toque na ponta marcada para jogar.' : 'Toque na ponta onde quer jogar.';
+}
+$('#board').addEventListener('click', e => {
+  const z = e.target.closest && e.target.closest('.zone'); if (!z || !pedraEscolhida() || drag) return;
+  const mv = legalMoves(G, seatMe).find(m => m.i === escolha.i && m.side === z.dataset.side);
+  escolha = null;
+  if (mv) humanPlay(mv); else render();
+});
+// a pedra escolhida fica levantada na mão
+const renderEscolha = render;
+render = function () {
+  renderEscolha.apply(this, arguments);
+  try { const e = pedraEscolhida(); $$('#hand .ht.escolhida').forEach(b => b.classList.remove('escolhida')); if (e) { const b = $(`#hand .ht[data-i="${e.i}"]`); if (b) b.classList.add('escolhida'); } } catch (er) {}
+};
 
 // ---- Lembretes para jogar (notificações push) ----
 // Só para maiores de 18 que pedirem. No iPhone, só com o app instalado na tela de início.
@@ -4645,14 +4738,15 @@ document.addEventListener('visibilitychange', () => {
 addEventListener('online', () => { if (ON.ativo && ON.cod && (!ON.ws || ON.ws.readyState > 1)) { ON.tent = 0; conectar(ON.cod); } });
 
 const ERROS_MESA = {
-  'nao-existe': 'Essa mesa não existe mais. Confira o número ou crie uma nova.',
-  'encerrada': 'A mesa foi encerrada.',
+  'nao-existe': 'Essa mesa não existe mais: a partida acabou ou todo mundo saiu. Crie uma nova ou entre em outra.',
+  'encerrada': 'A mesa foi encerrada: a partida acabou e não tinha mais ninguém na mesa.',
   'cheia': 'Essa mesa já está cheia.',
-  'dados': 'Não deu para entrar na mesa. Confira o seu nome no perfil.'
+  'dados': 'Não deu para entrar na mesa. Confira o seu nome no perfil.',
+  'bloqueado': 'Seu acesso à mesa online foi bloqueado por desrespeitar as regras (apelido ou foto). Se achar que foi engano, use o "Fale com a gente".'
 };
 // Reações rápidas: a ordem nunca muda (o servidor manda só o número). Para acrescentar, ponha no fim.
 const REACOES = ['Boa, parceiro!', 'Vô mermo!', 'Leseira baré!', 'Bate logo!', 'Segura essa!', 'Tá fácil!', 'Hoje tem galo!', 'Bora, bora!', '👏', '😂', '😮', '🔥',
-  'Ê, caroço!', 'Chibata!', 'Telezé!', 'Tá de bubuia?', 'Joga logo, caboco!', 'Bora um tacacá?',
+  'Ê, caroço!', 'Chibata!', 'Telezé!', 'Tá de bubuia?', 'Bom jogo, turma!', 'Bora um tacacá?',   // 3.25: no lugar de "Joga logo, caboco!" (mesma posição, para os celulares que ainda não atualizaram)
   'Deu galo!', 'Comeu abiu?', 'Nem com nojo!', 'Vou pegar o beco!', 'Até o tucupi!'];
 const FALA_MS = 2800;
 let falaMinhaT = null, reagiuEm = 0;
@@ -4711,7 +4805,8 @@ function receberOnline(m) {
   if (m.t === 'erro') {
     if (ERROS_MESA[m.cod]) {
       sairDaMesa(); toast(ERROS_MESA[m.cod]);
-      if (screen === 'game') { leaveGameBase(); show('sala'); } else if (screen === 'sala') renderSala();
+      const acabou = m.cod === 'nao-existe' || m.cod === 'encerrada' || m.cod === 'bloqueado';   // 3.25: mesa encerrada (ou bloqueio) volta para o início
+      if (screen === 'game') { leaveGameBase(); show(acabou ? 'home' : 'sala'); } else if (screen === 'sala') { if (acabou) show('home'); else renderSala(); }
       else if (screen === 'home') renderHome();
       return;
     }
@@ -4878,6 +4973,15 @@ function resultadoOnline() {
     closeSheet(); leaveGame(); show('home');
     toast('Seu lugar na mesa está guardado. Para voltar, toque em "Voltar para a mesa".');
   });
+  // 3.25: no fim da partida, também dá para sair da mesa de vez (antes só dava para começar outra)
+  const r = G && G.result, rh = $('#resHome');
+  if (r && r.matchWinner != null && rh && !$('#resSair')) {
+    rh.insertAdjacentHTML('afterend', '<button type="button" class="secondary" id="resSair" style="width:100%;margin-top:10px">Sair da mesa</button>');
+    $('#resSair').addEventListener('click', () => {
+      sairDaMesa(); closeSheet(); leaveGameBase(); show('home');
+      toast('Você saiu da mesa.');
+    });
+  }
 }
 function menuOnline() {
   if (sheetKind !== 'rules') return;
@@ -4917,7 +5021,7 @@ async function criarMesa() {
       body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel() }) });
     const j = await r.json().catch(() => ({}));
     if (r.status === 201 && j.codigo) { track('mesa-online-criada'); ON.vista = null; conectar(j.codigo); renderSala(); return; }
-    toast(r.status === 429 ? 'Muitas mesas criadas agora. Tente de novo daqui a pouco.' : 'Não deu para criar a mesa. Tente de novo.');
+    toast(r.status === 403 && j.erro === 'bloqueado' ? ERROS_MESA.bloqueado : r.status === 429 ? 'Muitas mesas criadas agora. Tente de novo daqui a pouco.' : 'Não deu para criar a mesa. Tente de novo.');
   } catch (e) { toast('Sem internet agora. A mesa online precisa de conexão.'); }
   finally { b.disabled = false; b.textContent = 'Criar uma mesa'; }
 }
@@ -4949,7 +5053,7 @@ async function mesaRapida() {
     const j = await r.json().catch(() => ({}));
     ON.buscando = false;
     if (r.ok && /^\d{5}$/.test(j.codigo || '')) { track('mesa-rapida'); ON.rapida = true; conectar(j.codigo); renderSala(); return; }
-    toast(r.status === 429 ? 'Muitas mesas agora. Tente de novo daqui a pouco.' : 'Não deu para achar uma mesa agora. Tente de novo.');
+    toast(r.status === 403 && j.erro === 'bloqueado' ? ERROS_MESA.bloqueado : r.status === 429 ? 'Muitas mesas agora. Tente de novo daqui a pouco.' : 'Não deu para achar uma mesa agora. Tente de novo.');
     show('home');
   } catch (e) { ON.buscando = false; toast('Sem internet agora. A mesa rápida precisa de conexão.'); show('home'); }
 }
@@ -5307,12 +5411,12 @@ function guardarPlano(j) {
 }
 // Doador: quanto já doou (soma), desde quando apoia e a última doação. O selo cresce: ♥, ♥♥ (R$ 30), ♥♥♥ (R$ 100).
 function doadorLocal() { try { return JSON.parse(store.get(DOAKEY) || 'null'); } catch (e) { return null; } }
-function souDoador() { const d = doadorLocal(); return !!(d && d.total > 0); }
-function nivelDoador() { const d = doadorLocal(), t = d ? d.total : 0; return t >= 100 ? 3 : t >= 30 ? 2 : t > 0 ? 1 : 0; }
+function souDoador() { const d = doadorLocal(); return !!(d && (d.total > 0 || d.cortesia)); }
+function nivelDoador() { const d = doadorLocal(), t = d ? d.total : 0, n = t >= 100 ? 3 : t >= 30 ? 2 : t > 0 ? 1 : 0; return d && d.cortesia ? Math.max(n, d.nivel || 1) : n; }
 const coracoes = n => '♥'.repeat(n || 0);
 const mesAno = ms => new Date(ms).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric', timeZone: 'America/Manaus' }).replace('.', '').replace(' de ', '/');
 function guardarDoador(d, codigo) {
-  if (d && d.total > 0) store.set(DOAKEY, JSON.stringify(Object.assign({}, d, { codigo: codigo || null, visto: Date.now() })));
+  if (d && (d.total > 0 || d.cortesia)) store.set(DOAKEY, JSON.stringify(Object.assign({}, d, { codigo: codigo || null, visto: Date.now() })));
   else store.del(DOAKEY);
 }
 // O servidor manda tudo junto: plano (ate), código e doador
@@ -5472,7 +5576,7 @@ function renderApoioTela() {
   $('#apDoador').hidden = !dn;
   if (dn) {
     $('#apDoaNivel').textContent = coracoes(dn);
-    $('#apDoaTx').textContent = `Doador desde ${mesAno(d.desde || d.ultima || Date.now())} · ${reais(d.total)} doados${d.n > 1 ? ` em ${d.n} doações` : ''}. Obrigado!`;
+    $('#apDoaTx').textContent = d.cortesia && !d.total ? 'Selo de doador do criador do jogo.' : `Doador desde ${mesAno(d.desde || d.ultima || Date.now())} · ${reais(d.total)} doados${d.n > 1 ? ` em ${d.n} doações` : ''}. Obrigado!`;
     $('#apDoaAvs').innerHTML = AVATARS.filter(a => a.doador).map(a =>
       `<button type="button" class="ap-av" data-av="${a.id}" aria-pressed="${!!(profile && profile.av === a.id)}" aria-label="Avatar do doador"><img src="${avatarURI(a)}" alt=""></button>`).join('');
     $('#apDoaCod').textContent = codigoBonito(d.codigo);
@@ -7101,7 +7205,7 @@ renderHome = function () {
 // alguém de outra Turma vale 1 ponto para a sua (o servidor conta). A campeã leva o título do ano; 3 títulos, a Grande Taça.
 const TM = { info: null, desafio: null, em: 0 };
 const TURMA_CONV = 'dmz-turma-convite', TURMA_VISTOS = 'dmz-desafio-vistos';
-const TURMA_ERROS = {
+const TURMA_ERROS = { bloqueado: 'Seu acesso às turmas foi bloqueado por desrespeitar as regras (apelido ou foto).',
   nome: 'Esse nome não pode. Escolha outro, sem palavrão nem ofensa.', 'nome-usado': 'Já tem uma Turma com esse nome. Escolha outro.',
   'nao-existe': 'Não achei Turma com esse código. Confira as letras e os números.', codigo: 'O código tem 6 letras e números.',
   cheia: 'Essa Turma já está com 40 pessoas.', muitas: 'Muitas Turmas criadas hoje neste aparelho. Tente amanhã.'
@@ -7256,14 +7360,46 @@ receberOnline = function (m) {
 const EMO = { lider: null, chave: null, reta: {} };
 const emoReduz = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 function vibrar(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
+// 3.25: um aviso de cada vez. Os carimbos entram numa fila (galo e virada no mesmo lance aparecem um depois do outro)
+// e esperam o aviso grande ("Você passou", "Reta final!") sair; quando um aviso grande aparece, o carimbo que estava na
+// tela sai para não ficarem um em cima do outro.
+const CARIMBO_MS = 1700;
+EMO.fila = []; EMO.ate = 0;
+const avisoNaTela = () => { const a = $('#aviso'); return !!(a && !a.hidden); };
 function carimbo(txt, tipo) {
-  const wrap = $('#boardWrap'); if (!wrap || screen !== 'game') return;
-  const el = document.createElement('div');
-  el.className = 'carimbo ' + (tipo || '');
-  el.innerHTML = txt;
-  wrap.appendChild(el);
-  setTimeout(() => el.remove(), 1700);
+  if (!$('#boardWrap') || screen !== 'game') return;
+  if (EMO.fila.length >= 3) EMO.fila.shift();
+  EMO.fila.push({ txt, tipo, em: Date.now() });
+  carimboProximo();
 }
+function carimboProximo() {
+  clearTimeout(EMO.tf);
+  if (!EMO.fila.length) return;
+  const wrap = $('#boardWrap');
+  if (!wrap || screen !== 'game') { EMO.fila = []; return; }
+  if (avisoNaTela() || Date.now() < EMO.ate) { EMO.tf = setTimeout(carimboProximo, 200); return; }
+  const c = EMO.fila.shift();
+  if (Date.now() - c.em > 7000) return carimboProximo();   // ficou velho esperando: não mostra fora de hora
+  const el = document.createElement('div');
+  el.className = 'carimbo ' + (c.tipo || '');
+  el.innerHTML = c.txt;
+  wrap.appendChild(el);
+  EMO.ate = Date.now() + CARIMBO_MS + 150;
+  setTimeout(() => el.remove(), CARIMBO_MS);
+  EMO.tf = setTimeout(carimboProximo, CARIMBO_MS + 160);
+}
+// Faz quando a tela estiver livre (sem carimbo nem aviso grande), esperando no máximo 8 s
+function quandoLivre(fn, ate) {
+  ate = ate || Date.now() + 8000;
+  if ((EMO.fila.length || Date.now() < EMO.ate || avisoNaTela()) && Date.now() < ate) return setTimeout(() => quandoLivre(fn, ate), 250);
+  fn();
+}
+const avisoAntesDaFila = aviso;
+aviso = function () {
+  document.querySelectorAll('#boardWrap .carimbo').forEach(e => e.remove());
+  EMO.ate = 0;
+  return avisoAntesDaFila.apply(this, arguments);
+};
 function tremerMesa() {
   if (emoReduz()) return;
   const t = $('.table'); if (!t) return;
@@ -7310,7 +7446,7 @@ function emocao(evs) {
     if (!EMO.reta[t] && sc[t] >= TARGET - 30 && sc[t] < TARGET && G.phase === 'play') {
       EMO.reta[t] = true;
       const falta = TARGET - sc[t];
-      setTimeout(() => aviso('Reta final!', t === nos ? `Faltam ${falta} para vocês fecharem a partida` : `Eles estão a ${falta} de fechar a partida`, 2200), 900);
+      setTimeout(() => quandoLivre(() => { if (G && G.phase === 'play') aviso('Reta final!', t === nos ? `Faltam ${falta} para vocês fecharem a partida` : `Eles estão a ${falta} de fechar a partida`, 2200); }), 900);
     }
   }
 }
@@ -7366,6 +7502,8 @@ function contarMissoes() {
   const evs = G && G.events;
   if (!evs || !evs.length || misVistos.has(evs)) return;
   misVistos.add(evs);
+  const rb = typeof roboAjudou === 'function' ? roboAjudou() : { mao: false, partida: false };   // 3.25: robô jogou por você: não conta
+  if (rb.mao) return;
   const s = misEstado(), lista = missoesDoDia(s.dia), soma = {};
   const mais = (id, n) => { soma[id] = (soma[id] || 0) + (n || 1); };
   for (const ev of evs) {
@@ -7380,7 +7518,7 @@ function contarMissoes() {
     if (ev.type === 'garagem' && ev.team === 0 && ev.pts >= 15) mais('garagem');
     if (ev.type === 'batida' || ev.type === 'fechado') {
       mais('maos3');
-      if (G.result && G.result.matchWinner === 0) mais('partida');
+      if (G.result && G.result.matchWinner === 0 && !rb.partida) mais('partida');
     }
   }
   const novas = [];
@@ -7492,15 +7630,23 @@ function ganharXP(pts, porque) {
   if (depois.n > antes.n) {
     track('nivel-' + depois.n);
     const novo = depois.titulo !== antes.titulo;
-    setTimeout(() => aviso(`Nível ${depois.n}!`, novo ? `Novo título: ${depois.titulo}` : `Você é ${depois.titulo}. Bora pro nível ${depois.n + 1}!`, 3600), 2200);
+    setTimeout(() => (typeof quandoLivre === 'function' ? quandoLivre : f => f())(() => aviso(`Nível ${depois.n}!`, novo ? `Novo título: ${depois.titulo}` : `Você é ${depois.titulo}. Bora pro nível ${depois.n + 1}!`, 3600)), 2200);
   }
 }
 // Conta a experiência das jogadas (você é sempre a cadeira 0, offline e online)
+// 3.25: na mesa online, se o robô jogou no seu lugar nesta mão (você caiu ou saiu), a mão não dá experiência; e a
+// partida só dá o bônus de partida ganha (e conta na sequência) se você jogou ela inteira. O servidor é quem diz.
+function roboAjudou() {
+  try { if (mode === 'on' && ON.vista && ON.vista.robo) return ON.vista.robo; } catch (e) {}
+  return { mao: false, partida: false };
+}
 const nvVistos = new WeakSet();
 function contarXP() {
   const evs = G && G.events;
   if (!evs || !evs.length || nvVistos.has(evs) || seatMe !== 0) return;
   nvVistos.add(evs);
+  const rb = roboAjudou();
+  if (rb.mao) return;
   let pts = 0;
   for (const ev of evs) {
     if (ev.type === 'galo' && ev.p === 0) pts += 10;
@@ -7511,9 +7657,9 @@ function contarXP() {
     pts += 5;
     const venceu = r.kind === 'batida' ? TEAM(r.p) : r.team;
     if (venceu === 0) pts += 5;
-    if (r.matchWinner === 0) pts += 30;
+    if (r.matchWinner === 0 && !rb.partida) pts += 30;
     // sequência de partidas ganhas: a cada 3 seguidas, +20 (perder zera)
-    if (r.matchWinner != null) {
+    if (r.matchWinner != null && !rb.partida) {
       const s = nvEstado();
       s.seq = r.matchWinner === 0 ? (s.seq || 0) + 1 : 0;
       store.set(NV_KEY, JSON.stringify(s));
@@ -7648,17 +7794,30 @@ function ordenarInicio() {
 const renderHomeOrdem = renderHome;
 renderHome = function () { renderHomeOrdem.apply(this, arguments); try { ordenarInicio(); } catch (e) {} };
 ordenarInicio();
+// 3.25: apelido que o filtro passou a barrar (a lista cresceu): na hora de ir para o início, pede outro apelido.
+// Na mesa online o servidor já mostra "Jogador" no lugar dele.
+const showNomeOk = show;
+show = function (name) {
+  try {
+    if (name === 'home' && profile && profile.name && nomeOfensivo(profile.name)) {
+      toast('Esse apelido não pode ser usado aqui. Escolha outro.');
+      if (screen !== 'profile') openProfile('home');
+      return;
+    }
+  } catch (e) {}
+  return showNomeOk.apply(this, arguments);
+};
 
-// ===== "Agora na calçada": a turma do bairro jogando ao vivo (3.24) =====
-// Três mesas da turma do bairro rolam de verdade no celular (o mesmo robô do jogo), cada uma num lugar de Manaus:
-// o placar mexe, os lances aparecem, e quem quiser senta no lugar de um deles. É a turma do jogo (personagens),
-// nunca apresentada como gente online. Só roda com o início aberto e o app na tela.
+// ===== "Agora na calçada": as mesas rápidas rolando agora (3.25) =====
+// Só mesas de verdade: mesas rápidas (públicas) em jogo com pelo menos uma pessoa conectada. Mesa só de robôs não
+// aparece (3.25, pedido do dono: "não pode poluir a informação"); mesa com os amigos é por convite e também não.
+// Placar e último lance vêm do servidor; quem tocar numa mesa com lugar livre entra no lugar de um robô.
 // Em cima delas, "Hoje no Dominó Manauara": os números de verdade do dia (partidas terminadas, galos e batidas de
 // carroça de quem jogou, offline e online), vindos do servidor. Com poucas partidas no dia, a linha nem aparece.
 // 3.24.3: por enquanto o cartão só aparece no modo administrador (para o dono avaliar); a contagem do dia segue para todos.
 const vivoMostra = () => souAdmin();
 function vivoVisivel() { const c = $('#vivoCard'); if (c) c.hidden = !vivoMostra(); }
-const VIVO = { mesas: [], timer: null, vez: 0 };
+const VIVO = { mesas: [], timer: null, buscadoEm: 0, buscando: false };
 const VIVO_MIN = 10;   // a linha "Hoje" só aparece a partir de 10 partidas no dia
 let vivoHojeEm = 0;
 async function vivoHoje() {
@@ -7694,89 +7853,85 @@ function vivoContaOffline() {
 }
 const trackOfflineVivo = trackOffline;
 trackOffline = function () { try { vivoContaOffline(); } catch (e) {} return trackOfflineVivo.apply(this, arguments); };
-const VIVO_LUGARES = ['pontanegra', 'mercado', 'teatro', 'encontro', 'arena', 'relogio', 'vitoria', 'centro', 'ponte', 'feltro'];
-function vivoSorteia(l, n) { const a = l.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, n); }
-function vivoNovaMesa(lugar, usados) {
-  const nomes = vivoSorteia(BOTS.map(b => b.name).filter(n => n !== 'Mundico' && !usados.includes(n)), 4);
-  const st = newGame(nomes); startHand(st);
-  // começa no meio da partida, para não parecer tudo zerado
-  for (let k = 0, alvo = 6 + Math.floor(Math.random() * 30); k < alvo && st.phase === 'play'; k++) vivoPasso(st);
-  return { lugar, st, lance: 'Partida rolando', quando: Date.now() };
-}
-function vivoPasso(st) {
-  if (st.phase !== 'play') { if (st.result && st.result.matchWinner != null) return 'fim'; nextHand(st); return null; }
-  const q = st.turn;
-  if (legalMoves(st, q).length) applyMove(st, q, botChoose(st, q)); else applyPass(st, q);
-  return st.events;
-}
-function vivoTexto(st, evs, lugar) {
-  const nm = p => st.names[p], onde = (MESAS.find(m => m.id === lugar) || {}).nome || '';
-  const e = t => (evs || []).find(x => x.type === t);
-  if (e('galo')) return `${nm(e('galo').p)} deu galo!`;
-  if (e('batida')) return e('batida').carroca ? `${nm(e('batida').p)} bateu de carroça!` : `${nm(e('batida').p)} bateu`;
-  const j = e('play'); if (j && j.pts >= 20) return `${nm(j.p)} fez ${j.pts}!`;
-  if (j && j.pts) return `${nm(j.p)} fez ${j.pts}`;
-  const ps = e('pass'); if (ps && ps.pts && !ps.voided) return `${nm(ps.p)} passou`;
-  return null;
+const VIVO_LANCE = (v) => {
+  const l = v.lance, nm = p => (v.cad[p] || {}).nome || '';
+  if (!l) return 'Partida rolando';
+  if (l.type === 'galo') return `${nm(l.p)} deu galo!`;
+  if (l.type === 'batida') return l.carroca ? `${nm(l.p)} bateu de carroça!` : `${nm(l.p)} bateu`;
+  if (l.type === 'play' && l.pts) return `${nm(l.p)} fez ${l.pts}${l.pts >= 20 ? '!' : ''}`;
+  if (l.type === 'pass' && l.pts && !l.voided) return `${nm(l.p)} passou`;
+  return 'Partida rolando';
+};
+async function vivoMesas(agora) {
+  if (!CONFIG.api || VIVO.buscando || (!agora && Date.now() - VIVO.buscadoEm < 6000)) return;
+  VIVO.buscando = true; VIVO.buscadoEm = Date.now();
+  try {
+    const j = await (await fetch(CONFIG.api + '/vivo/mesas', { cache: 'no-store' })).json();
+    const antes = new Map(VIVO.mesas.map(v => [v.codigo, v]));
+    VIVO.mesas = (j.mesas || []).map(v => {
+      const a = antes.get(v.codigo), txt = VIVO_LANCE(v);
+      return Object.assign(v, { txt, quando: a && a.txt === txt ? a.quando : Date.now() });
+    });
+    vivoDesenha();
+  } catch (e) {}
+  VIVO.buscando = false;
 }
 function vivoDesenha() {
   const box = $('#vivoLista'); if (!box) return;
+  const pe = $('#vivoPe');
+  if (!VIVO.mesas.length) {
+    box.innerHTML = `<div class="vivo-vazio"><span>Ninguém na mesa rápida agora.</span><button type="button" class="vivo-abrir" id="vivoAbrir">Abrir uma mesa rápida</button></div>`;
+    if (pe) pe.hidden = true;
+    return;
+  }
+  if (pe) pe.hidden = false;
   box.innerHTML = VIVO.mesas.map((v, i) => {
-    const m = MESAS.find(x => x.id === v.lugar) || MESAS[0], st = v.st, n = st.names;
-    const rosto = p => `<img src="${botFaceURI(n[p]) || ''}" alt="">`;
-    const quente = Date.now() - v.quando < 2500;
-    return `<button type="button" class="vivo-mesa" data-i="${i}">
+    const m = MESAS.find(x => x.id === v.tema) || MESAS[0], c = v.cad || [];
+    const rosto = p => { const x = c[p]; if (!x) return '<i></i>'; const a = !x.bot && typeof avatarDe === 'function' ? avatarDe(x.av) : null; const src = x.bot ? botFaceURI(x.nome) : a ? avatarURI(a) : ''; return src ? `<img src="${src}" alt="">` : `<i>${esc((x.nome || '?')[0])}</i>`; };
+    const nome = p => esc((c[p] || {}).nome || '—');
+    const quente = Date.now() - v.quando < 4000, livre = v.livres > 0;
+    return `<button type="button" class="vivo-mesa${livre ? '' : ' cheia'}" data-i="${i}"${livre ? '' : ' aria-disabled="true"'}>
       <span class="vivo-sw" style="background:${fundoMesa(m)}"></span>
-      <span class="vivo-tx"><b>${esc(m.nome)}</b><small>${esc(n[0])} e ${esc(n[2])} × ${esc(n[1])} e ${esc(n[3])}</small>
-        <em class="${quente ? 'quente' : ''}">${esc(v.lance)}</em></span>
-      <span class="vivo-pl"><span class="vivo-rostos">${rosto(0)}${rosto(2)}</span><b>${st.score[0]} × ${st.score[1]}</b><span class="vivo-rostos">${rosto(1)}${rosto(3)}</span></span>
+      <span class="vivo-tx"><b>${esc(m.nome)}${livre ? '' : ' <small class="vivo-tag">cheia</small>'}</b><small>${nome(0)} e ${nome(2)} × ${nome(1)} e ${nome(3)}</small>
+        <em class="${quente ? 'quente' : ''}">${esc(v.txt)}</em></span>
+      <span class="vivo-pl"><span class="vivo-rostos">${rosto(0)}${rosto(2)}</span><b>${(v.placar || [0, 0])[0]} × ${(v.placar || [0, 0])[1]}</b><span class="vivo-rostos">${rosto(1)}${rosto(3)}</span></span>
     </button>`;
   }).join('');
 }
 function vivoTique() {
   vivoVisivel();
-  if (!vivoMostra() || screen !== 'home' || document.visibilityState !== 'visible' || !VIVO.mesas.length) return;
-  vivoHoje();
-  const i = VIVO.vez++ % VIVO.mesas.length, v = VIVO.mesas[i];
-  let txt = null;
-  for (let k = 0; k < 3 && !txt; k++) {   // avança até acontecer algo que valha contar
-    const evs = vivoPasso(v.st);
-    if (evs === 'fim') {
-      const w = v.st.result.matchWinner, n = v.st.names;
-      txt = `${n[w]} e ${n[w + 2]} ganharam a partida!`;
-      const usados = VIVO.mesas.filter((_, j) => j !== i).flatMap(x => x.st.names);
-      const livres = VIVO_LUGARES.filter(l => !VIVO.mesas.some(x => x.lugar === l));
-      VIVO.mesas[i] = vivoNovaMesa(vivoSorteia(livres, 1)[0], usados);
-      VIVO.mesas[i].lance = txt; VIVO.mesas[i].quando = Date.now();
-      break;
-    }
-    txt = vivoTexto(v.st, evs, v.lugar);
-  }
-  if (txt && VIVO.mesas[i] === v) { v.lance = txt; v.quando = Date.now(); }
-  vivoDesenha();
+  if (!vivoMostra() || screen !== 'home' || document.visibilityState !== 'visible') return;
+  vivoHoje(); vivoMesas();
+}
+// Entrar numa mesa da lista: mesmo cuidado da mesa rápida (maiores de 18, uma mesa por vez); senta no lugar de um robô
+function entrarAoVivo(codigo) {
+  if (typeof onlineAtivo === 'function' && !onlineAtivo()) { toast('Precisa de internet para entrar na mesa.'); return; }
+  if (!profile || profile.idade === 'menor') { toast('A mesa rápida é para maiores de 18. Jogue com os amigos pelo número da mesa.'); return; }
+  if (mesaGuardada()) { voltarMesa(); toast('Você ainda está numa mesa. Para entrar em outra, saia dela primeiro.'); return; }
+  track('vivo-entrar');
+  ON.rapida = true; ON.vista = null; ON.esperou = false;
+  show('sala'); conectar(codigo); renderSala();
 }
 (function () {
   const ref = $('#nvFaixa') || $('#apBanner') || ($('#homeName') && $('#homeName').closest('p'));
   if (!ref) return;
-  ref.insertAdjacentHTML('afterend', `<section class="vivo" id="vivoCard" hidden aria-label="A turma do bairro jogando agora">
-    <div class="vivo-cab"><span class="vivo-ponto" aria-hidden="true"></span><b>Agora na calçada</b><small>a turma do bairro jogando</small></div>
+  ref.insertAdjacentHTML('afterend', `<section class="vivo" id="vivoCard" hidden aria-label="Mesas rápidas jogando agora">
+    <div class="vivo-cab"><span class="vivo-ponto" aria-hidden="true"></span><b>Agora na calçada</b><small>mesas rápidas jogando agora</small></div>
     <div class="vivo-hoje" id="vivoHoje" hidden></div>
     <div class="vivo-lista" id="vivoLista"></div>
-    <p class="vivo-pe">Toque numa mesa para sentar no lugar de um deles.</p></section>`);
-  const usados = [];
-  vivoSorteia(VIVO_LUGARES, 3).forEach(l => { const v = vivoNovaMesa(l, usados); usados.push(...v.st.names); VIVO.mesas.push(v); });
+    <p class="vivo-pe" id="vivoPe" hidden>Toque numa mesa para entrar no lugar de um robô.</p></section>`);
   vivoDesenha();
-  VIVO.timer = setInterval(vivoTique, 1800);
+  VIVO.timer = setInterval(vivoTique, 2000);
   vivoVisivel();
-  if (vivoMostra()) vivoHoje();
+  if (vivoMostra()) { vivoHoje(); vivoMesas(true); }
   const renderHomeVivo = renderHome;
-  renderHome = function () { const r = renderHomeVivo.apply(this, arguments); try { vivoVisivel(); } catch (e) {} return r; };
+  renderHome = function () { const r = renderHomeVivo.apply(this, arguments); try { vivoVisivel(); if (vivoMostra()) vivoMesas(); } catch (e) {} return r; };
   $('#vivoLista').addEventListener('click', e => {
+    if (e.target.closest('#vivoAbrir')) { track('vivo-abrir'); mesaRapida(); return; }
     const b = e.target.closest('[data-i]'); if (!b) return;
     const v = VIVO.mesas[Number(b.dataset.i)]; if (!v) return;
-    track('vivo-sentar');
-    try { escolherMesa(v.lugar); mesaFixaUmaVez = true; } catch (er) {}
-    $('#goOffline').click();
+    if (!(v.livres > 0)) { toast('Essa mesa está cheia agora.'); return; }
+    entrarAoVivo(v.codigo);
   });
 })();
 
@@ -7813,6 +7968,78 @@ document.addEventListener('click', e => {
   e.preventDefault(); e.stopPropagation();
   abrirLegal(arq);
 }, true);
+
+// ===== Bloquear jogadores (3.25, só o administrador) =====
+// Apelido ou foto ofensiva: o administrador bloqueia pela mesa online (tocando no cartão da pessoa) ou pela lista de
+// quem jogou online nos últimos dias, na área dele. A pessoa sai da mesa na hora, um robô assume a cadeira, a foto
+// cai, e ela não joga mais online (mesa com amigos, mesa rápida e turmas). O jogo offline continua.
+const quandoFoi = ms => { const m = Math.round((Date.now() - ms) / 60000); return m < 1 ? 'agora' : m < 60 ? `há ${m} min` : m < 1440 ? `há ${Math.round(m / 60)} h` : `há ${Math.round(m / 1440)} d`; };
+(function () {
+  const ref = $('#dnFotos'); if (!ref) return;
+  ref.insertAdjacentHTML('afterend', `<div class="dn-list wood dn-jog" id="dnJog" hidden>
+    <span class="ck">Jogadores da mesa online</span>
+    <p class="dn-avn">Quem jogou online nos últimos 7 dias. Apelido ou foto ofensiva: bloqueie. A pessoa sai da mesa na hora e não joga mais online.</p>
+    <ul class="dn-joglista" id="dnJogLista"></ul>
+    <span class="ck dn-jog-k" id="dnBloqK" hidden>Bloqueados</span>
+    <ul class="dn-joglista" id="dnBloqLista"></ul>
+  </div>`);
+})();
+function dnJogRosto(x) {
+  if (x.foto) return `<img src="${CONFIG.api}/foto/${esc(x.foto)}" alt="">`;
+  const a = typeof avatarDe === 'function' ? avatarDe(x.av) : null;
+  return a ? `<img src="${avatarURI(a)}" alt="">` : `<i>${esc((x.nome || '?')[0])}</i>`;
+}
+async function dnJogCarregar() {
+  const box = $('#dnJog'); if (!box) return;
+  box.hidden = !CONFIG.api || !souAdmin();
+  if (box.hidden) return;
+  try {
+    const j = await dnMsgPedir('/dono/jogadores');
+    const rec = j.recentes || [], blq = j.bloqueados || [];
+    $('#dnJogLista').innerHTML = rec.length ? rec.map(x => `<li class="${x.bloq ? 'bloq' : ''}"><span class="dn-jog-r">${dnJogRosto(x)}</span>
+        <span class="dn-jog-t"><b>${esc(x.nome || '—')}</b><small>${quandoFoi(x.visto_em)}${x.mesa ? ' · mesa ' + esc(x.mesa) : ''}</small></span>
+        ${x.bloq ? '<span class="dn-jog-st">bloqueado</span>' : `<button type="button" class="linkbtn dn-jog-b" data-bloq="${esc(x.aparelho)}">Bloquear</button>`}</li>`).join('')
+      : '<li class="dn-jog-vazio">Ninguém jogou online nos últimos 7 dias.</li>';
+    $('#dnBloqK').hidden = !blq.length;
+    $('#dnBloqLista').innerHTML = blq.map(x => `<li><span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')}</b><small>${x.motivo ? esc(x.motivo) + ' · ' : ''}${quandoFoi(x.em)}</small></span>
+        <button type="button" class="linkbtn dn-jog-b" data-desbloq="${esc(x.aparelho)}">Desbloquear</button></li>`).join('');
+  } catch (e) { $('#dnJogLista').innerHTML = '<li class="dn-jog-vazio">Não deu para carregar agora.</li>'; }
+}
+document.addEventListener('click', async e => {
+  const b = e.target.closest && e.target.closest('#dnJog [data-bloq], #dnJog [data-desbloq]'); if (!b) return;
+  const bloq = !!b.dataset.bloq, ap = b.dataset.bloq || b.dataset.desbloq;
+  if (bloq && !b.dataset.armado) { b.dataset.armado = '1'; b.textContent = 'Toque de novo para bloquear'; return; }
+  b.disabled = true;
+  try {
+    await dnMsgPedir(bloq ? '/dono/bloquear' : '/dono/desbloquear', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ aparelho: ap, motivo: bloq ? 'pela lista do administrador' : undefined }) });
+    toast(bloq ? 'Jogador bloqueado.' : 'Jogador desbloqueado.');
+  } catch (er) { toast('Não deu agora. Tente de novo.'); }
+  dnJogCarregar();
+});
+const renderDonoJog = renderDono;
+renderDono = function () { const r = renderDonoJog.apply(this, arguments); try { dnJogCarregar(); } catch (e) {} return r; };
+// Na mesa online: o administrador toca no cartão de alguém e pode bloquear
+(function () {
+  const seats = $('.table .seats'); if (!seats) return;
+  seats.addEventListener('click', e => {
+    if (mode !== 'on' || !souAdmin() || !ON.vista || !ON.cod) return;
+    const el = e.target.closest('.seat'); if (!el) return;
+    const pos = Number(el.dataset.pos), c = cadDe(pos); if (!c || c.bot) return;
+    const cadeira = (pos + ON.vista.minha) % 4;
+    openSheet('bloq', `<p class="eyebrow">Administrador</p><h2 id="sheetTitle">${esc(c.nome)}</h2>
+      <p>Apelido ou foto ofensiva? Bloquear tira da mesa na hora (um robô da turma assume a cadeira), a foto cai e a pessoa não joga mais online.</p>
+      <button type="button" class="primary" id="bloqSim">Bloquear jogador</button>
+      <button type="button" class="secondary" id="bloqNao" style="width:100%;margin-top:10px">Cancelar</button>`);
+    $('#bloqNao').addEventListener('click', closeSheet);
+    $('#bloqSim').addEventListener('click', async () => {
+      const b = $('#bloqSim'); b.disabled = true; b.textContent = 'Bloqueando…';
+      try {
+        const j = await dnMsgPedir('/dono/bloquear', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mesa: ON.cod, cadeira, motivo: 'pela mesa online' }) });
+        closeSheet(); toast(`${j.nome || c.nome} foi bloqueado e saiu da mesa.`);
+      } catch (er) { b.disabled = false; b.textContent = 'Bloquear jogador'; toast('Não deu para bloquear agora.'); }
+    });
+  });
+})();
 
 
 // ---- Desenho das peças ----
@@ -7974,13 +8201,13 @@ function renderBoard() {
   const W = wrap.clientWidth || 320, H = wrap.clientHeight || 300, a = W / H;
   const base = Math.sqrt(112 * a) / 2;
   const pin = G.chain.length && G.chain[G.center].a === G.chain[G.center].b;
-  Xmax = pin ? Math.max(5.5, Math.min(12, base * 1.2)) : Math.max(3.5, Math.min(10, base));   // fileira mais curta: a mesa usa a altura e as pedras ficam maiores
-  Xmax = xmaxMelhor(W, H, a, Xmax);   // 3.20.3: a largura que deixa as pedras maiores nesta mesa
+  Xmax = pin ? Math.max(6.5, Math.min(12, base * 1.25)) : Math.max(5.5, Math.min(10, base * 1.1));   // 3.25: fileiras longas e retas, viram só perto da borda
+  mesaA = a; Xmax = xmaxMelhor(W, H, a, Xmax);   // a mesma largura a mão inteira (a mesa não se rearruma no meio)
   const lay = layoutTable(G, Xmax), pos = lay.main;
   const bTiles = [];
   for (const k of ['U', 'D']) ((G.bucho && G.bucho[k]) || []).forEach((t, j) => bTiles.push({ key: tkey([t.n, t.f]), pos: lay[k][j] }));
-  const zones = dropZones();
-  const showZones = !!(drag && drag.moved);
+  const zones = zonasDaPedra(dropZones());
+  const showZones = !!(drag && drag.moved) || !!pedraEscolhida();
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   const grow = p => { const w = p.o === 'h' ? 1 : .5, h = p.o === 'h' ? .5 : 1; minX = Math.min(minX, p.x - w); maxX = Math.max(maxX, p.x + w); minY = Math.min(minY, p.y - h); maxY = Math.max(maxY, p.y + h); };
   pos.forEach(grow); bTiles.forEach(b => grow(b.pos)); if (showZones) zones.forEach(z => grow(z.pos));
@@ -7998,13 +8225,13 @@ function renderBoard() {
   freshKey = null;
   if (showZones) zones.forEach(z => {
     const p = z.pos, w = p.o === 'h' ? 2 : 1, h = p.o === 'h' ? 1 : 2;
-    html += `<g class="zone${drag.side === z.side ? ' over' : ''}" data-side="${z.side}">
+    html += `<g class="zone${drag && drag.side === z.side ? ' over' : ''}${drag ? '' : ' toque'}" data-side="${z.side}">
       <rect class="z-body" x="${f2(p.x - w / 2 + .04)}" y="${f2(p.y - h / 2 + .04)}" width="${f2(w - .08)}" height="${f2(h - .08)}" rx=".13"/>
-      <text class="z-tx" x="${f2(p.x)}" y="${f2(p.y + .15)}">${z.side === 'C' ? 'solte aqui' : z.side === 'U' || z.side === 'D' ? 'bucho' : 'ponta'}</text></g>`;
+      <text class="z-tx" x="${f2(p.x)}" y="${f2(p.y + .15)}">${z.side === 'C' ? (drag ? 'solte aqui' : 'toque aqui') : z.side === 'U' || z.side === 'D' ? 'bucho' : 'ponta'}</text></g>`;
   });
   svg.innerHTML = html;
   try { deslizarPedras(svg, pos, bTiles); } catch (e) {}
-  if (showZones) drag.zones = $$('#board .zone').map(g => ({ side: g.dataset.side, el: g.querySelector('.z-body'), g }));
+  if (showZones && drag) drag.zones = $$('#board .zone').map(g => ({ side: g.dataset.side, el: g.querySelector('.z-body'), g }));
   if (pendingFly) { const pf = pendingFly; pendingFly = null; flyIn(pf); }
 }
 
@@ -8021,7 +8248,8 @@ function flyIn(pf) {
   el.className = 'flytile';
   el.style.width = tr.width + 'px'; el.style.height = tr.height + 'px';
   const t = pf.tile;
-  el.innerHTML = `<svg viewBox="${horiz ? '-1 -0.5 2 1' : '-0.5 -1 1 2'}">${tileSVG({ x: 0, y: 0, o: horiz ? 'h' : 'v', v1: pf.v1, v2: pf.v2 }, '', false)}</svg>`;
+  const lp = typeof posDaPedra === 'function' ? posDaPedra(pf.key) : null, vf = lp && lp.v1 != null ? [lp.v1, lp.v2] : [pf.v1, pf.v2];   // 3.25: já no lado certo
+  el.innerHTML = `<svg viewBox="${horiz ? '-1 -0.5 2 1' : '-0.5 -1 1 2'}">${tileSVG({ x: 0, y: 0, o: horiz ? 'h' : 'v', v1: vf[0], v2: vf[1] }, '', false)}</svg>`;
   document.body.appendChild(el);
   // de onde a pedra sai: o ponto onde você soltou, ou a foto de quem jogou
   let sx, sy, s0, r0, dur;
@@ -8237,7 +8465,7 @@ function onDragEnd(e) {
   const { i, moved, side } = drag;
   if (moved && drag.el) { const r = drag.el.getBoundingClientRect(); lastDrop = { x: r.left + r.width / 2, y: r.top + r.height / 2, t: Date.now() }; }
   endDrag();
-  if (!moved) { render(); if (myTurnNow()) $('#feed').textContent = 'Arraste a pedra até a ponta da mesa onde quer jogar.'; return; }
+  if (!moved) { tocarPedra(i); return; }
   if (!myTurnNow() || !side) { render(); return; }
   const mv = legalMoves(G, seatMe).find(m => m.i === i && m.side === side);
   if (mv) { humanPlay(mv); return; }
@@ -8391,7 +8619,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.24.3-3b70fc0c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.25-bdba5cc4';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

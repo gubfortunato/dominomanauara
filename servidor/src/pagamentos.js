@@ -57,13 +57,33 @@ async function garantirConta(env, aparelho) { if (!(await planoDe(env, aparelho)
 
 // Selo ♥: soma de todos os apoios pagos (desde a 3.22 qualquer pagamento conta; antes, só as doações), desde quando e o último
 export const nivelDoador = t => t >= 100 ? 3 : t >= 30 ? 2 : t > 0 ? 1 : 0;
+// 3.25: cortesia do dono (o aparelho do administrador): selo de doador e tempo de Apoiador sem pagamento — não entra
+// em nenhuma soma de dinheiro nem na contagem de planos do painel.
+export async function cortesiaDe(env, aparelho) {
+  try { return await env.DB.prepare('SELECT nivel, desde FROM cortesias WHERE aparelho = ?').bind(aparelho).first(); } catch (e) { return null; }
+}
 export async function doadorDe(env, aparelho) {
   const r = await env.DB.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(valor), 0) AS total, MAX(pago_em) AS ultima FROM pedidos WHERE aparelho = ? AND status = 'pago'").bind(aparelho).first();
+  const c = await cortesiaDe(env, aparelho);
+  if ((!r || !r.n) && c) return { n: 0, total: 0, desde: c.desde, ultima: null, ultimoValor: null, nivel: c.nivel, cortesia: true };
   if (!r || !r.n) return null;
   const u = await env.DB.prepare("SELECT valor FROM pedidos WHERE aparelho = ? AND status = 'pago' ORDER BY pago_em DESC LIMIT 1").bind(aparelho).first();
   const d = await env.DB.prepare("SELECT MIN(pago_em) AS desde FROM pedidos WHERE aparelho = ? AND status = 'pago'").bind(aparelho).first();
   const total = Math.round(r.total * 100) / 100;
-  return { n: r.n, total, desde: d && d.desde, ultima: r.ultima, ultimoValor: u ? u.valor : null, nivel: nivelDoador(total) };
+  return Object.assign({ n: r.n, total, desde: d && d.desde, ultima: r.ultima, ultimoValor: u ? u.valor : null, nivel: nivelDoador(total) },
+    c ? { nivel: Math.max(nivelDoador(total), c.nivel), cortesia: true } : {});
+}
+// POST /dono/cortesia {aparelho, nivel?} — só com a chave do administrador
+export async function donoCortesia(req, env, origin, h) {
+  if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
+  let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
+  if (!idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
+  const nivel = Math.max(1, Math.min(3, Math.floor(Number(b.nivel) || 1)));
+  await env.DB.prepare('INSERT INTO cortesias (aparelho, nivel, desde) VALUES (?, ?, ?) ON CONFLICT (aparelho) DO UPDATE SET nivel = excluded.nivel').bind(b.aparelho, nivel, Date.now()).run();
+  const ate = Date.now() + 10 * 365 * DIA, pl = await planoDe(env, b.aparelho);
+  if (!pl) await novaConta(env, b.aparelho, ate);
+  else if (!(pl.ate > ate - 365 * DIA)) await env.DB.prepare('UPDATE planos SET ate = ? WHERE aparelho = ?').bind(ate, b.aparelho).run();
+  return h.json(await contaDe(env, b.aparelho), 200, origin);
 }
 async function contaDe(env, aparelho) {
   const p = await planoDe(env, aparelho);
@@ -202,7 +222,7 @@ export async function donoPagamentos(req, env, origin, h) {
   const d = new Date(); const inicioMes = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1) + 4 * 3600000;   // meia-noite em Manaus
   const mes = await env.DB.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(valor), 0) AS soma FROM pedidos WHERE status = 'pago' AND pago_em >= ?").bind(inicioMes).first();
   const tudo = await env.DB.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(valor), 0) AS soma FROM pedidos WHERE status = 'pago'").first();
-  const ativos = await env.DB.prepare('SELECT COUNT(*) AS n FROM planos WHERE ate > ?').bind(Date.now()).first();
+  const ativos = await env.DB.prepare('SELECT COUNT(*) AS n FROM planos WHERE ate > ? AND aparelho NOT IN (SELECT aparelho FROM cortesias)').bind(Date.now()).first();
   const { results } = await env.DB.prepare("SELECT id, produto, valor, pago_em, status FROM pedidos WHERE status IN ('pago', 'devolvido') ORDER BY pago_em DESC LIMIT 20").all();
   return h.json({ mes, tudo, planosAtivos: (ativos && ativos.n) || 0, ultimos: results || [], ligado: !!env.ASAAS_API_KEY }, 200, origin);
 }

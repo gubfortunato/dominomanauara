@@ -326,10 +326,10 @@ function layoutTable(T, Xmax) {
   if (c.a === c.b) {
     res.main[center] = { x: 0, y: 0, o: 'v', v1: c.a, v2: c.b };
     armLayout(right, { x: 0.5, y: 0, dir: 1, vdir: 1, lo: 2, hi: Xmax }, toMain);
-    armLayout(left, { x: -0.5, y: 0, dir: -1, vdir: -1, lo: -Xmax, hi: -2 }, toMain);
+    armLayout(left, { x: -0.5, y: 0, dir: -1, vdir: 1, lo: -Xmax, hi: -2 }, toMain);
     const asArm = arr => (arr || []).map(t => ({ near: t.n, far: t.f }));
-    armLayout(asArm(bu.D), { mode: 'col', colX: 0, colEnd: 1, dir: 1, vdir: 1, lo: -Xmax, hi: -0.5, firstNeed: 3 }, (t, p) => res.D.push(p));
-    armLayout(asArm(bu.U), { mode: 'col', colX: 0, colEnd: -1, dir: -1, vdir: -1, lo: 0.5, hi: Xmax, firstNeed: 3 }, (t, p) => res.U.push(p));
+    armLayout(asArm(bu.D), { mode: 'col', colX: 0, colEnd: 1, dir: 1, vdir: 1, lo: -Xmax, hi: -0.5, firstNeed: 99 }, (t, p) => res.D.push(p));
+    armLayout(asArm(bu.U), { mode: 'col', colX: 0, colEnd: -1, dir: -1, vdir: -1, lo: 0.5, hi: Xmax, firstNeed: colunaBucho(Xmax) }, (t, p) => res.U.push(p));
   } else {
     res.main[center] = { x: 0, y: 0, o: 'h', v1: c.a, v2: c.b };
     armLayout(right, { x: 1, y: 0, dir: 1, vdir: 1, lo: -Xmax, hi: Xmax }, toMain);
@@ -337,6 +337,9 @@ function layoutTable(T, Xmax) {
   }
   return res;
 }
+// altura das colunas do bucho: acompanha a largura da fileira e a proporção da mesa (deitada, a coluna é mais curta)
+let mesaA = 0.83;
+function colunaBucho(Xmax) { return Math.max(3, Math.min(Xmax * 1.1, Xmax / (mesaA || 0.83) * 0.95)); }
 function layoutChain(chain, center, Xmax) { return layoutTable({ chain, center }, Xmax).main; }
 // Carroça sempre atravessada e centrada na pedra em que encaixou; a linha segue reto do outro lado dela.
 // Se a fileira acaba logo depois de uma carroça, a linha desce (ou sobe) a partir da ponta da carroça.
@@ -508,10 +511,18 @@ const NOME_RUIM_PARTE = ['porra', 'caralh', 'buceta', 'boceta', 'xoxota', 'xerec
   'traveco', 'retardad', 'nazista', 'hitler', 'estupr', 'pedofil', 'viadinho', 'porno', 'merda', 'bosta', 'cacete', 'pqp',
   'tomarnocu', 'paunocu', 'vaitomar', 'safad', 'piranh',
   // de Manaus (estudo de cultura): ofensa, termo sexual, xingamento e violência
-  'baitola', 'quenga', 'acochar', 'lazarent', 'chabocar', 'malaco', 'galeros', 'abestad', 'baiacu', 'perreche', 'jorgetexas'];
+  'baitola', 'quenga', 'acochar', 'lazarent', 'chabocar', 'malaco', 'galeros', 'abestad', 'baiacu', 'perreche', 'jorgetexas',
+  // 3.25: mais termos sexuais e xingamentos (o "Pica Dura" passou), inclusive grudados ("PicaDura", "PauDuro")
+  'piroc', 'bucet', 'xerec', 'xoxot', 'pauduro', 'paugross', 'picadura', 'picagross', 'picamole', 'picudo', 'rolud', 'rolao', 'putinh', 'putona',
+  'tesao', 'tezao', 'tesud', 'boquet', 'bronha', 'cuzinh', 'cusinh', 'chifrud', 'transar', 'transand', 'orgia', 'sexo', 'xvideo', 'pornhub',
+  'onlyfans', 'pepek', 'xaninh', 'grelinh', 'bundinh', 'bundud', 'rabud', 'peitud', 'gozad', 'enrab', 'rapariga', 'desgrac', 'imbecil',
+  'idiota', 'mongoloid', 'aleijad', 'vagab', 'arromb', 'fuck', 'shit', 'pussy', 'bitch', 'whore', 'nigg', 'slut', 'boobs'];
 // Curtas: só barram como palavra separada (para não pegar "Cunha" ou "Disputa").
 const NOME_RUIM_PALAVRA = ['cu', 'puta', 'putas', 'puto', 'foda', 'fode', 'rola', 'xota', 'viado', 'veado', 'bicha', 'sapatao',
-  'crioulo', 'corno', 'otario', 'babaca', 'anus', 'penis', 'vagina', 'kct', 'vsf', 'tnc', 'fdps', 'teba', 'cui', 'tobo'];
+  'crioulo', 'corno', 'otario', 'babaca', 'anus', 'penis', 'vagina', 'kct', 'vsf', 'tnc', 'fdps', 'teba', 'cui', 'tobo',
+  'pica', 'pau', 'piru', 'xana', 'ppk', 'grelo', 'bunda', 'bundao', 'rabo', 'peitos', 'peitao', 'teta', 'tetas', 'chupa', 'chupar', 'mamar',
+  'mamada', 'gozar', 'gozo', 'gostosa', 'gostoso', 'gostosao', 'gostosinha', 'sexy', 'sex', 'anal', 'nude', 'nudes', 'broxa', 'cachorra',
+  'vaca', 'cagao', 'cagar', 'dick', 'cock', 'tits'];
 function nomeOfensivo(nome) {
   const junta = s => s.replace(/(.)\1+/g, '$1');
   const leet = { '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', '@': 'a', '$': 's', '!': 'i' };

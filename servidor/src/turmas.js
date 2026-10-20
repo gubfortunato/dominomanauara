@@ -3,6 +3,7 @@
 // Desafio das Confrarias: de 1º/11 a 20/12 (horário de Manaus), cada vitória numa partida online contra alguém de
 // outra Turma vale 1 ponto para a Turma de quem ganhou (no máximo 5 por dia contra a mesma Turma, para ninguém
 // combinar resultado). A Turma com mais pontos leva o título do ano; com 3 títulos, a Grande Taça.
+import { bloqueado } from './bloqueio.js';
 import { nomeOfensivo } from './motor.js';
 
 const LETRAS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -90,6 +91,7 @@ function apelidoOk(v) { const n = limpa(v, 16); return n.length >= 2 && !nomeOfe
 export async function nova(req, env, origin, h) {
   let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
   if (!idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
+  if (await bloqueado(env, b.aparelho)) return h.json({ erro: 'bloqueado' }, 403, origin);   // 3.25
   const nome = limpa(b.nome, 24);
   if (nome.length < 3 || nomeOfensivo(nome)) return h.json({ erro: 'nome' }, 400, origin);
   if (await turmaDoAparelho(env, b.aparelho)) return h.json({ erro: 'ja-tem' }, 409, origin);
@@ -127,6 +129,7 @@ export async function entrar(req, env, origin, h) {
 export async function sair(req, env, origin, h) {
   let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
   if (!idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
+  if (await bloqueado(env, b.aparelho)) return h.json({ erro: 'bloqueado' }, 403, origin);   // 3.25
   await env.DB.prepare('DELETE FROM turma_membros WHERE aparelho = ?').bind(b.aparelho).run();
   return h.json(await resumo(env, b.aparelho), 200, origin);
 }
