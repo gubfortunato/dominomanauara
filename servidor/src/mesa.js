@@ -163,7 +163,12 @@ export class Mesa {
     return { existe: true, fase: m.fase, publica: !!m.publica, tema: m.tema || null,
       on: m.cad.filter((c, p) => c && !c.bot && this.conectado(p)).length,
       livres: m.cad.filter(c => c && c.bot).length,
-      cad: m.cad.map(c => c ? { nome: c.nome, bot: !!c.bot, av: c.bot ? null : c.av || null } : null),
+      // 3.25.1: quem é quem na cadeira — pessoa conectada, pessoa sem conexão (o robô joga por ela na vez), quem saiu
+      // (o robô ficou no lugar) e robô da turma
+      cad: m.cad.map((c, p) => c ? { nome: c.nome, bot: !!c.bot, av: c.bot ? null : c.av || null,
+        tipo: c.bot ? (c.saiu ? 'saiu' : 'robo') : this.conectado(p) ? 'pessoa' : 'fora',
+        nv: c.bot ? null : c.nv || 1, bairro: c.bot ? null : c.bairro || null } : null),
+      partida: G.partida || 1, mao: G.handNo || 1, criada: m.criada || null,
       placar: G.score, lance: ev ? { type: ev.type, p: ev.p, pts: ev.pts || 0, carroca: !!ev.carroca, voided: !!ev.voided } : null };
   }
 

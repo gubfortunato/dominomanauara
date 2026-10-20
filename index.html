@@ -1546,6 +1546,16 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .dn-jog-st{font-size:12px;font-weight:800;color:#e58a6c;text-transform:uppercase}
 .dn-jog-b{white-space:nowrap}
 .dn-jog-vazio{color:var(--wood-muted)}
+/* 3.25.1: quem é gente e quem é robô na mesa ao vivo */
+.vivo-tx small.vivo-nomes{white-space:normal;line-height:1.35}
+.vivo-tx small.vivo-conta{font-weight:800;color:var(--fg)}
+.vivo-gente{font-weight:800;color:var(--fg)}
+.vivo-robo{opacity:.7}
+.vivo-r{font-style:normal;font-size:11px;font-weight:700;color:var(--muted);text-transform:lowercase}
+.vivo-pessoas{display:grid;gap:2px;margin:4px 0 2px;padding:6px 8px;border-radius:10px;background:rgba(0,0,0,.05);font-size:13px;color:var(--fg)}
+.vivo-p{white-space:normal}
+.vivo-on{color:var(--ok);font-weight:800}
+.vivo-tx small.vivo-info{font-size:11.5px;white-space:normal}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -2626,6 +2636,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.25.1', data: '20/10/2026', itens: ['Ajustes na área do administrador.'] },
   { v: '3.25', data: '20/10/2026', itens: ['Mesa mais fácil de entender: as fileiras seguem retas e só viram perto da borda, a mesa não se rearruma no meio da mão e o bucho fica com os dois lados descendo iguais.',
     'Dá para jogar tocando: toque na pedra (ela sobe) e toque na ponta. Arrastando ou tocando, só aparecem as pontas onde a pedra encaixa. Ideia do Seu Raimundo, pelo "Fale com a gente". Obrigado!',
     'A pedra jogada já chega na mesa do lado certo, sem virar ao pousar.',
@@ -7853,6 +7864,7 @@ function vivoContaOffline() {
 }
 const trackOfflineVivo = trackOffline;
 trackOffline = function () { try { vivoContaOffline(); } catch (e) {} return trackOfflineVivo.apply(this, arguments); };
+const vivoQuando = ms => { const m = Math.round((Date.now() - ms) / 60000); return m < 1 ? 'agora' : m < 60 ? `há ${m} min` : `há ${Math.round(m / 60)} h`; };
 const VIVO_LANCE = (v) => {
   const l = v.lance, nm = p => (v.cad[p] || {}).nome || '';
   if (!l) return 'Partida rolando';
@@ -7888,11 +7900,23 @@ function vivoDesenha() {
   box.innerHTML = VIVO.mesas.map((v, i) => {
     const m = MESAS.find(x => x.id === v.tema) || MESAS[0], c = v.cad || [];
     const rosto = p => { const x = c[p]; if (!x) return '<i></i>'; const a = !x.bot && typeof avatarDe === 'function' ? avatarDe(x.av) : null; const src = x.bot ? botFaceURI(x.nome) : a ? avatarURI(a) : ''; return src ? `<img src="${src}" alt="">` : `<i>${esc((x.nome || '?')[0])}</i>`; };
-    const nome = p => esc((c[p] || {}).nome || '—');
+    // 3.25.1: fica claro quem é gente e quem é robô (o robô aparece apagado, com "robô" do lado)
+    const tipo = p => (c[p] || {}).tipo || ((c[p] || {}).bot ? 'robo' : 'pessoa');
+    const nome = p => { const x = c[p]; if (!x) return '—'; const t = tipo(p);
+      return t === 'pessoa' ? `<b class="vivo-gente">${esc(x.nome)}</b>` : t === 'fora' ? `<b class="vivo-gente">${esc(x.nome)}</b> <i class="vivo-r">sem conexão</i>`
+        : `<span class="vivo-robo">${esc(t === 'saiu' ? x.nome : x.nome)} <i class="vivo-r">${t === 'saiu' ? 'saiu, robô no lugar' : 'robô'}</i></span>`; };
+    const nPessoas = [0, 1, 2, 3].filter(p => ['pessoa', 'fora'].includes(tipo(p))).length, nRobos = 4 - nPessoas;
+    // 3.25.1: só para o administrador — quem é a gente de verdade (apelido, nível, bairro e se está conectado)
+    const gente = [0, 1, 2, 3].filter(p => ['pessoa', 'fora'].includes(tipo(p))).map(p => { const x = c[p];
+      return `<span class="vivo-p"><b>${esc(x.nome)}</b> Nv ${x.nv || 1}${x.bairro ? ' · ' + esc(x.bairro) : ''} · ${tipo(p) === 'pessoa' ? '<span class="vivo-on">conectado</span>' : 'sem conexão'}</span>`; });
     const quente = Date.now() - v.quando < 4000, livre = v.livres > 0;
     return `<button type="button" class="vivo-mesa${livre ? '' : ' cheia'}" data-i="${i}"${livre ? '' : ' aria-disabled="true"'}>
       <span class="vivo-sw" style="background:${fundoMesa(m)}"></span>
-      <span class="vivo-tx"><b>${esc(m.nome)}${livre ? '' : ' <small class="vivo-tag">cheia</small>'}</b><small>${nome(0)} e ${nome(2)} × ${nome(1)} e ${nome(3)}</small>
+      <span class="vivo-tx"><b>${esc(m.nome)}${livre ? '' : ' <small class="vivo-tag">cheia</small>'}</b>
+        <small class="vivo-conta">${nPessoas} ${nPessoas === 1 ? 'pessoa' : 'pessoas'} · ${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}</small>
+        <small class="vivo-nomes">${nome(0)} e ${nome(2)} × ${nome(1)} e ${nome(3)}</small>
+        ${gente.length ? `<span class="vivo-pessoas">${gente.join('')}</span>` : ''}
+        <small class="vivo-info">Mesa ${esc(v.codigo)} · partida ${v.partida || 1}, mão ${v.mao || 1}${v.criada ? ` · aberta ${vivoQuando(v.criada)}` : ''}</small>
         <em class="${quente ? 'quente' : ''}">${esc(v.txt)}</em></span>
       <span class="vivo-pl"><span class="vivo-rostos">${rosto(0)}${rosto(2)}</span><b>${(v.placar || [0, 0])[0]} × ${(v.placar || [0, 0])[1]}</b><span class="vivo-rostos">${rosto(1)}${rosto(3)}</span></span>
     </button>`;
@@ -8619,7 +8643,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.25-bdba5cc4';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.25.1-b4942a82';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
