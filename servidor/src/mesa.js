@@ -8,6 +8,7 @@ import { newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoo
 import { nivelDoador } from './pagamentos.js';
 import { fotoPublica } from './fotos.js';
 import { pontuar, nomeDaTurma, apelido as apelidoNaTurma } from './turmas.js';
+import { somarVivo } from './vivo.js';
 
 const TEMPO = {
   jogada: 4500,      // robô: espera antes de jogar (igual ao jogo offline)
@@ -542,9 +543,28 @@ export class Mesa {
   async depoisDaAcao(porRobo, extra) {
     const m = this.m;
     await this.contarDesafio();
+    await this.contarVivo();
     m.seq++; m.porRobo = porRobo; m.ultimo = m.turnoDesde = Date.now();
     this.agendar(extra);
     await this.salvar(); this.espalhar();
+  }
+
+  // "Hoje no Dominó Manauara" (3.24): a mesa soma galos e batidas de carroça e, ao fim de cada mão, manda para o
+  // contador do dia (com a partida, se ela acabou). Cada lance é visto uma vez só (a lista de eventos é a do lance).
+  async contarVivo() {
+    const m = this.m, G = m.G; if (!G) return;
+    const evs = G.events || [];
+    if (evs.length && m.vivoVisto !== m.seq) {
+      m.vivoVisto = m.seq;
+      const v = m.vivo || (m.vivo = { g: 0, c: 0 });
+      for (const e of evs) { if (e.type === 'galo') v.g++; if (e.type === 'batida' && e.carroca) v.c++; }
+    }
+    const r = G.result;
+    if (G.phase !== 'handEnd' || !r || r.vivo) return;
+    r.vivo = true;
+    const v = m.vivo || { g: 0, c: 0 };
+    m.vivo = { g: 0, c: 0 };
+    try { await somarVivo(this.env, r.matchWinner != null ? 1 : 0, Math.min(v.g, 6), Math.min(v.c, 2)); } catch (e) {}
   }
 
   // Desafio das Confrarias: fim de partida online, quem ganhou leva ponto para a Turma (se perdeu alguém de outra Turma)

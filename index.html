@@ -1054,6 +1054,7 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .me-nv{display:inline-block;height:17px;padding:0 6px;margin-left:2px;border-radius:9px;box-sizing:border-box;vertical-align:2px;cursor:pointer;
   background:var(--wood-2);color:var(--glow);border:1.5px solid var(--glow);font:800 10px/14px var(--font-body);letter-spacing:0}
 .me-name img{cursor:pointer}
+.bubble::before{left:calc(50% - var(--ponta, 0px))}
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
@@ -1485,6 +1486,32 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .ap-tempos .ap-preco small{font-size:12px;line-height:1.25;font-weight:700;color:var(--muted)}
 .ap-tempos .ap-preco em{font-size:10px;padding:4px 7px 3px}
 #apPlano .ap-k{margin-top:6px}
+
+/* 3.24 (protótipo): "Agora na calçada" */
+.vivo{display:grid;gap:8px;padding:14px 14px 12px;border-radius:18px;border:1.5px solid var(--line);background:var(--bg-2)}
+.vivo-cab{display:flex;align-items:center;flex-wrap:wrap;column-gap:8px;row-gap:0}
+.vivo-cab b{font-family:var(--font-display);font-weight:400;font-size:20px;white-space:nowrap}
+.vivo-cab small{flex-basis:100%;padding-left:18px;font-size:13px;color:var(--muted);font-weight:700}
+.vivo-ponto{width:10px;height:10px;border-radius:50%;background:#e5484d;align-self:center;box-shadow:0 0 0 0 rgba(229,72,77,.6);animation:vivoPulsa 1.6s infinite}
+@keyframes vivoPulsa{0%{box-shadow:0 0 0 0 rgba(229,72,77,.55)}70%{box-shadow:0 0 0 9px rgba(229,72,77,0)}100%{box-shadow:0 0 0 0 rgba(229,72,77,0)}}
+.vivo-hoje{font-size:14px;color:var(--muted);font-weight:600;padding:2px 2px 4px}
+.vivo-hoje span{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--nos);margin-bottom:2px}
+.vivo-hoje b{color:var(--fg);font-weight:800}
+.vivo-lista{display:grid;gap:8px}
+.vivo-mesa{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 10px;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:inherit;text-align:left;cursor:pointer}
+.vivo-mesa:active{transform:scale(.99)}
+.vivo-sw{width:44px;height:44px;border-radius:12px;background-size:cover;background-position:center}
+.vivo-tx{display:grid;gap:1px;min-width:0}
+.vivo-tx b{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vivo-tx small{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vivo-tx em{font-style:normal;font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .3s}
+.vivo-tx em.quente{color:var(--nos)}
+.vivo-pl{display:grid;justify-items:center;gap:3px}
+.vivo-pl b{font-size:15px;font-weight:800;white-space:nowrap}
+.vivo-rostos{display:flex}
+.vivo-rostos img{width:22px;height:22px;border-radius:50%;box-shadow:0 0 0 2px var(--bg)}
+.vivo-rostos img + img{margin-left:-6px}
+.vivo-pe{margin:0;font-size:12.5px;color:var(--muted);text-align:center}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -2562,6 +2589,10 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.24.1', data: '20/10/2026', itens: ['Lembretes ligados por padrão: o app pede a permissão logo no início (o iPhone exige um toque em "Permitir", com o app na tela de início), pede de novo se a pergunta não apareceu e religa sozinho se o aparelho perder a inscrição. Para desligar, é no seu perfil.'] },
+  { v: '3.24', data: '20/10/2026', itens: ['Novo no início: "Agora na calçada", três mesas da turma do bairro jogando em lugares de Manaus, com placar e lances ao vivo. Toque numa mesa para sentar no lugar de um deles.',
+    'E, quando o dia está movimentado, os números de verdade de hoje no Dominó Manauara: partidas, galos e batidas de carroça de quem jogou.',
+    'Os balões de fala não saem mais da tela nos lados.'] },
   { v: '3.23', data: '16/10/2026', itens: ['Turma do bairro mais forte: do nível 5 em diante, os robôs (parceiro e adversários) pensam a jogada simulando o resto da mão, sem ver as pedras de ninguém. Partida mais disputada e com mais emoção.',
     'Os robôs agora reagem na mesa, com moderação e no lance certo: "Deu galo!", "Boa, parceiro!", "Chibata!", "Ê, caroço!", "Bate logo!"…'] },
   { v: '3.22.1', data: '16/10/2026', itens: ['Doação de volta com esse nome: R$ 5, R$ 12 ou R$ 40, e cada doação dá tempo de Apoiador (1 mês, 3 meses ou 1 ano). O selo de doador ♥ e o avatar do doador ficam para sempre.', 'O app se atualiza mais rápido: confere a versão nova direto no servidor ao abrir e ao voltar para ele, avisa "Atualizando para a versão…" e recarrega sozinho quando você está no início (na partida, espera acabar).'] },
@@ -4206,8 +4237,7 @@ renderEntry = function () {
 // Falas da turma na entrada: metade com termos de Manaus (só do Amazonas), intercaladas e curtas para o balão caber na tela
 const FALAS = ['Bora, maninho!', 'Ê, caroço!', '10 pontos!', 'Chibata, bati!', 'Senta aí, %!', 'Chibata!', 'Quem sai?', 'Tá de bubuia?',
   'Passei!', 'Leseira, passei!', 'Mais 5!', 'Vô mermo!', 'Joga, %!', 'Telezé!', '20 na mesa!',
-  'Bati!', 'Leseira baré!', 'Fechou!', 'Joga logo, caboco!', 'Carroça!', 'Tô brocado!', '15 na mesa!', 'Bora uma partida?',
-  'Tá será leso, maninho?'];
+  'Bati!', 'Leseira baré!', 'Fechou!', 'Joga logo, caboco!', 'Carroça!', 'Tô brocado!', '15 na mesa!', 'Bora uma partida?'];
 let falaIdx = Math.floor(Math.random() * FALAS.length);
 setInterval(() => {
   if (screen !== 'who' || document.visibilityState !== 'visible') return;
@@ -4220,20 +4250,47 @@ setInterval(() => {
   mostrarFala(b, FALAS[falaIdx].replace('%', me || 'parceiro'));
   setTimeout(() => { const f = b.querySelector('.fala'); if (f) f.remove(); }, 2700);
 }, 3200);
-// O balão fica centrado em quem fala, mas nunca sai da tela (nos lados, ele chega para dentro e a ponta continua apontando)
-function mostrarFala(b, t) {
-  b.insertAdjacentHTML('beforeend', `<span class="fala" aria-hidden="true">${esc(t)}</span>`);
-  const f = b.querySelector('.fala'), r = b.getBoundingClientRect(), w = f.offsetWidth, cx = r.left + r.width / 2, m = 8;
+// O balão fica centrado em quem fala, mas nunca sai da tela (nos lados, ele chega para dentro e a ponta continua apontando).
+// 3.24: o limite é a área que realmente aparece (a tela de entrada corta 16 px antes da borda), não só a largura da tela.
+function limitesVisiveis(el) {
+  let esq = 0, dir = innerWidth;
+  for (let a = el.parentElement; a && a !== document.body && a !== document.documentElement; a = a.parentElement) {
+    if (getComputedStyle(a).overflowX === 'visible') continue;
+    const r = a.getBoundingClientRect(); esq = Math.max(esq, r.left); dir = Math.min(dir, r.right);
+  }
+  return [esq, dir];
+}
+function encaixarBalao(f, centro, m) {
+  if (!f) return;
+  f.style.left = ''; f.style.removeProperty('--ponta');
+  const r = centro.getBoundingClientRect(), w = f.offsetWidth, cx = r.left + r.width / 2, [esq, dir] = limitesVisiveis(f);
+  m = m == null ? 6 : m;
   let dx = 0;
-  if (cx - w / 2 < m) dx = m - (cx - w / 2);
-  else if (cx + w / 2 > innerWidth - m) dx = innerWidth - m - (cx + w / 2);
+  if (cx - w / 2 < esq + m) dx = esq + m - (cx - w / 2);
+  else if (cx + w / 2 > dir - m) dx = dir - m - (cx + w / 2);
   if (dx) {
     const ponta = Math.max(-(w / 2 - 16), Math.min(w / 2 - 16, dx));
     f.style.left = `calc(50% + ${Math.round(dx)}px)`;
     f.style.setProperty('--ponta', Math.round(ponta) + 'px');
   }
+}
+function mostrarFala(b, t) {
+  b.insertAdjacentHTML('beforeend', `<span class="fala" aria-hidden="true">${esc(t)}</span>`);
+  const f = b.querySelector('.fala');
+  encaixarBalao(f, b);
   return f;
 }
+// Na mesa: o balão de cada cadeira (lances e reações) também chega para dentro nos lados
+function encaixarBalaoDaCadeira(pos) {
+  const el = $(`.seat[data-pos="${pos}"] .bubble`); if (!el || !el.offsetParent) return;
+  encaixarBalao(el, el.offsetParent);
+}
+const bubbleAntesDoEncaixe = bubble;
+bubble = function (p) {
+  const r = bubbleAntesDoEncaixe.apply(this, arguments);
+  try { const pos = (p - base() + 4) % 4; if (pos) encaixarBalaoDaCadeira(pos); } catch (e) {}
+  return r;
+};
 
 
 // ---- Câmera da mesa (3.20.3): sempre centralizada nas pedras e o mais perto possível, deslizando suave ----
@@ -4354,7 +4411,7 @@ function renderAvisos() {
     : 'No iPhone, os lembretes funcionam com o app na tela de início: toque em Compartilhar e depois em "Adicionar à Tela de Início".';
   $('#avisosSim').hidden = modo !== 'ligar';
 }
-async function ligarAvisos(auto) {
+async function ligarAvisos(auto, quieto) {
   try {
     const perm = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
     if (perm !== 'granted') { if (!auto) toast('Sem a sua permissão o aparelho não deixa mandar lembretes. Dá para ligar depois nos ajustes.'); renderAvisos(); return; }
@@ -4366,7 +4423,7 @@ async function ligarAvisos(auto) {
     const r = await avisosApi('/avisos/inscrever', { sub: sub.toJSON(), aparelho: deviceInfo(), id: typeof meuId === 'function' ? meuId() : undefined });
     if (!r.ok) throw new Error('http-' + r.status);
     store.set(AVKEY, sub.endpoint); store.set('dmz-avisos-id', '1'); track(auto ? 'lembretes-auto' : 'lembretes-ligados');
-    toast(auto ? 'Lembretes ligados: no máximo um a cada 3 dias, no fim da tarde. Dá para desligar no seu perfil.' : 'Pronto! De vez em quando a gente te chama para uma partida.');
+    if (!quieto) toast(auto ? 'Lembretes ligados: no máximo um a cada 3 dias, no fim da tarde. Dá para desligar no seu perfil.' : 'Pronto! De vez em quando a gente te chama para uma partida.');
   } catch (e) {
     if (!auto) toast('Não deu para ligar os lembretes agora. Tente de novo mais tarde.');
   }
@@ -4392,14 +4449,17 @@ function avisosJogou() {
 // No perfil: mostra se estão ligados e deixa desligar.
 function renderPerfilAvisos() {
   const el = $('#perfilAvisos'); if (!el) return;
-  const lig = avisosLigados(), da = avisosPode() && avisosSuporta() && Notification.permission !== 'denied';
-  el.hidden = !(lig || da);
-  $('#perfilAvisosTx').textContent = lig ? '🔔 Lembretes para jogar estão ligados.' : '🔕 Lembretes para jogar estão desligados.';
+  const lig = avisosLigados(), sup = avisosPode() && avisosSuporta(), bloq = sup && Notification.permission === 'denied';
+  el.hidden = !(lig || sup);
+  $('#perfilAvisosTx').textContent = lig ? '🔔 Lembretes para jogar estão ligados.'
+    : bloq ? `🔕 As notificações estão bloqueadas neste aparelho. Para ligar: ${ehIOS() ? 'Ajustes do iPhone › Notificações › Dominó' : 'nas configurações do navegador'}.`
+    : '🔕 Lembretes para jogar estão desligados.';
+  $('#perfilAvisosOff').hidden = bloq;
   $('#perfilAvisosOff').textContent = lig ? 'Desligar' : 'Ligar';
 }
-$('#avisosSim').addEventListener('click', ligarAvisos);
+$('#avisosSim').addEventListener('click', () => ligarAvisos(false));
 $('#avisosNao').addEventListener('click', () => { store.set(AVNAO, String(Date.now())); renderAvisos(); });
-$('#perfilAvisosOff').addEventListener('click', () => { store.set(AVAUTO, '1'); if (avisosLigados()) desligarAvisos(false); else ligarAvisos(); });
+$('#perfilAvisosOff').addEventListener('click', () => { store.set(AVAUTO, '1'); if (avisosLigados()) { store.set(AVDESL, '1'); desligarAvisos(false); } else { store.del(AVDESL); ligarAvisos(false); } });
 // Ao abrir: se o navegador trocou o endereço da inscrição, atualiza no servidor; se apagou, esquece.
 setTimeout(async () => {
   if (!avisosLigados() || !avisosSuporta() || !CONFIG.api) return;
@@ -4445,19 +4505,22 @@ $('#dnAvEnviar').addEventListener('click', async () => {
   dnAvisosCarregar();
 });
 
-// ---- Lembretes ligados por padrão ----
-// O aparelho sempre pede a permissão uma vez (não dá para ligar sem ela). O app pede sozinho no primeiro toque depois
-// da primeira mão jogada; quem desligar no perfil ou recusar não é perguntado de novo. Se a permissão já existe, liga em silêncio.
-const AVAUTO = 'dmz-avisos-auto';
+// ---- Lembretes ligados por padrão (3.24.1) ----
+// O aparelho exige que a pessoa toque em "Permitir" uma vez (não existe jeito de ligar sem isso; no iPhone, só com o app
+// na tela de início). O app pede sozinho no primeiro toque no início. Se a pergunta não chegou a aparecer, pede de novo
+// (no máximo a cada 3 dias). Com a permissão dada, liga em silêncio e religa se o aparelho perder a inscrição.
+// Só fica desligado para quem desligar no perfil ou recusar no aparelho.
+const AVAUTO = 'dmz-avisos-auto', AVDESL = 'dmz-avisos-desligou', AVPED = 'dmz-avisos-pedido';
+// quem já tinha a permissão e estava sem lembrete antes desta versão pode ter desligado no perfil: fica como está
+if (store.get(AVAUTO) && !store.get(AVPED) && !avisosLigados() && avisosSuporta() && Notification.permission === 'granted') store.set(AVDESL, '1');
 function avisosAutoPode() {
-  return avisosPode() && avisosSuporta() && !avisosLigados() && !store.get(AVAUTO);
+  return avisosPode() && avisosSuporta() && !avisosLigados() && !store.get(AVDESL);
 }
-setTimeout(() => { if (avisosAutoPode() && Notification.permission === 'granted') { store.set(AVAUTO, '1'); ligarAvisos(true); } }, 6000);
+setTimeout(() => { if (avisosAutoPode() && Notification.permission === 'granted') { const pri = !store.get(AVAUTO); store.set(AVAUTO, '1'); ligarAvisos(true, !pri); } }, 6000);
 document.addEventListener('click', () => {
-  if (!avisosAutoPode() || Notification.permission !== 'default') return;
-  let h = null; try { h = loadHist(); } catch (e) {}
-  if (!h || !(h.maos >= 1)) return;
-  store.set(AVAUTO, '1');
+  if (screen !== 'home' || !avisosAutoPode() || Notification.permission !== 'default') return;
+  if (Date.now() - Number(store.get(AVPED) || 0) < 3 * 864e5) return;
+  store.set(AVPED, String(Date.now())); store.set(AVAUTO, '1');
   ligarAvisos(true);
 }, true);
 
@@ -4592,6 +4655,7 @@ function mostrarReacao(pos, txt) {
   }
   const el = $(`.seat[data-pos="${pos}"] .bubble`); if (!el) return;
   el.textContent = txt; el.classList.remove('galo'); el.classList.add('show', 'reacao');
+  try { encaixarBalaoDaCadeira(pos); } catch (e) {}
   clearTimeout(bubbleTimers[pos]); bubbleTimers[pos] = setTimeout(() => el.classList.remove('show', 'reacao'), FALA_MS);
 }
 // Linha de baixo de cada cadeira na sala: bairro e se está conectado ("Compensa · na mesa")
@@ -7574,6 +7638,130 @@ const renderHomeOrdem = renderHome;
 renderHome = function () { renderHomeOrdem.apply(this, arguments); try { ordenarInicio(); } catch (e) {} };
 ordenarInicio();
 
+// ===== "Agora na calçada": a turma do bairro jogando ao vivo (3.24) =====
+// Três mesas da turma do bairro rolam de verdade no celular (o mesmo robô do jogo), cada uma num lugar de Manaus:
+// o placar mexe, os lances aparecem, e quem quiser senta no lugar de um deles. É a turma do jogo (personagens),
+// nunca apresentada como gente online. Só roda com o início aberto e o app na tela.
+// Em cima delas, "Hoje no Dominó Manauara": os números de verdade do dia (partidas terminadas, galos e batidas de
+// carroça de quem jogou, offline e online), vindos do servidor. Com poucas partidas no dia, a linha nem aparece.
+const VIVO = { mesas: [], timer: null, vez: 0 };
+const VIVO_MIN = 10;   // a linha "Hoje" só aparece a partir de 10 partidas no dia
+let vivoHojeEm = 0;
+async function vivoHoje() {
+  if (!CONFIG.api || Date.now() - vivoHojeEm < 60000) return;
+  vivoHojeEm = Date.now();
+  try { vivoHojeMostra(await (await fetch(CONFIG.api + '/vivo/hoje', { cache: 'no-store' })).json()); } catch (e) {}
+}
+function vivoHojeMostra(j) {
+  const el = $('#vivoHoje'); if (!el) return;
+  const mostra = !!(j && j.partidas >= VIVO_MIN);
+  el.hidden = !mostra; if (!mostra) return;
+  const n = (v, um, varios) => `<b>${v}</b> ${v === 1 ? um : varios}`;
+  const itens = [n(j.partidas, 'partida', 'partidas')];
+  if (j.galos) itens.push(n(j.galos, 'galo', 'galos'));
+  if (j.carrocas) itens.push(n(j.carrocas, 'batida de carroça', 'batidas de carroça'));
+  el.innerHTML = `<span>Hoje no Dominó Manauara</span>${itens.join(' · ')}`;
+}
+// Offline, quem conta é o celular de quem jogou (ao fim de cada mão em que houve algo); online, a própria mesa.
+const vivoVistos = new WeakSet();
+function vivoContaOffline() {
+  if (mode !== 'off' || !G || semContar()) return;
+  const evs = G.events; if (!evs || !evs.length || vivoVistos.has(evs)) return;
+  vivoVistos.add(evs);
+  const c = G.vivoConta || (G.vivoConta = { g: 0, c: 0 });
+  for (const e of evs) { if (e.type === 'galo') c.g++; if (e.type === 'batida' && e.carroca) c.c++; }
+  const r = G.result;
+  if (G.phase !== 'handEnd' || !r || r.vivoEnviado) return;
+  r.vivoEnviado = true; G.vivoConta = { g: 0, c: 0 };
+  const corpo = { partida: r.matchWinner != null ? 1 : 0, galos: c.g, carrocas: c.c };
+  if (!CONFIG.api || (!corpo.partida && !corpo.galos && !corpo.carrocas)) return;
+  fetch(CONFIG.api + '/vivo/conta', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo), keepalive: true })
+    .then(() => { vivoHojeEm = 0; }).catch(() => {});
+}
+const trackOfflineVivo = trackOffline;
+trackOffline = function () { try { vivoContaOffline(); } catch (e) {} return trackOfflineVivo.apply(this, arguments); };
+const VIVO_LUGARES = ['pontanegra', 'mercado', 'teatro', 'encontro', 'arena', 'relogio', 'vitoria', 'centro', 'ponte', 'feltro'];
+function vivoSorteia(l, n) { const a = l.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, n); }
+function vivoNovaMesa(lugar, usados) {
+  const nomes = vivoSorteia(BOTS.map(b => b.name).filter(n => n !== 'Mundico' && !usados.includes(n)), 4);
+  const st = newGame(nomes); startHand(st);
+  // começa no meio da partida, para não parecer tudo zerado
+  for (let k = 0, alvo = 6 + Math.floor(Math.random() * 30); k < alvo && st.phase === 'play'; k++) vivoPasso(st);
+  return { lugar, st, lance: 'Partida rolando', quando: Date.now() };
+}
+function vivoPasso(st) {
+  if (st.phase !== 'play') { if (st.result && st.result.matchWinner != null) return 'fim'; nextHand(st); return null; }
+  const q = st.turn;
+  if (legalMoves(st, q).length) applyMove(st, q, botChoose(st, q)); else applyPass(st, q);
+  return st.events;
+}
+function vivoTexto(st, evs, lugar) {
+  const nm = p => st.names[p], onde = (MESAS.find(m => m.id === lugar) || {}).nome || '';
+  const e = t => (evs || []).find(x => x.type === t);
+  if (e('galo')) return `${nm(e('galo').p)} deu galo!`;
+  if (e('batida')) return e('batida').carroca ? `${nm(e('batida').p)} bateu de carroça!` : `${nm(e('batida').p)} bateu`;
+  const j = e('play'); if (j && j.pts >= 20) return `${nm(j.p)} fez ${j.pts}!`;
+  if (j && j.pts) return `${nm(j.p)} fez ${j.pts}`;
+  const ps = e('pass'); if (ps && ps.pts && !ps.voided) return `${nm(ps.p)} passou`;
+  return null;
+}
+function vivoDesenha() {
+  const box = $('#vivoLista'); if (!box) return;
+  box.innerHTML = VIVO.mesas.map((v, i) => {
+    const m = MESAS.find(x => x.id === v.lugar) || MESAS[0], st = v.st, n = st.names;
+    const rosto = p => `<img src="${botFaceURI(n[p]) || ''}" alt="">`;
+    const quente = Date.now() - v.quando < 2500;
+    return `<button type="button" class="vivo-mesa" data-i="${i}">
+      <span class="vivo-sw" style="background:${fundoMesa(m)}"></span>
+      <span class="vivo-tx"><b>${esc(m.nome)}</b><small>${esc(n[0])} e ${esc(n[2])} × ${esc(n[1])} e ${esc(n[3])}</small>
+        <em class="${quente ? 'quente' : ''}">${esc(v.lance)}</em></span>
+      <span class="vivo-pl"><span class="vivo-rostos">${rosto(0)}${rosto(2)}</span><b>${st.score[0]} × ${st.score[1]}</b><span class="vivo-rostos">${rosto(1)}${rosto(3)}</span></span>
+    </button>`;
+  }).join('');
+}
+function vivoTique() {
+  if (screen !== 'home' || document.visibilityState !== 'visible' || !VIVO.mesas.length) return;
+  vivoHoje();
+  const i = VIVO.vez++ % VIVO.mesas.length, v = VIVO.mesas[i];
+  let txt = null;
+  for (let k = 0; k < 3 && !txt; k++) {   // avança até acontecer algo que valha contar
+    const evs = vivoPasso(v.st);
+    if (evs === 'fim') {
+      const w = v.st.result.matchWinner, n = v.st.names;
+      txt = `${n[w]} e ${n[w + 2]} ganharam a partida!`;
+      const usados = VIVO.mesas.filter((_, j) => j !== i).flatMap(x => x.st.names);
+      const livres = VIVO_LUGARES.filter(l => !VIVO.mesas.some(x => x.lugar === l));
+      VIVO.mesas[i] = vivoNovaMesa(vivoSorteia(livres, 1)[0], usados);
+      VIVO.mesas[i].lance = txt; VIVO.mesas[i].quando = Date.now();
+      break;
+    }
+    txt = vivoTexto(v.st, evs, v.lugar);
+  }
+  if (txt && VIVO.mesas[i] === v) { v.lance = txt; v.quando = Date.now(); }
+  vivoDesenha();
+}
+(function () {
+  const ref = $('#nvFaixa') || $('#apBanner') || ($('#homeName') && $('#homeName').closest('p'));
+  if (!ref) return;
+  ref.insertAdjacentHTML('afterend', `<section class="vivo" id="vivoCard" aria-label="A turma do bairro jogando agora">
+    <div class="vivo-cab"><span class="vivo-ponto" aria-hidden="true"></span><b>Agora na calçada</b><small>a turma do bairro jogando</small></div>
+    <div class="vivo-hoje" id="vivoHoje" hidden></div>
+    <div class="vivo-lista" id="vivoLista"></div>
+    <p class="vivo-pe">Toque numa mesa para sentar no lugar de um deles.</p></section>`);
+  const usados = [];
+  vivoSorteia(VIVO_LUGARES, 3).forEach(l => { const v = vivoNovaMesa(l, usados); usados.push(...v.st.names); VIVO.mesas.push(v); });
+  vivoDesenha();
+  VIVO.timer = setInterval(vivoTique, 1800);
+  vivoHoje();
+  $('#vivoLista').addEventListener('click', e => {
+    const b = e.target.closest('[data-i]'); if (!b) return;
+    const v = VIVO.mesas[Number(b.dataset.i)]; if (!v) return;
+    track('vivo-sentar');
+    try { escolherMesa(v.lugar); mesaFixaUmaVez = true; } catch (er) {}
+    $('#goOffline').click();
+  });
+})();
+
 
 // ---- Desenho das peças ----
 function tileSVG(p, cls, shadow) {
@@ -8151,7 +8339,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.23-a646007b';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.24.1-c10500f6';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
