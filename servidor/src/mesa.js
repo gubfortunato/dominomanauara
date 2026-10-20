@@ -29,6 +29,7 @@ const FILA = { mesas: 20, idade: 60 * 60 * 1000 };   // mesas rápidas lembradas
 const SILENCIO = 50000;
 const REACAO = { intervalo: 2000, porMinuto: 8, maior: 23 };   // reações: só o número de uma frase pronta, nunca texto              // sem sinal do celular há 50 s: conta como desconectado
 const VIDA = 24 * 60 * 60 * 1000;    // a mesa some 24 h depois da última ação
+const ASSISTIR_MAX = 30;           // 3.28: quantas pessoas podem assistir a mesma mesa
 
 // Mesa (tema) escolhida por quem criou: todo mundo joga nela. Só o nome curto (madeira, ponte, teatro...).
 // Nível do jogador (1 a 50, vem do aparelho; não muda nada no jogo, só aparece no cartão). Robô ganha um nível
@@ -267,6 +268,7 @@ export class Mesa {
     const p = att.id ? m.cad.findIndex(c => c && c.id === att.id) : -1;
     switch (msg.t) {
       case 'entrar': return this.entrar(ws, att, msg);
+      case 'assistir': return this.assistir(ws, att);
       case 'sentar': if (p >= 0) return this.sentar(p, msg.cadeira); return;
       case 'comecar': if (p >= 0) return m.publica ? this.comecarPublica() : this.comecar(); return;
       case 'jogar': if (p >= 0) return this.jogar(ws, p, msg); return;
@@ -343,6 +345,24 @@ export class Mesa {
     await this.salvar();
     this.espalhar();
     if (m.fase === 'jogo') await this.registrarAtiva();
+  }
+  // ---------- Assistir (3.28) ----------
+  // Quem tem o número da mesa (mesa rápida: pela Calçada) pode assistir: recebe a mesa como quem está na fila — o
+  // tabuleiro, o placar e os nomes, nunca a mão de ninguém (só no fim da mão, como todo mundo). Não ocupa cadeira, não
+  // conta como gente na mesa (a mesa sem ninguém jogando acaba do mesmo jeito) e não manda nada para o jogo.
+  assistir(ws, att) {
+    const m = this.m;
+    if (att.id) return;   // quem já está na mesa ou na fila já recebe tudo
+    const n = this.ctx.getWebSockets().filter(w => (w.deserializeAttachment() || {}).assiste).length;
+    if (n >= ASSISTIR_MAX) return this.recusar(ws, 'plateia-cheia');
+    att.assiste = true; ws.serializeAttachment(att);
+    this.enviar(ws, this.vista(null));
+    this.espalhar(ws);   // quem está jogando vê que tem gente assistindo
+  }
+  quantosAssistem() {
+    let n = 0;
+    for (const ws of this.ctx.getWebSockets()) { if (ws.readyState != null && ws.readyState !== 1) continue; if ((ws.deserializeAttachment() || {}).assiste) n++; }
+    return n;
   }
   // ---------- Ganha-chama (mesa com os amigos) ----------
   // Mesa cheia: quem chega (com app que já mostra a fila: msg.fila) entra na fila e espera. No fim de cada partida, a dupla que perdeu vai para o fim da fila
@@ -576,7 +596,7 @@ export class Mesa {
     h.push(agora); this.reacoes[p] = h;
     for (const ws of this.ctx.getWebSockets()) {
       const a = ws.deserializeAttachment() || {};
-      if (a.id) this.enviar(ws, { t: 'reacao', p, k });
+      if (a.id || a.assiste) this.enviar(ws, { t: 'reacao', p, k });
     }
   }
 
@@ -652,7 +672,7 @@ export class Mesa {
     if (!r) return;
     for (const ws of this.ctx.getWebSockets()) {
       const a = ws.deserializeAttachment() || {};
-      if (a.id) this.enviar(ws, { t: 'reacao', p: r.p, k: r.k });
+      if (a.id || a.assiste) this.enviar(ws, { t: 'reacao', p: r.p, k: r.k });
     }
   }
   async depoisDaAcao(porRobo, extra) {
@@ -734,6 +754,7 @@ export class Mesa {
       return agora - visto < SILENCIO;
     });
   }
+  // id vazio = quem só assiste (3.28): sem foto e sem bairro de ninguém (a foto é só para quem joga na mesa)
   vista(id) {
     const m = this.m, G = m.G;
     const minha = id ? m.cad.findIndex(c => c && c.id === id) : -1;
@@ -748,18 +769,19 @@ export class Mesa {
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, publica: !!m.publica, iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
-      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p) } : null),
+      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || !id ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p) } : null),
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
-      jogo, agora: Date.now() };
+      jogo, agora: Date.now(), assistindo: this.quantosAssistem() };
   }
   enviar(ws, obj) { try { ws.send(JSON.stringify(obj)); } catch (e) {} }
   espalhar(menos) {
     if (!this.m) return;
+    let deFora = null;   // a vista de quem assiste é a mesma para todos
     for (const ws of this.ctx.getWebSockets()) {
       if (ws === menos) continue;
       const a = ws.deserializeAttachment() || {};
-      if (!a.id) continue;
-      this.enviar(ws, this.vista(a.id));
+      if (a.id) this.enviar(ws, this.vista(a.id));
+      else if (a.assiste) this.enviar(ws, deFora || (deFora = this.vista(null)));
     }
   }
   async salvar() { if (this.m) await this.ctx.storage.put('m', this.m); }

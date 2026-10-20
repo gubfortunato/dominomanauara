@@ -1069,6 +1069,14 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .versao-nova b{color:var(--glow)}
 /* 3.27.1: a ponta que vai receber a pedra fica bem marcada durante o arraste */
 .zone.over .z-body{fill:rgba(243,192,99,.55);stroke-width:.14;stroke-dasharray:none}
+/* 3.28 (pedido do dono: "aumentar um pouco mais a mesa pra baixo"): a parte de baixo (você, a vez e a mão) ficou mais
+   justa — menos folga entre a linha "Vez de…" e as pedras e entre os blocos — e a mesa ganha esse espaço */
+#scrGame.game{gap:6px;padding-bottom:6px}
+#scrGame .me{gap:4px}
+#scrGame .hand{height:calc(var(--tw)*2 + 8px)}
+#scrGame .me:has(.prompt.you) .hand{padding:4px 6px}
+#scrGame #prompt{height:34px}
+#scrGame #prompt.you{padding-block:5px}
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
@@ -1749,6 +1757,20 @@ body.com-abas #profileBack{display:none}
 .aba-ic::before{content:'';position:absolute;left:50%;top:50%;width:48px;height:48px;transform:translate(-50%,-50%);border-radius:50%;z-index:-1;pointer-events:none;
   background:radial-gradient(circle, color-mix(in srgb,var(--fg) 11%,transparent) 0%, color-mix(in srgb,var(--fg) 7%,transparent) 42%, transparent 70%)}
 .aba.on .aba-ic::before{display:none}
+/* 3.28: assistir — botões do cartão da Calçada e a faixa de quem assiste */
+.vivo-mesa{cursor:default}
+.vivo-acoes{grid-column:1 / -1;display:flex;gap:8px;align-items:stretch}
+.vivo-acoes .vivo-st{flex:1;min-width:0}
+button.vivo-st{border:0;font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;min-height:40px}
+button.vivo-st:active,.vivo-assistir:active{transform:scale(.98)}
+.vivo-assistir{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;border-radius:10px;border:1.5px solid var(--nos);background:transparent;color:var(--nos);font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;white-space:nowrap}
+.assistir-faixa{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);transform:translateX(-50%);z-index:26;display:flex;align-items:center;gap:10px;width:max-content;max-width:calc(100vw - 24px);padding:8px 8px 8px 14px;border-radius:999px;background:var(--tile);color:var(--pip);box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:14px;font-weight:700}
+.assistir-faixa .af-tx{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.af-sair{border:0;border-radius:999px;padding:8px 14px;background:var(--nos);color:#fff;font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;white-space:nowrap}
+body.assistindo #menuBtn,body.assistindo #passBtn{visibility:hidden}
+#filaAssistir{width:100%}
+/* A pedra de costas na mão (de quem assiste) usa a classe "back", a mesma do fundo das janelas — aqui volta a ser pedra */
+#hand .ht.back{position:relative;inset:auto;z-index:auto;display:block;background:none;animation:none}
 </style>
 </head>
 <body>
@@ -2789,6 +2811,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.28', data: '20/10/2026', itens: ['Modo espectador: na fila do ganha-chama, toque em "Assistir a partida" e veja os amigos jogando. Quando chegar a sua vez, você entra sozinho.', 'Na Calçada, cada mesa rápida tem o botão "Assistir". Quem assiste vê a mesa e o placar, nunca a mão de ninguém.', 'Quem está jogando vê quantas pessoas estão assistindo.'] },
   { v: '3.27.1', data: '20/10/2026', itens: ['Arrastar a pedra ficou mais certeiro: ela só entra se você soltar em cima da ponta marcada. Longe da ponta, ela volta para a mão, sem jogar no lugar errado.', 'Dica: dá para tocar na pedra e depois na ponta, sem arrastar.', 'O app pede ao celular para guardar o seu progresso, e avisa quem abriu o jogo dentro do Instagram ou do Facebook (por lá o progresso pode se perder).', 'O Mundico saiu da turma do bairro: fica o Tião.', 'Ajustes de espaço no Perfil e na aba Mais.'] },
   { v: '3.27.0', data: '20/10/2026', itens: ['Menu novo embaixo da tela: Jogar, Calçada, Perfil e Mais. O início ficou só com o que leva à mesa.', 'Calçada: veja as mesas rápidas jogando agora, com o placar e quantos lugares vagos têm. Toque numa mesa com lugar vago e entre no lugar de um robô.', 'Mais: Regras, Fale com a gente, Instagram, Apoie o jogo e o resto, tudo num lugar só. Seu histórico agora fica no Perfil.'] },
   { v: '3.26.4', data: '20/10/2026', itens: ['Agora na calçada: a mesa mostra quantos lugares vagos tem para você entrar.'] },
@@ -8080,26 +8103,28 @@ function vivoDesenha() {
     const nPessoas = [0, 1, 2, 3].filter(ehGente).length, nRobos = 4 - nPessoas;
     const convite = v.publica === false, quente = Date.now() - v.quando < 4000, livre = v.livres > 0 && !convite, adm = vivoDetalhes(), lugares = v.livres || 0;
     const placar = `<span class="vivo-pl"><span class="vivo-rostos">${rosto(0)}${rosto(2)}</span><b>${(v.placar || [0, 0])[0]} × ${(v.placar || [0, 0])[1]}</b><span class="vivo-rostos">${rosto(1)}${rosto(3)}</span></span>`;
-    const estado = convite ? `<span class="vivo-st vivo-cheia-st vivo-convite"><span aria-hidden="true">●</span> Mesa com os amigos · só por convite</span>` : livre
-      ? `<span class="vivo-st vivo-entra"><span aria-hidden="true">▶</span> Toque para entrar · ${lugares} ${lugares === 1 ? 'lugar vago' : 'lugares vagos'}</span>`
-      : `<span class="vivo-st vivo-cheia-st"><span aria-hidden="true">●</span> Mesa cheia · não dá para entrar</span>`;
-    const abre = `<button type="button" class="vivo-mesa${livre ? ' livre' : ' cheia'}" data-i="${i}"${livre ? '' : ' aria-disabled="true"'} aria-label="${esc(m.nome)}: ${nPessoas} ${nPessoas === 1 ? 'pessoa' : 'pessoas'}${adm ? `, ${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}` : ''}. ${livre ? 'Toque para entrar' : convite ? 'Mesa com os amigos, só por convite' : 'Mesa cheia'}">
+    // 3.28: dois botões — entrar (se tem lugar vago) e assistir (quem tem o número: mesa rápida; o administrador, todas)
+    const ver = v.codigo ? `<button type="button" class="vivo-assistir" data-i="${i}" data-acao="assistir" aria-label="Assistir a partida na mesa ${esc(m.nome)}"><span aria-hidden="true">👀</span> Assistir</button>` : '';
+    const estado = `<span class="vivo-acoes">${convite ? `<span class="vivo-st vivo-cheia-st vivo-convite"><span aria-hidden="true">●</span> ${ver ? 'Só por convite' : 'Mesa com os amigos · só por convite'}</span>` : livre
+      ? `<button type="button" class="vivo-st vivo-entra" data-i="${i}" data-acao="entrar"><span aria-hidden="true">▶</span> Entrar · ${lugares} ${lugares === 1 ? 'lugar vago' : 'lugares vagos'}</button>`
+      : `<span class="vivo-st vivo-cheia-st"><span aria-hidden="true">●</span> Mesa cheia</span>`}${ver}</span>`;
+    const abre = `<div class="vivo-mesa${livre ? ' livre' : ' cheia'}" role="group" data-i="${i}" aria-label="${esc(m.nome)}: ${nPessoas} ${nPessoas === 1 ? 'pessoa' : 'pessoas'}${adm ? `, ${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}` : ''}. ${livre ? `${lugares} ${lugares === 1 ? 'lugar vago' : 'lugares vagos'}` : convite ? 'Mesa com os amigos, só por convite' : 'Mesa cheia'}">
       <span class="vivo-sw" style="background:${fundoMesa(m)}"></span>`;
     if (adm) {
       // 3.26: enxuto — as pessoas numa linha (bolinha verde: conectada; vazia: sem conexão) e os robôs só na conta
       const gente = [0, 1, 2, 3].filter(ehGente).map(p => `<span class="vivo-g${tipo(p) === 'pessoa' ? ' on' : ''}">${esc(c[p].nome)}</span>`).join('');
       return `${abre}<span class="vivo-tx"><b>${esc(m.nome)}${convite ? ' <small class="vivo-tag">com os amigos</small>' : ''}</b>
           <span class="vivo-gl">${gente}${nRobos ? `<span class="vivo-rb">+${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}</span>` : ''}</span>
-          <small class="vivo-info">Mesa ${esc(v.codigo)} · partida ${v.partida || 1}</small></span>${placar}${estado}</button>`;
+          <small class="vivo-info">Mesa ${esc(v.codigo)} · partida ${v.partida || 1}</small></span>${placar}${estado}</div>`;
     }
     // 3.27 (pedido do dono): para os jogadores, só os nomes de quem está jogando e "+N" no lugar de "N robôs"
     if (convite) return `${abre}<span class="vivo-tx"><b>${esc(m.nome)} <small class="vivo-tag">com os amigos</small></b>
         <small class="vivo-conta">${nPessoas} ${nPessoas === 1 ? 'pessoa jogando' : 'pessoas jogando'}</small>
-        <em class="${quente ? 'quente' : ''}">${esc(v.txt)}</em></span>${placar}${estado}</button>`;
+        <em class="${quente ? 'quente' : ''}">${esc(v.txt)}</em></span>${placar}${estado}</div>`;
     const nomes = [0, 1, 2, 3].filter(ehGente).map(p => `<span class="vivo-gp">${esc(c[p].nome)}</span>`).join('');
     return `${abre}<span class="vivo-tx"><b>${esc(m.nome)}</b>
         <span class="vivo-gl">${nomes}${nRobos ? `<span class="vivo-rb">+${nRobos}</span>` : ''}</span>
-        <em class="${quente ? 'quente' : ''}">${esc(v.txt)}</em></span>${placar}${estado}</button>`;
+        <em class="${quente ? 'quente' : ''}">${esc(v.txt)}</em></span>${placar}${estado}</div>`;
   }).join('');
 }
 // 3.26: só o administrador — "No app agora": onde cada pessoa está no jogo (o app de cada um avisa a cada minuto)
@@ -8159,6 +8184,8 @@ function entrarAoVivo(codigo) {
     if (e.target.closest('#vivoAbrir')) { track('vivo-abrir'); mesaRapida(); return; }
     const b = e.target.closest('[data-i]'); if (!b) return;
     const v = VIVO.mesas[Number(b.dataset.i)]; if (!v) return;
+    if (b.dataset.acao === 'assistir' && v.codigo) { track('vivo-assistir'); assistirMesa(v.codigo); return; }
+    if (b.dataset.acao !== 'entrar' && v.codigo && !(v.livres > 0 && v.publica !== false)) { track('vivo-assistir'); assistirMesa(v.codigo); return; }   // mesa cheia: tocar nela é assistir
     if (v.publica === false) { toast('Mesa com os amigos: só entra quem tem o número da mesa. Quer jogar agora? Abra uma mesa rápida.'); return; }
     if (!(v.livres > 0)) { toast('Essa mesa está cheia: só tem gente de verdade. Escolha uma com lugar vago ou abra uma mesa rápida.'); return; }
     entrarAoVivo(v.codigo);
@@ -8544,6 +8571,181 @@ render = function () {
   } catch (e) {}
   return r;
 };
+
+// ===== Assistir (3.28) =====
+// Feedback de jogador: "o modo espectador enquanto estiver na fila seria perfeito, aliás nada mais divertido do que ver
+// os amigos jogando". Dois jeitos:
+// 1) Na fila do ganha-chama (mesa com os amigos): "Assistir a partida" — você já está ligado na mesa; o app só mostra o
+//    tabuleiro em vez do painel da fila. Quando chega a sua vez, entra no jogo sozinho.
+// 2) Na Calçada: "Assistir" numa mesa rápida (quem tem o número; o administrador, qualquer mesa).
+// Quem assiste vê o tabuleiro, o placar e os nomes; nunca a mão de ninguém (nem foto nem bairro). Não joga nem reage.
+ON.assistindo = false; ON.assistirDe = null; ON.vistaReal = null;
+const assistirAtivo = () => ON.assistindo && mode === 'on' && screen === 'game';
+// ---- começar ----
+function assistirMesa(cod) {
+  if (!CONFIG.api) { toast('Precisa de internet para assistir.'); return; }
+  const g = mesaGuardada();
+  if (g && g !== cod) { toast('Você está numa mesa. Para assistir outra, saia dela primeiro.'); return; }
+  if (g === cod) { voltarMesa(); return; }   // já é a sua mesa
+  if (typeof onlineAtivo === 'function' && !onlineAtivo()) { toast('Precisa de internet para assistir.'); return; }
+  pausarOnline();
+  ON.assistindo = true; ON.assistirDe = 'calcada'; ON.vista = null; ON.vistaReal = null; ON.seq = -1;
+  track('assistir-calcada');
+  conectarAssistir(cod);
+}
+function assistirDaFila() {
+  const v = ON.vista; if (!v || !emFila(v) || v.fase !== 'jogo') return;
+  ON.assistindo = true; ON.assistirDe = 'fila'; track('assistir-fila');
+  assistirAplicar(v);
+}
+// Conexão de quem só assiste (pela Calçada): igual à de quem joga, mas pede "assistir" e não guarda a mesa como sua
+function conectarAssistir(cod) {
+  ON.cod = cod; ON.ativo = true;
+  clearTimeout(ON.reT);
+  if (ON.ws && ON.ws.readyState <= 1) return;
+  let ws;
+  try { ws = new WebSocket(wsURL(cod)); } catch (e) { reconectarDepois(); return; }
+  ON.ws = ws;
+  ws.onopen = () => {
+    ON.tent = 0; ws.send(JSON.stringify({ t: 'assistir' }));
+    clearInterval(ON.pingT);
+    ON.pingT = setInterval(() => { try { if (ws.readyState === 1) ws.send('ping'); } catch (e) {} }, 25000);
+    statusOnline();
+  };
+  ws.onmessage = e => { if (e.data === 'pong') return; let m; try { m = JSON.parse(e.data); } catch (x) { return; } receberOnline(m); };
+  ws.onclose = () => { clearInterval(ON.pingT); if (ON.ws === ws) ON.ws = null; statusOnline(); if (ON.ativo) reconectarDepois(); };
+  ws.onerror = () => {};
+}
+// a reconexão automática (e a volta ao app) usa "conectar": quem assiste pela Calçada continua só assistindo
+const conectarAssistirBase = conectar;
+conectar = function (cod) { if (ON.assistindo && ON.assistirDe === 'calcada') return conectarAssistir(cod); return conectarAssistirBase.apply(this, arguments); };
+// ---- parar ----
+function assistirParar(volta) {
+  const de = ON.assistirDe;
+  ON.assistindo = false; ON.assistirDe = null;
+  document.body.classList.remove('assistindo'); const fx = $('#assistirFaixa'); if (fx) fx.hidden = true;
+  clearTimeout(timer); closeSheet(); endDrag();
+  if (de === 'fila') {
+    // continua na fila: volta para o painel
+    const real = ON.vistaReal || ON.vista; ON.vistaReal = null; ON.vista = real;
+    leaveGameBase(); show('sala'); renderSala();
+    return;
+  }
+  pausarOnline(); ON.cod = null; ON.vistaReal = null;
+  leaveGameBase();
+  show(volta || (screen === 'calcada' ? 'calcada' : 'calcada'));
+}
+// ---- o que chega da mesa ----
+const receberOnlineAssistir = receberOnline;
+receberOnline = function (m) {
+  if (!ON.assistindo) return receberOnlineAssistir(m);
+  if (m.t === 'reacao') return receberOnlineAssistir(m);   // as falas aparecem para quem assiste também
+  if (m.t === 'erro') {
+    const txt = m.cod === 'plateia-cheia' ? 'Essa mesa já tem gente demais assistindo. Tente daqui a pouco.' : ERROS_MESA[m.cod];
+    if (ON.assistirDe === 'fila') { ON.assistindo = false; return receberOnlineAssistir(m); }
+    if (txt || m.cod) { assistirParar(); toast(m.cod === 'encerrada' || m.cod === 'nao-existe' ? 'A partida acabou: a mesa foi encerrada.' : (txt || 'Não deu para assistir essa mesa.')); }
+    return;
+  }
+  if (m.t !== 'mesa') return;
+  if (ON.assistirDe === 'fila' && !emFila(m)) {
+    // chegou a sua vez (ou saiu da fila): deixa de assistir e o jogo segue normal
+    ON.assistindo = false; ON.assistirDe = null; document.body.classList.remove('assistindo');
+    const fx = $('#assistirFaixa'); if (fx) fx.hidden = true;
+    ON.vista = ON.vistaReal; ON.vistaReal = null;
+    if (screen === 'game') { clearTimeout(timer); leaveGameBase(); show('sala'); }
+    return receberOnlineAssistir(m);
+  }
+  assistirAplicar(m);
+};
+function assistirAplicar(m) {
+  ON.vistaReal = m;
+  const temaAntes = ON.vista && ON.vista.tema;
+  ON.vista = Object.assign({}, m, { minha: 0 }); ON.recebido = Date.now();   // de quem assiste, a cadeira 0 fica embaixo
+  if (temaAntes !== m.tema) { try { aplicarMesa(); } catch (e) {} }
+  statusOnline();
+  if (m.fase !== 'jogo' || !m.jogo) {
+    // a mesa voltou para a espera (ganha-chama trocando as duplas, ou rodada nova)
+    if (screen === 'game') { $('#feed').textContent = 'Esperando a próxima partida começar…'; }
+    else { toast('A partida ainda não começou. Assim que começar, aparece aqui.'); }
+    assistirFaixa(m); return;
+  }
+  const novo = girar(m.jogo, 0);
+  if (screen !== 'game' || mode !== 'on' || seatMe !== null) {
+    mode = 'on'; seatMe = null; offSt = null; G = novo; ON.seq = m.seq;
+    clearTimeout(timer); endDrag(); closeSheet();
+    show('game'); setFeed(); render(); assistirFaixa(m);
+    return;
+  }
+  if (m.seq === ON.seq) { G.names = novo.names; render(); assistirFaixa(m); return; }
+  const ant = G; ON.seq = m.seq;
+  const novaMao = !ant || novo.handNo !== ant.handNo || novo.partida !== ant.partida || (ant.phase === 'handEnd' && novo.phase === 'play');
+  G = novo;
+  if (novaMao) { clearTimeout(timer); closeSheet(); setFeed(); render(); }
+  else { announce(); render(); }
+  assistirFaixa(m);
+  if (G.phase === 'handEnd' && G.result && !novaMao) {
+    const r = G.result;
+    if (r.gameWinner != null) toast(`Fim de jogo: ${duo(r.gameWinner)} ganharam!`);
+    else if (r.matchWinner != null) toast(`Fim da partida: ${duo(r.matchWinner)} ganharam.`);
+  }
+}
+// ---- faixa de cima: "Assistindo · Mesa · Parar" ----
+(function () {
+  document.body.insertAdjacentHTML('beforeend', `<div class="assistir-faixa" id="assistirFaixa" hidden role="status">
+    <span class="af-olho" aria-hidden="true">👀</span><span class="af-tx" id="assistirTx">Assistindo</span>
+    <button type="button" class="af-sair" id="assistirSair">Parar de assistir</button></div>`);
+  $('#assistirSair').addEventListener('click', () => { track('assistir-parou'); assistirParar(); });
+})();
+function assistirFaixa(m) {
+  const fx = $('#assistirFaixa'); if (!fx) return;
+  const ver = ON.assistindo && screen === 'game' && mode === 'on';
+  fx.hidden = !ver; document.body.classList.toggle('assistindo', ver);
+  if (!ver) return;
+  const outros = Math.max(0, ((m && m.assistindo) || 1) - 1);
+  $('#assistirTx').textContent = ON.assistirDe === 'fila'
+    ? `Assistindo · ${(((ON.vistaReal || {}).naFila) || 0) + 1}º na fila`
+    : `Assistindo${outros ? ` com mais ${outros}` : ''}`;
+  $('#assistirSair').textContent = ON.assistirDe === 'fila' ? 'Voltar para a fila' : 'Parar de assistir';
+}
+// ---- quem assiste: sem mão, sem falas; quem joga vê quantos assistem ----
+const renderAssistir = render;
+render = function () {
+  const r = renderAssistir.apply(this, arguments);
+  try {
+    if (mode !== 'on' || !G || screen !== 'game') return r;
+    if (ON.assistindo) {
+      const rb = $('#reagirBtn'); if (rb) rb.hidden = true;
+      const c0 = cadDe(0), me = $('#meName');
+      if (me && c0) {
+        const a = !c0.bot && typeof avatarDe === 'function' ? avatarDe(c0.av) : null, src = c0.bot ? botFaceURI(c0.nome) : a ? avatarURI(a) : '';
+        me.innerHTML = `${src ? `<img class="fotoimg" src="${src}" alt="">` : ''}${esc(c0.nome)} <small>· parceiro de ${esc((cadDe(2) || {}).nome || '')}</small>`;
+      }
+      $('#prompt').textContent = G.phase === 'play' ? `Vez de ${G.names[G.turn] || ''}` : 'Fim da mão';
+    } else if (ON.vista && ON.vista.assistindo > 0) {
+      const pl = $('#ptLbl'); if (pl && !/assistindo/.test(pl.textContent)) pl.textContent += ` · 👀 ${ON.vista.assistindo} assistindo`;
+    }
+  } catch (e) {}
+  return r;
+};
+// a face de baixo é de quem está na cadeira 0 (não a sua)
+const seatFaceAssistir = seatFace;
+seatFace = function (p, cls) {
+  if (!(ON.assistindo && mode === 'on' && ON.vista && p === 0)) return seatFaceAssistir(p, cls);
+  const c = cadDe(0); if (!c) return '';
+  if (c.bot && !c.saiu) return faceImg(botFaceURI(c.nome), cls);
+  const a = avatarDe(c.av); return a ? faceImg(avatarURI(a), cls) : '';
+};
+// sair do jogo por outro caminho (menu, voltar do celular): para de assistir direito
+const leaveGameAssistir = leaveGame;
+leaveGame = function () { if (ON.assistindo) { assistirParar(); return; } return leaveGameAssistir.apply(this, arguments); };
+// botão "Assistir a partida" no painel da fila do ganha-chama
+(function () {
+  const sair = $('#filaSair'); if (!sair) return;
+  sair.insertAdjacentHTML('beforebegin', '<button type="button" class="primary" id="filaAssistir" hidden><span aria-hidden="true">👀</span> Assistir a partida</button>');
+  $('#filaAssistir').addEventListener('click', assistirDaFila);
+  const desenharFilaBase = desenharFila;
+  desenharFila = function (v) { desenharFilaBase.apply(this, arguments); const b = $('#filaAssistir'); if (b) b.hidden = !(v && v.fase === 'jogo' && v.jogo); };
+})();
 
 
 // ---- Desenho das peças ----
@@ -9127,7 +9329,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.27.1-59ac20cb';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.28-d69bd15a';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
