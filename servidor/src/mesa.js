@@ -157,15 +157,28 @@ export class Mesa {
     const ativas = (await this.ctx.storage.get('ativas')) || [];
     const abertas = ((await this.ctx.storage.get('abertas')) || []).filter(x => agora - x.criada < FILA.idade).map(x => ({ codigo: x.codigo, publica: true }));
     const vistas = new Set(), l = [];
-    for (const x of ativas.concat(abertas)) { if (vistas.has(x.codigo) || (!todas && !x.publica)) continue; vistas.add(x.codigo); l.push(x); }
-    const mesas = [];
+    for (const x of ativas.concat(abertas)) { if (vistas.has(x.codigo)) continue; vistas.add(x.codigo); l.push(x); }
+    let mesas = [];
     for (const x of l) {
       try {
         const j = await (await this.env.MESA.get(this.env.MESA.idFromName(x.codigo)).fetch('https://mesa/info?vivo=1')).json();
-        if (j && j.existe && (j.publica || todas) && j.fase === 'jogo' && j.on > 0) mesas.push(Object.assign({ codigo: x.codigo }, j));
+        if (j && j.existe && j.fase === 'jogo' && j.on > 0) {
+          if (todas) mesas.push(Object.assign({ codigo: x.codigo }, j));
+          // 3.27: a lista pública (aba Calçada) não leva o bairro de ninguém
+          else if (j.publica) mesas.push(Object.assign({ codigo: x.codigo }, j, { cad: (j.cad || []).map(c => c ? Object.assign({}, c, { bairro: null }) : c) }));
+          // 3.27: mesa com os amigos aparece só como movimento — sem número da mesa, sem nome, sem avatar e sem nível
+          // de ninguém (pode ter menor de 18); só quantas pessoas, o placar e a partida
+          else mesas.push({ publica: false, existe: true, fase: 'jogo', tema: j.tema || null, on: j.on, livres: 0,
+            cad: (j.cad || []).map(c => c ? { bot: !!c.bot, tipo: c.tipo } : null),
+            partida: j.partida, mao: j.mao, placar: j.placar,
+            lance: j.lance ? { type: j.lance.type, pts: j.lance.pts, carroca: j.lance.carroca, voided: j.lance.voided } : null });
+        }
       } catch (e) {}
-      if (mesas.length >= (todas ? 12 : 6)) break;
+      if (mesas.length >= 16) break;
     }
+    // primeiro as mesas rápidas com lugar vago (dá para entrar), depois as rápidas cheias, depois as com os amigos
+    const ordem = v => v.publica ? (v.livres > 0 ? 0 : 1) : 2;
+    mesas = mesas.map((v, i) => [v, i]).sort((a, b) => ordem(a[0]) - ordem(b[0]) || a[1] - b[1]).map(x => x[0]).slice(0, todas ? 12 : 10);
     this[k] = { t: agora, v: { mesas } };
     return this[k].v;
   }

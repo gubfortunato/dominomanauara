@@ -4,7 +4,7 @@
 // só na contagem (sem apelido nem avatar).
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
-const TELAS = ['who', 'home', 'setup', 'game', 'sala', 'profile', 'apoio', 'estilo', 'fale', 'anuncie', 'patro', 'instalar', 'dono'];
+const TELAS = ['who', 'home', 'setup', 'game', 'sala', 'profile', 'apoio', 'estilo', 'fale', 'anuncie', 'patro', 'instalar', 'dono', 'calcada', 'mais'];
 
 // 3.26.2: em tempo real — o app avisa a cada 20 s e na hora em que troca de tela; ao sair do app (ou fechar), avisa
 // que saiu ({saiu: true}, mandado como texto pelo sendBeacon) e some da lista na hora.

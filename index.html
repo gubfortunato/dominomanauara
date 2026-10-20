@@ -1646,6 +1646,82 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 /* Estrela dos extras do plano: selo escuro para aparecer em qualquer fundo */
 .av-star,.ap-cor i,.ap-av i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#2a1a08;color:#f0b45e;font-size:12px;line-height:1;text-shadow:none;box-shadow:0 1px 3px rgba(0,0,0,.4)}
 .wood .dn-msglista .m-acoes button.perigo{color:#ff9c8a;border-color:#ff9c8a}
+
+/* ===== Menu de baixo (3.27): Jogar · Calçada · Perfil · Mais ===== */
+.abas{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--bg-2);border-top:1px solid var(--line);box-shadow:0 -8px 22px rgba(40,26,14,.10);padding-bottom:env(safe-area-inset-bottom,0px)}
+@supports ((backdrop-filter:blur(8px)) or (-webkit-backdrop-filter:blur(8px))){
+  .abas{background:color-mix(in srgb,var(--bg-2) 92%,transparent);-webkit-backdrop-filter:saturate(1.3) blur(12px);backdrop-filter:saturate(1.3) blur(12px)}
+}
+.abas-in{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;max-width:560px;margin:0 auto;padding-inline:max(6px, env(safe-area-inset-left,0px)) max(6px, env(safe-area-inset-right,0px))}
+.aba{position:relative;display:grid;justify-items:center;align-content:center;gap:3px;min-height:60px;padding:9px 2px 7px;border:0;background:none;color:var(--muted);font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.aba-ic{position:relative;display:grid;place-items:center;width:30px;height:27px;transition:transform .12s}
+.aba-ic svg{width:25px;height:25px;display:block}
+.aba:active .aba-ic{transform:scale(.9)}
+.aba-nm{font-size:12.5px;font-weight:700;line-height:1.1;white-space:nowrap}
+.aba.on{color:var(--nos)}
+.aba.on .aba-nm{font-weight:800}
+.aba.on::before{content:'';position:absolute;top:-1px;left:50%;width:36px;height:3px;border-radius:0 0 4px 4px;background:var(--nos);transform:translateX(-50%)}
+.aba:focus-visible{outline:2px solid var(--glow);outline-offset:-4px;border-radius:12px}
+.aba-face{width:27px;height:27px;border-radius:50%;overflow:hidden;display:grid;place-items:center;box-shadow:0 0 0 1.5px var(--line)}
+.aba-face img{width:100%;height:100%;object-fit:cover;display:block}
+.aba-face svg{width:25px;height:25px}
+.aba.on .aba-face{box-shadow:0 0 0 2px var(--nos)}
+.aba-vivo{position:absolute;top:-3px;right:-7px;width:10px;height:10px;border-radius:50%;background:#e5484d;border:2px solid var(--bg-2);animation:vivoPulsa 1.6s infinite}
+body.com-abas{--panel-pb:100px}
+body.com-abas #profileBack{display:none}
+.so-mais{display:none!important}
+@media (orientation: landscape) and (max-height: 560px){
+  .aba{min-height:50px;padding:6px 2px 5px;grid-auto-flow:column;align-items:center;gap:6px}
+  body.com-abas{--panel-pb:76px}
+}
+@media (prefers-reduced-motion: reduce){.aba-vivo{animation:none}}
+
+/* Cabeçalho das telas do menu */
+.aba-cab{display:grid;gap:4px}
+.aba-cab .kicker{display:flex;align-items:center;gap:8px;margin:0}
+.aba-tit{margin:0;font-family:var(--font-display);font-weight:400;font-size:30px;line-height:1.05;text-wrap:balance}
+.aba-sub{margin:2px 0 0;font-size:15px;line-height:1.45;color:var(--muted)}
+.aba-nota{margin:0;font-size:12.5px;line-height:1.4;color:var(--muted);text-align:center;text-wrap:balance}
+
+/* Calçada */
+#calcCorpo .vivo{padding:0;border:0;background:none;gap:12px}
+#calcCorpo .vivo-lista{gap:12px}
+#calcCorpo .vivo-hoje{padding:12px 14px;border-radius:14px;background:var(--bg-2);border:1px solid var(--line)}
+#calcCorpo .vivo-mesa{padding:12px;background:var(--bg-2)}
+#calcCorpo .vivo-mesa.livre{background:color-mix(in srgb,var(--nos) 10%,var(--bg-2))}
+#calcCorpo .vivo-pres{padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--bg-2)}
+.vivo-vazio{display:grid;gap:4px;padding:16px;text-align:center;justify-items:center}
+.vivo-vazio b{color:var(--fg);font-size:16px;font-weight:800}
+.vivo-vazio span{font-size:14px;line-height:1.4}
+.calc-abrir{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:12px 16px;border-radius:14px;border:1.5px solid var(--nos);background:transparent;color:var(--nos);font:inherit;font-weight:800;font-size:15.5px;cursor:pointer}
+.calc-abrir span{font-size:18px;line-height:1}
+.calc-abrir:active{transform:scale(.99)}
+
+/* Aviso no início: mesas jogando agora */
+.calc-aviso{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;padding:12px 16px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;text-align:left;cursor:pointer}
+.calc-aviso:active{transform:scale(.99)}
+.calc-aviso-tx{display:grid;gap:1px;min-width:0}
+.calc-aviso-tx b{font-size:15.5px;font-weight:800}
+.calc-aviso-tx small{font-size:13px;color:var(--muted);font-weight:600}
+.calc-aviso-go{font-size:24px;line-height:1;color:var(--muted)}
+
+/* Mais */
+.mais-lista{display:grid;gap:10px}
+.mais-it{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:14px;min-height:66px;padding:11px 16px 11px 12px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;text-align:left;text-decoration:none;cursor:pointer;box-sizing:border-box;width:100%}
+.mais-it:active{transform:scale(.99)}
+.mais-ic{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--bg);color:var(--nos)}
+.mais-ic svg{width:23px;height:23px;display:block}
+.mais-tx{display:grid;gap:2px;min-width:0}
+.mais-tx b{font-size:16px;font-weight:800;line-height:1.25}
+.mais-tx small{font-size:13px;line-height:1.35;color:var(--muted);font-weight:600}
+.mais-go{font-size:24px;line-height:1;color:var(--muted)}
+.mais-it.dono{border-color:var(--nos)}
+.mais-pe .note{margin:4px 0 0;text-align:center}
+@media (min-width: 760px){.mais-lista{grid-template-columns:1fr 1fr}}
+/* Mesa com os amigos na Calçada (público): rostinho genérico no lugar do avatar */
+.vivo-rostos i.vivo-anon{background:var(--line) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='9' r='4' fill='%23ffffff' fill-opacity='.8'/%3E%3Cpath d='M4 22c.8-4.6 4-7 8-7s7.2 2.4 8 7z' fill='%23ffffff' fill-opacity='.8'/%3E%3C/svg%3E") center/86% no-repeat}
+.vivo-rostos i.vivo-anon.bot{opacity:.5}
+.vivo-gp{font-weight:800;color:var(--fg);white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1807,6 +1883,25 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
     <p class="note foot"><span id="footBrand">Dominó Manauara</span> · <button type="button" class="verlink" id="verBtn">Versão <span class="appver"></span></button> · <a href="termos.html">Termos</a> · <a href="privacidade.html">Privacidade</a> · <button type="button" class="verlink" id="footAnuncie" hidden>Anuncie</button><span id="footApoioSep" hidden> · </span><button type="button" class="verlink" id="footApoio" hidden>Apoie o jogo</button><span> · </span><a href="https://www.instagram.com/dominomanauara/" target="_blank" rel="noopener" id="footInsta">Instagram</a><span id="footInstSep" hidden> · </span><button type="button" class="verlink" id="footInstalar" hidden>Como instalar o app</button></p>
   </section>
 
+  <!-- 3.27: menu de baixo — Calçada (mesas jogando agora) e Mais (o resto que saiu do início) -->
+  <section class="screen panel" id="scrCalcada" hidden>
+    <header class="aba-cab">
+      <p class="kicker"><span class="vivo-ponto" aria-hidden="true"></span> Ao vivo</p>
+      <h2 class="aba-tit">Agora na calçada</h2>
+      <p class="aba-sub" id="calcSub">As mesas jogando agora. Toque numa mesa rápida com lugar vago e entre na partida.</p>
+    </header>
+    <div id="calcCorpo"></div>
+    <button type="button" class="calc-abrir" id="calcAbrir"><span aria-hidden="true">＋</span> Abrir uma mesa rápida nova</button>
+    <p class="aba-nota" id="calcNota">Na mesa com os amigos, só entra quem tem o número da mesa.</p>
+  </section>
+  <section class="screen panel" id="scrMais" hidden>
+    <header class="aba-cab">
+      <p class="kicker">Dominó Manauara</p>
+      <h2 class="aba-tit">Mais</h2>
+    </header>
+    <div class="mais-lista" id="maisLista"></div>
+    <div class="mais-pe" id="maisPe"></div>
+  </section>
   <section class="screen panel" id="scrSetup" hidden>
     <button type="button" class="backbtn" data-go="home">← Voltar</button>
     <div><p class="kicker">Jogo offline</p><h2 class="brand" style="font-size:30px">Monte a mesa</h2></div>
@@ -2667,6 +2762,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.27.0', data: '20/10/2026', itens: ['Menu novo embaixo da tela: Jogar, Calçada, Perfil e Mais. O início ficou só com o que leva à mesa.', 'Calçada: veja as mesas rápidas jogando agora, com o placar e quantos lugares vagos têm. Toque numa mesa com lugar vago e entre no lugar de um robô.', 'Mais: Regras, Fale com a gente, Instagram, Apoie o jogo e o resto, tudo num lugar só. Seu histórico agora fica no Perfil.'] },
   { v: '3.26.4', data: '20/10/2026', itens: ['Agora na calçada: a mesa mostra quantos lugares vagos tem para você entrar.'] },
   { v: '3.26.3', data: '20/10/2026', itens: ['A versão nova entra sozinha, sem precisar tocar em nada: ao abrir o app, quando você para um instante no início ou quando sai do app (nunca no meio da partida).', 'Ajustes na área do administrador.'] },
   { v: '3.26.2', data: '20/10/2026', itens: ['Ajustes na área do administrador.'] },
@@ -3186,7 +3282,7 @@ function toast(msg) {
   clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 4200);
 }
 // Troca de tela com fade: a tela atual some suave e a próxima aparece suave.
-const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Anuncie', 'Apoio', 'Patro', 'Instalar', 'Estilo'];
+const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Anuncie', 'Apoio', 'Patro', 'Instalar', 'Estilo', 'Calcada', 'Mais'];
 let showTimer = null;
 function show(name) {
   screen = name;
@@ -6337,7 +6433,7 @@ function perguntarInstalar() {
   $('#instDepois').addEventListener('click', () => {
     track('instalar-depois');
     openSheet('info', `<p class="eyebrow">Sem problema</p><h2 id="sheetTitle">Fica para depois</h2>
-      <p>Quando quiser instalar, toque em <b>Como instalar o app</b>, no fim da tela inicial. O passo a passo está lá.</p>
+      <p>Quando quiser instalar, toque em <b>Mais</b>, no menu de baixo, e depois em <b>Como instalar o app</b>. O passo a passo está lá.</p>
       <button type="button" class="primary" id="instEntendi">Entendi</button>`);
     $('#instEntendi').addEventListener('click', closeSheet);
   });
@@ -7831,9 +7927,9 @@ announce = function () {
 // Missões do dia logo abaixo de "Monte a sua Turma" e Regras logo acima do botão de chamar os amigos pelo WhatsApp.
 // (Os cartões são criados por vários módulos; aqui só se muda a posição, depois de cada desenho do início.)
 function ordenarInicio() {
-  const tu = $('#turmaCard'), mi = $('#misCard'), re = $('#howBtn'), wa = $('#shareApp');
+  const tu = $('#turmaCard'), mi = $('#misCard');
   if (tu && mi && tu.nextElementSibling !== mi) tu.after(mi);
-  if (re && wa && wa.previousElementSibling !== re) wa.before(re);
+  // 3.27: as Regras foram para a aba Mais (menu de baixo)
 }
 const renderHomeOrdem = renderHome;
 renderHome = function () { renderHomeOrdem.apply(this, arguments); try { ordenarInicio(); } catch (e) {} };
@@ -7863,11 +7959,13 @@ show = function (name) {
 // robôs, e deixa claro se dá para entrar (tem robô: toque e entre no lugar dele) ou se está cheia (só gente, sem toque).
 // O administrador vê os detalhes e pode ver o cartão do jeito que os jogadores verão ("Ver como os jogadores veem").
 // Menor de 18 não vê (a mesa rápida é para maiores).
-const VIVO_PUBLICO = false;
+// 3.27: liberada para todos, numa aba própria do menu de baixo (Calçada)
+const VIVO_PUBLICO = true;
 const vivoMostra = () => souAdmin() || (VIVO_PUBLICO && !!CONFIG.api && !!profile && profile.idade !== 'menor');
 const vivoDetalhes = () => souAdmin() && !VIVO.comoJogador;
 function vivoVisivel() { const c = $('#vivoCard'); if (c) c.hidden = !vivoMostra(); const b = $('#vivoVer'); if (b) { b.hidden = !souAdmin(); b.textContent = VIVO.comoJogador ? 'Ver com os detalhes de administrador' : 'Ver como os jogadores veem'; }
-  const sub = $('#vivoSub'); if (sub) sub.textContent = vivoDetalhes() ? 'todas as mesas online jogando agora' : 'mesas rápidas jogando agora'; }
+  const nota = $('#calcNota'); if (nota) nota.textContent = vivoDetalhes() ? 'Os jogadores veem as mesas com os amigos sem nome, sem avatar e sem o número da mesa.' : 'Na mesa com os amigos, só entra quem tem o número da mesa.';
+  const sub = $('#calcSub'); if (sub) sub.textContent = vivoDetalhes() ? 'Administrador: todas as mesas online jogando agora, inclusive as mesas com os amigos.' : 'As mesas jogando agora. Toque numa mesa rápida com lugar vago e entre na partida.'; }
 const VIVO = { mesas: [], timer: null, buscadoEm: 0, buscando: false, comoJogador: false };
 const VIVO_MIN = 10;   // a linha "Hoje" só aparece a partir de 10 partidas no dia
 let vivoHojeEm = 0;
@@ -7908,6 +8006,13 @@ const vivoQuando = ms => { const m = Math.round((Date.now() - ms) / 60000); retu
 const VIVO_LANCE = (v) => {
   const l = v.lance, nm = p => (v.cad[p] || {}).nome || '';
   if (!l) return 'Partida rolando';
+  // 3.27: na mesa com os amigos (para o público) não vem nome de ninguém: o lance sai sem nome
+  if (!nm(l.p)) {
+    if (l.type === 'galo') return 'Saiu um galo!';
+    if (l.type === 'batida') return l.carroca ? 'Bateram de carroça!' : 'Bateram';
+    if (l.type === 'play' && l.pts) return `Fizeram ${l.pts}${l.pts >= 20 ? '!' : ''}`;
+    return 'Partida rolando';
+  }
   if (l.type === 'galo') return `${nm(l.p)} deu galo!`;
   if (l.type === 'batida') return l.carroca ? `${nm(l.p)} bateu de carroça!` : `${nm(l.p)} bateu`;
   if (l.type === 'play' && l.pts) return `${nm(l.p)} fez ${l.pts}${l.pts >= 20 ? '!' : ''}`;
@@ -7920,9 +8025,10 @@ async function vivoMesas(agora) {
   try {
     // 3.26.3: o administrador vê todas as mesas em jogo (inclusive as com os amigos); os jogadores, só as mesas rápidas
     const j = vivoDetalhes() ? await dnMsgPedir('/dono/mesas') : await (await fetch(CONFIG.api + '/vivo/mesas', { cache: 'no-store' })).json();
-    const antes = new Map(VIVO.mesas.map(v => [v.codigo, v]));
-    VIVO.mesas = (j.mesas || []).map(v => {
-      const a = antes.get(v.codigo), txt = VIVO_LANCE(v);
+    const chave = (v, i) => v.codigo || 'amigos-' + i;   // mesa com os amigos (público) vem sem número
+    const antes = new Map(VIVO.mesas.map((v, i) => [chave(v, i), v]));
+    VIVO.mesas = (j.mesas || []).map((v, i) => {
+      const a = antes.get(chave(v, i)), txt = VIVO_LANCE(v);
       return Object.assign(v, { txt, quando: a && a.txt === txt ? a.quando : Date.now() });
     });
     vivoDesenha();
@@ -7933,14 +8039,14 @@ function vivoDesenha() {
   const box = $('#vivoLista'); if (!box) return;
   const pe = $('#vivoPe');
   if (!VIVO.mesas.length) {
-    box.innerHTML = `<div class="vivo-vazio"><span>${vivoDetalhes() ? 'Nenhuma mesa online em jogo agora.' : 'Ninguém na mesa rápida agora.'}</span><button type="button" class="vivo-abrir" id="vivoAbrir">Abrir uma mesa rápida</button></div>`;
+    box.innerHTML = `<div class="vivo-vazio"><b>${vivoDetalhes() ? 'Nenhuma mesa online em jogo agora.' : 'Ninguém na mesa rápida agora.'}</b><span>Abra uma: a turma do bairro completa a mesa enquanto o pessoal chega.</span></div>`;
     if (pe) pe.hidden = true;
     return;
   }
   if (pe) pe.hidden = false;
   box.innerHTML = VIVO.mesas.map((v, i) => {
     const m = MESAS.find(x => x.id === v.tema) || MESAS[0], c = v.cad || [];
-    const rosto = p => { const x = c[p]; if (!x) return '<i></i>'; const a = !x.bot && typeof avatarDe === 'function' ? avatarDe(x.av) : null; const src = x.bot ? botFaceURI(x.nome) : a ? avatarURI(a) : ''; return src ? `<img src="${src}" alt="">` : `<i>${esc((x.nome || '?')[0])}</i>`; };
+    const rosto = p => { const x = c[p]; if (!x) return '<i></i>'; if (!x.nome) return `<i class="vivo-anon${x.bot ? ' bot' : ''}" aria-hidden="true"></i>`; const a = !x.bot && typeof avatarDe === 'function' ? avatarDe(x.av) : null; const src = x.bot ? botFaceURI(x.nome) : a ? avatarURI(a) : ''; return src ? `<img src="${src}" alt="">` : `<i>${esc((x.nome || '?')[0])}</i>`; };
     const tipo = p => (c[p] || {}).tipo || ((c[p] || {}).bot ? 'robo' : 'pessoa');
     const ehGente = p => ['pessoa', 'fora'].includes(tipo(p));
     const nPessoas = [0, 1, 2, 3].filter(ehGente).length, nRobos = 4 - nPessoas;
@@ -7949,7 +8055,7 @@ function vivoDesenha() {
     const estado = convite ? `<span class="vivo-st vivo-cheia-st vivo-convite"><span aria-hidden="true">●</span> Mesa com os amigos · só por convite</span>` : livre
       ? `<span class="vivo-st vivo-entra"><span aria-hidden="true">▶</span> Toque para entrar · ${lugares} ${lugares === 1 ? 'lugar vago' : 'lugares vagos'}</span>`
       : `<span class="vivo-st vivo-cheia-st"><span aria-hidden="true">●</span> Mesa cheia · não dá para entrar</span>`;
-    const abre = `<button type="button" class="vivo-mesa${livre ? ' livre' : ' cheia'}" data-i="${i}"${livre ? '' : ' aria-disabled="true"'} aria-label="${esc(m.nome)}: ${nPessoas} ${nPessoas === 1 ? 'pessoa' : 'pessoas'}, ${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}. ${livre ? 'Toque para entrar' : 'Mesa cheia'}">
+    const abre = `<button type="button" class="vivo-mesa${livre ? ' livre' : ' cheia'}" data-i="${i}"${livre ? '' : ' aria-disabled="true"'} aria-label="${esc(m.nome)}: ${nPessoas} ${nPessoas === 1 ? 'pessoa' : 'pessoas'}${adm ? `, ${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}` : ''}. ${livre ? 'Toque para entrar' : convite ? 'Mesa com os amigos, só por convite' : 'Mesa cheia'}">
       <span class="vivo-sw" style="background:${fundoMesa(m)}"></span>`;
     if (adm) {
       // 3.26: enxuto — as pessoas numa linha (bolinha verde: conectada; vazia: sem conexão) e os robôs só na conta
@@ -7958,16 +8064,20 @@ function vivoDesenha() {
           <span class="vivo-gl">${gente}${nRobos ? `<span class="vivo-rb">+${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}</span>` : ''}</span>
           <small class="vivo-info">Mesa ${esc(v.codigo)} · partida ${v.partida || 1}</small></span>${placar}${estado}</button>`;
     }
-    const nome = p => { const x = c[p]; if (!x) return '—'; return ehGente(p) ? `<b class="vivo-gente">${esc(x.nome)}</b>` : `<span class="vivo-robo">${esc(x.nome)} <i class="vivo-r">robô</i></span>`; };
+    // 3.27 (pedido do dono): para os jogadores, só os nomes de quem está jogando e "+N" no lugar de "N robôs"
+    if (convite) return `${abre}<span class="vivo-tx"><b>${esc(m.nome)} <small class="vivo-tag">com os amigos</small></b>
+        <small class="vivo-conta">${nPessoas} ${nPessoas === 1 ? 'pessoa jogando' : 'pessoas jogando'}</small>
+        <em class="${quente ? 'quente' : ''}">${esc(v.txt)}</em></span>${placar}${estado}</button>`;
+    const nomes = [0, 1, 2, 3].filter(ehGente).map(p => `<span class="vivo-gp">${esc(c[p].nome)}</span>`).join('');
     return `${abre}<span class="vivo-tx"><b>${esc(m.nome)}</b>
-        <small class="vivo-conta">${nPessoas} ${nPessoas === 1 ? 'pessoa' : 'pessoas'} · ${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}</small>
-        <small class="vivo-nomes">${nome(0)} e ${nome(2)} × ${nome(1)} e ${nome(3)}</small>
+        <span class="vivo-gl">${nomes}${nRobos ? `<span class="vivo-rb">+${nRobos}</span>` : ''}</span>
         <em class="${quente ? 'quente' : ''}">${esc(v.txt)}</em></span>${placar}${estado}</button>`;
   }).join('');
 }
 // 3.26: só o administrador — "No app agora": onde cada pessoa está no jogo (o app de cada um avisa a cada minuto)
 const PRES_TELA = { who: 'na entrada', home: 'no início', setup: 'escolhendo a partida', sala: 'na sala da mesa online', profile: 'no perfil',
-  apoio: 'em Apoie o jogo', estilo: 'em Personalizar', fale: 'no Fale com a gente', anuncie: 'em Anuncie', patro: 'em Patrocínio', instalar: 'em Como instalar', dono: 'na área do administrador' };
+  apoio: 'em Apoie o jogo', estilo: 'em Personalizar', fale: 'no Fale com a gente', anuncie: 'em Anuncie', patro: 'em Patrocínio', instalar: 'em Como instalar', dono: 'na área do administrador',
+  calcada: 'na Calçada', mais: 'em Mais' };
 const presOnde = x => x.tela === 'game' ? (x.modo === 'on' ? 'na mesa online' : 'jogando offline') : PRES_TELA[x.tela] || 'no app';
 let presBuscadoEm = 0;
 async function vivoPresenca(agora) {
@@ -7987,8 +8097,10 @@ async function vivoPresenca(agora) {
 }
 function vivoTique() {
   vivoVisivel();
-  if (!vivoMostra() || screen !== 'home' || document.visibilityState !== 'visible') return;
-  vivoHoje(); vivoMesas(); vivoPresenca();
+  if (!vivoMostra() || document.visibilityState !== 'visible') return;
+  // 3.27: na Calçada, atualiza a cada poucos segundos; no início, de vez em quando (para o aviso "mesas jogando agora")
+  if (screen === 'calcada') { vivoHoje(); vivoMesas(); vivoPresenca(); }
+  else if (screen === 'home' && Date.now() - VIVO.buscadoEm > 15000) vivoMesas(true);
 }
 // Entrar numa mesa da lista: mesmo cuidado da mesa rápida (maiores de 18, uma mesa por vez); senta no lugar de um robô
 function entrarAoVivo(codigo) {
@@ -8000,14 +8112,13 @@ function entrarAoVivo(codigo) {
   show('sala'); conectar(codigo); renderSala();
 }
 (function () {
-  const ref = $('#nvFaixa') || $('#apBanner') || ($('#homeName') && $('#homeName').closest('p'));
+  // 3.27: o cartão mora na aba Calçada (antes ficava no início)
+  const ref = $('#calcCorpo');
   if (!ref) return;
-  ref.insertAdjacentHTML('afterend', `<section class="vivo" id="vivoCard" hidden aria-label="Mesas rápidas jogando agora">
-    <div class="vivo-cab"><span class="vivo-ponto" aria-hidden="true"></span><b>Agora na calçada</b><small id="vivoSub">mesas rápidas jogando agora</small></div>
+  ref.insertAdjacentHTML('beforeend', `<section class="vivo" id="vivoCard" hidden aria-label="Mesas rápidas jogando agora">
     <button type="button" class="vivo-ver" id="vivoVer" hidden>Ver como os jogadores veem</button>
     <div class="vivo-hoje" id="vivoHoje" hidden></div>
-    <div class="vivo-lista" id="vivoLista"></div>
-    <p class="vivo-pe" id="vivoPe" hidden>Toque numa mesa para entrar no lugar de um robô.</p>
+    <div class="vivo-lista" id="vivoLista" aria-live="polite"></div>
     <div class="vivo-pres" id="vivoPres" hidden></div></section>`);
   vivoDesenha();
   VIVO.timer = setInterval(vivoTique, 2000);
@@ -8020,8 +8131,8 @@ function entrarAoVivo(codigo) {
     if (e.target.closest('#vivoAbrir')) { track('vivo-abrir'); mesaRapida(); return; }
     const b = e.target.closest('[data-i]'); if (!b) return;
     const v = VIVO.mesas[Number(b.dataset.i)]; if (!v) return;
-    if (v.publica === false) { toast('Mesa com os amigos: só entra quem tem o número da mesa.'); return; }
-    if (!(v.livres > 0)) { toast('Essa mesa está cheia: só tem gente de verdade. Escolha uma com robô ou abra uma mesa rápida.'); return; }
+    if (v.publica === false) { toast('Mesa com os amigos: só entra quem tem o número da mesa. Quer jogar agora? Abra uma mesa rápida.'); return; }
+    if (!(v.livres > 0)) { toast('Essa mesa está cheia: só tem gente de verdade. Escolha uma com lugar vago ou abra uma mesa rápida.'); return; }
     entrarAoVivo(v.codigo);
   });
 })();
@@ -8177,6 +8288,169 @@ show = function () {
   return r;
 };
 setTimeout(() => presAvisar(true), 1500);
+
+// ===== Menu de baixo (3.27) =====
+// Quatro abas fixas embaixo: Jogar (o início), Calçada (mesas rápidas jogando agora), Perfil e Mais. O início fica só com
+// o que leva à mesa; Regras, Fale com a gente, Instagram, Apoie, Como instalar, Anuncie, Termos e a Área do
+// administrador vão para Mais; o histórico vai para o Perfil. Na partida, na sala da mesa online, na entrada e com o
+// teclado aberto, o menu some (a mesa precisa da tela inteira). Menor de 18 não vê a aba Calçada (mesa rápida é para maiores).
+const MENU_ABAS = [
+  { id: 'home', nome: 'Jogar', telas: ['home', 'setup'] },
+  { id: 'calcada', nome: 'Calçada', telas: ['calcada'] },
+  { id: 'profile', nome: 'Perfil', telas: ['profile', 'estilo'] },
+  { id: 'mais', nome: 'Mais', telas: ['mais', 'apoio', 'fale', 'anuncie', 'patro', 'instalar', 'dono'] }
+];
+const SUB_MAIS = ['apoio', 'fale', 'anuncie', 'patro', 'instalar', 'dono'];
+let abaVolta = null;   // sub-tela aberta pela aba Mais: o "Voltar" dela volta para Mais (e não para o início)
+const ABA_RAIZ = ['home', 'calcada', 'profile', 'mais'];
+let abaUltima = 'home';   // nas telas de dentro (Monte a mesa, Apoie, Personalizar...), fica marcada a aba de onde você veio
+const ABA_IC = {
+  home: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M6.5 12h11" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="7.2" r="1.35" fill="currentColor"/><circle cx="9.8" cy="15" r="1.2" fill="currentColor"/><circle cx="14.2" cy="18" r="1.2" fill="currentColor"/></svg>',
+  calcada: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="3.4" r="1.7" fill="currentColor"/><circle cx="12" cy="20.6" r="1.7" fill="currentColor"/><circle cx="3.4" cy="12" r="1.7" fill="currentColor"/><circle cx="20.6" cy="12" r="1.7" fill="currentColor"/></svg>',
+  profile: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="4.2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M4 21c.8-4.2 4-6.6 8-6.6s7.2 2.4 8 6.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
+  mais: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+};
+const MAIS_IC = {
+  dono: '<svg viewBox="0 0 24 24"><path d="M4 19V10m5.3 9V5m5.4 14v-7M20 19V8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  regras: '<svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M6.5 12h11" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="7.2" r="1.35" fill="currentColor"/><circle cx="12" cy="16.6" r="1.35" fill="currentColor"/></svg>',
+  apoio: '<svg viewBox="0 0 24 24"><path d="M12 20.3s-7.6-4.6-7.6-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.6 2.5c0 5.6-7.6 10.2-7.6 10.2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>',
+  fale: '<svg viewBox="0 0 24 24"><path d="M4.5 5.5h15v10.2H11l-4.6 3.6v-3.6H4.5z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>',
+  insta: '<svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="12" r="3.9" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="17" cy="7" r="1.2" fill="currentColor"/></svg>',
+  instalar: '<svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 7v7.5m-3-3 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  anuncie: '<svg viewBox="0 0 24 24"><path d="M4 10v4h3l7 4.5v-13L7 10z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M17.5 9.2a4 4 0 0 1 0 5.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
+  chamar: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M3 19.5c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3M17.5 8v6M14.5 11h6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>'
+};
+const abaDe = tela => (MENU_ABAS.find(a => a.telas.includes(tela)) || {}).id || null;
+const abaComPerfil = () => !!(profile && profile.idade);
+let tecladoAberto = false;
+function abasMontar() {
+  if ($('#abas')) return;
+  const nav = document.createElement('nav');
+  nav.className = 'abas'; nav.id = 'abas'; nav.hidden = true; nav.setAttribute('aria-label', 'Menu');
+  nav.innerHTML = '<div class="abas-in">' + MENU_ABAS.map(a => `<button type="button" class="aba" data-aba="${a.id}" id="aba-${a.id}">
+      <span class="aba-ic">${a.id === 'profile' ? '<span class="aba-face" id="abaFace"></span>' : ABA_IC[a.id]}${a.id === 'calcada' ? '<i class="aba-vivo" id="abaVivo" hidden aria-hidden="true"></i>' : ''}</span>
+      <span class="aba-nm">${a.nome}</span></button>`).join('') + '</div>';
+  document.body.appendChild(nav);
+  nav.addEventListener('click', e => { const b = e.target.closest('[data-aba]'); if (b) irAba(b.dataset.aba); });
+}
+function irAba(id) {
+  track('aba-' + id);
+  abaVolta = null;
+  const atual = abaDe(screen);
+  if (id === atual && ['home', 'calcada', 'mais', 'profile'].includes(screen)) {   // tocou na aba em que já está: volta para o alto
+    const scr = $('#scr' + screen[0].toUpperCase() + screen.slice(1));
+    if (scr) scr.scrollTo({ top: 0, behavior: reduzMovAbas() ? 'auto' : 'smooth' });
+    return;
+  }
+  if (id === 'home') show('home');
+  else if (id === 'calcada') show('calcada');
+  else if (id === 'profile') openProfile('home');
+  else if (id === 'mais') show('mais');
+}
+const reduzMovAbas = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+function abasAtualiza(tela) {
+  const nav = $('#abas'); if (!nav) return;
+  const aba = ABA_RAIZ.includes(tela) ? tela : abaDe(tela) ? (abaVolta === 'mais' ? 'mais' : abaUltima) : null;
+  const ver = !!aba && abaComPerfil() && !tecladoAberto;
+  nav.hidden = !ver;
+  document.body.classList.toggle('com-abas', ver);
+  if (!ver) return;
+  $$('#abas .aba').forEach(b => { const on = b.dataset.aba === aba; b.classList.toggle('on', on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  const calc = $('#aba-calcada'); if (calc) calc.hidden = !vivoMostra();
+  const face = $('#abaFace'); if (face) { const uri = myFaceURI(); face.innerHTML = uri ? `<img src="${uri}" alt="">` : ABA_IC.profile; }
+  abasVivo();
+}
+// Aviso no início ("2 mesas jogando agora") e a bolinha da aba Calçada, a partir da última busca das mesas
+function abasVivo() {
+  const ms = VIVO.mesas || [];
+  const vagas = ms.filter(v => v.publica !== false && v.livres > 0);
+  const bol = $('#abaVivo'); if (bol) bol.hidden = !(vivoMostra() && vagas.length);
+  const av = $('#calcAviso'); if (!av) return;
+  av.hidden = !(vivoMostra() && ms.length);
+  if (av.hidden) return;
+  const lug = vagas.reduce((n, v) => n + (v.livres || 0), 0);
+  $('#calcAvisoT').textContent = `${ms.length} ${ms.length === 1 ? 'mesa jogando' : 'mesas jogando'} agora`;
+  $('#calcAvisoS').textContent = lug ? `${lug} ${lug === 1 ? 'lugar vago' : 'lugares vagos'} · toque para ver na Calçada` : 'Toque para ver na Calçada';
+}
+function renderMais() {
+  const el = id => document.getElementById(id);
+  const vis = id => { const e = el(id); return !!e && !e.hidden; };
+  try { if (typeof renderDonoCard === 'function') renderDonoCard(); } catch (e) {}
+  const itens = [
+    souAdmin() && vis('donoCard') && { k: 'dono', ic: 'dono', t: 'Área do administrador', s: (el('donoCardTx') || {}).textContent || 'Os números do jogo', destaque: true },
+    { k: 'regras', ic: 'regras', t: 'Regras', s: 'Bucho, garagem, passe e galo, explicados' },
+    vis('footApoio') && { k: 'apoio', ic: 'apoio', t: 'Apoie o jogo', s: 'Ajude a manter a mesa de pé' },
+    vis('fbCard') && { k: 'fale', ic: 'fale', t: 'Fale com a gente', s: 'Achou um erro ou tem uma ideia?' },
+    { k: 'chamar', ic: 'chamar', t: 'Chamar os amigos', s: 'Mande o jogo no WhatsApp para a turma' },
+    { k: 'insta', ic: 'insta', t: 'Siga no Instagram', s: '@dominomanauara · novidades e dicas', href: 'https://www.instagram.com/dominomanauara/' },
+    vis('footInstalar') && { k: 'instalar', ic: 'instalar', t: 'Como instalar o app', s: 'Deixe o jogo na tela de início' },
+    vis('anuncieLink') && { k: 'anuncie', ic: 'anuncie', t: 'Anuncie no Dominó Manauara', s: 'Quer ver a sua empresa no jogo?' }
+  ].filter(Boolean);
+  $('#maisLista').innerHTML = itens.map(i => {
+    const corpo = `<span class="mais-ic" aria-hidden="true">${MAIS_IC[i.ic]}</span><span class="mais-tx"><b>${esc(i.t)}</b><small>${esc(i.s)}</small></span><span class="mais-go" aria-hidden="true">›</span>`;
+    return i.href ? `<a class="mais-it" href="${i.href}" target="_blank" rel="noopener" data-k="${i.k}">${corpo}</a>`
+      : `<button type="button" class="mais-it${i.destaque ? ' dono' : ''}" data-k="${i.k}">${corpo}</button>`;
+  }).join('');
+}
+function abasMaisClique(k) {
+  const clica = id => { const e = document.getElementById(id); if (e) e.click(); };
+  track('mais-' + k);
+  if (k === 'dono') clica('donoCard');
+  else if (k === 'regras') clica('howBtn');
+  else if (k === 'apoio') clica('footApoio');
+  else if (k === 'fale') clica('fbCard');
+  else if (k === 'chamar') clica('shareApp');
+  else if (k === 'instalar') { clica('footInstalar'); const bt = $('#instPular'); if (bt) bt.textContent = 'Voltar'; }
+  else if (k === 'anuncie') clica('anuncieLink');
+}
+(function () {
+  abasMontar();
+  // o que sai do início: fica escondido lá (os módulos continuam cuidando dele) e aparece como item da aba Mais
+  ['howBtn', 'fbCard', 'instaLink', 'anuncieLink', 'donoCard'].forEach(id => { const e = document.getElementById(id); if (e) e.classList.add('so-mais'); });
+  const pe = $('#scrHome .note.foot'); if (pe) pe.classList.add('so-mais');
+  // rodapé da aba Mais: versão, Termos e Privacidade
+  $('#maisPe').innerHTML = `<p class="note foot"><span id="maisMarca"></span> · <button type="button" class="verlink" id="maisVer">Versão <span class="appver"></span></button> · <a href="termos.html">Termos</a> · <a href="privacidade.html">Privacidade</a></p>`;
+  // "Dominó Manauara" do rodapé vem junto (5 toques nele abrem a senha da Área do administrador)
+  const marca = $('#footBrand'); if (marca) $('#maisMarca').replaceWith(marca); else $('#maisMarca').textContent = 'Dominó Manauara';
+  $('#maisVer').addEventListener('click', () => openNovidades());
+  $('#maisLista').addEventListener('click', e => {
+    const b = e.target.closest('[data-k]'); if (!b) return;
+    if (b.dataset.k === 'insta') { track('instagram-mais'); return; }
+    abasMaisClique(b.dataset.k);
+  });
+  // histórico do celular: vai para o Perfil, logo abaixo do título
+  const mt = $('#myTreino'), pTit = $('#scrProfile h2') || $('#scrProfile .kicker');
+  if (mt && pTit) pTit.after(mt);
+  // aviso no início: mesas jogando agora (leva para a Calçada)
+  const ref = $('#nvFaixa') || $('#apBanner');
+  if (ref) ref.insertAdjacentHTML('afterend', `<button type="button" class="calc-aviso" id="calcAviso" hidden><span class="vivo-ponto" aria-hidden="true"></span><span class="calc-aviso-tx"><b id="calcAvisoT"></b><small id="calcAvisoS"></small></span><span class="calc-aviso-go" aria-hidden="true">›</span></button>`);
+  const av = $('#calcAviso'); if (av) av.addEventListener('click', () => { track('calcada-aviso'); irAba('calcada'); });
+  $('#calcAbrir').addEventListener('click', () => {
+    if (!profile || profile.idade === 'menor') { toast('A mesa rápida é para maiores de 18. Jogue com os amigos pelo número da mesa.'); return; }
+    track('calcada-abrir'); mesaRapida();
+  });
+  // a cada desenho da lista de mesas, atualiza o aviso e a bolinha
+  const vivoDesenhaAbas = vivoDesenha;
+  vivoDesenha = function () { const r = vivoDesenhaAbas.apply(this, arguments); try { abasVivo(); } catch (e) {} return r; };
+  // teclado aberto (campo de texto em foco): o menu sai da frente
+  document.addEventListener('focusin', e => { if (e.target.matches && e.target.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]), textarea')) { tecladoAberto = true; abasAtualiza(screen); } });
+  document.addEventListener('focusout', () => { setTimeout(() => { const a = document.activeElement; if (!(a && a.matches && a.matches('input, textarea'))) { tecladoAberto = false; abasAtualiza(screen); } }, 60); });
+})();
+const showAbas = show;
+show = function (name) {
+  // "Voltar" de uma tela aberta pela aba Mais volta para Mais
+  if (name === 'home' && abaVolta === 'mais' && SUB_MAIS.includes(screen)) name = 'mais';
+  if (SUB_MAIS.includes(name)) { if (screen === 'mais') abaVolta = 'mais'; }
+  else abaVolta = null;
+  if (ABA_RAIZ.includes(name)) abaUltima = name;
+  if (name === 'mais') renderMais();
+  if (name === 'calcada') { try { vivoVisivel(); vivoDesenha(); vivoHoje(); vivoMesas(true); setTimeout(() => vivoPresenca(true), 300); } catch (e) {} }
+  if (name === 'profile') { try { renderMyTreino(); } catch (e) {} }
+  const r = showAbas.apply(this, arguments.length > 1 ? [name, ...[...arguments].slice(1)] : [name]);
+  abasAtualiza(name);
+  return r;
+};
+abasAtualiza(screen);
 
 
 // ---- Desenho das peças ----
@@ -8756,7 +9030,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.26.4-a66c10fe';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.27.0-ce190101';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -8873,7 +9147,7 @@ recarregar = function (destino) { if (novaVersao && tentativasVersao(novaVersao)
 $$('.appver').forEach(el => { el.textContent = APP_VERSION; });
 (function () {
   const antes = store.get('dmz-versao');
-  if (antes && antes !== APP_VERSION) setTimeout(() => toast(`App atualizado para a versão ${APP_VERSION}. Toque em "Versão" no fim do início para ver o que mudou.`), 900);
+  if (antes && antes !== APP_VERSION) setTimeout(() => toast(`App atualizado para a versão ${APP_VERSION}. Para ver o que mudou, toque em "Mais", no menu de baixo, e depois em "Versão".`), 900);
   store.set('dmz-versao', APP_VERSION);
 })();
 function openNovidades() {
