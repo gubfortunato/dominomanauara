@@ -290,7 +290,7 @@ export class Mesa {
       case 'entrar': return this.entrar(ws, att, msg);
       case 'assistir': return this.assistir(ws, att);
       case 'sentar': if (p >= 0) return this.sentar(p, msg.cadeira); return;
-      case 'comecar': if (p >= 0) return m.publica ? this.comecarPublica() : this.comecar(); return;
+      case 'comecar': if (p >= 0) return m.publica ? this.comecarPublica() : this.comecarAmigos(ws); return;
       case 'jogar': if (p >= 0) return this.jogar(ws, p, msg); return;
       case 'proxima': if (p >= 0) return this.proxima(msg); return;
       case 'sair': if (p >= 0) return this.sair(ws, p); return this.sairDaFila(ws, att.id);
@@ -513,6 +513,16 @@ export class Mesa {
     await this.salvar(); this.espalhar();
   }
 
+  // 3.38.1 (pedido do dono): mesa com os amigos só começa com pelo menos 2 pessoas; os robôs completam o resto.
+  // (Quem chega depois continua entrando no lugar de um robô, e quem sai continua sendo trocado por um robô.)
+  minAmigos() { const n = Number(this.env && this.env.AMIGOS_MIN); return n >= 1 && n <= 4 ? n : 2; }
+  async comecarAmigos(ws) {
+    const m = this.m;
+    if (m.fase !== 'espera') return;
+    const gente = m.cad.filter(c => c && !c.bot).length, min = this.minAmigos();
+    if (gente < min) return this.enviar(ws, { t: 'erro', cod: 'poucos', min });
+    return this.comecar();
+  }
   async comecar() {
     const m = this.m;
     if (m.fase !== 'espera') return;
@@ -802,7 +812,7 @@ export class Mesa {
     }
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
-      tema: m.tema || null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, publica: !!m.publica, iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
+      tema: m.tema || null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, publica: !!m.publica, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
       cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || !id ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p) } : null),
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
       jogo, agora: Date.now(), assistindo: this.quantosAssistem() };

@@ -539,6 +539,17 @@ body{touch-action:manipulation}
 @media (orientation: landscape) and (max-height: 560px){ .entry-frase{display:none} }
 /* celular baixinho (iPhone SE e parecidos): frase menor, para caber o mais perto possível da tela */
 @media (orientation: portrait) and (max-height: 700px){ .entry-frase{font-size:18px;margin-top:10px} }
+/* 3.38.1: sozinho na mesa com os amigos — dois botões para jogar agora */
+.sala-sozinho{display:grid;gap:8px;margin:2px 0 0}
+.sz-k{margin:0;text-align:center;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sz-bts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sz-bt{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;column-gap:10px;row-gap:1px;align-items:center;text-align:left;padding:12px 12px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;cursor:pointer;box-shadow:0 6px 16px -12px var(--shadow)}
+.sz-bt:active{transform:scale(.98)}
+.sz-ic{grid-row:1 / span 2;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--nos);color:#fff7ea}
+.sz-ic svg{width:20px;height:20px}
+.sz-bt b{font-size:15.5px;line-height:1.15;font-weight:800}
+.sz-bt small{font-size:12.5px;line-height:1.25;font-weight:600;color:var(--muted)}
+@media (prefers-color-scheme: dark){ .sz-ic{color:#2b1a0e} }
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:12px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
@@ -2151,6 +2162,13 @@ button.dn-ag:active{transform:scale(.98)}
       <a class="share-wa sala-convite" id="salaConvite" href="https://wa.me/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.3 14.8L2.3 21.8l4.9-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-3-.4-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.1 11.1 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3Z"/></svg>Chamar os amigos no WhatsApp</a>
       <button type="button" class="primary" id="salaComecar">Começar</button>
       <p class="note sala-faltam" id="salaFaltam"></p>
+      <div class="sala-sozinho" id="salaSozinho" hidden>
+        <p class="sz-k">Quer jogar agora?</p>
+        <div class="sz-bts">
+          <button type="button" class="sz-bt" id="salaIrRapida"><span class="sz-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13.2 2.5 5 13.6h6l-1.2 7.9 8.2-11.1h-6z" fill="currentColor"/></svg></span><b>Mesa rápida</b><small>Com quem estiver online</small></button>
+          <button type="button" class="sz-bt" id="salaIrOffline"><span class="sz-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7.5 12h9" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="7.2" r="1.4" fill="currentColor"/><circle cx="10" cy="15.2" r="1.2" fill="currentColor"/><circle cx="14" cy="18.2" r="1.2" fill="currentColor"/></svg></span><b>Jogo offline</b><small>Contra a turma do bairro</small></button>
+        </div>
+      </div>
       <button type="button" class="secondary" id="salaSair">Sair da mesa</button>
     </div>
     <p class="sala-st" id="salaSt" role="status" hidden></p>
@@ -2983,6 +3001,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.38.1', data: '21/10/2026', itens: ['Consertado: tocar na ponta para jogar a pedra abria a mesa ampliada por cima.', 'Mesa com os amigos começa com pelo menos 2 pessoas (a turma do bairro completa as cadeiras que sobrarem). Sozinho? Tem a Mesa rápida e o jogo offline.'] },
   { v: '3.38', data: '21/10/2026', itens: ['Apoiadores: o jogo avisa com mais antecedência para renovar (a partir de 7 dias antes) e também no dia em que o tempo acaba. Na tela de apoio, dá para ver sempre quantos dias faltam, e renovar antes soma ao tempo que você já tem.', 'Quem já foi Apoiador recebe, no fim das partidas, o convite para voltar.'] },
   { v: '3.37.4', data: '21/10/2026', itens: ['Seja um Apoiador: contribua para que a tradição do dominó continue viva. A tela de apoio conta o que a sua doação mantém: atualizações, mesas novas, campeonatos e a diversão da turma.'] },
   { v: '3.37.3', data: '21/10/2026', itens: ['Tela de entrada com a frase "O dominó das calçadas, agora em qualquer lugar."', 'No início, uma estrela ★ ao lado do seu nome enquanto você é Apoiador (depois, fica o selo de doador ♥). Toque nela para abrir o Apoie o jogo.'] },
@@ -4556,7 +4575,12 @@ function zoomAbrir() {
 }
 function zoomFechar() { sumir($('#zoom'), 200); zPtr.clear(); zGesto = null; }
 $('#lupa').addEventListener('click', e => { e.stopPropagation(); zoomAbrir(); });
-$('#boardWrap').addEventListener('click', e => { if (!e.target.closest('.lupa')) zoomAbrir(); });
+// 3.38.1 (bug do dono): tocar na ponta para jogar a pedra escolhida também abria a mesa ampliada por cima, e a pedra só
+// aparecia encaixada depois de fechar. Tocar numa ponta (ou com uma pedra escolhida na mão) não abre mais o zoom.
+$('#boardWrap').addEventListener('click', e => {
+  if (e.target.closest('.lupa') || e.target.closest('.zone') || pedraEscolhida()) return;
+  zoomAbrir();
+});
 $('#zoomFechar').addEventListener('click', zoomFechar);
 $('#zoomMais').addEventListener('click', () => zoomCentro(2));
 $('#zoomMenos').addEventListener('click', () => zoomCentro(0.5));
@@ -5225,6 +5249,7 @@ function receberOnline(m) {
       else if (screen === 'home') renderHome();
       return;
     }
+    if (m.cod === 'poucos') { toast(`Para começar a mesa com os amigos, precisa de pelo menos ${m.min || 2} pessoas.`); if (screen === 'sala') renderSala(); return; }
     if (m.cod === 'mudou' || m.cod === 'jogada' || m.cod === 'vez') {
       ON.otimista = null;
       if (ON.vista && ON.vista.jogo) { G = girar(ON.vista.jogo, ON.vista.minha); render(); }
@@ -5529,11 +5554,20 @@ function renderSala() {
   if (pub) {
     $('#salaDica').textContent = 'Quem chegar agora senta nas cadeiras vazias. Quem senta na sua frente é o seu parceiro.';
     $('#salaFaltam').textContent = textoRapida(v);
-    $('#salaComecar').textContent = 'Começar agora';
+    $('#salaComecar').textContent = 'Começar agora'; $('#salaComecar').disabled = false; $('#salaSozinho').hidden = true;
     ON.contaT = setInterval(() => { if (screen === 'sala' && ON.vista === v) $('#salaFaltam').textContent = textoRapida(v); else clearInterval(ON.contaT); }, 1000);
     return;
   }
   $('#salaDica').textContent = 'Toque numa cadeira vazia para trocar de lugar. Quem senta na sua frente é o seu parceiro.';
+  // 3.38.1: mesa com os amigos só começa com pelo menos 2 pessoas (o servidor diz quantas: minGente)
+  const gente = v.cad.filter(c => c && !c.bot).length, falta = Math.max(0, (v.minGente || 1) - gente);
+  $('#salaComecar').disabled = !!falta; $('#salaSozinho').hidden = !falta;
+  if (falta) {
+    ON.armado = false;
+    $('#salaComecar').textContent = 'Esperando um amigo';
+    $('#salaFaltam').textContent = `Para começar, precisa de pelo menos mais ${falta === 1 ? '1 pessoa' : falta + ' pessoas'}. Mande o número da mesa para a turma.`;
+    return;
+  }
   $('#salaFaltam').textContent = vazias ? `Faltam ${vazias === 1 ? '1 pessoa' : vazias + ' pessoas'}. Se começar agora, a turma do bairro joga nas cadeiras vazias.` : 'Mesa completa! Pode começar.';
   if (!vazias) ON.armado = false;
   $('#salaComecar').textContent = ON.armado ? 'Toque de novo: começar com a turma' : 'Começar';
@@ -5552,6 +5586,9 @@ $('#salaComecar').addEventListener('click', () => {
   mandar({ t: 'comecar' });
 });
 $('#salaSair').addEventListener('click', () => { sairDaMesa(); show('home'); toast('Você saiu da mesa.'); });
+// 3.38.1: sozinho na mesa com os amigos — sai dela e vai jogar na Mesa rápida ou offline
+$('#salaIrRapida').addEventListener('click', () => { track('sala-sozinho-rapida'); sairDaMesa(); show('home'); mesaRapida(); });
+$('#salaIrOffline').addEventListener('click', () => { track('sala-sozinho-offline'); sairDaMesa(); show('home'); setTimeout(() => $('#goOffline').click(), 60); });
 $('#salaBack').addEventListener('click', () => show('home'));   // continua sentado; volta pelo cartão "Voltar para a mesa"
 $('#salaConvite').addEventListener('click', () => track('mesa-online-convite'));
 
@@ -10103,7 +10140,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.38-f4eabd99';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.38.1-b62e1c07';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
