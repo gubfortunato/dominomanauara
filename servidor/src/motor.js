@@ -532,5 +532,15 @@ function nomeOfensivo(nome) {
   const palavras = base.split(/[^a-z]+/).filter(Boolean);
   return NOME_RUIM_PALAVRA.some(w => tudo === w || tudoJ === junta(w) || palavras.some(p => p === w || junta(p) === junta(w)));
 }
+// 3.30: apelido genérico ("Anonimous", "Jogador", "Teste", "aaa"): o app pede um apelido de verdade (é assim que a
+// turma chama a pessoa na mesa). Só o perfil recusa; quem já estava com um desses recebe o pedido uma vez.
+const NOME_GENERICO = ['anonimous', 'anonymous', 'anonimo', 'anonima', 'anonimus', 'anonymus', 'anonimos', 'anon', 'anonimato', 'desconhecido',
+  'desconhecida', 'jogador', 'jogadora', 'player', 'usuario', 'usuaria', 'user', 'teste', 'test', 'testando', 'visitante', 'convidado',
+  'convidada', 'guest', 'ninguem', 'nobody', 'fulano', 'fulana', 'sicrano', 'beltrano', 'nome', 'apelido', 'meunome', 'seila', 'qualquer',
+  'asdf', 'qwerty', 'abc', 'xyz', 'eu', 'semnome', 'noname'];
+function nomeGenerico(nome) {
+  const t = String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+  return t.length < 2 || /^(.)\1+$/.test(t) || NOME_GENERICO.includes(t);
+}
 const BOT_NAMES = ["Raimundo", "Nonato", "Socorro", "Tonhão", "Chiquinho", "Graça", "Tião", "Conceição", "Bené", "Rosinha", "Zeca", "Arlindo", "Cleide", "Juca", "Lucinha", "Mané", "Dico", "Nazaré", "Dita", "Piaba", "Chica", "Curica", "Dorinha", "Valdir", "Zuleide", "Deco", "Tetê", "Dodó", "Ciça"];
 export { TEAM, TARGET, tkey, isDbl, pips, newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, botForte, reacaoRobo, openEnds, tableSum, nomeOfensivo, BOT_NAMES, pedirPonto };

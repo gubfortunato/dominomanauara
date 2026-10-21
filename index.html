@@ -1818,6 +1818,25 @@ body.assistindo #scrGame.game{padding-bottom:calc(env(safe-area-inset-bottom,0px
 .rk-vazio b{color:var(--fg)}
 .rk-meu{margin:0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--nos) 10%,var(--bg));font-size:14px;text-align:center}
 .rk-sair{justify-self:center;font-size:13px}
+/* 3.30: Área do administrador — "Agora" no topo e os cartões em grupos */
+.dn-agora{gap:12px}
+.dn-ag-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.dn-ag-top .ck{display:inline-flex;align-items:center;gap:8px}
+.dn-ag-top small{font-size:12px;color:var(--wood-muted)}
+.dn-ag-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dn-ag{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;padding:12px 14px;border-radius:14px;border:0;background:rgba(255,255,255,.07);color:inherit;font:inherit;text-align:left}
+button.dn-ag{cursor:pointer;box-shadow:inset 0 0 0 1.5px rgba(243,192,99,.28)}
+button.dn-ag:active{transform:scale(.98)}
+.dn-ag b{font-family:var(--font-display);font-weight:400;font-size:32px;line-height:1;font-variant-numeric:tabular-nums}
+.dn-ag span{font-size:14px;font-weight:700}
+.dn-ag small{font-size:12.5px;color:var(--wood-muted);min-height:1.2em;overflow-wrap:anywhere}
+.dn-ag-linha{margin:0;font-size:14.5px}
+.dn-ag-ver{justify-self:start;border:0;background:none;padding:2px 0;color:var(--glow);font:inherit;font-size:14.5px;font-weight:800;cursor:pointer}
+.dn-grupo{margin:12px 4px -4px;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.dn-tec{font-size:13px;color:var(--muted)}
+.dn-tec summary{cursor:pointer;font-weight:700;padding:4px 0}
+.dn-pag .mt-nums b{font-size:22px;white-space:nowrap}
+.dn-jog-mais{justify-self:start;font-weight:800}
 </style>
 </head>
 <body>
@@ -2196,8 +2215,8 @@ body.assistindo #scrGame.game{padding-bottom:calc(env(safe-area-inset-bottom,0px
     <div><p class="kicker">Área do administrador</p><h2 class="brand" style="font-size:30px">Como está a mesa</h2></div>
     <a class="dn-open wood" id="dnOpen" href="#" target="_blank" rel="noopener" hidden>
       <span class="ck">Números do jogo</span>
-      <b>Ver quem está online e o movimento</b>
-      <small>Abre o painel do Umami: online agora, visitas, o que fizeram no jogo e as cidades.</small>
+      <b>Visitas, cidades e o que fizeram</b>
+      <small>Abre o painel do Umami, fora do app: visitas, o que fizeram no jogo e de onde jogam.</small>
       <span class="dn-open-go">Abrir os números ›</span>
     </a>
     <div class="dn-live wood" id="dnLive">
@@ -2858,6 +2877,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.30', data: '20/10/2026', itens: ['Apelido de verdade: nomes genéricos como "Anônimo", "Jogador" ou "Teste" não valem mais. Escolha como a turma te chama.'] },
   { v: '3.29.2', data: '20/10/2026', itens: ['A bolinha vermelha da aba Calçada agora fica sempre acesa e pulsando.'] },
   { v: '3.29.1', data: '20/10/2026', itens: ['Assistir no app instalado no iPhone: as pedras de quem está embaixo apareciam no meio da mesa, por cima do jogo. Agora ficam no lugar delas.'] },
   { v: '3.29', data: '20/10/2026', itens: ['Ranking da calçada: na aba Calçada, os 20 que mais ganharam partidas na mesa online na semana e no mês, e a sua posição.', 'Conquistas à vista: no Perfil, a próxima conquista com a barrinha e o prêmio; no Jogar, a próxima no cartão do nível; e no fim da mão, quando falta pouco.', 'Os níveis ficaram mais difíceis de subir, principalmente os altos. Ninguém perdeu o nível que já tinha.'] },
@@ -3365,6 +3385,16 @@ function nomeOfensivo(nome) {
   const palavras = base.split(/[^a-z]+/).filter(Boolean);
   return NOME_RUIM_PALAVRA.some(w => tudo === w || tudoJ === junta(w) || palavras.some(p => p === w || junta(p) === junta(w)));
 }
+// 3.30: apelido genérico ("Anonimous", "Jogador", "Teste", "aaa"): o app pede um apelido de verdade (é assim que a
+// turma chama a pessoa na mesa). Só o perfil recusa; quem já estava com um desses recebe o pedido uma vez.
+const NOME_GENERICO = ['anonimous', 'anonymous', 'anonimo', 'anonima', 'anonimus', 'anonymus', 'anonimos', 'anon', 'anonimato', 'desconhecido',
+  'desconhecida', 'jogador', 'jogadora', 'player', 'usuario', 'usuaria', 'user', 'teste', 'test', 'testando', 'visitante', 'convidado',
+  'convidada', 'guest', 'ninguem', 'nobody', 'fulano', 'fulana', 'sicrano', 'beltrano', 'nome', 'apelido', 'meunome', 'seila', 'qualquer',
+  'asdf', 'qwerty', 'abc', 'xyz', 'eu', 'semnome', 'noname'];
+function nomeGenerico(nome) {
+  const t = String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+  return t.length < 2 || /^(.)\1+$/.test(t) || NOME_GENERICO.includes(t);
+}
 // No aparelho do dono, com "Não contar meus acessos" ligado, nada é contado.
 function semContar() { try { const d = JSON.parse(localStorage.getItem('dmz-dono') || 'null'); return !!(d && d.semContar); } catch (e) { return false; } }
 function track(ev, data) {
@@ -3549,6 +3579,7 @@ $('#saveProfile').addEventListener('click', () => {
   const name = $('#nameInput').value.replace(/\s+/g, ' ').trim().slice(0, 14);
   if (!name) { toast('Escreva seu nome ou apelido.'); $('#nameInput').focus(); return; }
   if (nomeOfensivo(name)) { toast('Esse apelido não pode ser usado aqui. Escolha outro.'); $('#nameInput').focus(); $('#nameInput').select(); return; }
+  if (nomeGenerico(name)) { toast('Escolha um apelido de verdade: é assim que a turma vai te chamar na mesa.'); $('#nameInput').focus(); $('#nameInput').select(); return; }
   if (!draft.idade) { toast('Escolha a sua faixa de idade.'); $('#idadeSeg').scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
   if (draft.idade === 'menor') { draft.photo = null; if (draft.av === 'foto') draft.av = null; }
   const comuns = AVATARS.filter(avatarComum);
@@ -8057,6 +8088,13 @@ show = function (name) {
       if (screen !== 'profile') openProfile('home');
       return;
     }
+    // 3.30: apelido genérico ("Anonimous", "Jogador"...): pede um apelido de verdade, uma vez só
+    if (name === 'home' && profile && profile.name && nomeGenerico(profile.name) && !store.get('dmz-nome-pedido') && screen !== 'profile') {
+      store.set('dmz-nome-pedido', '1');
+      openProfile('home');
+      setTimeout(() => toast('Como a turma te chama? Escolha um apelido para aparecer na mesa.'), 350);
+      return;
+    }
   } catch (e) {}
   return showNomeOk.apply(this, arguments);
 };
@@ -8956,6 +8994,127 @@ async function rkFora(fora) {
   setInterval(() => { if (screen === 'calcada' && document.visibilityState === 'visible') rkBuscar(); }, 15000);
 })();
 
+// ===== Área do administrador arrumada (3.30) =====
+// Pedido do dono: "ajustar/melhorar a tela adm". Antes, o primeiro cartão só levava para o Umami (fora do app) e os
+// números do nosso servidor ficavam espalhados na Calçada. Agora:
+// 1) no topo, "Agora": quantos estão no app, mesas jogando, partidas de hoje e quantos abriram o app nas últimas 24 h,
+//    o líder do ranking da semana e os apoios do mês — tudo do nosso servidor, atualizando sozinho;
+// 2) o resto em grupos, do mais urgente ao menos: mensagens e moderação, dinheiro, falar com os jogadores, números do
+//    Umami e ajustes deste aparelho; as medidas da tela (técnico) ficam recolhidas.
+const DN_GRUPOS = [
+  ['Mensagens e moderação', ['dnMsgs', 'dnJog', 'dnFotos']],
+  ['Dinheiro', ['dnPag', 'dnPatroCard']],
+  ['Falar com os jogadores', ['dnAvisos']],
+  ['Números do Umami', ['dnOpen', 'dnLive', 'dnRange', 'dnBody', 'dnErr', 'dnKey', 'dnFull']],
+  ['Ajustes deste aparelho', ['dnSemContar', 'dnTestePag', 'dnKeyTrocar', 'dnSair', 'dnTela']]
+];
+const DN_AG = { em: 0, buscando: false, timer: null };
+(function () {
+  const scr = $('#scrDono'); if (!scr) return;
+  const cab = scr.querySelector('.kicker') && scr.querySelector('.kicker').parentElement;
+  if (!cab) return;
+  cab.insertAdjacentHTML('afterend', `<section class="dn-list wood dn-agora" id="dnAgora" aria-labelledby="dnAgTit">
+    <div class="dn-ag-top"><span class="ck" id="dnAgTit"><span class="vivo-ponto vivo-ponto-p" aria-hidden="true"></span>Agora</span><small id="dnAgUpd"></small></div>
+    <div class="dn-ag-grid">
+      <button type="button" class="dn-ag" data-ir="calcada"><b id="dnAgOn">–</b><span>no app agora</span><small id="dnAgOnD"></small></button>
+      <button type="button" class="dn-ag" data-ir="calcada"><b id="dnAgMesas">–</b><span>mesas jogando</span><small id="dnAgMesasD"></small></button>
+      <div class="dn-ag"><b id="dnAgPart">–</b><span>partidas hoje</span><small id="dnAgPartD"></small></div>
+      <div class="dn-ag"><b id="dnAg24">–</b><span>pessoas em 24 h</span><small id="dnAg24D"></small></div>
+    </div>
+    <p class="dn-ag-linha" id="dnAgLider" hidden></p>
+    <p class="dn-ag-linha" id="dnAgDin" hidden></p>
+    <button type="button" class="dn-ag-ver" data-ir="calcada">Ver as mesas e quem está no app <span aria-hidden="true">›</span></button>
+  </section>`);
+  $('#dnAgora').addEventListener('click', e => { const b = e.target.closest('[data-ir]'); if (b) { track('dono-agora-calcada'); show(b.dataset.ir); } });
+  // grupos, na ordem
+  let depois = $('#dnAgora');
+  DN_GRUPOS.forEach(([titulo, ids], gi) => {
+    const h = document.createElement('p'); h.className = 'dn-grupo'; h.id = 'dnGrupo' + gi; h.textContent = titulo;
+    depois.after(h); depois = h;
+    ids.forEach(id => {
+      let el = $('#' + id); if (!el) return;
+      if (el.matches('input')) el = el.closest('label') || el;
+      if (id === 'dnTela') {
+        const d = document.createElement('details'); d.className = 'dn-tec'; d.innerHTML = '<summary>Medidas da tela (técnico)</summary>';
+        depois.after(d); d.appendChild(el); depois = d; return;
+      }
+      depois.after(el); depois = el;
+    });
+  });
+})();
+// um grupo some quando tudo dentro dele está escondido
+function dnGruposVer() {
+  DN_GRUPOS.forEach(([, ids], gi) => {
+    const h = $('#dnGrupo' + gi); if (!h) return;
+    h.hidden = !ids.some(id => { let el = $('#' + id); if (!el) return false; if (el.matches('input')) el = el.closest('label') || el; if (id === 'dnTela') el = el.closest('details') || el; return !el.hidden; });
+  });
+}
+const dnN = (v, um, varios) => `${v} ${v === 1 ? um : varios}`;
+async function dnAgora(forca) {
+  if (!CONFIG.api || !souAdmin() || DN_AG.buscando || (!forca && Date.now() - DN_AG.em < 15000)) return;
+  DN_AG.buscando = true; DN_AG.em = Date.now();
+  const [pres, mesas, hoje, rk] = await Promise.all([
+    dnMsgPedir('/dono/presenca').catch(() => null),
+    dnMsgPedir('/dono/mesas').catch(() => null),
+    fetch(CONFIG.api + '/vivo/hoje', { cache: 'no-store' }).then(r => r.json()).catch(() => null),
+    fetch(CONFIG.api + '/ranking', { cache: 'no-store' }).then(r => r.json()).catch(() => null)
+  ]);
+  DN_AG.buscando = false;
+  try {
+    if (pres) {
+      const l = pres.agora || [], n = l.length + (pres.menores || 0) + (pres.semCadastro || 0);
+      const naMesa = l.filter(x => x.tela === 'game').length;
+      $('#dnAgOn').textContent = n;
+      $('#dnAgOnD').textContent = n ? [naMesa ? `${naMesa} jogando` : '', pres.menores ? dnN(pres.menores, 'menor', 'menores') : '', pres.semCadastro ? `${pres.semCadastro} na entrada` : ''].filter(Boolean).join(' · ') || 'fora da mesa' : 'ninguém agora';
+      const d = pres.dia;
+      $('#dnAg24').textContent = d ? d.n : '–';
+      $('#dnAg24D').textContent = d && d.menores ? dnN(d.menores, 'menor de 18', 'menores de 18') : '';
+    }
+    if (mesas) {
+      const ms = mesas.mesas || [], hum = ms.reduce((s, v) => s + (v.cad || []).filter(c => c && !c.bot).length, 0);
+      const rap = ms.filter(v => v.publica !== false).length;
+      $('#dnAgMesas').textContent = ms.length;
+      $('#dnAgMesasD').textContent = ms.length ? `${dnN(hum, 'pessoa', 'pessoas')} · ${rap} ${rap === 1 ? 'rápida' : 'rápidas'}` : 'nenhuma agora';
+    }
+    if (hoje) {
+      $('#dnAgPart').textContent = hoje.partidas || 0;
+      $('#dnAgPartD').textContent = [hoje.galos ? dnN(hoje.galos, 'galo', 'galos') : '', hoje.carrocas ? dnN(hoje.carrocas, 'carroça', 'carroças') : ''].filter(Boolean).join(' · ');
+    }
+    const top = rk && rk.semana && rk.semana.top && rk.semana.top[0], li = $('#dnAgLider');
+    li.hidden = !top;
+    if (top) li.innerHTML = `🥇 Líder da semana: <b>${esc(top.nome)}</b> · ${dnN(top.ganhas, 'vitória', 'vitórias')}`;
+    const mes = ($('#dnPagMes') || {}).textContent || '', at = ($('#dnPagAtivos') || {}).textContent || '', din = $('#dnAgDin');
+    din.hidden = !CONFIG.pagamentos || !mes;
+    if (!din.hidden) din.innerHTML = `💰 Apoios este mês: <b>${esc(mes)}</b>${at ? ` · ${esc(at)} ${at === '1' ? 'plano ativo' : 'planos ativos'}` : ''}`;
+    const agora = new Date();
+    $('#dnAgUpd').textContent = `atualizado ${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+  } catch (e) {}
+  dnGruposVer();
+}
+const renderDonoPainel = renderDono;
+renderDono = function () {
+  const r = renderDonoPainel.apply(this, arguments);
+  try {
+    dnGruposVer(); dnAgora(true); setTimeout(dnGruposVer, 1500); setTimeout(dnAgora, 2500, true);   // os apoios chegam um pouco depois
+    clearInterval(DN_AG.timer);
+    DN_AG.timer = setInterval(() => { if (screen !== 'dono') { clearInterval(DN_AG.timer); return; } if (document.visibilityState === 'visible') dnAgora(); }, 20000);
+  } catch (e) {}
+  return r;
+};
+// lista de jogadores da mesa online: mostra 5 e um "Ver todos"
+const DN_JOG_VER = 5; let dnJogTodos = false;
+function dnJogDobrar() {
+  const lista = $('#dnJogLista'); if (!lista) return;
+  const lis = [...lista.children].filter(li => !li.classList.contains('dn-jog-vazio'));
+  let b = $('#dnJogMais');
+  if (!b) { lista.insertAdjacentHTML('afterend', '<button type="button" class="linkbtn dn-jog-mais" id="dnJogMais" hidden></button>'); b = $('#dnJogMais'); b.addEventListener('click', () => { dnJogTodos = !dnJogTodos; dnJogDobrar(); }); }
+  lis.forEach((li, i) => { li.hidden = !dnJogTodos && i >= DN_JOG_VER; });
+  b.hidden = lis.length <= DN_JOG_VER;
+  b.textContent = dnJogTodos ? 'Mostrar menos' : `Ver todos (${lis.length})`;
+}
+const dnJogCarregarPainel = dnJogCarregar;
+dnJogCarregar = async function () { const r = await dnJogCarregarPainel.apply(this, arguments); try { dnJogDobrar(); } catch (e) {} return r; };
+
 
 // ---- Desenho das peças ----
 function tileSVG(p, cls, shadow) {
@@ -9538,7 +9697,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.29.2-62b3a510';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.30-1df4b26e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

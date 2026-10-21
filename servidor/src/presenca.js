@@ -31,8 +31,11 @@ export async function donoPresenca(req, env, origin, h) {
     FROM presenca p WHERE p.visto_em > ? ORDER BY p.visto_em DESC LIMIT 120`).bind(Date.now() - 50000).all();
   const lista = results || [];
   // 3.26.1: quem está na entrada sem cadastro (sem apelido) entra só na contagem, como os menores
+  // 3.30: quantos abriram o app nas últimas 24 h (a presença guarda 1 dia; só a contagem, sem nomes)
+  const dia = await env.DB.prepare('SELECT COUNT(*) AS n, SUM(CASE WHEN menor THEN 1 ELSE 0 END) AS menores FROM presenca WHERE visto_em > ?').bind(Date.now() - 86400000).first();
   return h.json({ agora: lista.filter(x => !x.menor && x.nome), menores: lista.filter(x => x.menor).length,
-    semCadastro: lista.filter(x => !x.menor && !x.nome).length, agoraServidor: Date.now() }, 200, origin);
+    semCadastro: lista.filter(x => !x.menor && !x.nome).length, agoraServidor: Date.now(),
+    dia: { n: (dia && dia.n) || 0, menores: (dia && dia.menores) || 0 } }, 200, origin);
 }
 // No agendado: some quem não aparece há mais de 1 dia
 export async function limparPresenca(env) {
