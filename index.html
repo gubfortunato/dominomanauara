@@ -1856,6 +1856,17 @@ button.dn-ag:active{transform:scale(.98)}
 .dn-jog-mais{justify-self:start;font-weight:800}
 .vivo-bloq{margin-left:6px;padding:2px 10px;border-radius:999px;font-size:12.5px;font-weight:800;color:#e5484d;box-shadow:inset 0 0 0 1.4px currentColor}
 .vivo-tx small.vivo-conta{font-weight:600;color:color-mix(in srgb,var(--fg) 80%,transparent)}
+/* 3.33 (pedido do dono): "Mesa oferecida por" e a logo do patrocinador mais visíveis na mesa (antes, 32% de opacidade) */
+.mesa-patro{opacity:.85;padding:3px 10px 3px 6px;border-radius:999px;background:rgba(0,0,0,.32);font-size:12.5px;bottom:6px}
+.mesa-patro img{max-height:24px;filter:none}
+.mesa-patro img{background:rgba(255,255,255,.88);border-radius:6px;padding:2px 3px}
+/* 3.33: patrocinador na festa de vitória/derrota */
+.festa-patro{width:100%;max-width:340px}
+.festa-patro .res-patro{margin-top:4px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.82);font-size:13px}
+.festa-patro .res-patro b{color:#fff}
+.festa-patro .res-patro img{background:rgba(255,255,255,.9);border-radius:6px;padding:2px 3px}
+.festa-patro .res-patro.has-banner{background:none;border:0}
+.festa-patro .res-patro.has-banner .sp-k{color:rgba(255,255,255,.75)}
 </style>
 </head>
 <body>
@@ -2896,6 +2907,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.33', data: '21/10/2026', itens: ['O nome e a logo de quem oferece a mesa ficaram mais visíveis.', 'O patrocinador aparece também na tela de vitória e de derrota.'] },
   { v: '3.32', data: '20/10/2026', itens: ['Mesas novas: Usina Chaminé e Anavilhanas.', 'O Centro Histórico ganhou desenho novo, de cena inteira, como as outras mesas.', 'Na Calçada, cada jogador da mesa aparece com uma bolinha verde.', 'Parar de assistir uma partida volta direto, sem a mesa piscar.'] },
   { v: '3.31', data: '20/10/2026', itens: ['Prêmios das conquistas mais de Manaus: camisa da vitória-régia, camisa do Encontro das Águas, camisa de onça-pintada, arara no ombro e cacho de guaraná. Os óculos escuros e dourados ficaram liberados para todos.', 'Copa 357 Anos (24/10): quem jogar no aniversário de Manaus ganha a fatia de bolo com vela.', 'Na lista de conquistas, as camisas aparecem grandes, para ver o prêmio direito.', 'A bolinha da aba Calçada aparece só quando tem mesa jogando.', 'Mesa um pouco maior no celular.'] },
   { v: '3.30', data: '20/10/2026', itens: ['Apelido de verdade: nomes genéricos como "Anônimo", "Jogador" ou "Teste" não valem mais. Escolha como a turma te chama.'] },
@@ -6209,12 +6221,19 @@ runDeal = function (after) { marcaDaMesa(true); return runDealPatro(after); };
 // Fim de partida (o resultado chama sponsorResult quando uma partida de 200 termina)
 const vistosFim = new WeakSet();
 sponsorResult = function () {
+  // 3.33: a festa (vitória/derrota) e o resumo mostram o mesmo patrocinador da partida
+  if (G && G.result && G.result.patroHtml != null) return G.result.patroHtml;
+  const html = sponsorResultEscolhe();
+  try { if (G && G.result) G.result.patroHtml = html; } catch (e) {}
+  return html;
+};
+function sponsorResultEscolhe() {
   const p = patroPara('fim'); if (!p) return '';
   if (!p.casa && G && G.result && !vistosFim.has(G.result)) { vistosFim.add(G.result); contarPatro(p.id, 'fim'); }
   const href = p.link ? ` href="${esc(p.link)}" target="_blank" rel="noopener"` : '';
   if (temBanner(p)) return `<a class="res-patro has-banner"${href}${atrPatro(p, 'fim')}><span class="sp-k">Oferecimento</span>${bannerSlides(p)}</a>`;
   return `<a class="res-patro"${href}${atrPatro(p, 'fim')}>${p.logo ? `<img src="${esc(p.logo)}" alt="">` : ''}<span>Oferecimento <b>${esc(p.nome)}</b>${p.texto ? ` · ${esc(p.texto)}` : ''}</span></a>`;
-};
+}
 // Tela "Monte a mesa"
 function htmlPatroMontar() {
   const p = patroPara('montar'); if (!p) return '';
@@ -6416,6 +6435,19 @@ renderDono = function () {
   renderDonoPatro();
   const c = $('#dnPatroCard');
   c.hidden = !CONFIG.api || !dono || !dono.admin;
+};
+
+// 3.33 (pedido do dono): o patrocinador aparece também na tela de vitória e de derrota da dupla
+const festaPatroBase = festa;
+festa = function () {
+  festaPatroBase.apply(this, arguments);
+  try {
+    let box = $('#festaPatro');
+    if (!box) { $('#festaOk').insertAdjacentHTML('beforebegin', '<div class="festa-patro" id="festaPatro"></div>'); box = $('#festaPatro'); }
+    box.innerHTML = sponsorResult();
+    box.hidden = !box.innerHTML;
+    if (typeof readySlides === 'function') readySlides();
+  } catch (e) {}
 };
 
 // ===== Folhas que sobem de baixo (regras, menu, reações, avisos): × no alto e arrastar para baixo para fechar =====
@@ -9757,7 +9789,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.32-3004ba47';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.33-742a096e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
