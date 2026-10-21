@@ -543,4 +543,4 @@ function nomeGenerico(nome) {
   return t.length < 2 || /^(.)\1+$/.test(t) || NOME_GENERICO.includes(t);
 }
 const BOT_NAMES = ["Raimundo", "Nonato", "Socorro", "Tonhão", "Chiquinho", "Graça", "Tião", "Conceição", "Bené", "Rosinha", "Zeca", "Arlindo", "Cleide", "Juca", "Lucinha", "Mané", "Dico", "Nazaré", "Dita", "Piaba", "Chica", "Curica", "Dorinha", "Valdir", "Zuleide", "Deco", "Tetê", "Dodó", "Ciça"];
-export { TEAM, TARGET, tkey, isDbl, pips, newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, botForte, reacaoRobo, openEnds, tableSum, nomeOfensivo, BOT_NAMES, pedirPonto };
+export { TEAM, TARGET, tkey, isDbl, pips, newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, botForte, reacaoRobo, openEnds, tableSum, nomeOfensivo, nomeGenerico, BOT_NAMES, pedirPonto };

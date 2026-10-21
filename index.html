@@ -1363,6 +1363,9 @@ html[data-mesa="ponte"] .table.wood{--wood-1:#0a1424;--wood-2:#0a1424;--wood-edg
 .obg-ponte{padding-top:10px;border-top:1px solid var(--line)}
 .sc-heart{font-style:normal;color:#c2453a}
 .seat .sn[data-selo]::after{content:attr(data-selo);color:#f0b45e}
+/* 3.37: coroa do Rei da Calçada em cima do avatar (na mesa e na sala) */
+.seat[data-rei] .av::before{content:'👑';position:absolute;top:-14px;left:50%;transform:translateX(-50%) rotate(-12deg);font-size:19px;line-height:1;z-index:3;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4));pointer-events:none}
+body:not(.laterais) .table .seat[data-rei] .av::before{top:-9px;left:-7px;transform:rotate(-28deg);font-size:15px}   /* cadeira compacta: no canto, sem cobrir a etiqueta */
 
 /* Foto na mesa online */
 .foto-online{cursor:pointer;object-fit:cover}
@@ -1732,7 +1735,9 @@ body.com-abas #profileBack{display:none}
 .vivo-vazio{display:grid;gap:4px;padding:16px;text-align:center;justify-items:center}
 .vivo-vazio b{color:var(--fg);font-size:16px;font-weight:800}
 .vivo-vazio span{font-size:14px;line-height:1.4}
-.calc-abrir{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;width:100%;min-height:48px;padding:11px 14px;border-radius:14px;border:1px dashed var(--line);background:transparent;color:var(--muted);font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.calc-abrir{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;flex-shrink:0;gap:4px 12px;width:100%;min-height:48px;padding:11px 14px;border-radius:14px;border:1px dashed var(--line);background:transparent;color:var(--muted);font:inherit;font-size:14px;text-align:left;cursor:pointer}
+/* 3.37: flex-shrink:0 — a tela da Calçada é uma coluna flex; com a lista grande, o cartão encolhia até os 48 px do
+   min-height e o "Abrir uma mesa rápida" ficava em cima da borda tracejada */
 .calc-abrir .ca-go{color:var(--nos);font-weight:800;white-space:nowrap}
 .calc-abrir.so-acao{justify-content:center}
 .calc-abrir:active{transform:scale(.99)}
@@ -1838,6 +1843,20 @@ body.assistindo #scrGame.game{padding-bottom:calc(env(safe-area-inset-bottom,0px
 .rk-vazio b{color:var(--fg)}
 .rk-meu{margin:0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--nos) 10%,var(--bg));font-size:14px;text-align:center}
 .rk-sair{justify-self:center;font-size:13px}
+/* 3.37: inicial no lugar do avatar, Rei da Calçada, coroa e aviso do ranking por pontos */
+.rk-face i.rk-ini{display:grid;place-items:center;font-style:normal;font-weight:800;font-size:16px;color:var(--fg);background:color-mix(in srgb,var(--nos) 18%,var(--bg))}
+.rk-rei{display:grid;grid-template-columns:44px minmax(0,1fr);align-items:center;gap:12px;padding:10px 12px;border-radius:14px;
+  background:linear-gradient(135deg,color-mix(in srgb,#f0b45e 38%,var(--bg)),color-mix(in srgb,#f0b45e 14%,var(--bg)));border:1.5px solid color-mix(in srgb,#c98a2b 55%,var(--line))}
+.rk-rei[hidden]{display:none}
+.rk-rei .rk-face img,.rk-rei .rk-face i{width:44px;height:44px;box-shadow:0 0 0 2.5px #f0b45e}
+.rk-rei-tx{display:grid;min-width:0;gap:1px}
+.rk-rei-tx > small:first-child{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:color-mix(in srgb,#8a5a12 80%,var(--fg))}
+.rk-rei-tx b{font-size:17px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk-rei-tx > small:last-child{font-size:12px;color:var(--muted);font-weight:600}
+.rk-coroa{font-size:14px}
+.rk-aviso{margin:0;padding:10px 12px;border-radius:12px;border:1.5px dashed color-mix(in srgb,var(--nos) 55%,var(--line));background:color-mix(in srgb,var(--nos) 8%,var(--bg));font-size:13.5px;line-height:1.4}
+.rk-aviso[hidden]{display:none}
+.rk-aviso b{display:block;margin-bottom:2px}
 /* 3.30: Área do administrador — "Agora" no topo e os cartões em grupos */
 .dn-agora{gap:12px}
 .dn-ag-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
@@ -1865,6 +1884,9 @@ button.dn-ag:active{transform:scale(.98)}
 /* 3.35: mesa na sala, esperando começar (só o administrador vê) */
 .vivo-mesa.espera{opacity:.86;border-style:dashed}
 .vivo-sala{font-size:12px;font-weight:700;color:var(--muted)}
+/* 3.37: no perfil com foto, o avatar que os outros veem na mesa online */
+.nota-av{display:inline-block;width:22px;height:22px;border-radius:50%;vertical-align:-6px;margin:0 2px;box-shadow:0 0 0 1.5px var(--line)}
+.sc-coroa{position:absolute;top:-14px;left:50%;transform:translateX(-50%) rotate(-12deg);font-size:21px;font-style:normal;line-height:1;z-index:2;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4));pointer-events:none}
 </style>
 </head>
 <body>
@@ -2905,6 +2927,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.37', data: '21/10/2026', itens: ['Ranking da calçada por pontos, a partir da semana de 26/10: vitória contra pessoas vale +3, contra a turma do bairro +1 (só 3 por dia) e derrota contra pessoas tira 1. Contra a mesma pessoa, só 5 partidas por dia valem ponto.', 'Rei da Calçada: o 1º da semana ganha a coroa 👑 na mesa online durante a semana seguinte.', 'Experiência: contra a turma do bairro (jogo offline ou mesa sem nenhuma pessoa do outro lado), as jogadas valem metade. Contra pessoas, vale cheia.', 'Correção: quem usa foto no perfil aparecia sem rosto para os outros na mesa online e no ranking. Agora aparece com o avatar.', 'Apelido genérico (como "Anonimous") não aparece no ranking.', 'Correção: na Calçada, o "Abrir uma mesa rápida" ficava em cima da borda do quadro.'] },
   { v: '3.36', data: '21/10/2026', itens: ['Calçada mais limpa: o convite para abrir uma mesa rápida só aparece quando não tem mesa com lugar vago.'] },
   { v: '3.35.1', data: '21/10/2026', itens: ['A tela de vitória e de derrota voltou a ficar sem patrocinador.'] },
   { v: '3.35', data: '21/10/2026', itens: ['Prêmios novos: Pé-quente dá a farinha ovinha, Rei da batida dá a caldeira de bodó e Orgulho de Manaus dá um passeio no Encontro das Águas (fundo do avatar).', 'As camisas da vitória-régia, de onça-pintada e do Encontro das Águas ficaram liberadas para todos.', 'Administrador: na Calçada aparecem também as mesas na sala, esperando começar.'] },
@@ -3531,7 +3554,8 @@ $$('[data-go="home"]').forEach(b => b.addEventListener('click', () => show('home
 let draft = { name: '', av: null, photo: null, idade: null }, profileFrom = 'who';
 function openProfile(from) {
   profileFrom = from || 'who';
-  draft = { name: profile ? profile.name : '', av: profile ? profile.av : null, photo, idade: profile ? profile.idade || null : null, bairro: profile ? profile.bairro || '' : '' };
+  draft = { name: profile ? profile.name : '', av: profile ? profile.av : null, photo, idade: profile ? profile.idade || null : null, bairro: profile ? profile.bairro || '' : '',
+    avBase: profile ? (profile.av && profile.av !== 'foto' ? profile.av : profile.avBase || null) : null };   // 3.37: o avatar que vai para a mesa online quando o perfil usa foto
   if (draft.av === 'foto' && !draft.photo) draft.av = null;
   $('#nameInput').value = draft.name;
   show('profile');
@@ -3608,7 +3632,7 @@ function squareJPEG(file, size) {
 $('#photoInput').addEventListener('change', async e => {
   const f = e.target.files && e.target.files[0]; e.target.value = '';
   if (!f) return;
-  try { draft.photo = await squareJPEG(f, 240); draft.av = 'foto'; renderProfile(); }
+  try { draft.photo = await squareJPEG(f, 240); if (draft.av && draft.av !== 'foto') draft.avBase = draft.av; draft.av = 'foto'; renderProfile(); }
   catch (err) { toast('Não consegui abrir essa foto. Tente outra.'); }
 });
 $('#nameInput').addEventListener('input', e => { draft.name = e.target.value; });
@@ -3630,6 +3654,7 @@ $('#saveProfile').addEventListener('click', () => {
   }
   if (av === 'foto' && !photo) av = 'a1';
   profile = { name, av, idade: draft.idade }; me = name;
+  if (av === 'foto' && draft.avBase) profile.avBase = draft.avBase;
   if (draft.idade !== 'menor' && draft.bairro) profile.bairro = draft.bairro;
   if (draft.idade === 'menor' && avisosLigados()) desligarAvisos(true);
   store.set(PKEY, JSON.stringify(profile));
@@ -4960,7 +4985,17 @@ function meuId() {
   return id;
 }
 // Foto não sai do celular: na mesa online os outros veem o seu avatar desenhado.
-function meuAv() { const a = profile && avatarDe(profile.av); if (!a) return null; return avatarLivre(a) ? a.id : 'a1'; }
+// 3.37: quem escolheu foto no perfil manda para a mesa online o último avatar desenhado (ou um fixo, tirado do código do
+// aparelho). Antes ia vazio: no ranking, na Calçada e na cadeira da mesa os outros viam um círculo sem rosto.
+function avBaseDe(pr) {
+  if (!pr) return null;
+  if (pr.av && pr.av !== 'foto' && avatarDe(pr.av)) return pr.av;
+  if (pr.avBase && avatarDe(pr.avBase)) return pr.avBase;
+  const comuns = AVATARS.filter(avatarComum); let h = 0;
+  for (const ch of String(meuId())) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return comuns.length ? comuns[h % comuns.length].id : 'a1';
+}
+function meuAv() { const a = profile && avatarDe(avBaseDe(profile)); if (!a) return null; return avatarLivre(a) ? a.id : 'a1'; }
 function mesaGuardada() { return (store.get(MKEY) || '').match(/^\d{5}$/) ? store.get(MKEY) : null; }
 
 // ---------- Girar a mesa do servidor para o seu ponto de vista ----------
@@ -5257,6 +5292,7 @@ render = function () {
     el.classList.toggle('apoiador', !!c.apoiador);
     const sn = el.querySelector('.sn'), selo = (c.apoiador ? '★' : '') + '♥'.repeat(c.doador || 0);
     if (sn) { if (selo) sn.dataset.selo = ' ' + selo; else delete sn.dataset.selo; }
+    if (c.rei) el.dataset.rei = '1'; else delete el.dataset.rei;   // 3.37: coroa do Rei da Calçada em cima do avatar
   }
 };
 const leaveGameBase = leaveGame;
@@ -5419,7 +5455,7 @@ function renderSala() {
     const tag = `<span class="sc-tag ${pos === 2 ? 'par' : pos === 0 ? 'eu' : 'adv'}">${NOME_POS[pos]}</span>`;
     if (!c) return `<button type="button" class="sala-cad vazia ${POS_CLASS[pos]}" data-p="${p}">${tag}<span class="sc-face sc-vazia" aria-hidden="true">+</span><b>Cadeira vazia</b><small>Toque para sentar aqui</small></button>`;
     const face = pos === 0 ? faceImg(myFaceURI(), 'sc-img') : c.bot && botFaceURI(c.nome) ? faceImg(botFaceURI(c.nome), 'sc-img') : c.foto && !fotoEscondida(c.foto) ? fotoOnlineImg(c, 'sc-img') : (avatarDe(c.av) ? faceImg(avatarURI(avatarDe(c.av)), 'sc-img') : `<span class="sc-letra">${esc(c.nome[0] || '?')}</span>`);
-    return `<div class="sala-cad ${POS_CLASS[pos]}${c.on ? '' : ' fora'}${pos === 0 ? '' : fade(p)}">${tag}<span class="sc-face">${face}<i class="sc-on${c.on ? ' ok' : ''}" aria-hidden="true"></i></span><b>${esc(pos === 0 ? 'Você' : c.nome)}${c.apoiador ? ' <i class="sc-star" title="Apoiador">★</i>' : ''}${c.doador ? ` <i class="sc-heart" title="Doador">${'♥'.repeat(c.doador)}</i>` : ''}</b><small>${esc(salaSub(c, pos))}</small></div>`;
+    return `<div class="sala-cad ${POS_CLASS[pos]}${c.on ? '' : ' fora'}${pos === 0 ? '' : fade(p)}">${tag}<span class="sc-face">${face}${c.rei ? '<i class="sc-coroa" title="Rei da Calçada" aria-label="Rei da Calçada">👑</i>' : ''}<i class="sc-on${c.on ? ' ok' : ''}" aria-hidden="true"></i></span><b>${esc(pos === 0 ? 'Você' : c.nome)}${c.apoiador ? ' <i class="sc-star" title="Apoiador">★</i>' : ''}${c.doador ? ` <i class="sc-heart" title="Doador">${'♥'.repeat(c.doador)}</i>` : ''}</b><small>${esc(salaSub(c, pos))}</small></div>`;
   }).join('') + '<div class="sala-centro" aria-hidden="true"></div>';
   $$('#salaMesa .vazia').forEach(b => b.addEventListener('click', () => mandar({ t: 'sentar', cadeira: Number(b.dataset.p) })));
   const vazias = v.cad.filter(c => !c).length;
@@ -6763,8 +6799,13 @@ openProfile = function (from) {
 const renderProfileFoto = renderProfile;
 renderProfile = function () {
   renderProfileFoto();
-  if (CONFIG.api && draft.idade !== 'menor')
-    $('#fotoNota').textContent = 'A foto fica neste celular. Na mesa online, os outros veem o seu avatar' + (fotoPode() ? ', ou a sua foto se você ligar a opção abaixo.' : '. A foto aparece lá para quem apoia o jogo.');
+  if (CONFIG.api && draft.idade !== 'menor') {
+    const resto = fotoPode() ? ', ou a sua foto se você ligar a opção abaixo.' : '. A foto aparece lá para quem apoia o jogo.';
+    // 3.37: com foto no perfil, mostra qual avatar os outros veem na mesa online
+    const a = draft.av === 'foto' && typeof avBaseDe === 'function' ? avatarDe(avBaseDe({ av: null, avBase: draft.avBase })) : null;
+    if (a) $('#fotoNota').innerHTML = `A foto fica neste celular. Na mesa online, os outros veem este avatar <img class="nota-av" src="${avatarURI(a)}" alt="">${esc(resto)}`;
+    else $('#fotoNota').textContent = 'A foto fica neste celular. Na mesa online, os outros veem o seu avatar' + resto;
+  }
   renderFotoOnline();
 };
 $('#fotoOnlineSw').addEventListener('change', e => { draft.fotoOnline = e.target.checked; renderFotoOnline(); });
@@ -7940,6 +7981,15 @@ const XP_DO_NIVEL = n => 100 + 30 * (n - 1) + 5 * (n - 1) * (n - 1);
 const XP_DO_NIVEL_V1 = n => 100 + 20 * (n - 1);
 const XP_REGRAS = [['Mão jogada', 2], ['Mão ganha pela sua dupla', 3], ['Galo seu', 10], ['Batida sua', 10], ['Batida de carroça', 15],
   ['Partida ganha', 30], ['3 partidas ganhas seguidas', 20], ['Missões do dia completas', 50]];
+// 3.37 (o dono achou que o nível subia rápido demais): contra robôs — jogo offline, ou mesa online sem nenhuma pessoa do
+// outro lado — as jogadas valem metade da experiência. Contra pessoas, vale cheia. As missões do dia continuam +50.
+function contraGente() {
+  try { if (mode !== 'on' || !ON.vista || typeof cadDe !== 'function') return false; return [1, 3].some(pos => { const c = cadDe(pos); return !!(c && !c.bot && !c.saiu); }); }
+  catch (e) { return false; }
+}
+let xpMetade = false;
+// o aviso "contra a turma do bairro, vale metade" aparece nas 3 primeiras vezes, depois só no "Como ganhar experiência?"
+function xpMetadeAvisar() { try { const n = Number(store.get('dmz-xp-metade') || 0); if (n >= 3) return false; store.set('dmz-xp-metade', String(n + 1)); return true; } catch (e) { return false; } }
 // um título a cada 5 níveis (desde a 3.20.1 também no 25, 35 e 45, para nunca ficar muito tempo sem novidade)
 const TITULOS_NV = [[50, 'Lenda de Manaus'], [45, 'Cobra criada'], [40, 'Rei da calçada'], [35, 'Terror da mesa'], [30, 'Mestre da taberna'],
   [25, 'Fera do bairro'], [20, 'Galo de briga'], [15, 'Dono do bucho'], [10, 'Batedor de esquina'], [5, 'Pedra solta'], [1, 'Novato da calçada']];
@@ -8022,6 +8072,8 @@ function contarXP() {
       if (s.seq && s.seq % 3 === 0) { pts += 20; xpSeqMsg = `🔥 ${s.seq} partidas ganhas seguidas: +20`; }
     }
   }
+  xpMetade = pts > 0 && !contraGente();
+  if (xpMetade) pts = Math.max(1, Math.round(pts / 2));
   ganharXP(pts);
 }
 const trackOfflineNv = trackOffline;
@@ -8030,8 +8082,8 @@ trackOffline = function () { try { contarXP(); } catch (e) {} return trackOfflin
 function linhaXP(onde, como) {
   if (!xpDaMao || !onde) return;
   const v = nivelDe(nvEstado().xp);
-  onde.insertAdjacentHTML(como, `<p class="xp-linha"><b>+${xpDaMao}</b> de experiência · Nível ${v.n}${v.precisa ? ` <span>(${v.dentro}/${v.precisa})</span>` : ''}${xpSeqMsg ? `<small class="xp-seq">${esc(xpSeqMsg)}</small>` : ''}</p>`);
-  xpDaMao = 0; xpSeqMsg = '';
+  onde.insertAdjacentHTML(como, `<p class="xp-linha"><b>+${xpDaMao}</b> de experiência · Nível ${v.n}${v.precisa ? ` <span>(${v.dentro}/${v.precisa})</span>` : ''}${xpSeqMsg ? `<small class="xp-seq">${esc(xpSeqMsg)}</small>` : ''}${xpMetade && xpMetadeAvisar() ? '<small class="xp-seq xp-metade">Contra a turma do bairro, vale metade. Contra pessoas, vale cheia.</small>' : ''}</p>`);
+  xpDaMao = 0; xpSeqMsg = ''; xpMetade = false;
 }
 const showResultNv = showResult;
 showResult = function () {
@@ -8088,8 +8140,9 @@ function abrirNivel() {
     <div class="nv-grande"><span class="nv-barra"><i style="width:${v.precisa ? Math.round(100 * v.dentro / v.precisa) : 100}%"></i></span>
     <small>${v.precisa ? `${v.dentro} de ${v.precisa} para o nível ${v.n + 1}` : 'Nível máximo'}</small></div>
     <p class="es-gk">Como ganhar experiência?</p><ul class="nv-lista">${regras}</ul>
+    <p class="note nv-metade">Contra pessoas na mesa online, vale tudo isso. Contra a turma do bairro (no jogo offline ou sem nenhuma pessoa do outro lado da mesa), as jogadas valem metade. As missões do dia valem sempre +50.</p>
     <p class="es-gk">Títulos</p><ul class="nv-lista nv-titulos">${titulos}</ul>
-    <p class="note">Vale no jogo offline e no online. Na mesa online, todo mundo vê o seu nível na bolinha do avatar.</p>
+    <p class="note">Na mesa online, todo mundo vê o seu nível na bolinha do avatar.</p>
     <button type="button" class="primary" id="nvJogar" style="width:100%">Jogar agora</button>
     <button type="button" class="secondary" id="nvFechar" style="width:100%;margin-top:8px">Fechar</button>`);
   $('#nvJogar').addEventListener('click', () => { closeSheet(); $('#goOffline').click(); });
@@ -8161,10 +8214,11 @@ show = function (name) {
       return;
     }
     // 3.30: apelido genérico ("Anonimous", "Jogador"...): pede um apelido de verdade, uma vez só
-    if (name === 'home' && profile && profile.name && nomeGenerico(profile.name) && !store.get('dmz-nome-pedido') && screen !== 'profile') {
-      store.set('dmz-nome-pedido', '1');
+    // 3.37: pede de novo uma vez por semana (quem ignorou continuava "Anonimous" e aparecia no ranking)
+    if (name === 'home' && profile && profile.name && nomeGenerico(profile.name) && Date.now() - (Number(store.get('dmz-nome-pedido')) || 0) > 7 * 86400000 && screen !== 'profile') {
+      store.set('dmz-nome-pedido', String(Date.now()));
       openProfile('home');
-      setTimeout(() => toast('Como a turma te chama? Escolha um apelido para aparecer na mesa.'), 350);
+      setTimeout(() => toast('Como a turma te chama? Escolha um apelido para aparecer na mesa e no ranking.'), 350);
       return;
     }
   } catch (e) {}
@@ -9027,7 +9081,8 @@ renderHome = function () { const r = renderHomeMetas.apply(this, arguments); try
 
 // ===== Ranking da calçada (3.29) =====
 // Na aba Calçada, embaixo das mesas: os 20 que mais ganharam partidas na mesa online na semana (vira na segunda-feira)
-// e no mês, e a sua posição. Quem conta é o servidor (só partidas jogadas inteiras; offline não entra). Menor de 18 não
+// e no mês, e a sua posição. 3.37: por pontos a partir de 26/10 (contra pessoas vale mais; veja o servidor) e o Rei da
+// Calçada (o 1º da semana passada) em cima da lista. Quem conta é o servidor (só partidas jogadas inteiras; offline não entra). Menor de 18 não
 // entra; dá para pedir para não aparecer.
 const RK = { aba: 'semana', dados: null, em: 0, buscando: false };
 const RK_MEDALHA = ['🥇', '🥈', '🥉'];
@@ -9037,26 +9092,53 @@ async function rkBuscar(agora) {
   try { RK.dados = await (await fetch(CONFIG.api + '/ranking?aparelho=' + encodeURIComponent(meuId()), { cache: 'no-store' })).json(); rkDesenhar(); } catch (e) {}
   RK.buscando = false;
 }
-function rkRosto(av) { try { const a = avatarDe(av); return a ? `<img src="${avatarURI(a)}" alt="">` : '<i></i>'; } catch (e) { return '<i></i>'; } }
+// 3.37: sem avatar (quem jogou com foto antes da correção), mostra a inicial do apelido em vez do círculo vazio
+function rkRosto(av, nome) {
+  const ini = `<i class="rk-ini">${esc(String(nome || '?').trim().charAt(0).toUpperCase() || '?')}</i>`;
+  try { const a = avatarDe(av); return a ? `<img src="${avatarURI(a)}" alt="">` : ini; } catch (e) { return ini; }
+}
 const rkVit = n => `${n} ${n === 1 ? 'vitória' : 'vitórias'}`;
+const rkPts = n => `${n} ${n === 1 ? 'ponto' : 'pontos'}`;
+const rkPart = n => `${n} ${n === 1 ? 'partida' : 'partidas'}`;
+// 3.37: as regras dos pontos (vêm do servidor; estes são os valores de partida)
+function rkRegras() {
+  const r = (RK.dados && RK.dados.regras) || {};
+  return { gente: r.gente || 3, robo: r.robo || 1, derrota: Math.abs(r.derrota || -1), roboPorDia: r.roboPorDia || 3, desde: r.pontosDesde || Date.parse('2026-10-26T00:00:00-04:00') };
+}
+const rkRegrasTx = g => `Vitória contra pessoas vale +${g.gente}, contra a turma do bairro +${g.robo} (só ${g.roboPorDia} por dia) e derrota contra pessoas tira ${g.derrota}.`;
 function rkDesenhar() {
   const box = $('#rkLista'); if (!box) return;
   $$('#rkAbas button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.aba === RK.aba)));
   const d = RK.dados, p = d && d[RK.aba];
   if (!p) { box.innerHTML = '<p class="rk-vazio">Carregando…</p>'; return; }
   const fim = new Date(p.fim - 1), quando = RK.aba === 'semana' ? 'A semana vira na segunda-feira.' : `O mês fecha no dia ${fim.getDate()}.`;
-  if (!p.top.length) box.innerHTML = `<p class="rk-vazio"><b>Ninguém ganhou partida online ${RK.aba === 'semana' ? 'esta semana' : 'este mês'} ainda.</b><span>Ganhe uma e apareça aqui primeiro!</span></p>`;
+  const periodo = RK.aba === 'semana' ? 'esta semana' : 'este mês', g = rkRegras();
+  // 3.37: Rei da Calçada (o 1º da semana passada), em cima da lista
+  const rei = d.rei, reiBox = $('#rkRei');
+  reiBox.hidden = !rei;
+  if (rei) reiBox.innerHTML = `<span class="rk-face">${rkRosto(rei.av, rei.nome)}</span><span class="rk-rei-tx"><small>👑 Rei da Calçada</small><b>${esc(rei.nome)}${rei.eu ? ' <small class="rk-voce">você</small>' : ''}</b><small>${rei.eu ? 'Você foi o 1º da semana passada: está com a coroa na mesa online até domingo.' : '1º da semana passada · está com a coroa na mesa online até domingo'}</small></span>`;
+  if (!p.top.length) box.innerHTML = p.pontos
+    ? `<p class="rk-vazio"><b>Ninguém pontuou ${periodo} ainda.</b><span>Ganhe de pessoas na mesa online: vale +${g.gente}.</span></p>`
+    : `<p class="rk-vazio"><b>Ninguém ganhou partida online ${periodo} ainda.</b><span>Ganhe uma e apareça aqui primeiro!</span></p>`;
   else box.innerHTML = `<ol class="rk-ol">${p.top.map(x => `<li class="${x.eu ? 'eu' : ''}${x.pos <= 3 ? ' podio' : ''}">
-      <span class="rk-pos">${x.pos <= 3 ? RK_MEDALHA[x.pos - 1] : x.pos + 'º'}</span><span class="rk-face">${rkRosto(x.av)}</span>
-      <span class="rk-nome"><b>${esc(x.nome)}${x.eu ? ' <small class="rk-voce">você</small>' : ''}</b><small>Nível ${x.nv || 1}</small></span>
-      <span class="rk-pts"><b>${rkVit(x.ganhas)}</b><small>em ${x.jogadas} ${x.jogadas === 1 ? 'partida' : 'partidas'}</small></span></li>`).join('')}</ol>`;
+      <span class="rk-pos">${x.pos <= 3 ? RK_MEDALHA[x.pos - 1] : x.pos + 'º'}</span><span class="rk-face">${rkRosto(x.av, x.nome)}</span>
+      <span class="rk-nome"><b>${x.rei ? '<span class="rk-coroa" title="Rei da Calçada">👑</span> ' : ''}${esc(x.nome)}${x.eu ? ' <small class="rk-voce">você</small>' : ''}</b><small>Nível ${x.nv || 1}</small></span>
+      ${p.pontos ? `<span class="rk-pts"><b>${rkPts(x.pontos)}</b><small>${rkVit(x.ganhas)} em ${rkPart(x.jogadas)}</small></span>`
+        : `<span class="rk-pts"><b>${rkVit(x.ganhas)}</b><small>em ${rkPart(x.jogadas)}</small></span>`}</li>`).join('')}</ol>`;
   const eu = p.eu, meu = $('#rkMeu');
   meu.hidden = !(eu || d.fora);
   if (d.fora) meu.innerHTML = 'Você não aparece no ranking. <button type="button" class="linkbtn" id="rkVoltar">Voltar a aparecer</button>';
-  else if (eu) meu.innerHTML = eu.pos ? `Você está em <b>${eu.pos}º</b> · ${rkVit(eu.ganhas)} em ${eu.jogadas} ${eu.jogadas === 1 ? 'partida' : 'partidas'}` : `Você jogou ${eu.jogadas} ${eu.jogadas === 1 ? 'partida' : 'partidas'} e ainda não ganhou ${RK.aba === 'semana' ? 'esta semana' : 'este mês'}. Bora!`;
-  $('#rkNota').textContent = `Conta as partidas ganhas na mesa online, jogadas do começo ao fim. ${quando}`;
+  else if (eu && eu.oculto === 'nome') meu.innerHTML = `Com o apelido "${esc(me || '')}", você não aparece no ranking. <button type="button" class="linkbtn" id="rkApelido">Escolher um apelido</button>`;
+  else if (eu && p.pontos) meu.innerHTML = eu.pos ? `Você está em <b>${eu.pos}º</b> · ${rkPts(eu.pontos)} (${rkVit(eu.ganhas)} em ${rkPart(eu.jogadas)})` : `Você jogou ${rkPart(eu.jogadas)} e está com 0 ponto ${periodo}. Ganhe de pessoas para subir: vale +${g.gente}.`;
+  else if (eu) meu.innerHTML = eu.pos ? `Você está em <b>${eu.pos}º</b> · ${rkVit(eu.ganhas)} em ${rkPart(eu.jogadas)}` : `Você jogou ${rkPart(eu.jogadas)} e ainda não ganhou ${periodo}. Bora!`;
+  $('#rkNota').textContent = p.pontos ? `${rkRegrasTx(g)} Só contam partidas online jogadas do começo ao fim. ${quando}` : `Conta as partidas ganhas na mesa online, jogadas do começo ao fim. ${quando}`;
+  // antes de valer: avisa que vem aí o ranking por pontos
+  const av = $('#rkAviso'), antes = !p.pontos && Date.now() < g.desde;
+  av.hidden = !antes;
+  if (antes) { const dd = new Date(g.desde); av.innerHTML = `<b>Novo a partir de segunda (${String(dd.getDate()).padStart(2, '0')}/${String(dd.getMonth() + 1).padStart(2, '0')}): ranking por pontos.</b> ${rkRegrasTx(g)} E o 1º da semana vira o 👑 Rei da Calçada.`; }
   $('#rkSair').hidden = !!d.fora;
   const v = $('#rkVoltar'); if (v) v.addEventListener('click', () => rkFora(false));
+  const ap = $('#rkApelido'); if (ap) ap.addEventListener('click', () => { track('ranking-apelido'); openProfile('calcada'); });
 }
 async function rkFora(fora) {
   try {
@@ -9072,6 +9154,8 @@ async function rkFora(fora) {
   ref.insertAdjacentHTML('afterend', `<section class="rk" id="rkCard" aria-labelledby="rkTit">
     <div class="rk-cab"><h3 id="rkTit">🏆 Ranking da calçada</h3>
       <div class="rk-abas" id="rkAbas" role="tablist"><button type="button" role="tab" data-aba="semana" aria-selected="true">Semana</button><button type="button" role="tab" data-aba="mes" aria-selected="false">Mês</button></div></div>
+    <p class="rk-aviso" id="rkAviso" hidden></p>
+    <div class="rk-rei" id="rkRei" hidden></div>
     <div id="rkLista"><p class="rk-vazio">Carregando…</p></div>
     <p class="rk-meu" id="rkMeu" hidden></p>
     <p class="aba-nota" id="rkNota"></p>
@@ -9809,7 +9893,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.36-ed5c3b72';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.37-a4516e64';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

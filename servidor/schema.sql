@@ -88,3 +88,11 @@ CREATE INDEX IF NOT EXISTS presenca_visto ON presenca (visto_em);
 CREATE TABLE IF NOT EXISTS ranking (periodo TEXT NOT NULL, aparelho TEXT NOT NULL, nome TEXT, av TEXT, nv INTEGER, ganhas INTEGER NOT NULL DEFAULT 0, jogadas INTEGER NOT NULL DEFAULT 0, atualizado INTEGER NOT NULL, PRIMARY KEY (periodo, aparelho));
 CREATE INDEX IF NOT EXISTS ranking_top ON ranking (periodo, ganhas DESC, jogadas, atualizado);
 CREATE TABLE IF NOT EXISTS ranking_fora (aparelho TEXT PRIMARY KEY, em INTEGER NOT NULL);
+
+-- 3.37: ranking por pontos (semanas a partir de 26/10/2026 e meses a partir de novembro). Vitória contra pessoas +3,
+-- contra robôs +1 (só as 3 primeiras do dia), derrota contra pessoas -1 (nunca abaixo de 0); contra a mesma pessoa,
+-- só as 5 primeiras partidas do dia contam ponto. calcada_robo e calcada_par guardam essas contas do dia (2 dias).
+CREATE TABLE IF NOT EXISTS calcada (periodo TEXT NOT NULL, aparelho TEXT NOT NULL, nome TEXT, av TEXT, nv INTEGER, pontos INTEGER NOT NULL DEFAULT 0, ganhas INTEGER NOT NULL DEFAULT 0, jogadas INTEGER NOT NULL DEFAULT 0, ganhas_gente INTEGER NOT NULL DEFAULT 0, jogadas_gente INTEGER NOT NULL DEFAULT 0, atualizado INTEGER NOT NULL, PRIMARY KEY (periodo, aparelho));
+CREATE INDEX IF NOT EXISTS calcada_top ON calcada (periodo, pontos DESC);
+CREATE TABLE IF NOT EXISTS calcada_robo (dia TEXT NOT NULL, aparelho TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (dia, aparelho));
+CREATE TABLE IF NOT EXISTS calcada_par (dia TEXT NOT NULL, a TEXT NOT NULL, b TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (dia, a, b));

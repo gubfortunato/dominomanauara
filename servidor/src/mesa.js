@@ -9,7 +9,7 @@ import { nivelDoador, cortesiaDe } from './pagamentos.js';
 import { fotoPublica } from './fotos.js';
 import { pontuar, nomeDaTurma, apelido as apelidoNaTurma } from './turmas.js';
 import { somarVivo } from './vivo.js';
-import { somarRanking } from './ranking.js';
+import { somarRanking, reiDaSemana } from './ranking.js';
 import { bloqueado, visto } from './bloqueio.js';
 
 const TEMPO = {
@@ -40,6 +40,19 @@ const nivelRobo = () => 1 + Math.floor(Math.pow(Math.random(), 1.8) * 24);
 const temaOk = v => typeof v === 'string' && /^[a-z][a-z0-9]{2,15}$/.test(v) ? v : null;   // manaus357 tem número
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 
+// Ranking (3.29; 3.37): quem conta na partida que acabou — só quem jogou a partida inteira (sem robô no lugar). Para os
+// pontos (3.37), "gente" diz se tinha pelo menos uma pessoa do outro lado que também jogou a partida inteira, e
+// "oponente" é o código dela (o menor, se forem duas), para o limite de partidas por dia contra a mesma pessoa.
+export function quemContaNoRanking(m, vencedor) {
+  const inteiro = p => { const c = m.cad[p]; return !!(c && !c.bot && !c.saiu && c.id && m.naPartida && m.naPartida[p] === c.id && !(m.robo && m.robo.partida[p])); };
+  const quem = [];
+  m.cad.forEach((c, p) => {
+    if (!inteiro(p)) return;
+    const ops = [0, 1, 2, 3].filter(q => q % 2 !== p % 2 && inteiro(q)).map(q => m.cad[q].id).sort();
+    quem.push({ id: c.id, nome: c.nome, av: c.av, nv: c.nv, menor: !!c.menor, ganhou: p % 2 === vencedor, gente: ops.length > 0, oponente: ops[0] || null });
+  });
+  return quem;
+}
 export class Mesa {
   constructor(ctx, env) {
     this.ctx = ctx; this.env = env; this.m = null; this.reacoes = {};
@@ -303,8 +316,9 @@ export class Mesa {
       let foto = null; try { foto = await fotoPublica(this.env, id); } catch (e) {}
       let turma = null; try { turma = await nomeDaTurma(this.env, id); } catch (e) {}
       let ct = null; try { ct = await cortesiaDe(this.env, id); } catch (e) {}
-      return { apoiador: !!(p && p.ate > Date.now()), doador: Math.max(nivelDoador((d && d.t) || 0), (ct && ct.nivel) || 0), foto, turma };
-    } catch (e) { return { apoiador: false, doador: 0, foto: null, turma: null }; }
+      let rei = false; try { const k = await reiDaSemana(this.env); rei = !!(k && k.aparelho === id); } catch (e) {}   // 3.37: coroa do Rei da Calçada
+      return { apoiador: !!(p && p.ate > Date.now()), doador: Math.max(nivelDoador((d && d.t) || 0), (ct && ct.nivel) || 0), foto, turma, rei };
+    } catch (e) { return { apoiador: false, doador: 0, foto: null, turma: null, rei: false }; }
   }
   async entrar(ws, att, msg) {
     const m = this.m;
@@ -317,7 +331,7 @@ export class Mesa {
     const f = (m.fila || []).findIndex(c => c.id === quem.id);
     if (p < 0 && f >= 0) {
       // já estava na fila (voltou): continua esperando a vez
-      Object.assign(m.fila[f], { apoiador: quem.apoiador, doador: quem.doador, foto: quem.foto, turma: quem.turma, nv: quem.nv });
+      Object.assign(m.fila[f], { apoiador: quem.apoiador, doador: quem.doador, foto: quem.foto, turma: quem.turma, nv: quem.nv, rei: quem.rei });
       att.id = quem.id; ws.serializeAttachment(att);
       m.ultimo = Date.now(); await this.salvar(); this.espalhar();
       return;
@@ -326,7 +340,7 @@ export class Mesa {
       // voltou (ou abriu em outro aparelho): retoma a cadeira; se tinha saído, volta a jogar
       const c = m.cad[p];
       if (m.fase === 'espera') { c.nome = quem.nome; c.av = quem.av; c.bairro = quem.bairro; }
-      c.apoiador = quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv; c.menor = quem.menor;
+      c.apoiador = quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv; c.menor = quem.menor; c.rei = quem.rei;
       if (c.saiu) { c.saiu = false; c.bot = false; }
     } else if (m.fase === 'espera') {
       p = this.cadeiraNaEspera();
@@ -735,11 +749,7 @@ export class Mesa {
     const m = this.m, G = m.G, r = G && G.result;
     if (!G || G.phase !== 'handEnd' || !r || r.matchWinner == null || r.ranking) return;
     r.ranking = true;
-    const quem = [];
-    m.cad.forEach((c, p) => {
-      if (!c || c.bot || !c.id || !m.naPartida || m.naPartida[p] !== c.id || (m.robo && m.robo.partida[p])) return;
-      quem.push({ id: c.id, nome: c.nome, av: c.av, nv: c.nv, menor: !!c.menor, ganhou: p % 2 === r.matchWinner });
-    });
+    const quem = quemContaNoRanking(m, r.matchWinner);
     if (quem.length) { try { await somarRanking(this.env, quem); } catch (e) {} }
   }
   novaMaoRobo(novaPartida) {
@@ -792,7 +802,7 @@ export class Mesa {
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, publica: !!m.publica, iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
-      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || !id ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p) } : null),
+      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || !id ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p) } : null),
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
       jogo, agora: Date.now(), assistindo: this.quantosAssistem() };
   }
