@@ -1769,8 +1769,11 @@ button.vivo-st:active,.vivo-assistir:active{transform:scale(.98)}
 .af-sair{border:0;border-radius:999px;padding:8px 14px;background:var(--nos);color:#fff;font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;white-space:nowrap}
 body.assistindo #menuBtn,body.assistindo #passBtn{visibility:hidden}
 #filaAssistir{width:100%}
-/* A pedra de costas na mão (de quem assiste) usa a classe "back", a mesma do fundo das janelas — aqui volta a ser pedra */
-#hand .ht.back{position:relative;inset:auto;z-index:auto;display:block;background:none;animation:none}
+/* A pedra de costas na mão de quem assiste (classe "costas", 3.29.1): menor (é só para saber quantas faltam) e
+   a mesa sobe para a faixa "Assistindo" não cobrir as pedras */
+#hand .ht.costas{cursor:default;width:calc(var(--tw)*.62)}
+body.assistindo #scrGame .hand{height:calc(var(--tw)*1.24 + 10px);min-height:0}
+body.assistindo #scrGame.game{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 76px)}
 /* 3.29: conquistas à vista — cartão no Perfil, linha no cartão do nível e "falta pouco" no fim da mão */
 .cq-card{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:14px;width:100%;padding:14px 16px 14px 14px;border-radius:16px;border:1.5px solid var(--nos);background:color-mix(in srgb,var(--nos) 8%,var(--bg-2));color:var(--fg);font:inherit;text-align:left;cursor:pointer}
 .cq-card:active{transform:scale(.99)}
@@ -2852,6 +2855,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.29.1', data: '20/10/2026', itens: ['Assistir no app instalado no iPhone: as pedras de quem está embaixo apareciam no meio da mesa, por cima do jogo. Agora ficam no lugar delas.'] },
   { v: '3.29', data: '20/10/2026', itens: ['Ranking da calçada: na aba Calçada, os 20 que mais ganharam partidas na mesa online na semana e no mês, e a sua posição.', 'Conquistas à vista: no Perfil, a próxima conquista com a barrinha e o prêmio; no Jogar, a próxima no cartão do nível; e no fim da mão, quando falta pouco.', 'Os níveis ficaram mais difíceis de subir, principalmente os altos. Ninguém perdeu o nível que já tinha.'] },
   { v: '3.28', data: '20/10/2026', itens: ['Modo espectador: na fila do ganha-chama, toque em "Assistir a partida" e veja os amigos jogando. Quando chegar a sua vez, você entra sozinho.', 'Na Calçada, cada mesa rápida tem o botão "Assistir". Quem assiste vê a mesa e o placar, nunca a mão de ninguém.', 'Quem está jogando vê quantas pessoas estão assistindo.'] },
   { v: '3.27.1', data: '20/10/2026', itens: ['Arrastar a pedra ficou mais certeiro: ela só entra se você soltar em cima da ponta marcada. Longe da ponta, ela volta para a mão, sem jogar no lugar errado.', 'Dica: dá para tocar na pedra e depois na ponta, sem arrastar.', 'O app pede ao celular para guardar o seu progresso, e avisa quem abriu o jogo dentro do Instagram ou do Facebook (por lá o progresso pode se perder).', 'O Mundico saiu da turma do bairro: fica o Tião.', 'Ajustes de espaço no Perfil e na aba Mais.'] },
@@ -9082,7 +9086,7 @@ function renderPrompt() {
 function renderHand() {
   const hand = $('#hand');
   if (seatMe == null) {
-    hand.innerHTML = G.hands[0].map(() => `<span class="ht back"><svg viewBox="-0.04 -0.04 1.08 2.08">${backSVG}</svg></span>`).join('');
+    hand.innerHTML = G.hands[0].map(() => `<span class="ht costas"><svg viewBox="-0.04 -0.04 1.08 2.08">${backSVG}</svg></span>`).join('');
     return;
   }
   hand.innerHTML = G.hands[seatMe].map((t, i) => {
@@ -9384,7 +9388,7 @@ function onDragEnd(e) {
 }
 function onDragCancel(e) { if (drag && e.pointerId === drag.pid) { endDrag(); render(); } }
 $('#hand').addEventListener('pointerdown', e => {
-  const b = e.target.closest('.ht'); if (!b || b.classList.contains('back') || !G || seatMe == null || drag) return;
+  const b = e.target.closest('.ht'); if (!b || b.classList.contains('costas') || !G || seatMe == null || drag) return;
   if (!myTurnNow()) return;
   e.preventDefault();
   drag = { i: +b.dataset.i, x0: e.clientX, y0: e.clientY, moved: false, el: null, side: null, zones: [], pid: e.pointerId };
@@ -9529,7 +9533,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.29-b007ee48';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.29.1-f480a14b';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
