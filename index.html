@@ -1732,8 +1732,9 @@ body.com-abas #profileBack{display:none}
 .vivo-vazio{display:grid;gap:4px;padding:16px;text-align:center;justify-items:center}
 .vivo-vazio b{color:var(--fg);font-size:16px;font-weight:800}
 .vivo-vazio span{font-size:14px;line-height:1.4}
-.calc-abrir{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:12px 16px;border-radius:14px;border:1.5px solid var(--nos);background:transparent;color:var(--nos);font:inherit;font-weight:800;font-size:15.5px;cursor:pointer}
-.calc-abrir span{font-size:18px;line-height:1}
+.calc-abrir{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;width:100%;min-height:48px;padding:11px 14px;border-radius:14px;border:1px dashed var(--line);background:transparent;color:var(--muted);font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.calc-abrir .ca-go{color:var(--nos);font-weight:800;white-space:nowrap}
+.calc-abrir.so-acao{justify-content:center}
 .calc-abrir:active{transform:scale(.99)}
 
 /* Aviso no início: mesas jogando agora */
@@ -2033,7 +2034,7 @@ button.dn-ag:active{transform:scale(.98)}
       <p class="aba-sub" id="calcSub">As mesas jogando agora. Toque numa mesa rápida com lugar vago e entre na partida.</p>
     </header>
     <div id="calcCorpo"></div>
-    <button type="button" class="calc-abrir" id="calcAbrir"><span aria-hidden="true">＋</span> Abrir uma mesa rápida nova</button>
+    <button type="button" class="calc-abrir" id="calcAbrir"><span class="ca-tx" id="calcAbrirTx">Nenhuma mesa com lugar vago agora.</span><span class="ca-go">Abrir uma mesa rápida <span aria-hidden="true">›</span></span></button>
     <p class="aba-nota" id="calcNota">Na mesa com os amigos, só entra quem tem o número da mesa.</p>
   </section>
   <section class="screen panel" id="scrMais" hidden>
@@ -2904,6 +2905,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.36', data: '21/10/2026', itens: ['Calçada mais limpa: o convite para abrir uma mesa rápida só aparece quando não tem mesa com lugar vago.'] },
   { v: '3.35.1', data: '21/10/2026', itens: ['A tela de vitória e de derrota voltou a ficar sem patrocinador.'] },
   { v: '3.35', data: '21/10/2026', itens: ['Prêmios novos: Pé-quente dá a farinha ovinha, Rei da batida dá a caldeira de bodó e Orgulho de Manaus dá um passeio no Encontro das Águas (fundo do avatar).', 'As camisas da vitória-régia, de onça-pintada e do Encontro das Águas ficaram liberadas para todos.', 'Administrador: na Calçada aparecem também as mesas na sala, esperando começar.'] },
   { v: '3.34', data: '21/10/2026', itens: ['Mesa nova: Palácio Rio Negro.', 'Arena da Amazônia, Relógio Municipal e Mercado Adolpho Lisboa ganharam cor e cena inteira, como as outras mesas.'] },
@@ -8615,6 +8617,15 @@ function abasAtualiza(tela) {
 // Aviso no início ("2 mesas jogando agora") e a bolinha da aba Calçada, a partir da última busca das mesas
 function abasVivo() {
   const ms = (VIVO.mesas || []).filter(v => !v.espera);   // 3.35: as mesas na sala (só o administrador vê) não contam como jogando
+  // 3.36 (pedido do dono: não concorrer com o Jogar): o convite para abrir uma mesa rápida só aparece quando não tem
+  // mesa rápida com lugar vago; com vaga, a ação fica no "Entrar" de cada cartão
+  const ab = $('#calcAbrir');
+  if (ab) {
+    const temVaga = ms.some(v => v.publica !== false && v.livres > 0);
+    ab.hidden = temVaga;
+    const tx = $('#calcAbrirTx'); if (tx) tx.hidden = !ms.length;   // lista vazia: o cartão já diz que não tem ninguém
+    ab.classList.toggle('so-acao', !ms.length);
+  }
   const vagas = ms.filter(v => v.publica !== false && v.livres > 0);
   // 3.31 (pedido do dono): a bolinha só aparece com mesa jogando agora (e pulsa)
   const bol = $('#abaVivo'); if (bol) { bol.hidden = !(vivoMostra() && ms.length > 0); bol.classList.add('pulsa'); }
@@ -9798,7 +9809,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.35.1-7fcc3798';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.36-ed5c3b72';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
