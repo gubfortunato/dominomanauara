@@ -181,11 +181,12 @@ export class Mesa {
         else if (j && j.existe && j.fase === 'jogo' && j.on > 0) {
           if (todas) mesas.push(Object.assign({ codigo: x.codigo }, j));
           // 3.27: a lista pública (aba Calçada) não leva o bairro de ninguém
-          else if (j.publica) mesas.push(Object.assign({ codigo: x.codigo }, j, { cad: (j.cad || []).map(c => c ? Object.assign({}, c, { bairro: null }) : c) }));
-          // 3.27: mesa com os amigos aparece só como movimento — sem número da mesa, sem nome, sem avatar e sem nível
-          // de ninguém (pode ter menor de 18); só quantas pessoas, o placar e a partida
+          else if (j.publica) mesas.push(Object.assign({ codigo: x.codigo }, j, { cad: (j.cad || []).map(c => c ? Object.assign({}, c, { bairro: null, menor: undefined }) : c) }));
+          // 3.27: mesa com os amigos sem número da mesa (só entra e assiste quem tem o número).
+          // 3.37.1 (pedido do dono): aparece o apelido, o avatar desenhado e o nível de quem está jogando — menos de quem
+          // tem menos de 18 anos, que continua só na conta ("1 pessoa"); robô continua sem nome
           else mesas.push({ publica: false, existe: true, fase: 'jogo', tema: j.tema || null, on: j.on, livres: 0,
-            cad: (j.cad || []).map(c => c ? { bot: !!c.bot, tipo: c.tipo } : null),
+            cad: (j.cad || []).map(c => !c ? null : c.bot || c.menor ? { bot: !!c.bot, tipo: c.tipo } : { nome: c.nome, bot: false, av: c.av || null, nv: c.nv || 1, tipo: c.tipo }),
             partida: j.partida, mao: j.mao, placar: j.placar,
             lance: j.lance ? { type: j.lance.type, pts: j.lance.pts, carroca: j.lance.carroca, voided: j.lance.voided } : null });
         }
@@ -218,7 +219,7 @@ export class Mesa {
       // (o robô ficou no lugar) e robô da turma
       cad: m.cad.map((c, p) => c ? { nome: c.nome, bot: !!c.bot, av: c.bot ? null : c.av || null,
         tipo: c.bot ? (c.saiu ? 'saiu' : 'robo') : this.conectado(p) ? 'pessoa' : 'fora',
-        nv: c.bot ? null : c.nv || 1, bairro: c.bot ? null : c.bairro || null } : null),
+        nv: c.bot ? null : c.nv || 1, bairro: c.bot ? null : c.bairro || null, menor: !c.bot && !!c.menor } : null),
       partida: G.partida || 1, mao: G.handNo || 1, criada: m.criada || null,
       placar: G.score, lance: ev ? { type: ev.type, p: ev.p, pts: ev.pts || 0, carroca: !!ev.carroca, voided: !!ev.voided } : null };
   }

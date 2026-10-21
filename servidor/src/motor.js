@@ -326,9 +326,9 @@ function layoutTable(T, Xmax) {
   if (c.a === c.b) {
     res.main[center] = { x: 0, y: 0, o: 'v', v1: c.a, v2: c.b };
     armLayout(right, { x: 0.5, y: 0, dir: 1, vdir: 1, lo: 2, hi: Xmax }, toMain);
-    armLayout(left, { x: -0.5, y: 0, dir: -1, vdir: 1, lo: -Xmax, hi: -2 }, toMain);
+    armLayout(left, { x: -0.5, y: 0, dir: -1, vdir: -1, lo: -Xmax, hi: -2 }, toMain);
     const asArm = arr => (arr || []).map(t => ({ near: t.n, far: t.f }));
-    armLayout(asArm(bu.D), { mode: 'col', colX: 0, colEnd: 1, dir: 1, vdir: 1, lo: -Xmax, hi: -0.5, firstNeed: 99 }, (t, p) => res.D.push(p));
+    armLayout(asArm(bu.D), { mode: 'col', colX: 0, colEnd: 1, dir: 1, vdir: 1, lo: -Xmax, hi: -0.5, firstNeed: colunaBucho(Xmax) }, (t, p) => res.D.push(p));
     armLayout(asArm(bu.U), { mode: 'col', colX: 0, colEnd: -1, dir: -1, vdir: -1, lo: 0.5, hi: Xmax, firstNeed: colunaBucho(Xmax) }, (t, p) => res.U.push(p));
   } else {
     res.main[center] = { x: 0, y: 0, o: 'h', v1: c.a, v2: c.b };
@@ -537,7 +537,8 @@ function nomeOfensivo(nome) {
 const NOME_GENERICO = ['anonimous', 'anonymous', 'anonimo', 'anonima', 'anonimus', 'anonymus', 'anonimos', 'anon', 'anonimato', 'desconhecido',
   'desconhecida', 'jogador', 'jogadora', 'player', 'usuario', 'usuaria', 'user', 'teste', 'test', 'testando', 'visitante', 'convidado',
   'convidada', 'guest', 'ninguem', 'nobody', 'fulano', 'fulana', 'sicrano', 'beltrano', 'nome', 'apelido', 'meunome', 'seila', 'qualquer',
-  'asdf', 'qwerty', 'abc', 'xyz', 'eu', 'semnome', 'noname'];
+  'asdf', 'qwerty', 'abc', 'xyz', 'eu', 'semnome', 'noname',
+  'outro', 'outra', 'outros', 'outras', 'alguem', 'eumesmo', 'qualquerum', 'nenhum', 'nenhuma', 'jogadorx', 'player1'];   // 3.37.1: "Outro" e parecidos
 function nomeGenerico(nome) {
   const t = String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
   return t.length < 2 || /^(.)\1+$/.test(t) || NOME_GENERICO.includes(t);

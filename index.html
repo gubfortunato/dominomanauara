@@ -1088,6 +1088,15 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
   body:not(.assistindo) #scrGame #prompt{min-width:0}
 }
 @media (max-width:360px){#scrGame #prompt{font-size:14px}}
+/* 3.37.1: cabeçalho do placar sem vazar. Quem assiste vê os nomes das duplas ("Renan e Velho do Rio 2") e a linha do
+   meio pode ganhar "· Torneio · 6 na fila": antes a linha do meio não quebrava, espremia os nomes (uma palavra por
+   linha) e empurrava o placar da direita para fora da tela */
+@media (orientation: portrait){
+  #scrGame .score{grid-template-columns:minmax(0,1fr) fit-content(46%) minmax(0,1fr)}
+  #scrGame .score .meta .pt{white-space:normal;text-align:center;text-wrap:balance;line-height:1.2}
+  body.assistindo #scrGame .score .tlabel{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;letter-spacing:.06em}
+}
+#scrGame .score .tlabel{overflow-wrap:anywhere}
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
@@ -2688,9 +2697,9 @@ function layoutTable(T, Xmax) {
   if (c.a === c.b) {
     res.main[center] = { x: 0, y: 0, o: 'v', v1: c.a, v2: c.b };
     armLayout(right, { x: 0.5, y: 0, dir: 1, vdir: 1, lo: 2, hi: Xmax }, toMain);
-    armLayout(left, { x: -0.5, y: 0, dir: -1, vdir: 1, lo: -Xmax, hi: -2 }, toMain);
+    armLayout(left, { x: -0.5, y: 0, dir: -1, vdir: -1, lo: -Xmax, hi: -2 }, toMain);
     const asArm = arr => (arr || []).map(t => ({ near: t.n, far: t.f }));
-    armLayout(asArm(bu.D), { mode: 'col', colX: 0, colEnd: 1, dir: 1, vdir: 1, lo: -Xmax, hi: -0.5, firstNeed: 99 }, (t, p) => res.D.push(p));
+    armLayout(asArm(bu.D), { mode: 'col', colX: 0, colEnd: 1, dir: 1, vdir: 1, lo: -Xmax, hi: -0.5, firstNeed: colunaBucho(Xmax) }, (t, p) => res.D.push(p));
     armLayout(asArm(bu.U), { mode: 'col', colX: 0, colEnd: -1, dir: -1, vdir: -1, lo: 0.5, hi: Xmax, firstNeed: colunaBucho(Xmax) }, (t, p) => res.U.push(p));
   } else {
     res.main[center] = { x: 0, y: 0, o: 'h', v1: c.a, v2: c.b };
@@ -2927,6 +2936,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.37.1', data: '21/10/2026', itens: ['Mesa com bucho comprido: cada parte da mesa ocupa um canto, e as pedras ficam bem maiores no fim da mão.', 'Botão voltar do celular: fecha a janela aberta e volta para o início; na partida, abre o menu (ninguém sai sem querer); no início, é só tocar de novo para sair.', 'Calçada: as mesas com os amigos mostram o apelido de quem está jogando.', 'Apelidos como "Outro" pedem um apelido de verdade.'] },
   { v: '3.37', data: '21/10/2026', itens: ['Ranking da calçada por pontos, a partir da semana de 26/10: vitória contra pessoas vale +3, contra a turma do bairro +1 (só 3 por dia) e derrota contra pessoas tira 1. Contra a mesma pessoa, só 5 partidas por dia valem ponto.', 'Rei da Calçada: o 1º da semana ganha a coroa 👑 na mesa online durante a semana seguinte.', 'Experiência: contra a turma do bairro (jogo offline ou mesa sem nenhuma pessoa do outro lado), as jogadas valem metade. Contra pessoas, vale cheia.', 'Correção: quem usa foto no perfil aparecia sem rosto para os outros na mesa online e no ranking. Agora aparece com o avatar.', 'Apelido genérico (como "Anonimous") não aparece no ranking.', 'Correção: na Calçada, o "Abrir uma mesa rápida" ficava em cima da borda do quadro.'] },
   { v: '3.36', data: '21/10/2026', itens: ['Calçada mais limpa: o convite para abrir uma mesa rápida só aparece quando não tem mesa com lugar vago.'] },
   { v: '3.35.1', data: '21/10/2026', itens: ['A tela de vitória e de derrota voltou a ficar sem patrocinador.'] },
@@ -3452,7 +3462,8 @@ function nomeOfensivo(nome) {
 const NOME_GENERICO = ['anonimous', 'anonymous', 'anonimo', 'anonima', 'anonimus', 'anonymus', 'anonimos', 'anon', 'anonimato', 'desconhecido',
   'desconhecida', 'jogador', 'jogadora', 'player', 'usuario', 'usuaria', 'user', 'teste', 'test', 'testando', 'visitante', 'convidado',
   'convidada', 'guest', 'ninguem', 'nobody', 'fulano', 'fulana', 'sicrano', 'beltrano', 'nome', 'apelido', 'meunome', 'seila', 'qualquer',
-  'asdf', 'qwerty', 'abc', 'xyz', 'eu', 'semnome', 'noname'];
+  'asdf', 'qwerty', 'abc', 'xyz', 'eu', 'semnome', 'noname',
+  'outro', 'outra', 'outros', 'outras', 'alguem', 'eumesmo', 'qualquerum', 'nenhum', 'nenhuma', 'jogadorx', 'player1'];   // 3.37.1: "Outro" e parecidos
 function nomeGenerico(nome) {
   const t = String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
   return t.length < 2 || /^(.)\1+$/.test(t) || NOME_GENERICO.includes(t);
@@ -7560,7 +7571,7 @@ render = function () {
   try {
     if (mode !== 'on' || !ON.vista || !G || screen !== 'game' || emFila(ON.vista)) return;
     const v = ON.vista, f = v.fica, nf = (v.fila || []).length;
-    if (f && f.n && (nf || f.n >= 2)) { const el = $(((v.minha % 2 ? 1 - f.team : f.team) === 0) ? '#tL' : '#tR'); if (el) el.textContent += ' 🐟' + f.n; }
+    if (f && f.n && (nf || f.n >= 2)) { const el = $(((v.minha % 2 ? 1 - f.team : f.team) === 0) ? '#tL' : '#tR'); if (el) el.textContent = seatMe == null ? '🐟' + f.n + ' ' + el.textContent : el.textContent + ' 🐟' + f.n; }   // 3.37.1: quem assiste vê os nomes (compridos): o peixe vai na frente para não sumir no corte
     if (nf) $('#ptLbl').textContent += ` · ${nf} na fila`;
   } catch (e) {}
 };
@@ -8354,9 +8365,15 @@ function vivoDesenha() {
           <small class="vivo-info">Mesa ${esc(v.codigo)} · partida ${v.partida || 1}</small></span>${placar}${estado}</div>`;
     }
     // 3.27 (pedido do dono): para os jogadores, só os nomes de quem está jogando e "+N" no lugar de "N robôs"
-    if (convite) return `${abre}<span class="vivo-tx"><b>${esc(m.nome)} <small class="vivo-tag">com os amigos</small></b>
-        <small class="vivo-conta">${nPessoas} ${nPessoas === 1 ? 'pessoa jogando' : 'pessoas jogando'}</small>
+    // 3.37.1 (pedido do dono): mesa com os amigos também mostra o apelido de quem está jogando (menor de 18 só na conta)
+    if (convite) {
+      const comNome = [0, 1, 2, 3].filter(p => ehGente(p) && c[p].nome), semNome = nPessoas - comNome.length;
+      const nomesAm = comNome.map(p => `<span class="vivo-gp">${esc(c[p].nome)}</span>`).join('');
+      return `${abre}<span class="vivo-tx"><b>${esc(m.nome)} <small class="vivo-tag">com os amigos</small></b>
+        ${nomesAm ? `<span class="vivo-gl">${nomesAm}${semNome + nRobos ? `<span class="vivo-rb">+${semNome + nRobos}</span>` : ''}</span>`
+          : `<small class="vivo-conta">${nPessoas} ${nPessoas === 1 ? 'pessoa jogando' : 'pessoas jogando'}</small>`}
         <em class="${quente ? 'quente' : ''}">${esc(v.txt)}</em></span>${placar}${estado}</div>`;
+    }
     // 3.32 (pedido do dono): cada nome com uma bolinha verde e sem negrito (o nome da mesa fica em destaque)
     const nomes = [0, 1, 2, 3].filter(ehGente).map(p => `<span class="vivo-gp">${esc(c[p].nome)}</span>`).join('');
     return `${abre}<span class="vivo-tx"><b>${esc(m.nome)}</b>
@@ -9311,6 +9328,41 @@ document.addEventListener('click', e => {
   });
 });
 
+// ===== Botão voltar do celular (3.37.1) =====
+// Pedido pelo "Fale com a gente" (Android, app instalado): o voltar do celular fechava o app de qualquer tela, até no
+// meio da partida, porque o app não deixava nada no histórico do navegador. Agora o app guarda um passo no histórico
+// e, a cada voltar: fecha a janela aberta; na partida, abre o menu (para ninguém sair sem querer); nas outras telas,
+// faz o mesmo que o "← Voltar" da tela (ou vai para o início); no início, pede "toque de novo para sair".
+const VOLTA = { armado: false };
+function voltaArmar() {
+  try { if (!history.state || !history.state.dmzVolta) { history.pushState({ dmzVolta: 1 }, '', location.href); } VOLTA.armado = true; } catch (e) {}
+}
+// o Chrome só respeita o passo no histórico depois de um toque na tela
+['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => { if (!VOLTA.armado) voltaArmar(); }, { capture: true, passive: true }));
+function voltaBotaoDaTela() {
+  const scr = document.querySelector('#scr' + screen.charAt(0).toUpperCase() + screen.slice(1));
+  if (!scr) return null;
+  return [...scr.querySelectorAll('.backbtn')].find(b => !b.hidden && b.offsetParent !== null && !b.closest('[hidden]')) || null;
+}
+window.addEventListener('popstate', () => {
+  VOLTA.armado = false;
+  try {
+    if (typeof sheetKind !== 'undefined' && sheetKind) closeSheet();
+    else if (screen === 'game') { const mb = document.querySelector('#menuBtn'); if (mb) mb.click(); }
+    else if (screen !== 'home' && screen !== 'who') {
+      const b = voltaBotaoDaTela();
+      if (b) b.click();
+      else if (typeof irAba === 'function' && typeof abaDe === 'function' && abaDe(screen)) irAba('home');
+      else show('home');
+    } else {
+      // no início: não arma de novo. Se tocar voltar outra vez, o celular fecha o app; se tocar na tela, arma de novo.
+      toast('Toque de novo em voltar para sair do jogo.');
+      return;
+    }
+  } catch (e) {}
+  voltaArmar();
+});
+
 
 // ---- Desenho das peças ----
 function tileSVG(p, cls, shadow) {
@@ -9893,7 +9945,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.37-a4516e64';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.37.1-351a367c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
