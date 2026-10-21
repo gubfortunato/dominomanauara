@@ -1685,6 +1685,9 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .aba-face svg{width:22px;height:22px}
 .aba.on .aba-face{box-shadow:0 0 0 2px var(--nos)}
 .aba-vivo{position:absolute;top:2px;right:13px;width:9px;height:9px;border-radius:50%;background:#e5484d;box-shadow:0 0 0 2px var(--bg-2)}
+.aba-vivo.pulsa{animation:abaVivoPulsa 1.6s infinite}
+@keyframes abaVivoPulsa{0%{box-shadow:0 0 0 2px var(--bg-2),0 0 0 2px rgba(229,72,77,.6)}70%{box-shadow:0 0 0 2px var(--bg-2),0 0 0 8px rgba(229,72,77,0)}100%{box-shadow:0 0 0 2px var(--bg-2),0 0 0 2px rgba(229,72,77,0)}}
+@media (prefers-reduced-motion:reduce){.aba-vivo.pulsa{animation:none}}
 body.com-abas{--panel-pb:100px}
 body.com-abas #profileBack{display:none}
 .so-mais{display:none!important}
@@ -2855,6 +2858,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.29.2', data: '20/10/2026', itens: ['A bolinha vermelha da aba Calçada agora fica sempre acesa e pulsando.'] },
   { v: '3.29.1', data: '20/10/2026', itens: ['Assistir no app instalado no iPhone: as pedras de quem está embaixo apareciam no meio da mesa, por cima do jogo. Agora ficam no lugar delas.'] },
   { v: '3.29', data: '20/10/2026', itens: ['Ranking da calçada: na aba Calçada, os 20 que mais ganharam partidas na mesa online na semana e no mês, e a sua posição.', 'Conquistas à vista: no Perfil, a próxima conquista com a barrinha e o prêmio; no Jogar, a próxima no cartão do nível; e no fim da mão, quando falta pouco.', 'Os níveis ficaram mais difíceis de subir, principalmente os altos. Ninguém perdeu o nível que já tinha.'] },
   { v: '3.28', data: '20/10/2026', itens: ['Modo espectador: na fila do ganha-chama, toque em "Assistir a partida" e veja os amigos jogando. Quando chegar a sua vez, você entra sozinho.', 'Na Calçada, cada mesa rápida tem o botão "Assistir". Quem assiste vê a mesa e o placar, nunca a mão de ninguém.', 'Quem está jogando vê quantas pessoas estão assistindo.'] },
@@ -8492,7 +8496,8 @@ function abasAtualiza(tela) {
 function abasVivo() {
   const ms = VIVO.mesas || [];
   const vagas = ms.filter(v => v.publica !== false && v.livres > 0);
-  const bol = $('#abaVivo'); if (bol) bol.hidden = !(vivoMostra() && vagas.length);
+  // 3.29.2 (pedido do dono): a bolinha fica acesa e pulsando o tempo todo
+  const bol = $('#abaVivo'); if (bol) { bol.hidden = !vivoMostra(); bol.classList.add('pulsa'); }
   const av = $('#calcAviso'); if (!av) return;
   av.hidden = !(vivoMostra() && ms.length);
   if (av.hidden) return;
@@ -9533,7 +9538,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.29.1-f480a14b';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.29.2-62b3a510';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
