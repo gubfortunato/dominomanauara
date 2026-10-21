@@ -526,6 +526,19 @@ body{touch-action:manipulation}
 .dn-msglista .m-meta a{color:var(--glow);text-decoration:underline}
 .idade{grid-template-columns:1fr 1fr}
 .idade button[aria-checked="true"]{background:var(--nos);color:var(--bg-2)}
+
+/* 3.37.3: estrela ao lado do nome (Apoiador) e o selo ♥ (doador), os dois parados */
+.nome-selo{display:inline-block;margin:0 0 0 5px;padding:0 2px;border:0;background:none;font:inherit;font-weight:700;line-height:1;vertical-align:baseline;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.nome-estrela{color:#d8902f;font-size:1.05em}
+.nome-coracao{color:#c0563f;font-size:.85em;letter-spacing:.04em}
+@media (prefers-color-scheme: dark){ .nome-estrela{color:#f3c063} .nome-coracao{color:#ef8a73} }
+/* 3.37.3: frase embaixo das pedras na tela de entrada */
+.entry-frase{margin:16px 0 0;font-family:var(--font-display);font-weight:400;font-size:21px;line-height:1.15;letter-spacing:.005em;color:var(--fg);opacity:.85;text-align:center;text-wrap:balance}
+.entra .entry-frase{animation:entBotao .5s ease-out 1.8s both}
+/* celular deitado: não cabe sem empurrar a mesa redonda para fora da tela */
+@media (orientation: landscape) and (max-height: 560px){ .entry-frase{display:none} }
+/* celular baixinho (iPhone SE e parecidos): frase menor, para caber o mais perto possível da tela */
+@media (orientation: portrait) and (max-height: 700px){ .entry-frase{font-size:18px;margin-top:10px} }
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:12px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
@@ -1941,6 +1954,7 @@ button.dn-ag:active{transform:scale(.98)}
       <button type="button" class="primary" id="enterBtn">Começar</button>
     </div>
     <div class="train go" id="train" role="button" tabindex="0" aria-label="Derrubar as pedras de novo"></div>
+    <p class="entry-frase">O dominó das calçadas, agora em qualquer lugar.</p>
   </section>
 
   <section class="screen panel inst" id="scrInstalar" hidden>
@@ -2957,6 +2971,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.37.3', data: '21/10/2026', itens: ['Tela de entrada com a frase "O dominó das calçadas, agora em qualquer lugar."', 'No início, uma estrela ★ ao lado do seu nome enquanto você é Apoiador (depois, fica o selo de doador ♥). Toque nela para abrir o Apoie o jogo.'] },
   { v: '3.37.2', data: '21/10/2026', itens: ['Apoie o jogo com valores novos: R$ 9,90 (1 mês de Apoiador), R$ 19,90 (3 meses) e R$ 29,90 (6 meses). Quer dar mais? Escolha o valor, a partir de R$ 30: cada R$ 5 vale 1 mês.', 'Os botões de doação voltaram a abrir o pagamento.', 'Avisos no celular no aniversário de Manaus, no começo do Desafio das Confrarias e toda segunda-feira, com o novo Rei da Calçada. Tocar no aviso leva direto ao ranking ou à Turma.', 'O aviso "tem gente querendo jogar online" agora aparece também na Calçada, no Mais e no Perfil.'] },
   { v: '3.37.1', data: '21/10/2026', itens: ['Mesa com bucho comprido: cada parte da mesa ocupa um canto, e as pedras ficam bem maiores no fim da mão.', 'Botão voltar do celular: fecha a janela aberta e volta para o início; na partida, abre o menu (ninguém sai sem querer); no início, é só tocar de novo para sair.', 'Calçada: as mesas com os amigos mostram o apelido de quem está jogando.', 'Apelidos como "Outro" pedem um apelido de verdade.'] },
   { v: '3.37', data: '21/10/2026', itens: ['Ranking da calçada por pontos, a partir da semana de 26/10: vitória contra pessoas vale +3, contra a turma do bairro +1 (só 3 por dia) e derrota contra pessoas tira 1. Contra a mesma pessoa, só 5 partidas por dia valem ponto.', 'Rei da Calçada: o 1º da semana ganha a coroa 👑 na mesa online durante a semana seguinte.', 'Experiência: contra a turma do bairro (jogo offline ou mesa sem nenhuma pessoa do outro lado), as jogadas valem metade. Contra pessoas, vale cheia.', 'Correção: quem usa foto no perfil aparecia sem rosto para os outros na mesa online e no ranking. Agora aparece com o avatar.', 'Apelido genérico (como "Anonimous") não aparece no ranking.', 'Correção: na Calçada, o "Abrir uma mesa rápida" ficava em cima da borda do quadro.'] },
@@ -3703,9 +3718,14 @@ function renderHome() {
   renderApoio(); renderDonoCard(); renderAvisos();
   $('#offlineK').textContent = 'Jogo offline' + (meuBairro() && BAIRROS.includes(meuBairro()) ? ' · ' + meuBairro() : '');
   const nv = typeof nivelDoador === 'function' ? nivelDoador() : 0;
-  $('#homeName').innerHTML = esc(me) + (isApoiador() ? `<span class="apoiador">Apoiador${nv ? ' ' + '♥'.repeat(nv) : ''}</span>` : '');
+  // 3.37.3 (ideia do dono): no lugar da etiqueta "Apoiador ♥", uma estrela ao lado do nome enquanto for Apoiador; depois
+  // que o tempo acaba, fica o selo de doador ♥ (para sempre). Os dois parados, como na mesa online. Tocar abre o Apoie o jogo.
+  const plano = typeof temPlano === 'function' && temPlano();
+  $('#homeName').innerHTML = esc(me) + (plano ? '<button type="button" class="nome-selo nome-estrela" data-selo="apoio" aria-label="Você é Apoiador">★</button>'
+    : nv ? `<button type="button" class="nome-selo nome-coracao" data-selo="apoio" aria-label="Doador">${'♥'.repeat(nv)}</button>` : '');
 }
 $('#meChip').addEventListener('click', () => openProfile('home'));
+$('#homeName').addEventListener('click', e => { if (e.target.closest('[data-selo]') && typeof abrirApoio === 'function') abrirApoio('home'); });
 $('#brandHome').addEventListener('click', () => show('who'));
 $('#howBtn').addEventListener('click', () => {
   openSheet('info', `${RULES_HTML}<button type="button" class="primary" id="closeInfo">Entendi</button>`);
@@ -10051,7 +10071,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.37.2-2317ea95';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.37.3-d0cce793';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
