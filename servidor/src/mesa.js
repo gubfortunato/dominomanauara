@@ -164,7 +164,8 @@ export class Mesa {
     for (const x of l) {
       try {
         const j = await (await this.env.MESA.get(this.env.MESA.idFromName(x.codigo)).fetch('https://mesa/info?vivo=1')).json();
-        if (j && j.existe && j.fase === 'jogo' && j.on > 0) {
+        if (todas && j && j.existe && j.fase !== 'jogo' && j.on > 0) mesas.push(Object.assign({ codigo: x.codigo }, j, { espera: true }));
+        else if (j && j.existe && j.fase === 'jogo' && j.on > 0) {
           if (todas) mesas.push(Object.assign({ codigo: x.codigo }, j));
           // 3.27: a lista pública (aba Calçada) não leva o bairro de ninguém
           else if (j.publica) mesas.push(Object.assign({ codigo: x.codigo }, j, { cad: (j.cad || []).map(c => c ? Object.assign({}, c, { bairro: null }) : c) }));
@@ -179,8 +180,8 @@ export class Mesa {
       if (mesas.length >= 16) break;
     }
     // primeiro as mesas rápidas com lugar vago (dá para entrar), depois as rápidas cheias, depois as com os amigos
-    const ordem = v => v.publica ? (v.livres > 0 ? 0 : 1) : 2;
-    mesas = mesas.map((v, i) => [v, i]).sort((a, b) => ordem(a[0]) - ordem(b[0]) || a[1] - b[1]).map(x => x[0]).slice(0, todas ? 12 : 10);
+    const ordem = v => v.espera ? 3 : v.publica ? (v.livres > 0 ? 0 : 1) : 2;   // as da sala (só o administrador vê) por último
+    mesas = mesas.map((v, i) => [v, i]).sort((a, b) => ordem(a[0]) - ordem(b[0]) || a[1] - b[1]).map(x => x[0]).slice(0, todas ? 16 : 10);
     this[k] = { t: agora, v: { mesas } };
     return this[k].v;
   }
@@ -190,7 +191,11 @@ export class Mesa {
   }
   infoVivo() {
     const m = this.viva();
-    if (!m || !m.G) return { existe: !!m, fase: m ? m.fase : null };
+    if (!m) return { existe: false, fase: null };
+    if (!m.G) return { existe: true, fase: m.fase, publica: !!m.publica, tema: m.tema || null,   // 3.35: sala, antes da 1ª partida
+      on: m.cad.filter((c, p) => c && !c.bot && this.conectado(p)).length, livres: 0,
+      cad: m.cad.map((c, p) => c ? { nome: c.nome, bot: !!c.bot, av: c.bot ? null : c.av || null, tipo: c.bot ? 'robo' : this.conectado(p) ? 'pessoa' : 'fora', nv: c.bot ? null : c.nv || 1, bairro: null } : null),
+      partida: 0, mao: 0, criada: m.criada || null, placar: [0, 0], lance: null };
     const G = m.G, evs = G.events || [];
     const ev = ['galo', 'batida', 'play', 'pass'].map(t => evs.find(e => e.type === t)).find(Boolean) || null;
     return { existe: true, fase: m.fase, publica: !!m.publica, tema: m.tema || null,
@@ -345,7 +350,8 @@ export class Mesa {
     if (m.fase === 'jogo') this.agendar();
     await this.salvar();
     this.espalhar();
-    if (m.fase === 'jogo') await this.registrarAtiva();
+    // 3.35: avisa a lista também na sala (antes de começar): o administrador vê quem está esperando
+    await this.registrarAtiva();
   }
   // ---------- Assistir (3.28) ----------
   // Quem tem o número da mesa (mesa rápida: pela Calçada) pode assistir: recebe a mesa como quem está na fila — o
