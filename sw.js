@@ -1,6 +1,6 @@
 // Dominó Manauara: guarda o jogo no celular para abrir rápido e funcionar sem internet.
 // Ao publicar uma versão nova, troque o número abaixo para os celulares baixarem tudo de novo.
-const CACHE = 'dominomanauara-3.37.1-351a367c';
+const CACHE = 'dominomanauara-3.37.2-2317ea95';
 const FILES = [
   './',
   './index.html',
@@ -78,7 +78,8 @@ self.addEventListener('notificationclick', e => {
   alvo.searchParams.set('origem', 'lembrete');
   e.waitUntil((async () => {
     const abertas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    for (const c of abertas) { if ('focus' in c) { await c.focus(); return; } }
+    // 3.37.2: com o app aberto, traz para a frente e manda ir ao lugar do aviso (Rei da Calçada, Turma, renovar o apoio)
+    for (const c of abertas) { if ('focus' in c) { await c.focus(); try { c.postMessage({ tipo: 'abrir', url: alvo.href }); } catch (err) {} return; } }
     await self.clients.openWindow(alvo.href);
   })());
 });

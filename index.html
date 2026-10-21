@@ -1531,6 +1531,22 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .ap-tempos .ap-preco small{font-size:12px;line-height:1.25;font-weight:700;color:var(--muted)}
 .ap-tempos .ap-preco em{font-size:10px;padding:4px 7px 3px}
 #apPlano .ap-k{margin-top:6px}
+/* 3.37.2: R$ 9,90 · R$ 19,90 · R$ 29,90 (centavos menores, sem estourar a largura) e o "Quer dar mais?" (valor livre, mínimo R$ 30) */
+.ap-tempos{grid-template-columns:repeat(3,minmax(0,1fr))}
+.ap-tempos .ap-preco b{font-size:21px;white-space:nowrap}
+.ap-tempos .ap-preco b i{font-style:normal;font-size:.72em}
+.ap-outro{margin-top:14px;padding:14px;border-radius:16px;border:1.5px dashed var(--line)}
+.ap-outro-t{margin:0 0 10px;font-size:15px;line-height:1.35;color:var(--fg)}
+.ap-outro-l{display:flex;gap:8px;align-items:stretch}
+.ap-outro-in{flex:1;min-width:0;display:flex;align-items:center;gap:6px;padding:0 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg-2);font-weight:800;color:var(--nos);font-size:20px;cursor:text}
+.ap-outro-in:focus-within{border-color:var(--nos)}
+.ap-outro-in input{flex:1;min-width:0;width:100%;border:0;background:transparent;font:inherit;color:var(--fg);padding:10px 0;outline:none}
+.ap-outro-in input::placeholder{color:var(--muted);opacity:.6}
+.ap-outro-b{width:auto!important;flex:none;padding:0 22px!important;margin:0!important}
+.ap-outro-b:disabled{opacity:.45}
+.ap-outro-h{margin:8px 0 0;font-size:13.5px;line-height:1.35;font-weight:700;color:var(--muted)}
+.ap-outro-h.erro{color:#c0392b}
+@media (prefers-color-scheme: dark){ .ap-outro-h.erro{color:#ff8a7a} }
 
 /* 3.24 (protótipo): "Agora na calçada" */
 .vivo{display:grid;gap:8px;padding:14px 14px 12px;border-radius:18px;border:1.5px solid var(--line);background:var(--bg-2)}
@@ -2169,9 +2185,14 @@ button.dn-ag:active{transform:scale(.98)}
       <div class="ap-doa-premio" id="apDoaPremio"></div>
       <span class="ap-k" id="apEscolhaK">Faça uma doação</span>
       <div class="ap-precos ap-tempos" id="apPrecos">
-        <button type="button" class="ap-preco" data-p="apoio5"><b>R$ 5</b><span>1 mês</span><small>Um cafezinho</small></button>
-        <button type="button" class="ap-preco" data-p="apoio12"><b>R$ 12</b><span>3 meses</span><small>Um tacacá</small></button>
-        <button type="button" class="ap-preco destaque" data-p="apoio40"><em>Mais em conta</em><b>R$ 40</b><span>1 ano</span><small>R$ 3,33 por mês</small></button>
+        <button type="button" class="ap-preco" data-p="apoio990"><b>R$ 9<i>,90</i></b><span>1 mês</span><small>Para experimentar</small></button>
+        <button type="button" class="ap-preco" data-p="apoio1990"><b>R$ 19<i>,90</i></b><span>3 meses</span><small>R$ 6,63 por mês</small></button>
+        <button type="button" class="ap-preco destaque" data-p="apoio2990"><em>Mais em conta</em><b>R$ 29<i>,90</i></b><span>6 meses</span><small>R$ 4,98 por mês</small></button>
+      </div>
+      <div class="ap-outro" id="apOutro">
+        <p class="ap-outro-t"><b>Quer dar mais?</b> A partir de R$ 30, cada R$ 5 vale 1 mês de Apoiador.</p>
+        <div class="ap-outro-l"><label class="ap-outro-in"><span aria-hidden="true">R$</span><input type="text" id="apOutroValor" inputmode="decimal" autocomplete="off" placeholder="30" maxlength="6" aria-label="Valor da doação, a partir de 30 reais" aria-describedby="apOutroDica"></label><button type="button" class="primary ap-outro-b" id="apOutroDoar" disabled>Doar</button></div>
+        <p class="ap-outro-h" id="apOutroDica" aria-live="polite">Valor mínimo: R$ 30.</p>
       </div>
       <p class="note ap-nota">Cada doação vira tempo de Apoiador, somado ao que você já tiver. Paga uma vez, por Pix ou cartão, na página segura do Asaas. Não renova sozinha.</p>
     </div>
@@ -2936,6 +2957,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.37.2', data: '21/10/2026', itens: ['Apoie o jogo com valores novos: R$ 9,90 (1 mês de Apoiador), R$ 19,90 (3 meses) e R$ 29,90 (6 meses). Quer dar mais? Escolha o valor, a partir de R$ 30: cada R$ 5 vale 1 mês.', 'Os botões de doação voltaram a abrir o pagamento.', 'Avisos no celular no aniversário de Manaus, no começo do Desafio das Confrarias e toda segunda-feira, com o novo Rei da Calçada. Tocar no aviso leva direto ao ranking ou à Turma.', 'O aviso "tem gente querendo jogar online" agora aparece também na Calçada, no Mais e no Perfil.'] },
   { v: '3.37.1', data: '21/10/2026', itens: ['Mesa com bucho comprido: cada parte da mesa ocupa um canto, e as pedras ficam bem maiores no fim da mão.', 'Botão voltar do celular: fecha a janela aberta e volta para o início; na partida, abre o menu (ninguém sai sem querer); no início, é só tocar de novo para sair.', 'Calçada: as mesas com os amigos mostram o apelido de quem está jogando.', 'Apelidos como "Outro" pedem um apelido de verdade.'] },
   { v: '3.37', data: '21/10/2026', itens: ['Ranking da calçada por pontos, a partir da semana de 26/10: vitória contra pessoas vale +3, contra a turma do bairro +1 (só 3 por dia) e derrota contra pessoas tira 1. Contra a mesma pessoa, só 5 partidas por dia valem ponto.', 'Rei da Calçada: o 1º da semana ganha a coroa 👑 na mesa online durante a semana seguinte.', 'Experiência: contra a turma do bairro (jogo offline ou mesa sem nenhuma pessoa do outro lado), as jogadas valem metade. Contra pessoas, vale cheia.', 'Correção: quem usa foto no perfil aparecia sem rosto para os outros na mesa online e no ranking. Agora aparece com o avatar.', 'Apelido genérico (como "Anonimous") não aparece no ranking.', 'Correção: na Calçada, o "Abrir uma mesa rápida" ficava em cima da borda do quadro.'] },
   { v: '3.36', data: '21/10/2026', itens: ['Calçada mais limpa: o convite para abrir uma mesa rápida só aparece quando não tem mesa com lugar vago.'] },
@@ -5547,11 +5569,15 @@ show = function (name) { showBase(name); statusOnline(); marcarMesaViva(); };
 // com lugar sobrando (esperando gente ou jogando com robô). Se tiver, aparece um aviso no alto: "Bora jogar" ou "Agora não".
 // Só números, sem nome de ninguém. Menor de 18 não recebe (a mesa rápida é com desconhecidos).
 const CHAMKEY = 'dmz-chamada-nao';
+// 3.37.2: aparece em todas as telas do app, menos na entrada, na sala e na mesa online (já está na mesa), no pagamento,
+// nos formulários (Fale com a gente, Anuncie) e na Área do dono; e nunca enquanto a pessoa digita.
+const TELAS_CHAMADA = ['home', 'game', 'setup', 'estilo', 'calcada', 'mais', 'profile', 'instalar'];
+function digitando() { const a = document.activeElement; return !!a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable); }
 let chamadaUltima = 0;
 function podeChamar() {
   return onlineAtivo() && !!profile && !!profile.idade && profile.idade !== 'menor' && document.visibilityState === 'visible'
-    && !ON.ativo && !ON.buscando && !mesaGuardada() && ['home', 'game', 'setup', 'estilo'].includes(screen)
-    && !(screen === 'game' && mode === 'on') && !$('#chamada')
+    && !ON.ativo && !ON.buscando && !mesaGuardada() && TELAS_CHAMADA.includes(screen)
+    && !(screen === 'game' && mode === 'on') && !$('#chamada') && !digitando()
     && Date.now() - (Number(store.get(CHAMKEY)) || 0) > 20 * 60000;
 }
 async function sondarFila(agora) {
@@ -5756,7 +5782,6 @@ const MESAS = [
   // Copa 357 Anos: só quem jogou no aniversário de Manaus (24/10/2026) tem
   { id: 'manaus357', nome: 'Manaus 357', bg: 'var(--img-manaus357-sw) center 50%/120% auto no-repeat, #241c4c', req: 'copa357', evento: true }
 ];
-const PRECO = { mensal: 'R$ 4,90 · 30 dias', anual: 'R$ 39,90 · 1 ano', doacao5: 'R$ 5', doacao10: 'R$ 10', doacao20: 'R$ 20' };
 let apoioVolta = 'home';
 // Doação e planos: desligados para todos até ajustar o Asaas. O administrador pode ligar só no celular dele para testar.
 function pagamentosAtivos() { return !!CONFIG.api && (CONFIG.pagamentos || (typeof dono !== 'undefined' && !!dono && !!dono.testePagamentos)); }
@@ -5809,12 +5834,12 @@ async function conferirPlano(agora) {
 }
 
 // ---------- Pagar: abre a página do Asaas ----------
-async function pagarProduto(produto, btn) {
+async function pagarProduto(produto, btn, valor) {
   if (!pagamentosAtivos()) { toast('Pagamentos ainda não estão ligados.'); return; }
   const rotulo = btn ? btn.innerHTML : '';
-  if (btn) { btn.disabled = true; btn.innerHTML = '<b>Abrindo o pagamento…</b>'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = btn.classList.contains('ap-outro-b') ? 'Abrindo…' : '<b>Abrindo o pagamento…</b>'; }
   try {
-    const r = await fetch(CONFIG.api + '/pagar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ produto, aparelho: meuId() }) });
+    const r = await fetch(CONFIG.api + '/pagar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(Object.assign({ produto, aparelho: meuId() }, valor != null ? { valor } : {})) });
     const j = await r.json().catch(() => ({}));
     if (r.status === 201 && j.link) {
       store.set(PEDKEY, JSON.stringify({ id: j.pedido, produto, quando: Date.now() }));
@@ -5822,7 +5847,9 @@ async function pagarProduto(produto, btn) {
       location.href = j.link;
       return;
     }
-    toast(r.status === 503 ? 'Os pagamentos ainda não estão ligados. Tente mais tarde.'
+    track('pagar-erro', { produto, status: r.status, erro: j.erro || null });
+    toast(r.status === 400 && j.erro === 'valor' ? `O valor precisa ser de R$ ${j.min || 30} a R$ ${j.max || 500}.`
+      : r.status === 503 ? 'Os pagamentos ainda não estão ligados. Tente mais tarde.'
       : r.status === 429 ? 'Muitas tentativas agora. Tente de novo daqui a pouco.'
       : 'Não deu para abrir o pagamento agora. Tente de novo.');
   } catch (e) { toast('Sem internet agora. Para pagar, precisa de conexão.'); }
@@ -5861,7 +5888,7 @@ async function acompanharPedido(id, insistir) {
   acompanhando = null;
 }
 function obrigado(plano, ate, nivelAntes, produto) {
-  const titulo = plano ? (/^apoio/.test(produto || '') ? 'Obrigado pela doação! ♥' : 'Você agora é Apoiador!') : 'Obrigado pela doação!';
+  const titulo = plano ? (/^(apoio|livre)/.test(produto || '') ? 'Obrigado pela doação! ♥' : 'Você agora é Apoiador!') : 'Obrigado pela doação!';
   const nv = nivelDoador(), selo = plano && ate && nv > (nivelAntes || 0) ? (nivelAntes ? ` Seu selo de doador subiu para ${coracoes(nv)}!` : ` E ganhou, para sempre, o selo de doador ${coracoes(nv)} e o avatar do doador.`) : '';
   const txt = plano ? (ate ? `Você é Apoiador até ${dataBR(ate)}. Já dá para mostrar a sua foto na mesa online (ligue no seu perfil), e tudo do Personalizar está liberado.${selo}` : 'O apoio ficou no aparelho em que você tocou em pagar. Abra o jogo por lá.')
     : 'Sua ajuda mantém o Dominó Manauara de graça para a turma toda.';
@@ -5953,6 +5980,39 @@ function renderApoioTela() {
   $('#apTrazerBox').hidden = on;
 }
 $('#apPrecos').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (b) pagarProduto(b.dataset.p, b); });
+// 3.37.2: "Quer dar mais?" — valor livre de R$ 30 a R$ 500; cada R$ 5 vale 1 mês de Apoiador (o servidor confere de novo)
+const LIVRE = { min: 30, max: 500, porMes: 5 };
+function lerValorLivre(txt) {
+  const t = String(txt || '').trim().replace(/\s/g, '').replace(/^R\$/i, '');
+  if (!/^\d{1,3}(,\d{0,2})?$/.test(t)) return null;
+  return Math.round(Number(t.replace(',', '.')) * 100) / 100;
+}
+function textoMeses(m) { const a = Math.floor(m / 12), r = m % 12; return [a ? `${a} ${a === 1 ? 'ano' : 'anos'}` : '', r ? `${r} ${r === 1 ? 'mês' : 'meses'}` : ''].filter(Boolean).join(' e '); }
+const reaisCurto = v => 'R$ ' + (Number.isInteger(v) ? String(v) : v.toFixed(2).replace('.', ','));
+function valorLivreValido() { const v = lerValorLivre($('#apOutroValor').value); return v != null && v >= LIVRE.min && v <= LIVRE.max ? v : null; }
+function atualizarValorLivre() {
+  const inp = $('#apOutroValor'), dica = $('#apOutroDica'), bt = $('#apOutroDoar');
+  // só números e uma vírgula, com no máximo 2 casas (sem ponto de milhar)
+  let t = inp.value.replace(/\./g, ',').replace(/[^\d,]/g, '');
+  const i = t.indexOf(','); if (i >= 0) t = t.slice(0, i + 1) + t.slice(i + 1).replace(/,/g, '').slice(0, 2);
+  if (t.length > 1 && t[0] === '0' && t[1] !== ',') t = t.replace(/^0+/, '') || '0';
+  if (t !== inp.value) inp.value = t;
+  const v = lerValorLivre(t), ok = valorLivreValido() != null;
+  bt.disabled = !ok;
+  dica.classList.toggle('erro', !!t && !ok);
+  if (!t || v == null) dica.textContent = `Valor mínimo: R$ ${LIVRE.min}.`;
+  else if (v < LIVRE.min) dica.textContent = `O valor mínimo é R$ ${LIVRE.min}. Para menos, use os botões de cima.`;
+  else if (v > LIVRE.max) dica.textContent = `O valor máximo é R$ ${LIVRE.max}.`;
+  else { const m = Math.floor((v + 1e-9) / LIVRE.porMes); dica.textContent = `${reaisCurto(v)} = ${textoMeses(m)} de Apoiador e o selo ${v >= 100 ? '♥♥♥' : '♥♥'}`; }
+}
+$('#apOutroValor').addEventListener('input', atualizarValorLivre);
+$('#apOutroValor').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (valorLivreValido() != null) $('#apOutroDoar').click(); } });
+$('#apOutroDoar').addEventListener('click', e => {
+  const v = valorLivreValido();
+  if (v == null) { atualizarValorLivre(); toast(`O valor precisa ser de R$ ${LIVRE.min} a R$ ${LIVRE.max}.`); return; }
+  $('#apOutroValor').blur();
+  pagarProduto('livre', e.currentTarget, v).then(() => atualizarValorLivre());
+});
 $('#apDoaAvs').addEventListener('click', e => {
   const b = e.target.closest('[data-av]'); if (!b || !profile) return;
   profile.av = b.dataset.av; store.set(PKEY, JSON.stringify(profile));
@@ -6000,12 +6060,12 @@ renderApoio = function () {
   } else if (isApoiador()) {
     const d = doadorLocal(), dn = nivelDoador();
     $('#apoioK').textContent = 'Obrigado pelo apoio! ' + coracoes(dn);
-    $('#apoioTxt').textContent = (d && d.desde ? `Doador desde ${mesAno(d.desde)}. ` : '') + 'Sua doação ajuda a manter o Dominó Manauara de graça. Quer apoiar todo mês? O Plano Apoiador sai por R$ 4,90 e ainda tem extras.';
+    $('#apoioTxt').textContent = (d && d.desde ? `Doador desde ${mesAno(d.desde)}. ` : '') + 'Sua doação ajuda a manter o Dominó Manauara de graça. Quer continuar como Apoiador? É a partir de R$ 9,90 e ainda tem extras.';
     $('#apoioVals').innerHTML = '<button type="button" class="ap-ir" data-ir="plano">Conhecer o Plano Apoiador</button><button type="button" class="ap-ir ap-ir2" data-ir="apoio">Doar de novo</button>';
   } else {
     $('#apoioK').textContent = 'Apoie o jogo';
     $('#apoioTxt').textContent = 'O Dominó Manauara é de graça e quer continuar assim. Com o valor que der, você ajuda a manter a mesa de pé. Quer extras? O Plano Apoiador dá foto na mesa, selo, avatares exclusivos e tudo do Personalizar liberado na hora.';
-    $('#apoioVals').innerHTML = '<button type="button" class="ap-ir" data-ir="apoio">Doar a partir de R$ 5</button><button type="button" class="ap-ir ap-ir2" data-ir="plano">Conhecer o Plano Apoiador</button>';
+    $('#apoioVals').innerHTML = '<button type="button" class="ap-ir" data-ir="apoio">Doar a partir de R$ 9,90</button><button type="button" class="ap-ir ap-ir2" data-ir="plano">Conhecer o Plano Apoiador</button>';
   }
   if (menorDeIdade()) card.hidden = true;
 };
@@ -6025,7 +6085,8 @@ openApoioSheet = function () { closeSheet(); if (screen === 'game') leaveGame();
 
 // ---------- Área do dono: quanto entrou ----------
 const reais = v => 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',');
-const NOME_PRODUTO = { mensal: 'Plano 30 dias', anual: 'Plano 1 ano', doacao5: 'Doação', doacao10: 'Doação', doacao20: 'Doação' };
+const NOME_PRODUTO = { apoio990: 'Apoio 1 mês', apoio1990: 'Apoio 3 meses', apoio2990: 'Apoio 6 meses', livre: 'Apoio (valor livre)', apoio5: 'Apoio 1 mês', apoio12: 'Apoio 3 meses', apoio40: 'Apoio 1 ano',
+  mensal: 'Plano 30 dias', anual: 'Plano 1 ano', doacao5: 'Doação', doacao10: 'Doação', doacao20: 'Doação' };
 async function dnPagCarregar() {
   const box = $('#dnPag');
   box.hidden = !pagamentosAtivos() || !dono || !dono.admin;
@@ -9363,6 +9424,51 @@ window.addEventListener('popstate', () => {
   voltaArmar();
 });
 
+// ===== Tocou no aviso (3.37.2) =====
+// Os avisos do Rei da Calçada e do Desafio das Confrarias levam direto ao lugar: ?abrir=ranking (Calçada, no ranking) e
+// ?abrir=turma (a folha da Turma). Com o app fechado, vem no endereço; com o app aberto, o sw.js manda uma mensagem.
+// Nunca tira ninguém da partida ou da sala: aí o aviso só traz o app para a frente.
+function abrirPeloAviso(alvo) {
+  if (!profile || !['ranking', 'turma'].includes(alvo)) return false;
+  if (['game', 'sala', 'who'].includes(screen) || (typeof ON !== 'undefined' && (ON.ativo || ON.buscando))) return false;
+  if (sheetKind) closeSheet();
+  track('aviso-abrir-' + alvo);
+  if (alvo === 'ranking') {
+    if (typeof irAba === 'function') irAba('calcada'); else show('calcada');
+    if (typeof rkBuscar === 'function') rkBuscar(true);
+    setTimeout(() => { const el = $('#rkCard'); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 500);
+  } else {
+    if (!onlineAtivo() || typeof abrirTurma !== 'function') return false;
+    if (screen !== 'home') show('home');
+    setTimeout(() => abrirTurma(), 300);
+  }
+  return true;
+}
+// Com o app fechado: espera a pessoa entrar (passar da tela de entrada) e não briga com a janela de novidades
+(function () {
+  const q = new URLSearchParams(location.search), alvo = q.get('abrir');
+  if (!alvo) return;
+  q.delete('abrir');
+  try { history.replaceState(history.state, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } catch (e) {}
+  let n = 0;
+  const t = setInterval(() => {
+    if (++n > 120) { clearInterval(t); return; }   // 1 minuto
+    if (profile && screen && screen !== 'who' && !sheetKind) { clearInterval(t); abrirPeloAviso(alvo); }
+  }, 500);
+})();
+// Com o app aberto: o sw.js traz o app para a frente e manda para onde o aviso leva
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => {
+  const d = e.data || {};
+  if (d.tipo !== 'abrir' || typeof d.url !== 'string') return;
+  try {
+    const u = new URL(d.url, location.href);
+    const alvo = u.searchParams.get('abrir');
+    if (alvo) abrirPeloAviso(alvo);
+    else if (u.searchParams.get('apoio') === 'renovar' && profile && typeof abrirApoio === 'function' && typeof pagamentosAtivos === 'function' && pagamentosAtivos()
+      && !['game', 'sala'].includes(screen)) abrirApoio('home', 'plano');
+  } catch (err) {}
+});
+
 
 // ---- Desenho das peças ----
 function tileSVG(p, cls, shadow) {
@@ -9945,7 +10051,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.37.1-351a367c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.37.2-2317ea95';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

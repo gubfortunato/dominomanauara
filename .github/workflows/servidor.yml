@@ -108,10 +108,13 @@ jobs:
             else
               log "asaas aviso de pagamento (webhook): já cadastrado"
             fi
-            t=$(curl -s -X POST -H 'content-type: application/json' --data '{"produto":"doacao5"}' "$url/pagar")
-            log "asaas cobrança de teste: $(echo "$t" | jq -c '{abriu: (.link != null), erro, detalhe}')"
-            co=$(echo "$t" | jq -r '.checkout // empty')
-            [ -n "$co" ] && curl -s -X POST -H "access_token: $ASAAS_API_KEY" -H "$UA" "$AS/checkouts/$co/cancel" > /dev/null && log "asaas: cobrança de teste cancelada"
+            # 3.37.2: testa todos os botões que estão no app (o nome e a descrição de cada um vão para o Asaas) e cancela em seguida
+            for prod in $(node -e "import('./src/pagamentos.js').then(m => console.log(m.A_VENDA.join(' ')))"); do
+              t=$(curl -s -X POST -H 'content-type: application/json' --data "{\"produto\":\"$prod\",\"aparelho\":\"teste-publicacao-0001\",\"valor\":30}" "$url/pagar")
+              log "asaas cobrança de teste $prod: $(echo "$t" | jq -c '{abriu: (.link != null), erro, detalhe}')"
+              co=$(echo "$t" | jq -r '.checkout // empty')
+              [ -n "$co" ] && curl -s -X POST -H "access_token: $ASAAS_API_KEY" -H "$UA" "$AS/checkouts/$co/cancel" > /dev/null && log "asaas: cobrança de teste $prod cancelada"
+            done
           else
             log "asaas: falta o segredo ASAAS_API_KEY no GitHub (pagamentos desligados)"
           fi

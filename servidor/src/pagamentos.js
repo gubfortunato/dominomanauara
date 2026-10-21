@@ -7,9 +7,18 @@ const DIA = 86400000;
 export const PRODUTOS = {
   // 3.22: um jeito só de apoiar. Cada valor compra tempo de Apoiador (foto na mesa, selo ★, avatares exclusivos e o
   // Personalizar liberado) e soma para o selo ♥, que fica para sempre. Quanto mais, mais tempo e mais barato o mês.
-  apoio5: { nome: 'Doação ao Dominó Manauara · 1 mês de Apoiador', desc: 'Dominó Manauara: 1 mês de Apoiador (foto na mesa online, selo, avatares exclusivos e tudo do Personalizar liberado) e, para sempre, o selo ♥ e o avatar do doador.', valor: 5, dias: 31 },
-  apoio12: { nome: 'Doação ao Dominó Manauara · 3 meses de Apoiador', desc: 'Dominó Manauara: 3 meses de Apoiador (foto na mesa online, selo, avatares exclusivos e tudo do Personalizar liberado) e, para sempre, o selo ♥ e o avatar do doador.', valor: 12, dias: 92 },
-  apoio40: { nome: 'Doação ao Dominó Manauara · 1 ano de Apoiador', desc: 'Dominó Manauara: 1 ano de Apoiador (foto na mesa online, selo, avatares exclusivos e tudo do Personalizar liberado) e, para sempre, o selo ♥ e o avatar do doador.', valor: 40, dias: 366 },
+  // 3.37.2: nome e descrição curtos e sem símbolos (com 45 letras no nome e 162 na descrição, o Asaas recusava a cobrança;
+  // os que funcionaram tinham até 25 e 133). O teste da publicação abre e cancela uma cobrança de cada um da lista A_VENDA.
+  // 3.37.2 (valores do dono): R$ 9,90 = 1 mês, R$ 19,90 = 3 meses, R$ 29,90 = 6 meses e "Quer dar mais?", um valor livre
+  // de R$ 30 a R$ 500 em que cada R$ 5 vale 1 mês de Apoiador (R$ 60 = 1 ano). O servidor recusa valor fora da faixa.
+  apoio990: { nome: 'Dominó Manauara - 1 mês', desc: 'Apoiador do Dominó Manauara por 1 mês: foto na mesa online, selo e avatares exclusivos.', valor: 9.90, dias: 31 },
+  apoio1990: { nome: 'Dominó Manauara - 3 meses', desc: 'Apoiador do Dominó Manauara por 3 meses: foto na mesa online, selo e avatares exclusivos.', valor: 19.90, dias: 92 },
+  apoio2990: { nome: 'Dominó Manauara - 6 meses', desc: 'Apoiador do Dominó Manauara por 6 meses: foto na mesa online, selo e avatares exclusivos.', valor: 29.90, dias: 183 },
+  livre: { nome: 'Dominó Manauara - apoio', livre: true },
+  // até a 3.37.1 (continuam valendo para os pedidos já feitos e para algum celular que ainda não atualizou)
+  apoio5: { nome: 'Dominó Manauara - 1 mês', desc: 'Apoiador do Dominó Manauara por 1 mês: foto na mesa online, selo e avatares exclusivos.', valor: 5, dias: 31 },
+  apoio12: { nome: 'Dominó Manauara - 3 meses', desc: 'Apoiador do Dominó Manauara por 3 meses: foto na mesa online, selo e avatares exclusivos.', valor: 12, dias: 92 },
+  apoio40: { nome: 'Dominó Manauara - 1 ano', desc: 'Apoiador do Dominó Manauara por 1 ano: foto na mesa online, selo e avatares exclusivos.', valor: 40, dias: 366 },
   // antigos (até a 3.21): continuam valendo para os pedidos já feitos e para algum celular que ainda não atualizou
   mensal: { nome: 'Plano Apoiador · 30 dias', desc: 'Dominó Manauara: sua foto na mesa online, selo de apoiador, avatares exclusivos e tudo do Personalizar liberado na hora, por 30 dias.', valor: 4.90, dias: 31 },
   anual: { nome: 'Plano Apoiador · 1 ano', desc: 'Dominó Manauara: sua foto na mesa online, selo de apoiador, avatares exclusivos e tudo do Personalizar liberado na hora, por 1 ano.', valor: 39.90, dias: 366 },
@@ -17,6 +26,28 @@ export const PRODUTOS = {
   doacao10: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter o jogo de graça. Quem doa pode mostrar a foto na mesa online.', valor: 10 },
   doacao20: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter o jogo de graça. Quem doa pode mostrar a foto na mesa online. De presente: 30 dias de Plano Apoiador.', valor: 20, brinde: 31 }
 };
+// Os botões que estão no app agora (o teste da publicação abre uma cobrança de cada)
+export const A_VENDA = ['apoio990', 'apoio1990', 'apoio2990', 'livre'];
+// Valor livre: de R$ 30 a R$ 500; cada R$ 5 vale 1 mês (R$ 60 = 12 meses = 1 ano)
+export const LIVRE = { min: 30, max: 500, porMes: 5 };
+export function valorLivre(v) {
+  const n = typeof v === 'number' ? v : Number(String(v == null ? '' : v).replace(',', '.'));
+  if (!Number.isFinite(n)) return null;
+  const c = Math.round(n * 100);
+  if (Math.abs(c - n * 100) > 1e-6 || c < LIVRE.min * 100 || c > LIVRE.max * 100) return null;
+  return c / 100;
+}
+export const mesesDoValor = v => Math.floor((v + 1e-9) / LIVRE.porMes);
+export const diasDosMeses = m => Math.ceil(m * 30.5);   // 1 = 31, 3 = 92, 6 = 183, 12 = 366
+function textoMeses(m) { const a = Math.floor(m / 12), r = m % 12; return [a ? `${a} ${a === 1 ? 'ano' : 'anos'}` : '', r ? `${r} ${r === 1 ? 'mês' : 'meses'}` : ''].filter(Boolean).join(' e '); }
+// o produto de um pedido (no valor livre, o tempo sai do valor pago)
+export function produtoDoPedido(produto, valor) {
+  const p = PRODUTOS[produto];
+  if (!p) return null;
+  if (!p.livre) return p;
+  const meses = mesesDoValor(Number(valor) || 0);
+  return Object.assign({}, p, { valor: Number(valor), dias: diasDosMeses(meses), desc: `Apoiador do Dominó Manauara por ${textoMeses(meses)}: foto na mesa online, selo e avatares exclusivos.` });
+}
 const PEDIDOS_POR_HORA = 12, TROCAS_POR_HORA = 10;
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
 const hex = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b => b.toString(16).padStart(2, '0')).join('');
@@ -101,8 +132,9 @@ export async function manterChaveAsaas(env) {
 export async function pagar(req, env, origin, h) {
   if (!env.ASAAS_API_KEY) return h.json({ erro: 'sem-pagamento' }, 503, origin);
   let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
-  const prod = PRODUTOS[b.produto];
-  if (!prod) return h.json({ erro: 'produto' }, 400, origin);
+  if (!PRODUTOS[b.produto]) return h.json({ erro: 'produto' }, 400, origin);
+  if (PRODUTOS[b.produto].livre && valorLivre(b.valor) == null) return h.json({ erro: 'valor', min: LIVRE.min, max: LIVRE.max }, 400, origin);
+  const prod = produtoDoPedido(b.produto, PRODUTOS[b.produto].livre ? valorLivre(b.valor) : undefined);
   if (prod.dias && !idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
   const marca = await h.marcaDoDia(req, env);
   const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM pedidos WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();
@@ -126,9 +158,9 @@ export async function pagar(req, env, origin, h) {
 
 // GET /pedido/:id -> situação do pagamento (o app pergunta quando volta do Asaas)
 export async function pedido(env, origin, h, id) {
-  const p = await env.DB.prepare('SELECT produto, status, aparelho FROM pedidos WHERE id = ?').bind(id).first();
+  const p = await env.DB.prepare('SELECT produto, status, aparelho, valor FROM pedidos WHERE id = ?').bind(id).first();
   if (!p) return h.json({ erro: 'nao-encontrado' }, 404, origin);
-  const prod = PRODUTOS[p.produto] || {};
+  const prod = produtoDoPedido(p.produto, p.valor) || {};
   const out = { status: p.status, produto: p.produto, plano: !!prod.dias, brinde: !!prod.brinde };
   if (p.status === 'pago' && p.aparelho) {
     const c = await contaDe(env, p.aparelho);
@@ -185,10 +217,10 @@ export async function webhook(req, env, origin, h) {
   }
   if (b.event === 'CHECKOUT_PAID' && b.checkout) {
     const c = b.checkout;
-    const p = await env.DB.prepare('SELECT id, aparelho, produto, status FROM pedidos WHERE checkout = ? OR id = ?').bind(String(c.id || ''), String(c.externalReference || '')).first();
+    const p = await env.DB.prepare('SELECT id, aparelho, produto, status, valor FROM pedidos WHERE checkout = ? OR id = ?').bind(String(c.id || ''), String(c.externalReference || '')).first();
     if (p && p.status !== 'pago') {
       await env.DB.prepare("UPDATE pedidos SET status = 'pago', pago_em = ? WHERE id = ?").bind(Date.now(), p.id).run();
-      const prod = PRODUTOS[p.produto];
+      const prod = produtoDoPedido(p.produto, p.valor);
       if (prod && p.aparelho) {
         if (prod.dias || prod.brinde) await ligarPlano(env, p.aparelho, prod.dias || prod.brinde);
         else await garantirConta(env, p.aparelho);
@@ -204,11 +236,11 @@ export async function webhook(req, env, origin, h) {
 // POST /dono/pagamentos/:id/devolver -> o dono devolveu o dinheiro no Asaas: tira o selo de doador e os dias de plano desse pagamento
 export async function donoDevolver(req, env, origin, h, id) {
   if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
-  const p = await env.DB.prepare('SELECT id, aparelho, produto, status FROM pedidos WHERE id = ?').bind(id).first();
+  const p = await env.DB.prepare('SELECT id, aparelho, produto, status, valor FROM pedidos WHERE id = ?').bind(id).first();
   if (!p) return h.json({ erro: 'nao-encontrado' }, 404, origin);
   if (p.status !== 'pago') return h.json({ erro: 'nao-pago', status: p.status }, 409, origin);
   await env.DB.prepare("UPDATE pedidos SET status = 'devolvido' WHERE id = ?").bind(id).run();
-  const prod = PRODUTOS[p.produto] || {}, dias = prod.dias || prod.brinde || 0;
+  const prod = produtoDoPedido(p.produto, p.valor) || {}, dias = prod.dias || prod.brinde || 0;
   if (dias && p.aparelho) {
     const pl = await planoDe(env, p.aparelho);
     if (pl && pl.ate) await env.DB.prepare('UPDATE planos SET ate = ? WHERE aparelho = ?').bind(Math.max(0, pl.ate - dias * DIA), p.aparelho).run();

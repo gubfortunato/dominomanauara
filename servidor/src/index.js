@@ -227,17 +227,52 @@ async function lembretesDoDia(env) {
   const dia = Math.floor(agora / DIA);
   return mandarPara(results || [], s => Object.assign({ url: '/' }, LEMBRETES[(dia + s.id) % LEMBRETES.length]), env);
 }
-// Datas especiais: um aviso para todo mundo que ligou os lembretes (uma vez por aparelho no dia), mesmo quem jogou ontem
+// Avisos de evento: um aviso para todo mundo que ligou os lembretes (no máximo um por aparelho no dia), mesmo quem jogou
+// ontem. 3.37.2: saem de manhã (9h, 10h e 11h em Manaus) e o que faltar sai no fim da tarde, junto com os lembretes.
+//   datas especiais (24/10, aniversário de Manaus)
+//   o primeiro dia do Desafio das Confrarias (1º/11)
+//   toda segunda-feira, o Rei da Calçada: o Rei recebe "Você é o Rei" e os outros, "Tem Rei novo" (sem nome de ninguém)
+// Plano grátis do Cloudflare: no máximo 50 envios para fora por rodada (somando os lembretes e o plano), por isso cada
+// rodada manda poucos e a seguinte continua de onde parou.
 const DATAS = {
   '2026-10-24': { titulo: 'Manaus faz 357 anos hoje!', texto: 'Parabéns, Manaus! Bora celebrar com uma partida de dominó.' }
 };
-async function lembreteDaData(env) {
+export const EVENTO_POR_RODADA = { manha: 45, tarde: 20 };
+const MANAUS_MS = 4 * 3600000;
+const diaManaus = t => new Date(t - MANAUS_MS).toISOString().slice(0, 10);
+const diaMesDe = t => { const d = new Date(t - MANAUS_MS); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0'); };
+export const AVISO_REI = { titulo: 'Você é o Rei da Calçada! 👑', texto: 'Você foi o 1º da semana. A coroa fica no seu avatar na mesa online até domingo. Bora defender?', url: '/?abrir=ranking' };
+export async function eventoDoDia(env, agora) {
+  const hoje = diaManaus(agora);
+  if (DATAS[hoje]) return { tipo: 'data', msg: Object.assign({ url: '/' }, DATAS[hoje]) };
+  const ed = turmas.edicao(env, agora);
+  if (diaManaus(ed.inicio) === hoje) return { tipo: 'desafio', msg: { titulo: 'Começou o Desafio das Confrarias!', texto: `Até ${diaMesDe(ed.fim - 1)}, cada vitória online contra outra Turma vale ponto para a sua. Junte a turma e bora!`, url: '/?abrir=turma' } };
+  if (new Date(agora - MANAUS_MS).getUTCDay() === 1) {
+    let rei = null; try { rei = await rk.reiDaSemana(env); } catch (e) {}
+    if (rei) return { tipo: 'rei', rei, msg: { titulo: 'Tem Rei novo na Calçada 👑', texto: 'Veja quem levou a coroa da semana. Ganhe partidas online e a próxima pode ser sua.', url: '/?abrir=ranking' } };
+  }
+  return null;
+}
+async function lembreteDaData(env, limite, agora) {
   if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return null;
-  const hoje = new Date(Date.now() - 4 * 3600000).toISOString().slice(0, 10), msg = DATAS[hoje];
-  if (!msg) return null;
-  const inicio = Date.parse(hoje + 'T00:00:00-04:00');
-  const { results } = await env.DB.prepare('SELECT id, endpoint, p256dh, auth FROM avisos WHERE COALESCE(ultimo_envio, 0) < ? LIMIT 300').bind(inicio).all();
-  return mandarPara(results || [], () => Object.assign({ url: '/' }, msg), env);
+  agora = agora || Date.now(); limite = limite || EVENTO_POR_RODADA.tarde;
+  const ev = await eventoDoDia(env, agora);
+  if (!ev) return null;
+  const inicio = Date.parse(diaManaus(agora) + 'T00:00:00-04:00');
+  let ok = 0, falhas = 0;
+  if (ev.tipo === 'rei') {
+    // o Rei primeiro (todos os aparelhos dele que ligaram os lembretes), com o aviso dele
+    const { results } = await env.DB.prepare(`SELECT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a JOIN avisos_id i ON i.endpoint = a.endpoint
+      WHERE i.aparelho = ? AND COALESCE(a.ultimo_envio, 0) < ? LIMIT 3`).bind(ev.rei.aparelho, inicio).all();
+    const r = await mandarPara(results || [], () => AVISO_REI, env);
+    ok += r.ok; falhas += r.falhas; limite -= (results || []).length;
+  }
+  const { results } = ev.tipo === 'rei'
+    ? await env.DB.prepare('SELECT id, endpoint, p256dh, auth FROM avisos WHERE COALESCE(ultimo_envio, 0) < ? AND endpoint NOT IN (SELECT endpoint FROM avisos_id WHERE aparelho = ?) ORDER BY RANDOM() LIMIT ?')
+      .bind(inicio, ev.rei.aparelho, Math.max(0, limite)).all()
+    : await env.DB.prepare('SELECT id, endpoint, p256dh, auth FROM avisos WHERE COALESCE(ultimo_envio, 0) < ? ORDER BY RANDOM() LIMIT ?').bind(inicio, Math.max(0, limite)).all();
+  const r = await mandarPara(results || [], () => ev.msg, env);
+  return { tipo: ev.tipo, ok: ok + r.ok, falhas: falhas + r.falhas };
 }
 // Plano Apoiador acabando (até 3 dias antes): um aviso por vencimento, só para quem ligou os lembretes.
 const diaMes = ms => { const d = new Date(ms - 4 * 3600000); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0'); };
@@ -366,8 +401,11 @@ export default {
     }
   },
   // Agendado (Cron do Cloudflare): lembretes no fim da tarde de Manaus (e a leitura diária que mantém a chave do Asaas ativa).
+  // 3.37.2: de manhã (9h às 11h em Manaus) só os avisos de evento (data especial, Desafio, Rei da Calçada).
   async scheduled(evento, env, ctx) {
-    ctx.waitUntil((async () => { try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env); } catch (e) {} try { await fotos.moderarPendentes(env); } catch (e) {} try { await turmas.fecharDesafio(env); } catch (e) {} try { await manterChaveAsaas(env); } catch (e) {} try { await vivo.limparVivo(env); } catch (e) {} try { await limparVistos(env); } catch (e) {} try { await presenca.limparPresenca(env); } catch (e) {} await lembretesDoDia(env);  try { await rk.limparRanking(env); } catch (e) {} })());
+    const hora = new Date((evento && evento.scheduledTime) || Date.now()).getUTCHours();
+    if (hora >= 12 && hora < 18) { ctx.waitUntil((async () => { try { await lembreteDaData(env, EVENTO_POR_RODADA.manha); } catch (e) {} })()); return; }
+    ctx.waitUntil((async () => { try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env, EVENTO_POR_RODADA.tarde); } catch (e) {} try { await fotos.moderarPendentes(env); } catch (e) {} try { await turmas.fecharDesafio(env); } catch (e) {} try { await manterChaveAsaas(env); } catch (e) {} try { await vivo.limparVivo(env); } catch (e) {} try { await limparVistos(env); } catch (e) {} try { await presenca.limparPresenca(env); } catch (e) {} await lembretesDoDia(env);  try { await rk.limparRanking(env); } catch (e) {} })());
   }
 };
 export { lembretesDoDia, lembretesPlano, lembreteDaData };
