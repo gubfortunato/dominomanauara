@@ -237,7 +237,7 @@ async function lembretesDoDia(env) {
 const DATAS = {
   '2026-10-24': { titulo: 'Manaus faz 357 anos hoje!', texto: 'Parabéns, Manaus! Bora celebrar com uma partida de dominó.' }
 };
-export const EVENTO_POR_RODADA = { manha: 45, tarde: 20 };
+export const EVENTO_POR_RODADA = { manha: 45, tarde: 15 };   // à tarde: + plano (até 8 + 6) + lembretes (15) + Asaas (1) = 45 de 50
 const MANAUS_MS = 4 * 3600000;
 const diaManaus = t => new Date(t - MANAUS_MS).toISOString().slice(0, 10);
 const diaMesDe = t => { const d = new Date(t - MANAUS_MS); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0'); };
@@ -285,7 +285,16 @@ async function lembretesPlano(env) {
     ORDER BY p.ate LIMIT 8`).bind(agora, agora + 3 * DIA).all();
   const lista = results || [];
   for (const s of lista) await env.DB.prepare('INSERT OR IGNORE INTO lembretes_plano (aparelho, ate, enviado_em) VALUES (?, ?, ?)').bind(s.aparelho, s.ate, agora).run();
-  return mandarPara(lista, s => ({ titulo: 'Seu tempo de Apoiador está acabando', texto: `Ele vale até ${diaMes(s.ate)}. Toque para continuar com a foto na mesa e os extras.`, url: '/?apoio=renovar' }), env);
+  const r1 = await mandarPara(lista, s => ({ titulo: 'Seu tempo de Apoiador está acabando', texto: `Ele vale até ${diaMes(s.ate)}. Toque para continuar com a foto na mesa e os extras.`, url: '/?apoio=renovar' }), env);
+  // 3.38: no dia em que acaba (nas últimas 24 horas), mais um aviso, também um por vencimento
+  const { results: fim } = await env.DB.prepare(`SELECT a.id, a.endpoint, a.p256dh, a.auth, p.aparelho, p.ate FROM planos p
+    JOIN avisos_id i ON i.aparelho = p.aparelho JOIN avisos a ON a.endpoint = i.endpoint
+    WHERE p.ate > 0 AND p.ate <= ? AND p.ate > ? AND NOT EXISTS (SELECT 1 FROM lembretes_plano_fim l WHERE l.aparelho = p.aparelho AND l.ate = p.ate)
+    ORDER BY p.ate LIMIT 6`).bind(agora, agora - DIA).all();
+  const lf = fim || [];
+  for (const s of lf) await env.DB.prepare('INSERT OR IGNORE INTO lembretes_plano_fim (aparelho, ate, enviado_em) VALUES (?, ?, ?)').bind(s.aparelho, s.ate, agora).run();
+  const r2 = await mandarPara(lf, () => ({ titulo: 'Seu tempo de Apoiador acabou', texto: 'Renove para voltar com a foto na mesa, o selo ★ e os avatares exclusivos. A tradição agradece!', url: '/?apoio=renovar' }), env);
+  return { ok: r1.ok + r2.ok, falhas: r1.falhas + r2.falhas, fim: r2.ok };
 }
 async function donoAvisos(req, env, origin) {
   if (!(await ehDono(req, env))) return json({ erro: 'nao-autorizado' }, 401, origin);

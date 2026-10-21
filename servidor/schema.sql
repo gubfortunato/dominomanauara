@@ -51,6 +51,8 @@ CREATE INDEX IF NOT EXISTS fotos_status ON fotos (status, criado_em);
 CREATE TABLE IF NOT EXISTS fotos_ia (aparelho TEXT PRIMARY KEY, pub TEXT, veredito TEXT, categoria TEXT, modelo TEXT, em INTEGER, tentou_em INTEGER, denuncias_vistas INTEGER);
 CREATE TABLE IF NOT EXISTS ia_teste (id INTEGER PRIMARY KEY, em INTEGER NOT NULL, resultado TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS lembretes_plano (aparelho TEXT NOT NULL, ate INTEGER NOT NULL, enviado_em INTEGER NOT NULL, PRIMARY KEY (aparelho, ate));
+-- 3.38: aviso no dia em que o tempo de Apoiador acaba (um por vencimento)
+CREATE TABLE IF NOT EXISTS lembretes_plano_fim (aparelho TEXT NOT NULL, ate INTEGER NOT NULL, enviado_em INTEGER NOT NULL, PRIMARY KEY (aparelho, ate));
 
 -- Patrocinadores (cadastrados pelo dono) e quantas vezes cada espaço apareceu / foi tocado por dia
 CREATE TABLE IF NOT EXISTS patrocinadores (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, texto TEXT, link TEXT, logo INTEGER, banners TEXT, espacos TEXT NOT NULL, inicio INTEGER, fim INTEGER, ativo INTEGER NOT NULL DEFAULT 1, peso INTEGER NOT NULL DEFAULT 1, criado_em INTEGER NOT NULL);

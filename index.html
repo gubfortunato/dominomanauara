@@ -2220,7 +2220,7 @@ button.dn-ag:active{transform:scale(.98)}
         <div class="ap-outro-l"><label class="ap-outro-in"><span aria-hidden="true">R$</span><input type="text" id="apOutroValor" inputmode="decimal" autocomplete="off" placeholder="30" maxlength="6" aria-label="Valor da doação, a partir de 30 reais" aria-describedby="apOutroDica"></label><button type="button" class="primary ap-outro-b" id="apOutroDoar" disabled>Doar</button></div>
         <p class="ap-outro-h" id="apOutroDica" aria-live="polite">Valor mínimo: R$ 30.</p>
       </div>
-      <p class="note ap-nota">Cada doação vira tempo de Apoiador, somado ao que você já tiver. Paga uma vez, por Pix ou cartão, na página segura do Asaas. Não renova sozinha.</p>
+      <p class="note ap-nota">Cada doação vira tempo de Apoiador, somado ao que você já tiver. Paga uma vez, por Pix ou cartão, na página segura do Asaas. Quando o tempo estiver acabando, a gente avisa para você renovar.</p>
     </div>
     <div class="ap-perso">
       <button type="button" class="secondary" id="apEstilo" style="width:100%">Escolher mesa e montar avatar</button>
@@ -2983,6 +2983,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.38', data: '21/10/2026', itens: ['Apoiadores: o jogo avisa com mais antecedência para renovar (a partir de 7 dias antes) e também no dia em que o tempo acaba. Na tela de apoio, dá para ver sempre quantos dias faltam, e renovar antes soma ao tempo que você já tem.', 'Quem já foi Apoiador recebe, no fim das partidas, o convite para voltar.'] },
   { v: '3.37.4', data: '21/10/2026', itens: ['Seja um Apoiador: contribua para que a tradição do dominó continue viva. A tela de apoio conta o que a sua doação mantém: atualizações, mesas novas, campeonatos e a diversão da turma.'] },
   { v: '3.37.3', data: '21/10/2026', itens: ['Tela de entrada com a frase "O dominó das calçadas, agora em qualquer lugar."', 'No início, uma estrela ★ ao lado do seu nome enquanto você é Apoiador (depois, fica o selo de doador ♥). Toque nela para abrir o Apoie o jogo.'] },
   { v: '3.37.2', data: '21/10/2026', itens: ['Apoie o jogo com valores novos: R$ 9,90 (1 mês de Apoiador), R$ 19,90 (3 meses) e R$ 29,90 (6 meses). Quer dar mais? Escolha o valor, a partir de R$ 30: cada R$ 5 vale 1 mês.', 'Os botões de doação voltaram a abrir o pagamento.', 'Avisos no celular no aniversário de Manaus, no começo do Desafio das Confrarias e toda segunda-feira, com o novo Rei da Calçada. Tocar no aviso leva direto ao ranking ou à Turma.', 'O aviso "tem gente querendo jogar online" agora aparece também na Calçada, no Mais e no Perfil.'] },
@@ -5760,6 +5761,10 @@ addEventListener('hashchange', () => {
 // ===== Plano Apoiador e doações (Asaas: Pix ou cartão) =====
 // O plano vale por 30 dias ou 1 ano e não renova sozinho. Fica ligado ao código deste aparelho (o mesmo da mesa online);
 // para trocar de celular, o código do plano leva tudo junto. Extras: foto na mesa, selo, avatares exclusivos e tudo do Personalizar liberado (anúncio aparece para todos).
+// 3.38: nos últimos 7 dias de Apoiador, o jogo chama para renovar (banner, tela de apoio e fim de partida)
+const RENOVA_DIAS = 7;
+// quando acaba, em dias do calendário de Manaus: "hoje", "amanhã" ou "em 5 dias"
+function quandoAcaba(ate) { const d = Math.floor((ate - 4 * 3600000) / 86400000) - Math.floor((Date.now() - 4 * 3600000) / 86400000); return d <= 0 ? 'hoje' : d === 1 ? 'amanhã' : `em ${d} dias`; }
 const PLKEY = 'dmz-plano', PEDKEY = 'dmz-pedido', MCKEY = 'dmz-mesa-cor', DOAKEY = 'dmz-doador';
 // Desenhos das mesas de cartão-postal (bem apagados, atrás das pedras): a Ponte Rio Negro e a cúpula do Teatro Amazonas
 const svgURL = svg => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
@@ -5988,7 +5993,9 @@ function renderApoioTela() {
   $('#apAtivo').hidden = !on;
   if (on) {
     const dias = Math.ceil((p.ate - Date.now()) / 86400000);
-    $('#apAte').textContent = `Você é Apoiador até ${dataBR(p.ate)}` + (dias <= 5 ? ` (faltam ${dias} ${dias === 1 ? 'dia' : 'dias'}). Para continuar, é só escolher abaixo.` : '. Obrigado!');
+    // 3.38: sempre mostra quanto falta; nos últimos 7 dias, chama para renovar
+    const q = quandoAcaba(p.ate);
+    $('#apAte').textContent = `Você é Apoiador até ${dataBR(p.ate)}. ${q === 'hoje' ? 'Acaba hoje.' : q === 'amanhã' ? 'Acaba amanhã.' : `Faltam ${q.slice(3)}.`}` + (dias <= RENOVA_DIAS ? ' Renove para não perder a foto na mesa e os extras.' : ' Obrigado!');
     $('#apCod').textContent = codigoBonito(p.codigo);
     $('#apCod').closest('.ap-cod').hidden = !p.codigo;
   }
@@ -6004,7 +6011,7 @@ function renderApoioTela() {
   }
   $('#apDoaPremio').innerHTML = AVATARS.filter(a => a.doador).map(a => `<img src="${avatarURI(a)}" alt="">`).join('') + '<span>O selo de doador ♥ na mesa online, que cresce com o total doado, e o avatar do doador.</span>';
   $('#apLead').hidden = on;   // 3.37.4: o texto da tradição aparece para quem não é Apoiador agora (doador antigo também)
-  $('#apEscolhaK').textContent = on ? 'Quer mais tempo? Faça outra doação' : 'Faça uma doação';
+  $('#apEscolhaK').textContent = on ? 'Renove quando quiser: o tempo novo soma ao que você já tem' : 'Faça uma doação';
   $$('#apPrecos .ap-preco span').forEach(s => { if (on && !s.dataset.orig) s.dataset.orig = s.textContent; });
   $('#apPrecos').classList.toggle('renovar', on);
   const avLivre = on || souAdmin();
@@ -6088,8 +6095,8 @@ renderApoio = function () {
   if (on) {
     const dias = Math.ceil((p.ate - Date.now()) / 86400000);
     $('#apoioK').textContent = 'Plano Apoiador ★';
-    $('#apoioTxt').textContent = dias <= 5 ? `Seu plano acaba em ${dias} ${dias === 1 ? 'dia' : 'dias'}. Renove para continuar com os extras.` : `Obrigado por apoiar! Seu plano vale até ${dataBR(p.ate)}.`;
-    $('#apoioVals').innerHTML = `<button type="button" class="ap-ir" data-ir="apoio">${dias <= 5 ? 'Renovar o plano' : 'Cor da mesa e avatar'}</button>`;
+    $('#apoioTxt').textContent = dias <= RENOVA_DIAS ? `Seu plano acaba em ${dias} ${dias === 1 ? 'dia' : 'dias'}. Renove para continuar com os extras.` : `Obrigado por apoiar! Seu plano vale até ${dataBR(p.ate)}.`;
+    $('#apoioVals').innerHTML = `<button type="button" class="ap-ir" data-ir="apoio">${dias <= RENOVA_DIAS ? 'Renovar o plano' : 'Cor da mesa e avatar'}</button>`;
   } else if (isApoiador()) {
     const d = doadorLocal(), dn = nivelDoador();
     $('#apoioK').textContent = 'Obrigado pelo apoio! ' + coracoes(dn);
@@ -6106,15 +6113,21 @@ $('#apoioVals').addEventListener('click', e => {
   const b = e.target.closest('[data-ir]'); if (!b) return;
   abrirApoio('home', b.dataset.ir === 'plano' ? 'plano' : null);
 });
-// Convite leve no fim do jogo (a cada 3 jogos, para quem ainda não apoia)
+// Convite leve no fim do jogo (a cada 3 jogos). 3.38: quem já doou e o tempo acabou é chamado a voltar; quem é Apoiador
+// só vê o convite nos últimos 7 dias, para renovar.
 const apoioInviteBase = apoioInvite;
 apoioInvite = function () {
   if (!pagamentosAtivos()) return apoioInviteBase();
-  if (!podePedirApoio(true)) return '';
+  if (menorDeIdade()) return '';
   const t = loadHist();
-  return t.jogos > 0 && t.jogos % 3 === 1 ? '<button type="button" class="res-apoio" id="resApoio">Curtiu? Apoie o Dominó Manauara</button>' : '';
+  if (!(t.jogos > 0 && t.jogos % 3 === 1)) return '';
+  if (temPlano()) {
+    const dias = Math.ceil((planoLocal().ate - Date.now()) / 86400000);
+    return dias <= RENOVA_DIAS ? `<button type="button" class="res-apoio" id="resApoio">Seu apoio acaba ${quandoAcaba(planoLocal().ate)}. Renovar ★</button>` : '';
+  }
+  return `<button type="button" class="res-apoio" id="resApoio">${souDoador() ? 'Volte a ser Apoiador ★' : 'Curtiu? Apoie o Dominó Manauara'}</button>`;
 };
-openApoioSheet = function () { closeSheet(); if (screen === 'game') leaveGame(); abrirApoio('home'); };
+openApoioSheet = function () { closeSheet(); if (screen === 'game') leaveGame(); abrirApoio('home', temPlano() ? 'plano' : null); };
 
 // ---------- Área do dono: quanto entrou ----------
 const reais = v => 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',');
@@ -6260,7 +6273,7 @@ function renderApBanner() {
   // As explicações (o que a doação mantém e os extras) ficam na tela de apoio.
   let t = null, s = '', cta = 'Apoiar';
   if (!pagamentosAtivos() || !profile || menorDeIdade()) t = null;
-  else if (on) { if (dias <= 5) { t = `Seu apoio acaba em ${dias} ${dias === 1 ? 'dia' : 'dias'}`; s = 'Renove para manter a foto na mesa e os extras.'; cta = 'Renovar'; } }
+  else if (on) { if (dias <= RENOVA_DIAS) { t = `Seu apoio acaba ${quandoAcaba(p.ate)}`; s = 'Renove para manter a foto na mesa e os extras.'; cta = 'Renovar'; } }
   else if (souDoador()) { t = 'Volte a ser Apoiador'; s = 'Contribua para que a tradição do dominó continue viva.'; }
   else { t = 'Seja um Apoiador'; s = 'Contribua para que a tradição do dominó continue viva.'; }
   b.hidden = !t;
@@ -10090,7 +10103,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.37.4-5292b0cc';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.38-f4eabd99';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
