@@ -43,6 +43,8 @@ export async function donoBloquear(req, env, origin, h) {
   } else if (aparelho) {
     const v = await env.DB.prepare('SELECT nome, mesa FROM jogadores_vistos WHERE aparelho = ?').bind(aparelho).first();
     nome = v && v.nome; mesa = v && v.mesa;
+    // 3.31: quem só está no app (não jogou online) — o apelido vem da presença
+    if (!nome) { const p = await env.DB.prepare('SELECT nome FROM presenca WHERE aparelho = ?').bind(aparelho).first(); nome = p && p.nome; }
   } else return h.json({ erro: 'dados' }, 400, origin);
   await env.DB.prepare('INSERT INTO bloqueios (aparelho, nome, motivo, em) VALUES (?, ?, ?, ?) ON CONFLICT (aparelho) DO UPDATE SET motivo = excluded.motivo, em = excluded.em')
     .bind(aparelho, nome, motivo, Date.now()).run();

@@ -1077,6 +1077,17 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 #scrGame .me:has(.prompt.you) .hand{padding:4px 6px}
 #scrGame #prompt{height:34px}
 #scrGame #prompt.you{padding-block:5px}
+/* 3.31 ("aumentar um pouco mais a mesa pra baixo"): no celular, quem joga vê só o próprio rosto ao lado do aviso,
+   sem a linha "Você · Nv · parceiro de…" (o parceiro já aparece em cima). A mesa ganha essa linha. Quem assiste continua
+   vendo a linha inteira (é por ela que sabe de quem é a vez embaixo). Tocar no rosto mostra o nível. */
+@media (max-width:600px){
+  body:not(.assistindo) #scrGame .me-txt{display:flex;align-items:center;gap:8px;min-width:0}
+  body:not(.assistindo) #scrGame .me-name{flex:none;font-size:0;line-height:0}
+  body:not(.assistindo) #scrGame .me-name > :not(img){display:none}
+  body:not(.assistindo) #scrGame .me-name img{margin:0;vertical-align:middle;width:30px;height:30px}
+  body:not(.assistindo) #scrGame #prompt{min-width:0}
+}
+@media (max-width:360px){#scrGame #prompt{font-size:14px}}
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:17px;line-height:1.5;color:var(--fg)}
@@ -1837,6 +1848,7 @@ button.dn-ag:active{transform:scale(.98)}
 .dn-tec summary{cursor:pointer;font-weight:700;padding:4px 0}
 .dn-pag .mt-nums b{font-size:22px;white-space:nowrap}
 .dn-jog-mais{justify-self:start;font-weight:800}
+.vivo-bloq{margin-left:6px;padding:2px 10px;border-radius:999px;font-size:12.5px;font-weight:800;color:#e5484d;box-shadow:inset 0 0 0 1.4px currentColor}
 </style>
 </head>
 <body>
@@ -2147,7 +2159,7 @@ button.dn-ag:active{transform:scale(.98)}
     <div class="es-sec">
       <span class="ap-k">Conquistas <small id="esConqN"></small></span>
       <ul class="es-conq" id="esConq"></ul>
-      <p class="note">Valem partidas offline e na mesa online. Cada conquista libera uma comida de Manaus para o avatar ou uma mesa nova.</p>
+      <p class="note">Valem partidas offline e na mesa online. Cada conquista libera um prêmio de Manaus para o avatar: comidas, camisas e bichos da região.</p>
     </div>
   </section>
 
@@ -2877,6 +2889,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.31', data: '20/10/2026', itens: ['Prêmios das conquistas mais de Manaus: camisa da vitória-régia, camisa do Encontro das Águas, camisa de onça-pintada, arara no ombro e cacho de guaraná. Os óculos escuros e dourados ficaram liberados para todos.', 'Copa 357 Anos (24/10): quem jogar no aniversário de Manaus ganha a fatia de bolo com vela.', 'Na lista de conquistas, as camisas aparecem grandes, para ver o prêmio direito.', 'A bolinha da aba Calçada aparece só quando tem mesa jogando.', 'Mesa um pouco maior no celular.'] },
   { v: '3.30', data: '20/10/2026', itens: ['Apelido de verdade: nomes genéricos como "Anônimo", "Jogador" ou "Teste" não valem mais. Escolha como a turma te chama.'] },
   { v: '3.29.2', data: '20/10/2026', itens: ['A bolinha vermelha da aba Calçada agora fica sempre acesa e pulsando.'] },
   { v: '3.29.1', data: '20/10/2026', itens: ['Assistir no app instalado no iPhone: as pedras de quem está embaixo apareciam no meio da mesa, por cima do jogo. Agora ficam no lugar delas.'] },
@@ -3108,14 +3121,9 @@ function estrelaD(R, r) {
   for (let k = 0; k < 10; k++) { const ang = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r : R; d += (k ? 'L' : 'M') + (rr * Math.cos(ang)).toFixed(2) + ' ' + (rr * Math.sin(ang)).toFixed(2); }
   return d + 'Z';
 }
-// Tururi: o abadá do Boi Manaus, customizado pelo folião (lilás, faixa amarela com bolinhas verdes, franjas e laços nos ombros)
-const TURURI_SVG = '<path d="M12 104C14 80 30 71 50 71S86 80 88 104Z" fill="#9b6fc6"/>'
-  + '<path d="M17 92Q50 83 83 92L85 98Q50 89 15 98Z" fill="#f2c230"/>'
-  + [24, 33, 42, 51, 60, 69, 78].map((x, i) => `<circle cx="${x}" cy="${93 - Math.sin(i / 6 * Math.PI) * 3.4}" r="1.5" fill="#2e9a52"/>`).join('')
-  + '<path d="M18 99v6M23 98v7M28 97v7M33 96v8M38 96v8M43 95v9M48 95v9M53 95v9M58 95v9M63 96v8M68 96v8M73 97v7M78 98v7M83 99v6" stroke="#f6eefb" stroke-width="1.6" stroke-linecap="round"/>'
-  + '<path d="M27 79q-5 -4 -7 1q4 2 7 -1q2 5 6 4q-1 -5 -6 -4Z M73 79q5 -4 7 1q-4 2 -7 -1q-2 5 -6 4q1 -5 6 -4Z" fill="#f2c230"/>';
-// Camisas especiais (prêmios das conquistas): floral (Pé-quente) e a do Teatro (Orgulho de Manaus)
-const CAMISA_SVG = { floral: '<path d="M12 104C14 80 30 71 50 71S86 80 88 104Z" fill="#1f7a8c"/><g fill="#3f9a5a"><ellipse cx="29" cy="88" rx="3.2" ry="1.4" transform="rotate(-30 29 88)"/><ellipse cx="46" cy="90" rx="3.2" ry="1.4" transform="rotate(25 46 90)"/><ellipse cx="57" cy="93" rx="3.2" ry="1.4" transform="rotate(-20 57 93)"/><ellipse cx="73" cy="90" rx="3.2" ry="1.4" transform="rotate(35 73 90)"/><ellipse cx="36" cy="97" rx="3.2" ry="1.4" transform="rotate(15 36 97)"/><ellipse cx="64" cy="99" rx="3.2" ry="1.4" transform="rotate(-35 64 99)"/></g><g transform="translate(24 92)"><circle cx="2.4" cy="0.0" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="2.28" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="1.41" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="-1.41" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="-2.28" r="2.3" fill="#e8505b"/><circle r="1.2" fill="#f7d34a"/></g><g transform="translate(40 84)"><circle cx="2.4" cy="0.0" r="2.3" fill="#f2a7c3"/><circle cx="0.74" cy="2.28" r="2.3" fill="#f2a7c3"/><circle cx="-1.94" cy="1.41" r="2.3" fill="#f2a7c3"/><circle cx="-1.94" cy="-1.41" r="2.3" fill="#f2a7c3"/><circle cx="0.74" cy="-2.28" r="2.3" fill="#f2a7c3"/><circle r="1.2" fill="#f7d34a"/></g><g transform="translate(63 87)"><circle cx="2.4" cy="0.0" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="2.28" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="1.41" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="-1.41" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="-2.28" r="2.3" fill="#e8505b"/><circle r="1.2" fill="#f7d34a"/></g><g transform="translate(78 96)"><circle cx="2.4" cy="0.0" r="2.3" fill="#f2a7c3"/><circle cx="0.74" cy="2.28" r="2.3" fill="#f2a7c3"/><circle cx="-1.94" cy="1.41" r="2.3" fill="#f2a7c3"/><circle cx="-1.94" cy="-1.41" r="2.3" fill="#f2a7c3"/><circle cx="0.74" cy="-2.28" r="2.3" fill="#f2a7c3"/><circle r="1.2" fill="#f7d34a"/></g><g transform="translate(52 99)"><circle cx="2.4" cy="0.0" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="2.28" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="1.41" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="-1.41" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="-2.28" r="2.3" fill="#e8505b"/><circle r="1.2" fill="#f7d34a"/></g><g transform="translate(30 102)"><circle cx="2.4" cy="0.0" r="2.3" fill="#f2a7c3"/><circle cx="0.74" cy="2.28" r="2.3" fill="#f2a7c3"/><circle cx="-1.94" cy="1.41" r="2.3" fill="#f2a7c3"/><circle cx="-1.94" cy="-1.41" r="2.3" fill="#f2a7c3"/><circle cx="0.74" cy="-2.28" r="2.3" fill="#f2a7c3"/><circle r="1.2" fill="#f7d34a"/></g><g transform="translate(70 103)"><circle cx="2.4" cy="0.0" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="2.28" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="1.41" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="-1.41" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="-2.28" r="2.3" fill="#e8505b"/><circle r="1.2" fill="#f7d34a"/></g><path d="M41.5 72L50 81L44.5 84Z M58.5 72L50 81L55.5 84Z" fill="#f4efe4"/><g fill="#f4efe4"><circle cx="50" cy="88" r=".9"/><circle cx="50" cy="94" r=".9"/><circle cx="50" cy="100" r=".9"/></g>', teatro: '<path d="M12 104C14 80 30 71 50 71S86 80 88 104Z" fill="#f4f1ea"/><g transform="translate(0 -4.5)"><path d="M38.5 99.5h23v4.5h-23Z" fill="#e7a7a6"/><path d="M40 99.5V96h20v3.5Z" fill="#f0c7c4"/><path d="M41.5 96Q41.5 85.5 50 84.5Q58.5 85.5 58.5 96Z" fill="#2e6fb7"/><path d="M44 95.5Q44.5 88 50 86.5M50 86.5V95.5M56 95.5Q55.5 88 50 86.5" stroke="#f2c230" stroke-width="1.1" fill="none"/><path d="M42.6 91.5Q50 89.8 57.4 91.5" stroke="#2e9a52" stroke-width="1.1" fill="none"/><path d="M50 84.5V81.5" stroke="#7a6a5a" stroke-width="1"/><circle cx="50" cy="81" r=".9" fill="#7a6a5a"/></g>' };
+// Camisas especiais (prêmios das conquistas). 3.31, pedido do dono (mais regionais): vitória-régia (Pé-quente), Encontro das
+// Águas (Orgulho de Manaus) e onça-pintada (Rei da batida). A floral e a do Teatro ficam só para avatares antigos.
+const CAMISA_SVG = { vitoria: '<clipPath id="cv"><path d="M12 104C14 80 30 71 50 71S86 80 88 104Z"/></clipPath><path d="M12 104C14 80 30 71 50 71S86 80 88 104Z" fill="#14606a"/><g clip-path="url(#cv)"><circle cx="25" cy="93" r="7.5" fill="#4f9a3c" stroke="#b5473d" stroke-width="1.1"/><circle cx="25" cy="93" r="5.2" fill="none" stroke="#6fb85a" stroke-width=".8"/><path d="M25 93L32.9 96.5L29.9 100.2Z" fill="#14606a"/><circle cx="51" cy="99" r="8.5" fill="#4f9a3c" stroke="#b5473d" stroke-width="1.1"/><circle cx="51" cy="99" r="6.2" fill="none" stroke="#6fb85a" stroke-width=".8"/><path d="M51 99L53.3 89.6L58.0 92.3Z" fill="#14606a"/><circle cx="76" cy="90" r="7" fill="#4f9a3c" stroke="#b5473d" stroke-width="1.1"/><circle cx="76" cy="90" r="4.7" fill="none" stroke="#6fb85a" stroke-width=".8"/><path d="M76 90L70.3 95.9L68.0 92.0Z" fill="#14606a"/><ellipse cx="38" cy="82.4" rx="1.5" ry="2.8" fill="#fbe8ee" transform="rotate(0 38 85)"/><ellipse cx="38" cy="82.4" rx="1.5" ry="2.8" fill="#fbe8ee" transform="rotate(60 38 85)"/><ellipse cx="38" cy="82.4" rx="1.5" ry="2.8" fill="#fbe8ee" transform="rotate(120 38 85)"/><ellipse cx="38" cy="82.4" rx="1.5" ry="2.8" fill="#fbe8ee" transform="rotate(180 38 85)"/><ellipse cx="38" cy="82.4" rx="1.5" ry="2.8" fill="#fbe8ee" transform="rotate(240 38 85)"/><ellipse cx="38" cy="82.4" rx="1.5" ry="2.8" fill="#fbe8ee" transform="rotate(300 38 85)"/><circle cx="38" cy="85" r="1.5" fill="#f2c230"/><ellipse cx="64" cy="94.4" rx="1.5" ry="2.8" fill="#f29ab6" transform="rotate(0 64 97)"/><ellipse cx="64" cy="94.4" rx="1.5" ry="2.8" fill="#f29ab6" transform="rotate(60 64 97)"/><ellipse cx="64" cy="94.4" rx="1.5" ry="2.8" fill="#f29ab6" transform="rotate(120 64 97)"/><ellipse cx="64" cy="94.4" rx="1.5" ry="2.8" fill="#f29ab6" transform="rotate(180 64 97)"/><ellipse cx="64" cy="94.4" rx="1.5" ry="2.8" fill="#f29ab6" transform="rotate(240 64 97)"/><ellipse cx="64" cy="94.4" rx="1.5" ry="2.8" fill="#f29ab6" transform="rotate(300 64 97)"/><circle cx="64" cy="97" r="1.5" fill="#f2c230"/></g>', encontro: '<clipPath id="ce"><path d="M12 104C14 80 30 71 50 71S86 80 88 104Z"/></clipPath><path d="M12 104C14 80 30 71 50 71S86 80 88 104Z" fill="#c98d4f"/><g clip-path="url(#ce)"><path d="M0 60H49Q44 74 51 83T48 96Q46 101 49 110H0Z" fill="#241a12"/><path d="M49 60Q44 74 51 83T48 96Q46 101 49 110" stroke="#ecd2a6" stroke-width="1.3" fill="none" opacity=".75"/><path d="M18 90q4 -2.2 8 0M27 99q4 -2.2 8 0M33 83q3 -1.8 6 0" stroke="#4a3727" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M60 87q4 -2.2 8 0M69 97q4 -2.2 8 0M57 99q3 -1.8 6 0" stroke="#e4b47c" stroke-width="1.1" fill="none" stroke-linecap="round"/></g>', onca: '<clipPath id="co"><path d="M12 104C14 80 30 71 50 71S86 80 88 104Z"/></clipPath><path d="M12 104C14 80 30 71 50 71S86 80 88 104Z" fill="#dca443"/><g clip-path="url(#co)"><circle cx="21" cy="97" r="3" fill="#b9782b"/><circle cx="21" cy="97" r="3.6" fill="none" stroke="#2a1a10" stroke-width="1.5" stroke-dasharray="3.4 1.6"/><circle cx="33" cy="87" r="3" fill="#b9782b"/><circle cx="33" cy="87" r="3.6" fill="none" stroke="#2a1a10" stroke-width="1.5" stroke-dasharray="3.4 1.6"/><circle cx="45" cy="97" r="3" fill="#b9782b"/><circle cx="45" cy="97" r="3.6" fill="none" stroke="#2a1a10" stroke-width="1.5" stroke-dasharray="3.4 1.6"/><circle cx="59" cy="87" r="3" fill="#b9782b"/><circle cx="59" cy="87" r="3.6" fill="none" stroke="#2a1a10" stroke-width="1.5" stroke-dasharray="3.4 1.6"/><circle cx="69" cy="98" r="3" fill="#b9782b"/><circle cx="69" cy="98" r="3.6" fill="none" stroke="#2a1a10" stroke-width="1.5" stroke-dasharray="3.4 1.6"/><circle cx="80" cy="91" r="3" fill="#b9782b"/><circle cx="80" cy="91" r="3.6" fill="none" stroke="#2a1a10" stroke-width="1.5" stroke-dasharray="3.4 1.6"/><circle cx="31" cy="103" r="3" fill="#b9782b"/><circle cx="31" cy="103" r="3.6" fill="none" stroke="#2a1a10" stroke-width="1.5" stroke-dasharray="3.4 1.6"/><circle cx="57" cy="104" r="3" fill="#b9782b"/><circle cx="57" cy="104" r="3.6" fill="none" stroke="#2a1a10" stroke-width="1.5" stroke-dasharray="3.4 1.6"/><circle cx="27" cy="82" r="1.2" fill="#2a1a10"/><circle cx="73" cy="81" r="1.2" fill="#2a1a10"/><circle cx="39" cy="79" r="1.2" fill="#2a1a10"/><circle cx="62" cy="79" r="1.2" fill="#2a1a10"/><circle cx="51" cy="90" r="1.2" fill="#2a1a10"/></g>', floral: '<path d="M12 104C14 80 30 71 50 71S86 80 88 104Z" fill="#1f7a8c"/><g fill="#3f9a5a"><ellipse cx="29" cy="88" rx="3.2" ry="1.4" transform="rotate(-30 29 88)"/><ellipse cx="46" cy="90" rx="3.2" ry="1.4" transform="rotate(25 46 90)"/><ellipse cx="57" cy="93" rx="3.2" ry="1.4" transform="rotate(-20 57 93)"/><ellipse cx="73" cy="90" rx="3.2" ry="1.4" transform="rotate(35 73 90)"/><ellipse cx="36" cy="97" rx="3.2" ry="1.4" transform="rotate(15 36 97)"/><ellipse cx="64" cy="99" rx="3.2" ry="1.4" transform="rotate(-35 64 99)"/></g><g transform="translate(24 92)"><circle cx="2.4" cy="0.0" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="2.28" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="1.41" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="-1.41" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="-2.28" r="2.3" fill="#e8505b"/><circle r="1.2" fill="#f7d34a"/></g><g transform="translate(40 84)"><circle cx="2.4" cy="0.0" r="2.3" fill="#f2a7c3"/><circle cx="0.74" cy="2.28" r="2.3" fill="#f2a7c3"/><circle cx="-1.94" cy="1.41" r="2.3" fill="#f2a7c3"/><circle cx="-1.94" cy="-1.41" r="2.3" fill="#f2a7c3"/><circle cx="0.74" cy="-2.28" r="2.3" fill="#f2a7c3"/><circle r="1.2" fill="#f7d34a"/></g><g transform="translate(63 87)"><circle cx="2.4" cy="0.0" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="2.28" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="1.41" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="-1.41" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="-2.28" r="2.3" fill="#e8505b"/><circle r="1.2" fill="#f7d34a"/></g><g transform="translate(78 96)"><circle cx="2.4" cy="0.0" r="2.3" fill="#f2a7c3"/><circle cx="0.74" cy="2.28" r="2.3" fill="#f2a7c3"/><circle cx="-1.94" cy="1.41" r="2.3" fill="#f2a7c3"/><circle cx="-1.94" cy="-1.41" r="2.3" fill="#f2a7c3"/><circle cx="0.74" cy="-2.28" r="2.3" fill="#f2a7c3"/><circle r="1.2" fill="#f7d34a"/></g><g transform="translate(52 99)"><circle cx="2.4" cy="0.0" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="2.28" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="1.41" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="-1.41" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="-2.28" r="2.3" fill="#e8505b"/><circle r="1.2" fill="#f7d34a"/></g><g transform="translate(30 102)"><circle cx="2.4" cy="0.0" r="2.3" fill="#f2a7c3"/><circle cx="0.74" cy="2.28" r="2.3" fill="#f2a7c3"/><circle cx="-1.94" cy="1.41" r="2.3" fill="#f2a7c3"/><circle cx="-1.94" cy="-1.41" r="2.3" fill="#f2a7c3"/><circle cx="0.74" cy="-2.28" r="2.3" fill="#f2a7c3"/><circle r="1.2" fill="#f7d34a"/></g><g transform="translate(70 103)"><circle cx="2.4" cy="0.0" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="2.28" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="1.41" r="2.3" fill="#e8505b"/><circle cx="-1.94" cy="-1.41" r="2.3" fill="#e8505b"/><circle cx="0.74" cy="-2.28" r="2.3" fill="#e8505b"/><circle r="1.2" fill="#f7d34a"/></g><path d="M41.5 72L50 81L44.5 84Z M58.5 72L50 81L55.5 84Z" fill="#f4efe4"/><g fill="#f4efe4"><circle cx="50" cy="88" r=".9"/><circle cx="50" cy="94" r=".9"/><circle cx="50" cy="100" r=".9"/></g>', teatro: '<path d="M12 104C14 80 30 71 50 71S86 80 88 104Z" fill="#f4f1ea"/><g transform="translate(0 -4.5)"><path d="M38.5 99.5h23v4.5h-23Z" fill="#e7a7a6"/><path d="M40 99.5V96h20v3.5Z" fill="#f0c7c4"/><path d="M41.5 96Q41.5 85.5 50 84.5Q58.5 85.5 58.5 96Z" fill="#2e6fb7"/><path d="M44 95.5Q44.5 88 50 86.5M50 86.5V95.5M56 95.5Q55.5 88 50 86.5" stroke="#f2c230" stroke-width="1.1" fill="none"/><path d="M42.6 91.5Q50 89.8 57.4 91.5" stroke="#2e9a52" stroke-width="1.1" fill="none"/><path d="M50 84.5V81.5" stroke="#7a6a5a" stroke-width="1"/><circle cx="50" cy="81" r=".9" fill="#7a6a5a"/></g>' };
 function avatarSVG(a) {
   const skin = a.skin, dk = shade(skin, -0.16), hc = a.hc || HAIR.preto, ink = '#2a1a10';
   let back = '', hair = '', top = '';
@@ -3159,13 +3167,16 @@ function avatarSVG(a) {
     + '<path d="M48.7 46.3h2.6M38.3 45.6L33.6 44.6M61.7 45.6L66.4 44.6" stroke="#2b2622" stroke-width="1.7" fill="none"/>';
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><clipPath id="c"><circle cx="50" cy="50" r="50"/></clipPath></defs>'
     + `<g clip-path="url(#c)"><rect width="100" height="100" fill="${a.bg}"/>${back}`
-    + (a.shirt === 'tururi' ? TURURI_SVG : CAMISA_SVG[a.shirt] || `<path d="M12 104C14 80 30 71 50 71S86 80 88 104Z" fill="${a.shirt}"/>`) + `<path d="M43 62H57V72Q50 78 43 72Z" fill="${dk}"/><path d="M42.5 71.5L50 79.5L57.5 71.5Z" fill="${dk}"/>`
+    + (CAMISA_SVG[a.shirt] || `<path d="M12 104C14 80 30 71 50 71S86 80 88 104Z" fill="${a.shirt}"/>`) + `<path d="M43 62H57V72Q50 78 43 72Z" fill="${dk}"/><path d="M42.5 71.5L50 79.5L57.5 71.5Z" fill="${dk}"/>`
     + (a.coracao ? '<path transform="translate(63.5 89) scale(1.25)" d="M0 4C-1.5 2.6-5 .2-5-2.6C-5-4.4-3.7-5.6-2.3-5.6C-1.2-5.6-.4-5 0-4.2C.4-5 1.2-5.6 2.3-5.6C3.7-5.6 5-4.4 5-2.6C5 .2 1.5 2.6 0 4Z" fill="#e23b3b" stroke="#fff" stroke-width="1"/>' : '')
     + `<circle cx="32.8" cy="47.5" r="4.4" fill="${dk}"/><circle cx="67.2" cy="47.5" r="4.4" fill="${dk}"/><ellipse cx="50" cy="45" rx="17" ry="20" fill="${skin}"/>`
     + `${hair}${face}${top}${a.mao && MAO_SVG[a.mao] ? MAO_SVG[a.mao] : ''}</g></svg>`;
 }
 // Na mão: comidas e coisas de Manaus (desenhadas aqui, na frente do peito, do lado direito)
 const MAO_SVG = {
+  guarana: '<g transform="translate(70 83) scale(.88)"><path d="M0 -16Q1 -9 -2 -5M0 -12Q4 -8 5 -6" stroke="#4a6b2a" stroke-width="1.3" fill="none" stroke-linecap="round"/><ellipse cx="8" cy="-13" rx="6.5" ry="2.6" fill="#3f8a33" transform="rotate(-25 8 -13)"/><path d="M3 -11L13 -15.5" stroke="#2f6e27" stroke-width=".7"/><circle cx="-6" cy="-1" r="5.4" fill="#cf3a2a"/><path d="M-10.6 0.6000000000000001Q-6 -7.2 -1.4000000000000004 0.6000000000000001" fill="#a82a1e"/><ellipse cx="-6" cy="-0.19999999999999996" rx="3.4" ry="3.2" fill="#f6f0e3"/><circle cx="-6" cy="0" r="1.9" fill="#1a1412"/><circle cx="-5.4" cy="-0.7" r=".55" fill="#fff"/><circle cx="5.5" cy="-2" r="5.4" fill="#cf3a2a"/><path d="M0.9000000000000004 -0.3999999999999999Q5.5 -8.2 10.1 -0.3999999999999999" fill="#a82a1e"/><ellipse cx="5.5" cy="-1.2" rx="3.4" ry="3.2" fill="#f6f0e3"/><circle cx="5.5" cy="-1" r="1.9" fill="#1a1412"/><circle cx="6.1" cy="-1.7" r=".55" fill="#fff"/><circle cx="0" cy="7.5" r="5.4" fill="#cf3a2a"/><path d="M-4.6 9.1Q0 1.2999999999999998 4.6 9.1" fill="#a82a1e"/><ellipse cx="0" cy="8.3" rx="3.4" ry="3.2" fill="#f6f0e3"/><circle cx="0" cy="8.5" r="1.9" fill="#1a1412"/><circle cx="0.6" cy="7.8" r=".55" fill="#fff"/><circle cx="-9" cy="9" r="5.4" fill="#cf3a2a"/><path d="M-13.6 10.6Q-9 2.8 -4.4 10.6" fill="#a82a1e"/><ellipse cx="-9" cy="9.8" rx="3.4" ry="3.2" fill="#f6f0e3"/><circle cx="-9" cy="10" r="1.9" fill="#1a1412"/><circle cx="-8.4" cy="9.3" r=".55" fill="#fff"/></g>',
+  arara: '<g transform="translate(72 81) scale(.92)"><path d="M-1 4L-6 26L-1.5 25L2.6 5Z" fill="#c62828"/><path d="M1.6 4L3 26L7 23.5L4 4Z" fill="#1e5aa8"/><ellipse cx="0" cy="-2" rx="6.5" ry="9" fill="#d32f2f"/><path d="M-5.4 -5Q-9.6 6 -2.4 10.5Q2.6 4 .6 -4.6Z" fill="#1e5aa8"/><path d="M-6.2 -3.2Q-7.6 1 -5.6 3.6" stroke="#f2c230" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M-4 6.5Q-1 8.5 1 6.5" stroke="#2e7d32" stroke-width="1.6" fill="none"/><circle cx="1" cy="-12" r="5.3" fill="#d32f2f"/><ellipse cx="3.3" cy="-12" rx="2.7" ry="2.3" fill="#f4efe6"/><circle cx="3.4" cy="-12.3" r=".95" fill="#1a1412"/><path d="M5.4 -13.6Q9.8 -13 8.8 -8.8Q7.3 -10.4 5.5 -10.3Z" fill="#efe6d2"/><path d="M6.6 -10.3Q7.8 -9.4 7.5 -8.2" stroke="#2a1a10" stroke-width="1" fill="none"/><path d="M-3.2 7h6.4" stroke="#5a5048" stroke-width="1.7" stroke-linecap="round"/></g>',
+  bolo: '<g transform="translate(67.5 87) scale(.9)"><ellipse cx="0" cy="10" rx="15.5" ry="3.4" fill="#f4f1ea" stroke="#d8d2c4" stroke-width=".7"/><path d="M-12.5 -4.2L12.5 1.8V9.2H-12.5Z" fill="#f3d9a4"/><path d="M-12.5 2.2L12.5 5.4V7L-12.5 3.8Z" fill="#7a3b1f"/><path d="M12.5 1.8V9.2" stroke="#e2c286" stroke-width="1"/><path d="M-13 -6L13 .4V2.6L-13 -3.6Z" fill="#fffaf2"/><path d="M-8.6 -3.2v3.2q1.1 1.5 2.2 0v-2.7ZM1.6 -.9v2.6q1.1 1.3 2.2 0v-2.1ZM8 .6v2.4q1 1.2 2 0v-1.9Z" fill="#fffaf2"/><path d="M-10 -4.6l1.2 .3M-2 -2.6l1.2 .3M5.6 -.8l1.2 .3" stroke="#e85d8a" stroke-width="1.1" stroke-linecap="round"/><path d="M-6 -3.9l1.2 .3M1.8 -2l1.2 .3" stroke="#4fa3d1" stroke-width="1.1" stroke-linecap="round"/><rect x="-6" y="-17" width="3.2" height="12.4" rx=".8" fill="#5fa8d3"/><path d="M-6 -14.2l3.2 -1.4M-6 -10.6l3.2 -1.4M-6 -7l3.2 -1.4" stroke="#fff" stroke-width=".9"/><path d="M-4.4 -17v-1.7" stroke="#2a1a10" stroke-width=".8"/><path d="M-4.4 -24.2Q-1.4 -20.6 -4.4 -18.4Q-7.4 -20.6 -4.4 -24.2Z" fill="#f6b331"/><ellipse cx="-4.4" cy="-20.2" rx=".9" ry="1.5" fill="#fff3c4"/></g>',
   trofeu: "<g transform=\"translate(71 86)\"><rect x=\"-8.5\" y=\"8\" width=\"17\" height=\"5.5\" rx=\"1.2\" fill=\"#6b3f1f\"/><path d=\"M-5.5 8L-3.5 2.5H3.5L5.5 8Z\" fill=\"#c99418\"/><path d=\"M-7 2.5Q-14 -5 -10.5 -14Q-8 -8 -5 -6Z\" fill=\"#e0a92e\"/><path d=\"M-7.5 2.5Q-9.5 -7 -2.5 -8.5Q1.5 -14 6 -11Q4.4 -9 5.2 -7Q9 -3.5 6 .5Q2 3.5 -7.5 2.5Z\" fill=\"#f2c14e\"/><path d=\"M1.4 -12.8q1 -3.2 2.1 0q1 -3.2 2.1 0\" fill=\"#e23b3b\"/><path d=\"M6.2 -10.4l3.2 1 -3.2 1.1Z\" fill=\"#e8892e\"/><circle cx=\"3.7\" cy=\"-9.8\" r=\".75\" fill=\"#3a2a10\"/><path d=\"M-4 -3q3 2 6 0\" stroke=\"#c99418\" stroke-width=\"1\" fill=\"none\"/></g>",
   pedra: "<g transform=\"translate(71 80) rotate(-12) scale(.86)\"><rect x=\"-7.5\" y=\"-14.5\" width=\"15\" height=\"29\" rx=\"2.6\" fill=\"#fbf4e6\" stroke=\"#cfc3a8\" stroke-width=\".8\"/><path d=\"M-5.2 0H5.2\" stroke=\"#b08a50\" stroke-width=\".9\"/><g fill=\"#1d1a18\"><circle cx=\"-3.3\" cy=\"-10.8\" r=\"1.25\"/><circle cx=\"3.3\" cy=\"-10.8\" r=\"1.25\"/><circle cx=\"-3.3\" cy=\"-7\" r=\"1.25\"/><circle cx=\"3.3\" cy=\"-7\" r=\"1.25\"/><circle cx=\"-3.3\" cy=\"-3.2\" r=\"1.25\"/><circle cx=\"3.3\" cy=\"-3.2\" r=\"1.25\"/><circle cx=\"-3.3\" cy=\"3.2\" r=\"1.25\"/><circle cx=\"3.3\" cy=\"3.2\" r=\"1.25\"/><circle cx=\"-3.3\" cy=\"7\" r=\"1.25\"/><circle cx=\"3.3\" cy=\"7\" r=\"1.25\"/><circle cx=\"-3.3\" cy=\"10.8\" r=\"1.25\"/><circle cx=\"3.3\" cy=\"10.8\" r=\"1.25\"/></g><circle r=\".95\" fill=\"#c9a24a\"/></g>",
   tapereba: "<g transform=\"translate(71 85)\"><path d=\"M-8 -12H8L6 13H-6Z\" fill=\"#fdf6e3\" fill-opacity=\".6\" stroke=\"#cfc7b6\" stroke-width=\".8\"/><path d=\"M-7.5 -5.5H7.5L6 12.3H-6Z\" fill=\"#f2b632\"/><path d=\"M-7.5 -5.5H7.5\" stroke=\"#f9d977\" stroke-width=\"1.4\"/><path d=\"M3.2 -16.5L-.8 -1\" stroke=\"#e8433a\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M-4.6 -1.5V8.5\" stroke=\"#fff\" stroke-opacity=\".45\" stroke-width=\"1.6\" stroke-linecap=\"round\"/><circle cx=\"-8.4\" cy=\"-12\" r=\"3.6\" fill=\"#f6a623\"/><path d=\"M-8.4 -15.4q1.5 -1.8 3 -1.4\" stroke=\"#4d7a3a\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/></g>",
@@ -3207,14 +3218,15 @@ const PARTES = {
     { v: 'chapeu', n: 'Chapéu de palha' }, { v: 'curto', coroa: true, n: 'Coroa', plano: true }],
   cor: [HAIR.preto, HAIR.castanho, HAIR.grisalho, HAIR.branco].map(v => ({ v })),
   pelos: [{ v: '', n: 'Nada' }, { v: 'bigode', n: 'Bigode' }, { v: 'barba', n: 'Barba' }],
-  oculos: [{ v: '', n: 'Sem óculos' }, { v: 'oculos', n: 'Óculos' }, { v: 'escuros', n: 'Óculos escuros', req: 'bat10' }, { v: 'dourados', n: 'Óculos dourados', req: 'bat50' }],
+  oculos: [{ v: '', n: 'Sem óculos' }, { v: 'oculos', n: 'Óculos' }, { v: 'escuros', n: 'Óculos escuros' }, { v: 'dourados', n: 'Óculos dourados' }],
   roupa: ['#245e6a', '#97520f', '#f2e7d5', '#3d6b4f', '#4f7fa6', '#a8402a', '#e5a650', '#7d4e7a', '#1f4e79', '#2b2b2b'].map(v => ({ v }))
     .concat([{ v: '#c8102e', n: 'Camisa vermelha' }, { v: '#0b3d91', n: 'Camisa azul' },
-      { v: 'tururi', n: 'Abadá Tururi', req: 'copa357', evento: true }, { v: 'floral', n: 'Camisa floral', req: 'jogo5' }, { v: 'teatro', n: 'Camisa do Teatro', req: 'vit50' }]),   // cor lisa, sem símbolo de ninguém; tururi: o abadá do Boi Manaus (aniversário)
+      { v: 'onca', n: 'Camisa de onça-pintada', req: 'bat50' }, { v: 'vitoria', n: 'Camisa da vitória-régia', req: 'jogo5' }, { v: 'encontro', n: 'Camisa do Encontro das Águas', req: 'vit50' }]),   // cor lisa, sem símbolo de ninguém; 3.31: a posição na lista é o código do avatar (não mudar a ordem)
   mao: [{ v: '', n: 'Nada' }, { v: 'tacaca', n: 'Cuia de tacacá', req: 'vit5' }, { v: 'tapioca', n: 'Tapioca com tucumã', req: 'galo1' },
     { v: 'xcaboquinho', n: 'X-caboquinho', req: 'vit10' }, { v: 'cupuacu', n: 'Cupuaçu', req: 'jogo3' }, { v: 'tambaqui', n: 'Tambaqui assado', req: 'vit25' },
     { v: 'jaraqui', n: 'Jaraqui com farinha do Uarini', req: 'galo5' }, { v: 'kikao', n: 'Kikão', req: 'par25' }, { v: 'pirarucu', n: 'Pirarucu de casaca', req: 'jogo10' },
-    { v: 'palminha', n: 'Palminha', req: 'par100' }, { v: 'tapereba', n: 'Suco de taperebá', req: 'mis3' }, { v: 'acaicuia', n: 'Cuia de açaí', req: 'mis7' }, { v: 'sorvete', n: 'Sorvete de cupuaçu', req: 'mis15' }, { v: 'trofeu', n: 'Troféu do galo', req: 'galo10' }, { v: 'pedra', n: 'Carroça de sena', req: 'mao300' }],   // as duas madeiras que marcam o ritmo da toada
+    { v: 'guarana', n: 'Cacho de guaraná', req: 'par100' }, { v: 'tapereba', n: 'Suco de taperebá', req: 'mis3' }, { v: 'acaicuia', n: 'Cuia de açaí', req: 'mis7' }, { v: 'sorvete', n: 'Sorvete de cupuaçu', req: 'mis15' }, { v: 'trofeu', n: 'Troféu do galo', req: 'galo10' }, { v: 'pedra', n: 'Carroça de sena', req: 'mao300' },
+    { v: 'arara', n: 'Arara no ombro', req: 'bat10' }, { v: 'bolo', n: 'Fatia de bolo com vela', req: 'copa357', evento: true }],   // 3.31: palminha virou guaraná; arara e bolo (Copa 357) entram no fim (a ordem é o código do avatar)
   fundo: ['#e5a650', '#8fbcc2', '#86c98f', '#d9825b', '#e9c46a', '#c77dab', '#8fb3d9', '#e58a6c', '#a7c97a', '#f3d29b', '#bcd3ee', '#cfc2b0'].map(v => ({ v }))
 };
 const ORDEM_PARTES = ['pele', 'cabelo', 'cor', 'pelos', 'oculos', 'roupa', 'mao', 'fundo'];
@@ -6786,7 +6798,7 @@ renderDono = function () { renderDonoFoto(); dnFotosCarregar(); };
 // (conquistas, offline e online). O Plano Apoiador libera tudo na hora e traz extras (coroa, Teatro Amazonas),
 // que só aparecem quando os pagamentos estão ligados.
 // Todas as mesas estão liberadas para todo mundo (desde a 3.17), inclusive a Manaus 357 e a Igreja de São Sebastião.
-// Copa 357 Anos: aniversário de Manaus (24/10/2026). Quem jogar uma mão no dia (offline ou online) ganha o abadá Tururi,
+// Copa 357 Anos: aniversário de Manaus (24/10/2026). Quem jogar uma mão no dia (offline ou online) ganha a fatia de bolo com vela (3.31; antes, o abadá Tururi),
 // que só quem jogou no aniversário tem (o Plano Apoiador não libera).
 const COPA = { dia: '2026-10-24', fim: Date.parse('2026-10-25T00:00:00-04:00'), chave: 'dmz-copa357' };
 const diaManaus = () => new Date(Date.now() - 4 * 3600000).toISOString().slice(0, 10);
@@ -6934,10 +6946,21 @@ function maoURI(v, bg) {
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="51 63 40 40"><circle cx="71" cy="83" r="20" fill="${bg}"/>${MAO_SVG[v] || ''}</svg>`));
   return maoCache.get(key);
 }
+// 3.31: camisa de prêmio aparece grande (no avatar pequeno quase não dava para ver)
+const roupaCache = new Map();
+function roupaURI(v, bg) {
+  const key = v + '|' + bg;
+  if (!roupaCache.has(key)) {
+    const corpo = CAMISA_SVG[v] || `<path d="M12 104C14 80 30 71 50 71S86 80 88 104Z" fill="${v}"/>`;
+    roupaCache.set(key, 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><clipPath id="c"><circle cx="50" cy="50" r="50"/></clipPath></defs><g clip-path="url(#c)"><rect width="100" height="100" fill="${bg}"/><g transform="translate(50 60) scale(1.7) translate(-50 -88)">${corpo}<path d="M42.5 71.5L50 79.5L57.5 71.5Z" fill="#b07a52"/></g></g></svg>`));
+  }
+  return roupaCache.get(key);
+}
 function iconePremio(p, d) {
   if (!p) return '';
   if (p.tipo === 'mesa') { const m = MESAS.find(x => x.id === p.id); return `<span class="es-msw" style="background:${fundoMesa(m)}"></span>`; }
   if (p.k === 'mao') return `<img src="${maoURI(PARTES.mao[p.i].v, '#f3d29b')}" alt="">`;
+  if (p.k === 'roupa') return `<img src="${roupaURI(PARTES.roupa[p.i].v, '#f3d29b')}" alt="">`;
   return `<img src="${avatarURI(avatarDe(codigoAvatar(Object.assign({}, d || esBase(), { [p.k]: p.i }))))}" alt="">`;
 }
 
@@ -6983,7 +7006,7 @@ const ABAS = [
   { id: 'fundo', nome: 'Fundo', partes: ['fundo'] }
 ];
 const TITULO = { pele: 'Cor da pele', cabelo: 'Cabelo', cor: 'Cor do cabelo', pelos: 'Barba e bigode', oculos: 'Óculos', roupa: 'Camisa', mao: 'Na mão', fundo: 'Fundo' };
-const ROTULO_CURTO = { 'Tapioca com tucumã': 'Tapioca', 'Jaraqui com farinha do Uarini': 'Jaraqui', 'Pirarucu de casaca': 'Pirarucu', 'Camisa vermelha': 'Vermelha', 'Camisa azul': 'Azul', 'Cuia de tacacá': 'Tacacá', 'Tambaqui assado': 'Tambaqui', 'Óculos escuros': 'Escuros', 'Sem óculos': 'Sem', 'Óculos dourados': 'Dourados', 'Camisa floral': 'Floral', 'Camisa do Teatro': 'Teatro', 'Troféu do galo': 'Troféu', 'Carroça de sena': 'Carroça', 'Suco de taperebá': 'Taperebá', 'Cuia de açaí': 'Açaí', 'Sorvete de cupuaçu': 'Sorvete' };
+const ROTULO_CURTO = { 'Tapioca com tucumã': 'Tapioca', 'Jaraqui com farinha do Uarini': 'Jaraqui', 'Pirarucu de casaca': 'Pirarucu', 'Camisa vermelha': 'Vermelha', 'Camisa azul': 'Azul', 'Cuia de tacacá': 'Tacacá', 'Tambaqui assado': 'Tambaqui', 'Óculos escuros': 'Escuros', 'Sem óculos': 'Sem', 'Óculos dourados': 'Dourados', 'Camisa da vitória-régia': 'Vitória-régia', 'Camisa do Encontro das Águas': 'Encontro', 'Camisa de onça-pintada': 'Onça', 'Cacho de guaraná': 'Guaraná', 'Arara no ombro': 'Arara', 'Fatia de bolo com vela': 'Bolo', 'Troféu do galo': 'Troféu', 'Carroça de sena': 'Carroça', 'Suco de taperebá': 'Taperebá', 'Cuia de açaí': 'Açaí', 'Sorvete de cupuaçu': 'Sorvete' };
 const COM_ROTULO = new Set(['pelos', 'oculos', 'roupa', 'mao']);
 let esDraft = null, esAba = 'cabelo', estiloVolta = 'home';
 const abaDaParte = k => (ABAS.find(t => t.partes.includes(k)) || ABAS[1]).id;
@@ -8245,7 +8268,7 @@ async function vivoPresenca(agora) {
     // 3.26.2: tempo real — só quem está com o app aberto agora; quem sai some na hora
     const extras = [j.semCadastro ? `${j.semCadastro} na entrada, sem cadastro` : '', j.menores ? `${j.menores} ${j.menores === 1 ? 'menor de 18' : 'menores de 18'}, sem nome` : ''].filter(Boolean);
     box.innerHTML = `<span class="vivo-pk"><span class="vivo-ponto vivo-ponto-p" aria-hidden="true"></span>No app agora · ${n} ${n === 1 ? 'pessoa' : 'pessoas'}</span>${extras.length ? `<small class="vivo-pjan">${extras.join(' · ')}</small>` : ''}` +
-      (l.length ? `<ul class="vivo-pl2">${l.slice(0, 15).map(x => `<li><b>${esc(x.nome || 'Sem apelido')}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span>${x.bloq ? ' <em>bloqueado</em>' : ''}</li>`).join('')}${l.length > 15 ? `<li><span>e mais ${l.length - 15}</span></li>` : ''}</ul>` : '');
+      (l.length ? `<ul class="vivo-pl2">${l.slice(0, 15).map(x => `<li><b>${esc(x.nome || 'Sem apelido')}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span>${x.bloq ? ' <em>bloqueado</em>' : x.aparelho !== meu && souAdmin() ? ` <button type="button" class="linkbtn vivo-bloq" data-bloq="${esc(x.aparelho)}" data-nome="${esc(x.nome || '')}">Bloquear</button>` : ''}</li>`).join('')}${l.length > 15 ? `<li><span>e mais ${l.length - 15}</span></li>` : ''}</ul>` : '');
   } catch (e) {}
 }
 function vivoTique() {
@@ -8534,8 +8557,8 @@ function abasAtualiza(tela) {
 function abasVivo() {
   const ms = VIVO.mesas || [];
   const vagas = ms.filter(v => v.publica !== false && v.livres > 0);
-  // 3.29.2 (pedido do dono): a bolinha fica acesa e pulsando o tempo todo
-  const bol = $('#abaVivo'); if (bol) { bol.hidden = !vivoMostra(); bol.classList.add('pulsa'); }
+  // 3.31 (pedido do dono): a bolinha só aparece com mesa jogando agora (e pulsa)
+  const bol = $('#abaVivo'); if (bol) { bol.hidden = !(vivoMostra() && ms.length > 0); bol.classList.add('pulsa'); }
   const av = $('#calcAviso'); if (!av) return;
   av.hidden = !(vivoMostra() && ms.length);
   if (av.hidden) return;
@@ -9114,6 +9137,23 @@ function dnJogDobrar() {
 }
 const dnJogCarregarPainel = dnJogCarregar;
 dnJogCarregar = async function () { const r = await dnJogCarregarPainel.apply(this, arguments); try { dnJogDobrar(); } catch (e) {} return r; };
+// 3.31: bloquear direto da Calçada, na lista "No app agora" (antes só pela mesa ou pela lista da Área do administrador)
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('#vivoPres [data-bloq]'); if (!b || !souAdmin()) return;
+  const ap = b.dataset.bloq, nome = b.dataset.nome || 'esta pessoa';
+  openSheet('bloq', `<p class="eyebrow">Administrador</p><h2 id="sheetTitle">Bloquear ${esc(nome)}?</h2>
+    <p>Apelido ou foto ofensiva? A pessoa sai da mesa na hora (um robô da turma assume a cadeira), a foto cai e ela não joga mais online. Dá para desbloquear na Área do administrador.</p>
+    <button type="button" class="primary" id="bloqSim" style="width:100%">Bloquear ${esc(nome)}</button><button type="button" class="secondary" id="bloqNao" style="width:100%;margin-top:8px">Cancelar</button>`);
+  $('#bloqNao').addEventListener('click', closeSheet);
+  $('#bloqSim').addEventListener('click', async ev => {
+    const s = ev.currentTarget; s.disabled = true; s.textContent = 'Bloqueando…';
+    try {
+      await dnMsgPedir('/dono/bloquear', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ aparelho: ap, motivo: 'pela Calçada' }) });
+      closeSheet(); toast(`${nome} foi bloqueado.`); track('dono-bloqueou-calcada');
+      try { vivoPresenca(true); vivoMesas(true); dnJogCarregar(); } catch (er) {}
+    } catch (er) { s.disabled = false; s.textContent = `Bloquear ${nome}`; toast('Não deu para bloquear agora.'); }
+  });
+});
 
 
 // ---- Desenho das peças ----
@@ -9697,7 +9737,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.30-1df4b26e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.31-619741cc';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
