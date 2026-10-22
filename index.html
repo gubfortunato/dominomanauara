@@ -1694,6 +1694,7 @@ html[data-mesa="palacio"] .table.wood{--wood-1:#2a2a40;--wood-2:#2a2a40;--wood-e
 .carta-coracao{display:inline-block;width:.9em;height:.85em;margin-left:.22em;vertical-align:-.06em;filter:drop-shadow(0 3px 6px rgba(214,59,59,.45));animation:cartaCoracao .7s cubic-bezier(.3,1.6,.5,1) .35s both}
 @keyframes cartaCoracao{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(-8deg)}}
 @media (prefers-reduced-motion: reduce){ .carta-coracao{animation:none;transform:rotate(-8deg)} }
+.me-selo{color:#f0b45e;font-weight:800;letter-spacing:.04em}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -3017,6 +3018,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.39.2', data: '21/10/2026', itens: ['Quem assiste a uma mesa online agora vê o selo ★ e ♥ também do jogador que aparece embaixo.'] },
   { v: '3.39.1', data: '21/10/2026', itens: ['Filtro de apelidos: mais um duplo sentido barrado.', 'Carta de agradecimento do Apoiador com um coração novo.'] },
   { v: '3.39', data: '21/10/2026', itens: ['Apoiadores: o progresso do jogo (nível, conquistas, avatar e histórico) fica guardado com a gente. No celular novo, o código do plano traz tudo de volta.', 'Carta de agradecimento para quem apoia o jogo, com o código para guardar.'] },
   { v: '3.38.2', data: '21/10/2026', itens: ['No início, o convite do WhatsApp fica embaixo do cartão de instalar o jogo.', 'Quem estiver com um apelido que fere as regras termina a partida e é levado para escolher outro; depois pode voltar a jogar.', 'Mesa online: a cadeira de quem é Apoiador ficava mais alta, mudava a forma das outras e o nome encostava no avatar. Agora fica igual às outras.', 'Filtro de apelidos mais esperto: pega frases de duplo sentido escritas do jeito que se fala e letras trocadas de mesmo som (k no lugar de c, z no lugar de s). Quem já usava um apelido desses precisa escolher outro.'] },
@@ -9182,7 +9184,9 @@ render = function () {
       const c0 = cadDe(0), me = $('#meName');
       if (me && c0) {
         const a = !c0.bot && typeof avatarDe === 'function' ? avatarDe(c0.av) : null, src = c0.bot ? botFaceURI(c0.nome) : a ? avatarURI(a) : '';
-        me.innerHTML = `${src ? `<img class="fotoimg" src="${src}" alt="">` : ''}${esc(c0.nome)} <small>· parceiro de ${esc((cadDe(2) || {}).nome || '')}</small>`;
+        // 3.39.2: o selo (★ Apoiador, ♥ doador) de quem está embaixo também aparece para quem assiste
+        const selo0 = c0.bot ? '' : (c0.apoiador ? '★' : '') + '♥'.repeat(c0.doador || 0);
+        me.innerHTML = `${src ? `<img class="fotoimg" src="${src}" alt="">` : ''}${esc(c0.nome)}${selo0 ? ` <span class="me-selo">${selo0}</span>` : ''} <small>· parceiro de ${esc((cadDe(2) || {}).nome || '')}</small>`;
       }
       $('#prompt').textContent = G.phase === 'play' ? `Vez de ${G.names[G.turn] || ''}` : 'Fim da mão';
     } else if (ON.vista && ON.vista.assistindo > 0) {
@@ -10277,7 +10281,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.39.1-0a0b0c94';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.39.2-89faddcb';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
