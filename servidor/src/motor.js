@@ -337,9 +337,13 @@ function layoutTable(T, Xmax) {
   }
   return res;
 }
-// altura das colunas do bucho: acompanha a largura da fileira e a proporção da mesa (deitada, a coluna é mais curta)
+// altura das colunas do bucho. 3.40.1 (o dono, de novo: "quando o bucho cresce, as pedras ficam muito pequenas"): a coluna
+// reta do bucho (até 3 pedras em pé para cima e 3 para baixo, uma linha só atravessando a mesa) esticava a mesa na
+// vertical. Agora o bucho vira para o lado logo depois da primeira pedra e segue em fileiras até a borda, cada um no
+// seu canto (o de cima para a direita, o de baixo para a esquerda), sem encostar nas pontas. Simulação de 2 mil mãos:
+// pedras 8% a 14% maiores no fim da mão, junto com a fileira mais curta no celular em pé.
 let mesaA = 0.83;
-function colunaBucho(Xmax) { return Math.max(3, Math.min(Xmax * 1.1, Xmax / (mesaA || 0.83) * 0.95)); }
+function colunaBucho(Xmax) { return 3; }
 function layoutChain(chain, center, Xmax) { return layoutTable({ chain, center }, Xmax).main; }
 // Carroça sempre atravessada e centrada na pedra em que encaixou; a linha segue reto do outro lado dela.
 // Se a fileira acaba logo depois de uma carroça, a linha desce (ou sobe) a partir da ponta da carroça.

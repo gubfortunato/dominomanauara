@@ -531,9 +531,12 @@ body{touch-action:manipulation}
 
 /* 3.37.3: estrela ao lado do nome (Apoiador) e o selo ♥ (doador), os dois parados */
 .nome-selo{display:inline-block;margin:0 0 0 5px;padding:0 2px;border:0;background:none;font:inherit;font-weight:700;line-height:1;vertical-align:baseline;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.nome-estrela{color:#d8902f;font-size:1.05em}
-.nome-coracao{color:#c0563f;font-size:.85em;letter-spacing:.04em}
-@media (prefers-color-scheme: dark){ .nome-estrela{color:#f3c063} .nome-coracao{color:#ef8a73} }
+.nome-estrela{font-size:.95em}
+.nome-coracao{font-size:.8em}
+/* 3.40.1: estrela e coração desenhados (iguais aos da mesa online), na mesma cor dourada */
+.nome-selo .selo-estrela{fill:#c98a2b;stroke:#c98a2b}
+.nome-selo .selo-coracao{fill:#c98a2b}
+@media (prefers-color-scheme: dark){ .nome-selo .selo-estrela{fill:#f3c063;stroke:#f3c063} .nome-selo .selo-coracao{fill:#f3c063} }
 /* 3.37.3: frase embaixo das pedras na tela de entrada */
 .entry-frase{margin:16px 0 0;font-family:var(--font-display);font-weight:400;font-size:21px;line-height:1.15;letter-spacing:.005em;color:var(--fg);opacity:.85;text-align:center;text-wrap:balance}
 .entra .entry-frase{animation:entBotao .5s ease-out 1.8s both}
@@ -1683,6 +1686,21 @@ html[data-mesa="palacio"] .table.wood{--wood-1:#2a2a40;--wood-2:#2a2a40;--wood-e
 .bn-cta{flex:none;padding:8px 13px;border-radius:999px;background:#f3c25a;color:#2b1a0e;font-size:13.5px;font-weight:800;line-height:1}
 .ap-banner .ap-banner-tx b{font-size:15px}
 @media (max-width: 370px){ .bn-avs img:nth-child(3){display:none} .bn-cta{padding:8px 11px} }
+/* 3.40.1 (ideia do dono: "um brilho que corre na borda", "bem brilhante"): um ponto de luz dá a volta na borda do banner,
+   com um brilho que vaza para fora. A borda é um anel com degradê girando (o ângulo é uma variável animada); o miolo
+   fica por cima, 2,5 px menor; a luz difusa (borrada) fica atrás. Quem pede menos movimento vê a borda parada. */
+@property --bn-ang{syntax:'<angle>';inherits:true;initial-value:0deg}
+#apBanner{position:relative;isolation:isolate;flex:none;border:0;padding:12.5px 14.5px 12.5px 12.5px;background:none;animation:bnGiro 3s linear infinite}
+#apBanner::before{content:"";position:absolute;z-index:-1;inset:0;border-radius:16px;
+  background:conic-gradient(from var(--bn-ang),#b8923f 0 50%,#e9b94f 64%,#ffe08a 76%,#fff6d6 82%,#fff 85%,#fff6d6 88%,#ffe08a 92%,#e9b94f 96%,#b8923f 100%)}
+#apBanner::after{content:"";position:absolute;z-index:-1;inset:2.5px;border-radius:13.5px;background:linear-gradient(100deg,#3d2815,#291a0d)}
+/* a luz difusa: nas pontas do banner ela some aos poucos (a tela corta tudo o que passa da largura dos cartões) */
+#apBanner .bn-luz{position:absolute;z-index:-2;inset:-16px 0;pointer-events:none;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 34px,#000 calc(100% - 34px),transparent);mask-image:linear-gradient(90deg,transparent,#000 34px,#000 calc(100% - 34px),transparent)}
+#apBanner .bn-luz i{position:absolute;inset:12px -4px;border-radius:20px;
+  background:conic-gradient(from var(--bn-ang),transparent 0 62%,rgba(255,196,80,.6) 74%,#ffe6a6 84%,rgba(255,196,80,.6) 93%,transparent 100%);filter:blur(10px)}
+@keyframes bnGiro{to{--bn-ang:360deg}}
+@media (prefers-reduced-motion: reduce){ #apBanner{animation:none} #apBanner .bn-luz{display:none} }
 .ap-lead{display:grid;gap:8px}
 .ap-lead p{margin:0;font-size:16px;line-height:1.45;color:var(--fg)}
 .ap-lead p:first-child{font-size:17px;font-weight:600}
@@ -1696,6 +1714,16 @@ html[data-mesa="palacio"] .table.wood{--wood-1:#2a2a40;--wood-2:#2a2a40;--wood-e
 @keyframes cartaCoracao{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(-8deg)}}
 @media (prefers-reduced-motion: reduce){ .carta-coracao{animation:none;transform:rotate(-8deg)} }
 .me-selo{color:#f0b45e;font-weight:800;letter-spacing:.04em}
+/* 3.40.1: selo na linha de baixo ("★♥ 7 pedras"), assim o nome não perde espaço */
+.seat .sc .sc-selo{white-space:nowrap}
+/* selo desenhado: estrela (Apoiador) e coração (doador), do mesmo tamanho e na mesma cor neutra (dourado da mesa).
+   Azul e vermelho não: estrela azul e coração vermelho lembram Caprichoso e Garantido (pedido do dono) */
+.selo-ic{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.17em;overflow:visible}
+.selo-ic + .selo-ic{margin-left:.06em}
+.selo-estrela{fill:#f0b45e;stroke:#f0b45e;stroke-width:1.6;stroke-linejoin:round;width:1.15em;height:1.15em;vertical-align:-.21em}
+.selo-coracao{fill:#f0b45e}
+.me-selo .selo-ic,.sala-cad .selo-ic{width:.95em;height:.95em;vertical-align:-.12em}
+.me-selo .selo-estrela,.sala-cad .selo-estrela{width:1.05em;height:1.05em;vertical-align:-.16em}
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -2055,7 +2083,7 @@ button.dn-ag:active{transform:scale(.98)}
       <button type="button" class="mechip" id="meChip" aria-label="Editar perfil: nome e foto"><span class="face" id="meChipFace"></span><span class="edit" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span></button>
     </div>
     <p class="lead">Fala, <b id="homeName"></b>. Bora pra mesa?</p>
-    <button type="button" class="ap-banner" id="apBanner" hidden><span class="bn-avs" id="apBannerAvs" aria-hidden="true"></span><span class="ap-banner-tx"><b id="apBannerT">Seja Apoiador</b><small id="apBannerS"></small></span><span class="bn-cta" id="apBannerCta" aria-hidden="true">Apoiar</span></button>
+    <button type="button" class="ap-banner" id="apBanner" hidden><span class="bn-luz" aria-hidden="true"><i></i></span><span class="bn-avs" id="apBannerAvs" aria-hidden="true"></span><span class="ap-banner-tx"><b id="apBannerT">Seja Apoiador</b><small id="apBannerS"></small></span><span class="bn-cta" id="apBannerCta" aria-hidden="true">Apoiar</span></button>
     <!-- Banner do patrocinador: primeira coisa da tela inicial -->
     <button type="button" class="rulescard" id="howBtn">
       <span class="rc-ic" id="rulesTile" aria-hidden="true"></span>
@@ -2791,9 +2819,13 @@ function layoutTable(T, Xmax) {
   }
   return res;
 }
-// altura das colunas do bucho: acompanha a largura da fileira e a proporção da mesa (deitada, a coluna é mais curta)
+// altura das colunas do bucho. 3.40.1 (o dono, de novo: "quando o bucho cresce, as pedras ficam muito pequenas"): a coluna
+// reta do bucho (até 3 pedras em pé para cima e 3 para baixo, uma linha só atravessando a mesa) esticava a mesa na
+// vertical. Agora o bucho vira para o lado logo depois da primeira pedra e segue em fileiras até a borda, cada um no
+// seu canto (o de cima para a direita, o de baixo para a esquerda), sem encostar nas pontas. Simulação de 2 mil mãos:
+// pedras 8% a 14% maiores no fim da mão, junto com a fileira mais curta no celular em pé.
 let mesaA = 0.83;
-function colunaBucho(Xmax) { return Math.max(3, Math.min(Xmax * 1.1, Xmax / (mesaA || 0.83) * 0.95)); }
+function colunaBucho(Xmax) { return 3; }
 function layoutChain(chain, center, Xmax) { return layoutTable({ chain, center }, Xmax).main; }
 // Carroça sempre atravessada e centrada na pedra em que encaixou; a linha segue reto do outro lado dela.
 // Se a fileira acaba logo depois de uma carroça, a linha desce (ou sobe) a partir da ponta da carroça.
@@ -3019,6 +3051,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.40.1', data: '21/10/2026', itens: ['O selo de quem apoia ficou mais bonito: a estrela do Apoiador e o coração de quem doou agora têm o mesmo tamanho, na mesa online e ao lado do seu nome no início.', 'Mesa online: o selo aparece sempre junto do nome, mesmo quando o apelido é comprido e fica cortado.', 'O convite "Seja um Apoiador" no início ganhou um brilho que corre pela borda.'] },
   { v: '3.40', data: '21/10/2026', itens: ['A lista do que mudou em cada versão e o aviso de atualização ficam só para o administrador; para o público, o número da versão é só texto.'] },
   { v: '3.39.2', data: '21/10/2026', itens: ['Quem assiste a uma mesa online agora vê o selo ★ e ♥ também do jogador que aparece embaixo.'] },
   { v: '3.39.1', data: '21/10/2026', itens: ['Filtro de apelidos: mais um duplo sentido barrado.', 'Carta de agradecimento do Apoiador com um coração novo.'] },
@@ -3791,8 +3824,8 @@ function renderHome() {
   // 3.37.3 (ideia do dono): no lugar da etiqueta "Apoiador ♥", uma estrela ao lado do nome enquanto for Apoiador; depois
   // que o tempo acaba, fica o selo de doador ♥ (para sempre). Os dois parados, como na mesa online. Tocar abre o Apoie o jogo.
   const plano = typeof temPlano === 'function' && temPlano();
-  $('#homeName').innerHTML = esc(me) + (plano ? '<button type="button" class="nome-selo nome-estrela" data-selo="apoio" aria-label="Você é Apoiador">★</button>'
-    : nv ? `<button type="button" class="nome-selo nome-coracao" data-selo="apoio" aria-label="Doador">${'♥'.repeat(nv)}</button>` : '');
+  $('#homeName').innerHTML = esc(me) + (plano ? '<button type="button" class="nome-selo nome-estrela" data-selo="apoio" aria-label="Você é Apoiador">' + seloEstrela() + '</button>'
+    : nv ? `<button type="button" class="nome-selo nome-coracao" data-selo="apoio" aria-label="Doador">${seloCoracao(nv)}</button>` : '');
 }
 $('#meChip').addEventListener('click', () => openProfile('home'));
 $('#homeName').addEventListener('click', e => { if (e.target.closest('[data-selo]') && typeof abrirApoio === 'function') abrirApoio('home'); });
@@ -5420,8 +5453,12 @@ render = function () {
     // Quem saiu ou caiu continua aparecendo normal para os outros (sem "sem internet" nem "robô no lugar")
     el.classList.remove('semnet');
     el.classList.toggle('apoiador', !!c.apoiador);
-    const sn = el.querySelector('.sn'), selo = (c.apoiador ? '★' : '') + '♥'.repeat(c.doador || 0);
-    if (sn) { if (selo) sn.dataset.selo = ' ' + selo; else delete sn.dataset.selo; }
+    const sn = el.querySelector('.sn'), selo = seloSVG(c.apoiador, c.doador);
+    // 3.40.1: o selo vai para a linha de baixo, na frente de "7 pedras" (ao lado do nome ele sumia no "Zé Macaco…" da
+    // cadeira estreita, e o nome perdia espaço)
+    if (sn) delete sn.dataset.selo;
+    const sc = el.querySelector('.sc');
+    if (sc) { const v = sc.querySelector('.sc-selo'); if (v) v.remove(); if (selo) sc.insertAdjacentHTML('afterbegin', `<span class="sc-selo" aria-label="${c.apoiador ? 'Apoiador' : 'Doador'}">${selo}</span> `); }
     if (c.rei) el.dataset.rei = '1'; else delete el.dataset.rei;   // 3.37: coroa do Rei da Calçada em cima do avatar
   }
 };
@@ -5585,7 +5622,7 @@ function renderSala() {
     const tag = `<span class="sc-tag ${pos === 2 ? 'par' : pos === 0 ? 'eu' : 'adv'}">${NOME_POS[pos]}</span>`;
     if (!c) return `<button type="button" class="sala-cad vazia ${POS_CLASS[pos]}" data-p="${p}">${tag}<span class="sc-face sc-vazia" aria-hidden="true">+</span><b>Cadeira vazia</b><small>Toque para sentar aqui</small></button>`;
     const face = pos === 0 ? faceImg(myFaceURI(), 'sc-img') : c.bot && botFaceURI(c.nome) ? faceImg(botFaceURI(c.nome), 'sc-img') : c.foto && !fotoEscondida(c.foto) ? fotoOnlineImg(c, 'sc-img') : (avatarDe(c.av) ? faceImg(avatarURI(avatarDe(c.av)), 'sc-img') : `<span class="sc-letra">${esc(c.nome[0] || '?')}</span>`);
-    return `<div class="sala-cad ${POS_CLASS[pos]}${c.on ? '' : ' fora'}${pos === 0 ? '' : fade(p)}">${tag}<span class="sc-face">${face}${c.rei ? '<i class="sc-coroa" title="Rei da Calçada" aria-label="Rei da Calçada">👑</i>' : ''}<i class="sc-on${c.on ? ' ok' : ''}" aria-hidden="true"></i></span><b>${esc(pos === 0 ? 'Você' : c.nome)}${c.apoiador ? ' <i class="sc-star" title="Apoiador">★</i>' : ''}${c.doador ? ` <i class="sc-heart" title="Doador">${'♥'.repeat(c.doador)}</i>` : ''}</b><small>${esc(salaSub(c, pos))}</small></div>`;
+    return `<div class="sala-cad ${POS_CLASS[pos]}${c.on ? '' : ' fora'}${pos === 0 ? '' : fade(p)}">${tag}<span class="sc-face">${face}${c.rei ? '<i class="sc-coroa" title="Rei da Calçada" aria-label="Rei da Calçada">👑</i>' : ''}<i class="sc-on${c.on ? ' ok' : ''}" aria-hidden="true"></i></span><b>${esc(pos === 0 ? 'Você' : c.nome)}${c.apoiador ? ` <i class="sc-star" title="Apoiador">${seloEstrela()}</i>` : ''}${c.doador ? ` <i class="sc-heart" title="Doador">${seloCoracao(c.doador)}</i>` : ''}</b><small>${esc(salaSub(c, pos))}</small></div>`;
   }).join('') + '<div class="sala-centro" aria-hidden="true"></div>';
   $$('#salaMesa .vazia').forEach(b => b.addEventListener('click', () => mandar({ t: 'sentar', cadeira: Number(b.dataset.p) })));
   const vazias = v.cad.filter(c => !c).length;
@@ -5912,6 +5949,12 @@ function doadorLocal() { try { return JSON.parse(store.get(DOAKEY) || 'null'); }
 function souDoador() { const d = doadorLocal(); return !!(d && (d.total > 0 || d.cortesia)); }
 function nivelDoador() { const d = doadorLocal(), t = d ? d.total : 0, n = t >= 100 ? 3 : t >= 30 ? 2 : t > 0 ? 1 : 0; return d && d.cortesia ? Math.max(n, d.nivel || 1) : n; }
 const coracoes = n => '♥'.repeat(n || 0);
+// 3.40.1 (pedido do dono): o selo de quem apoia virou desenho, estrela (Apoiador) e coração (doador) do mesmo tamanho.
+// O ★ e o ♥ da fonte saíam de tamanhos diferentes (a estrela parecia menor). A cor continua neutra, dourada: estrela
+// azul e coração vermelho lembrariam Caprichoso e Garantido.
+function seloEstrela() { return '<svg class="selo-ic selo-estrela" viewBox="-0.3 0 24.6 24" aria-hidden="true"><path d="M12 1.3L14.88 8.94 23.03 9.32 16.66 14.41 18.82 22.28 12 17.8 5.18 22.28 7.34 14.41 0.97 9.32 9.12 8.94Z"/></svg>'; }
+function seloCoracao(n) { return '<svg class="selo-ic selo-coracao" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.6C7 17.8 1.6 13.6 1.6 8 1.6 4.6 4.1 2.2 7.3 2.2c2 0 3.7 1 4.7 2.6 1-1.6 2.7-2.6 4.7-2.6 3.2 0 5.7 2.4 5.7 5.8 0 5.6-5.4 9.8-10.4 13.6Z"/></svg>'.repeat(n || 0); }
+function seloSVG(apoiador, doador) { return (apoiador ? seloEstrela() : '') + seloCoracao(doador); }
 const mesAno = ms => new Date(ms).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric', timeZone: 'America/Manaus' }).replace('.', '').replace(' de ', '/');
 function guardarDoador(d, codigo) {
   if (d && (d.total > 0 || d.cortesia)) store.set(DOAKEY, JSON.stringify(Object.assign({}, d, { codigo: codigo || null, visto: Date.now() })));
@@ -9188,7 +9231,7 @@ render = function () {
       if (me && c0) {
         const a = !c0.bot && typeof avatarDe === 'function' ? avatarDe(c0.av) : null, src = c0.bot ? botFaceURI(c0.nome) : a ? avatarURI(a) : '';
         // 3.39.2: o selo (★ Apoiador, ♥ doador) de quem está embaixo também aparece para quem assiste
-        const selo0 = c0.bot ? '' : (c0.apoiador ? '★' : '') + '♥'.repeat(c0.doador || 0);
+        const selo0 = c0.bot ? '' : seloSVG(c0.apoiador, c0.doador);
         me.innerHTML = `${src ? `<img class="fotoimg" src="${src}" alt="">` : ''}${esc(c0.nome)}${selo0 ? ` <span class="me-selo">${selo0}</span>` : ''} <small>· parceiro de ${esc((cadDe(2) || {}).nome || '')}</small>`;
       }
       $('#prompt').textContent = G.phase === 'play' ? `Vez de ${G.names[G.turn] || ''}` : 'Fim da mão';
@@ -9862,7 +9905,7 @@ function renderBoard() {
   const W = wrap.clientWidth || 320, H = wrap.clientHeight || 300, a = W / H;
   const base = Math.sqrt(112 * a) / 2;
   const pin = G.chain.length && G.chain[G.center].a === G.chain[G.center].b;
-  Xmax = pin ? Math.max(6.5, Math.min(12, base * 1.25)) : Math.max(5.5, Math.min(10, base * 1.1));   // 3.25: fileiras longas e retas, viram só perto da borda
+  Xmax = pin ? Math.max(5.5, Math.min(12, base * 1.25)) : Math.max(5.5, Math.min(10, base * 1.1));   // 3.25: fileiras longas e retas, viram só perto da borda (3.40.1: no celular em pé, 2 pedras de cada lado antes de virar, em vez de 3: a mesa fica mais estreita e as pedras maiores)
   mesaA = a; Xmax = xmaxMelhor(W, H, a, Xmax);   // a mesma largura a mão inteira (a mesa não se rearruma no meio)
   const lay = layoutTable(G, Xmax), pos = lay.main;
   const bTiles = [];
@@ -10284,7 +10327,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.40-c5fa6ce5';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.40.1-35c2d2e5';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
