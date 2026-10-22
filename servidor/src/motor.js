@@ -515,6 +515,8 @@ const NOME_RUIM_PARTE = ['porra', 'caralh', 'buceta', 'boceta', 'xoxota', 'xerec
   // 3.25: mais termos sexuais e xingamentos (o "Pica Dura" passou), inclusive grudados ("PicaDura", "PauDuro")
   'piroc', 'bucet', 'xerec', 'xoxot', 'pauduro', 'paugross', 'picadura', 'picagross', 'picamole', 'picudo', 'rolud', 'rolao', 'putinh', 'putona',
   'tesao', 'tezao', 'tesud', 'boquet', 'bronha', 'cuzinh', 'cusinh', 'chifrud', 'transar', 'transand', 'orgia', 'sexo', 'xvideo', 'pornhub',
+  // 3.38.2: o "Boyceta" passou (y no lugar do o; s no lugar do c)
+  'boicet', 'buicet', 'buset', 'boset', 'bucit', 'bocit', 'xoxot', 'xerek', 'piruc', 'pirok',
   'onlyfans', 'pepek', 'xaninh', 'grelinh', 'bundinh', 'bundud', 'rabud', 'peitud', 'gozad', 'enrab', 'rapariga', 'desgrac', 'imbecil',
   'idiota', 'mongoloid', 'aleijad', 'vagab', 'arromb', 'fuck', 'shit', 'pussy', 'bitch', 'whore', 'nigg', 'slut', 'boobs'];
 // Curtas: só barram como palavra separada (para não pegar "Cunha" ou "Disputa").
@@ -523,12 +525,22 @@ const NOME_RUIM_PALAVRA = ['cu', 'puta', 'putas', 'puto', 'foda', 'fode', 'rola'
   'pica', 'pau', 'piru', 'xana', 'ppk', 'grelo', 'bunda', 'bundao', 'rabo', 'peitos', 'peitao', 'teta', 'tetas', 'chupa', 'chupar', 'mamar',
   'mamada', 'gozar', 'gozo', 'gostosa', 'gostoso', 'gostosao', 'gostosinha', 'sexy', 'sex', 'anal', 'nude', 'nudes', 'broxa', 'cachorra',
   'vaca', 'cagao', 'cagar', 'dick', 'cock', 'tits'];
+// 3.38.2 (o "Sokomo Kazada" passou): frases de duplo sentido, escritas do jeito que se fala ("só como casada") e
+// também trocando letras de mesmo som (k = c, z = s, y = i, w = u, ph = f). Conferidas no nome todo grudado.
+const NOME_RUIM_FRASE = [
+  /c[ou]m(o|i|e|endo|er|edor|edora)(de|da|das|do|dos|a|as|o|os|sua|tua|teu|seu|tu|vc|voce)?(casad|mulher|esposa|mae|irma|namorad|noiv|filha|sogra|vizinh|cunhad|prima|tia|vo|novinh|mina)/,
+  /(pego|pega|peguei|pegador|catei|cato|traco|tracei)(de|da|das|a|as|o|os|sua|tua)?(casad|mulher|esposa|mae|irma|namorad|noiv|novinh|mina)/,
+  /(sua|tua)(mae|irma|mulher|esposa|namorad)(e|eh|ta|tah)?(minha|gostos|safad|puta)/,
+  /sentanomeu|sentanele|sentaaqui|sentaemmim|mamanomeu|chupaaqui|chupanomeu/
+];
+const somDeNome = s => s.replace(/ph/g, 'f').replace(/k/g, 'c').replace(/z/g, 's').replace(/y/g, 'i').replace(/w/g, 'u');
 function nomeOfensivo(nome) {
   const junta = s => s.replace(/(.)\1+/g, '$1');
   const leet = { '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', '@': 'a', '$': 's', '!': 'i' };
   const base = String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[0134578@$!]/g, c => leet[c]);
-  const tudo = base.replace(/[^a-z]/g, ''), tudoJ = junta(tudo);
-  if (NOME_RUIM_PARTE.some(w => tudo.includes(w) || tudoJ.includes(junta(w)))) return true;
+  const tudo = base.replace(/[^a-z]/g, ''), tudoJ = junta(tudo), som = junta(somDeNome(tudo));
+  if (NOME_RUIM_PARTE.some(w => tudo.includes(w) || tudoJ.includes(junta(w)) || som.includes(junta(somDeNome(w))))) return true;
+  if (NOME_RUIM_FRASE.some(r => r.test(tudoJ) || r.test(som))) return true;
   const palavras = base.split(/[^a-z]+/).filter(Boolean);
   return NOME_RUIM_PALAVRA.some(w => tudo === w || tudoJ === junta(w) || palavras.some(p => p === w || junta(p) === junta(w)));
 }

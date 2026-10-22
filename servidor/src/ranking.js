@@ -14,7 +14,7 @@
 // continuam por vitórias (tabela ranking), para ninguém perder o que já tinha no meio da semana.
 // Rei da Calçada: o 1º da semana passada ganha a coroa na mesa online durante a semana seguinte.
 // Apelido genérico ("Anonimous", "Jogador"...) não aparece no ranking: a pessoa vê o aviso para escolher um apelido.
-import { nomeGenerico } from './motor.js';
+import { nomeGenerico, nomeOfensivo } from './motor.js';
 
 const DIA = 86400000, MANAUS = 4 * 3600000;
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
@@ -87,7 +87,7 @@ async function ordenados(env, per) {
     : `SELECT aparelho, nome, av, nv, ganhas, jogadas, atualizado FROM ranking r WHERE periodo = ? AND ganhas > 0 AND ${FILTRO}
         ORDER BY ganhas DESC, jogadas ASC, atualizado ASC LIMIT ${LER}`;
   const { results } = await env.DB.prepare(sql).bind(per).all();
-  return (results || []).filter(x => !nomeGenerico(x.nome));
+  return (results || []).filter(x => !nomeGenerico(x.nome) && !nomeOfensivo(x.nome));   // 3.38.2: apelido ofensivo também fica de fora
 }
 async function lista(env, per, fim, eu, reiAp) {
   const pts = usaPontos(env, per), todos = await ordenados(env, per);
@@ -100,7 +100,7 @@ async function lista(env, per, fim, eu, reiAp) {
     if (me) {
       const base = Object.assign({ ganhas: me.ganhas, jogadas: me.jogadas }, pts ? { pontos: me.pontos } : {});
       const tem = pts ? me.pontos > 0 : me.ganhas > 0, i = todos.findIndex(x => x.aparelho === eu);
-      if (nomeGenerico(me.nome)) meu = Object.assign({ pos: null, oculto: 'nome' }, base);
+      if (nomeGenerico(me.nome) || nomeOfensivo(me.nome)) meu = Object.assign({ pos: null, oculto: 'nome' }, base);
       else if (i >= 0) meu = Object.assign({ pos: i + 1 }, base);
       else if (tem) {
         const c = pts

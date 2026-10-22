@@ -11,6 +11,8 @@ import { pontuar, nomeDaTurma, apelido as apelidoNaTurma } from './turmas.js';
 import { somarVivo } from './vivo.js';
 import { somarRanking, reiDaSemana } from './ranking.js';
 import { bloqueado, visto } from './bloqueio.js';
+// 3.38.2: na Calçada, apelido que o filtro passou a barrar (de quem entrou antes) aparece como "Jogador"
+const nomeVisivel = c => !c.bot && nomeOfensivo(c.nome) ? 'Jogador' : c.nome;
 
 const TEMPO = {
   jogada: 4500,      // robô: espera antes de jogar (igual ao jogo offline)
@@ -208,7 +210,7 @@ export class Mesa {
     if (!m) return { existe: false, fase: null };
     if (!m.G) return { existe: true, fase: m.fase, publica: !!m.publica, tema: m.tema || null,   // 3.35: sala, antes da 1ª partida
       on: m.cad.filter((c, p) => c && !c.bot && this.conectado(p)).length, livres: 0,
-      cad: m.cad.map((c, p) => c ? { nome: c.nome, bot: !!c.bot, av: c.bot ? null : c.av || null, tipo: c.bot ? 'robo' : this.conectado(p) ? 'pessoa' : 'fora', nv: c.bot ? null : c.nv || 1, bairro: null } : null),
+      cad: m.cad.map((c, p) => c ? { nome: nomeVisivel(c), bot: !!c.bot, av: c.bot ? null : c.av || null, tipo: c.bot ? 'robo' : this.conectado(p) ? 'pessoa' : 'fora', nv: c.bot ? null : c.nv || 1, bairro: null } : null),
       partida: 0, mao: 0, criada: m.criada || null, placar: [0, 0], lance: null };
     const G = m.G, evs = G.events || [];
     const ev = ['galo', 'batida', 'play', 'pass'].map(t => evs.find(e => e.type === t)).find(Boolean) || null;
@@ -217,7 +219,7 @@ export class Mesa {
       livres: m.cad.filter(c => c && c.bot).length,
       // 3.25.1: quem é quem na cadeira — pessoa conectada, pessoa sem conexão (o robô joga por ela na vez), quem saiu
       // (o robô ficou no lugar) e robô da turma
-      cad: m.cad.map((c, p) => c ? { nome: c.nome, bot: !!c.bot, av: c.bot ? null : c.av || null,
+      cad: m.cad.map((c, p) => c ? { nome: nomeVisivel(c), bot: !!c.bot, av: c.bot ? null : c.av || null,
         tipo: c.bot ? (c.saiu ? 'saiu' : 'robo') : this.conectado(p) ? 'pessoa' : 'fora',
         nv: c.bot ? null : c.nv || 1, bairro: c.bot ? null : c.bairro || null, menor: !c.bot && !!c.menor } : null),
       partida: G.partida || 1, mao: G.handNo || 1, criada: m.criada || null,
@@ -270,11 +272,12 @@ export class Mesa {
     const id = String((b && b.id) || '');
     if (!/^[a-z0-9-]{8,40}$/i.test(id)) return null;
     let nome = limpa(b.nome, 16);
-    if (nome.length < 2 || nomeOfensivo(nome)) nome = 'Jogador';
+    const ruim = nome.length >= 2 && nomeOfensivo(nome);   // 3.38.2: entra como "Jogador" e, no fim da partida, sai para trocar o apelido
+    if (nome.length < 2 || ruim) nome = 'Jogador';
     const av = /^[a-z0-9_-]{1,16}$/i.test(String(b.av || '')) ? String(b.av) : null;
     let bairro = limpa(b.bairro, 28);
     if (bairro.length < 2 || nomeOfensivo(bairro)) bairro = null;
-    return { id, nome, av, bairro, nv: nivelOk(b.nv), bot: false, saiu: false, menor: !!b.menor };
+    return { id, nome, av, bairro, nv: nivelOk(b.nv), bot: false, saiu: false, menor: !!b.menor, apelidoRuim: ruim };
   }
 
   // ---------- Mensagens dos celulares ----------
@@ -325,6 +328,7 @@ export class Mesa {
     const m = this.m;
     const quem = this.pessoa(msg);
     if (!quem) return this.enviar(ws, { t: 'erro', cod: 'dados' });
+    att.apelido = !!msg.apelido;   // 3.38.2: este app entende o aviso 'apelido' (escolher outro apelido)
     if (await bloqueado(this.env, quem.id)) return this.recusar(ws, 'bloqueado');
     Object.assign(quem, await this.apoiador(quem.id));
     try { await apelidoNaTurma(this.env, quem.id, quem.nome); } catch (e) {}
@@ -341,7 +345,7 @@ export class Mesa {
       // voltou (ou abriu em outro aparelho): retoma a cadeira; se tinha saído, volta a jogar
       const c = m.cad[p];
       if (m.fase === 'espera') { c.nome = quem.nome; c.av = quem.av; c.bairro = quem.bairro; }
-      c.apoiador = quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv; c.menor = quem.menor; c.rei = quem.rei;
+      c.apoiador = quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv; c.menor = quem.menor; c.rei = quem.rei; c.apelidoRuim = quem.apelidoRuim;
       if (c.saiu) { c.saiu = false; c.bot = false; }
     } else if (m.fase === 'espera') {
       p = this.cadeiraNaEspera();
@@ -552,6 +556,8 @@ export class Mesa {
     const m = this.m, G = m.G;
     if (m.fase !== 'jogo' || !G || G.phase !== 'handEnd' || msg.seq !== m.seq) return;
     const r = G.result;
+    // 3.38.2: sem esperar nada aqui (dois 'proxima' ao mesmo tempo não podem passar juntos); só apaga se não sobrou ninguém
+    if (r && r.matchWinner != null && this.tirarApelidosRuins() === 'vazia') { await this.apagar(); return; }
     if (r && r.matchWinner != null && !m.publica) {
       const w = r.matchWinner;
       m.fica = m.fica && m.fica.team === w ? { team: w, n: m.fica.n + 1 } : { team: w, n: 1 };
@@ -588,6 +594,35 @@ export class Mesa {
     m.ultimo = Date.now();
     if (m.fase === 'jogo') this.agendar();
     await this.salvar(); this.espalhar();
+  }
+
+  // 3.38.2 (pedido do dono, sem bloquear): apelido que o filtro passou a barrar depois que a pessoa entrou na mesa
+  // ("Sokomo Kazada"): no fim da partida ela sai (um robô da turma assume a cadeira) e o app a leva para o início para
+  // escolher outro apelido; depois pode voltar a jogar. App antigo (sem o aviso 'apelido') recebe 'nao-existe' e vai
+  // para o início do mesmo jeito; ao atualizar, o app pede o apelido novo.
+  tirarApelidosRuins() {
+    const m = this.m; let tirou = false;
+    for (let p = 0; p < 4; p++) {
+      const c = m.cad[p];
+      if (!c || c.bot || !c.id || !(c.apelidoRuim || nomeOfensivo(c.nome))) continue;
+      for (const ws of this.ctx.getWebSockets()) {
+        const a = ws.deserializeAttachment() || {};
+        if (a.id !== c.id) continue;
+        this.enviar(ws, { t: 'erro', cod: a.apelido ? 'apelido' : 'nao-existe' });
+        a.id = null; ws.serializeAttachment(a); try { ws.close(4000, 'apelido'); } catch (e) {}
+      }
+      const usados = m.cad.filter(Boolean).map(x => x.nome.toLowerCase());
+      const livres = BOT_NAMES.filter(n => !usados.includes(n.toLowerCase()));
+      const robo = livres[Math.floor(Math.random() * livres.length)] || 'Juca';
+      m.cad[p] = { id: null, nome: robo, av: null, nv: nivelRobo(), bot: true, saiu: false };
+      if (m.G) m.G.names[p] = robo;
+      tirou = true;
+    }
+    if (!tirou) return 'nada';
+    const humanos = m.cad.filter(x => x && !x.bot);
+    if (!humanos.length) return 'vazia';
+    if (!humanos.some(x => x.id === m.dono)) m.dono = humanos[0].id;
+    return 'tirou';   // quem chamou continua e grava a mesa
   }
 
   // 3.25: o administrador bloqueou alguém: sai da mesa na hora e um robô da turma assume a cadeira (com nome de robô)
