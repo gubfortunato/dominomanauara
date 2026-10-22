@@ -552,6 +552,7 @@ body{touch-action:manipulation}
 .sz-bt b{font-size:15.5px;line-height:1.15;font-weight:800}
 .sz-bt small{font-size:12.5px;line-height:1.25;font-weight:600;color:var(--muted)}
 @media (prefers-color-scheme: dark){ .sz-ic{color:#2b1a0e} }
+.verlink.so-texto{text-decoration:none;cursor:default;pointer-events:none}
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:12px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
@@ -3018,6 +3019,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.40', data: '21/10/2026', itens: ['A lista do que mudou em cada versão e o aviso de atualização ficam só para o administrador; para o público, o número da versão é só texto.'] },
   { v: '3.39.2', data: '21/10/2026', itens: ['Quem assiste a uma mesa online agora vê o selo ★ e ♥ também do jogador que aparece embaixo.'] },
   { v: '3.39.1', data: '21/10/2026', itens: ['Filtro de apelidos: mais um duplo sentido barrado.', 'Carta de agradecimento do Apoiador com um coração novo.'] },
   { v: '3.39', data: '21/10/2026', itens: ['Apoiadores: o progresso do jogo (nível, conquistas, avatar e histórico) fica guardado com a gente. No celular novo, o código do plano traz tudo de volta.', 'Carta de agradecimento para quem apoia o jogo, com o código para guardar.'] },
@@ -8947,6 +8949,7 @@ function abasMaisClique(k) {
   // "Dominó Manauara" do rodapé vem junto (5 toques nele abrem a senha da Área do administrador)
   const marca = $('#footBrand'); if (marca) $('#maisMarca').replaceWith(marca); else $('#maisMarca').textContent = 'Dominó Manauara';
   $('#maisVer').addEventListener('click', () => openNovidades());
+  if (typeof versaoClicavel === 'function') versaoClicavel();
   $('#maisLista').addEventListener('click', e => {
     const b = e.target.closest('[data-k]'); if (!b) return;
     if (b.dataset.k === 'insta') { track('instagram-mais'); return; }
@@ -10281,7 +10284,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.39.2-89faddcb';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.40-c5fa6ce5';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -10335,10 +10338,11 @@ setInterval(() => {
   if (!novaVersao || recarregando || tentativasVersao(novaVersao) >= 2) return;
   if (document.visibilityState !== 'visible' || !livreParaAtualizar() || !TELAS_ATUALIZA.includes(screen) || temDigitado()) return;
   if (Date.now() - ultimoToque < 8000) return;
-  toast(`Atualizando para a versão ${novaVersao.split('-')[0]}…`);
+  toast(textoAtualizando());
   const marca = ultimoToque;
   setTimeout(() => { if (ultimoToque === marca && livreParaAtualizar() && TELAS_ATUALIZA.includes(screen) && !temDigitado()) recarregarNovo(); }, 1200);
 }, 3000);
+function textoAtualizando() { return souAdmin() && novaVersao ? `Atualizando para a versão ${novaVersao.split('-')[0]}…` : 'Atualizando o jogo…'; }
 function livreParaAtualizar() { return !(screen === 'game' || screen === 'sala' || screen === 'profile' || sheetKind); }
 function avisoVersaoNova() {}   // 3.26.3: sem botão — a versão nova entra sozinha (veja acima)
 async function conferirVersao() {
@@ -10363,7 +10367,7 @@ function atualizarQuandoLivre() {
   window.__reloadWhenFree = true;   // entra sozinha quando sair do app
   const logoAoAbrir = !mexeu && Date.now() - abriuEm < 15000;
   if (logoAoAbrir && livreParaAtualizar() && document.visibilityState === 'visible') {
-    toast(`Atualizando para a versão ${novaVersao.split('-')[0]}…`);
+    toast(textoAtualizando());
     setTimeout(() => { if (!mexeu && livreParaAtualizar()) recarregarNovo(); else avisoVersaoNova(); }, 900);
     return;
   }
@@ -10398,16 +10402,21 @@ recarregar = function (destino) { if (novaVersao && tentativasVersao(novaVersao)
 $$('.appver').forEach(el => { el.textContent = APP_VERSION; });
 (function () {
   const antes = store.get('dmz-versao');
-  if (antes && antes !== APP_VERSION) setTimeout(() => toast(`App atualizado para a versão ${APP_VERSION}. Para ver o que mudou, toque em "Mais", no menu de baixo, e depois em "Versão".`), 900);
+  // 3.40 (pedido do dono): o público não precisa saber das atualizações; o aviso e a lista do que mudou ficam só para o administrador
+  if (antes && antes !== APP_VERSION) setTimeout(() => { if (souAdmin()) toast(`App atualizado para a versão ${APP_VERSION}. Para ver o que mudou, toque em "Versão", no rodapé do Mais.`); }, 900);
   store.set('dmz-versao', APP_VERSION);
 })();
 function openNovidades() {
+  if (!souAdmin()) return;
   openSheet('info', `<p class="eyebrow">Versão ${APP_VERSION}</p><h2 id="sheetTitle">O que mudou</h2>
     <div class="novidades">${NOVIDADES.map(n => `<section><h3>Versão ${esc(n.v)}${n.data ? ` <small>· ${esc(n.data)}</small>` : ''}</h3><ul>${n.itens.map(i => `<li>${esc(i)}</li>`).join('')}</ul></section>`).join('')}</div>
     <button type="button" class="primary" id="closeInfo">Fechar</button>`);
   $('#closeInfo').addEventListener('click', closeSheet);
 }
 $('#verBtn').addEventListener('click', openNovidades);
+// número da versão: para o público é só texto (ajuda no "Fale com a gente"); para o administrador abre a lista do que mudou
+function versaoClicavel() { const adm = souAdmin(); $$('.verlink').forEach(b => { b.classList.toggle('so-texto', !adm); b.tabIndex = adm ? 0 : -1; if (!adm) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled'); }); }
+versaoClicavel(); setTimeout(versaoClicavel, 1500);
 // ---- Estatística anônima e "online agora" ----
 // #dono no endereço abre a senha da Área do dono; sai do endereço antes de qualquer contagem.
 const pedirDono = /^#dono\b/i.test(location.hash);
