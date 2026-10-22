@@ -1691,6 +1691,9 @@ html[data-mesa="palacio"] .table.wood{--wood-1:#2a2a40;--wood-2:#2a2a40;--wood-e
 .carta-cod{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 0;padding:12px 16px;border-radius:14px;border:1.5px dashed var(--glow);background:rgba(243,192,99,.08)}
 .carta-cod b{font-family:var(--font-display);font-weight:400;font-size:30px;letter-spacing:.06em;color:var(--nos)}
 .carta-ass{margin:6px 0 2px;font-style:italic;font-weight:700;color:var(--muted)}
+.carta-coracao{display:inline-block;width:.9em;height:.85em;margin-left:.22em;vertical-align:-.06em;filter:drop-shadow(0 3px 6px rgba(214,59,59,.45));animation:cartaCoracao .7s cubic-bezier(.3,1.6,.5,1) .35s both}
+@keyframes cartaCoracao{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(-8deg)}}
+@media (prefers-reduced-motion: reduce){ .carta-coracao{animation:none;transform:rotate(-8deg)} }
 
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
@@ -3014,7 +3017,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.39.1', data: '21/10/2026', itens: ['Filtro de apelidos: mais um duplo sentido barrado.'] },
+  { v: '3.39.1', data: '21/10/2026', itens: ['Filtro de apelidos: mais um duplo sentido barrado.', 'Carta de agradecimento do Apoiador com um coração novo.'] },
   { v: '3.39', data: '21/10/2026', itens: ['Apoiadores: o progresso do jogo (nível, conquistas, avatar e histórico) fica guardado com a gente. No celular novo, o código do plano traz tudo de volta.', 'Carta de agradecimento para quem apoia o jogo, com o código para guardar.'] },
   { v: '3.38.2', data: '21/10/2026', itens: ['No início, o convite do WhatsApp fica embaixo do cartão de instalar o jogo.', 'Quem estiver com um apelido que fere as regras termina a partida e é levado para escolher outro; depois pode voltar a jogar.', 'Mesa online: a cadeira de quem é Apoiador ficava mais alta, mudava a forma das outras e o nome encostava no avatar. Agora fica igual às outras.', 'Filtro de apelidos mais esperto: pega frases de duplo sentido escritas do jeito que se fala e letras trocadas de mesmo som (k no lugar de c, z no lugar de s). Quem já usava um apelido desses precisa escolher outro.'] },
   { v: '3.38.1', data: '21/10/2026', itens: ['Consertado: tocar na ponta para jogar a pedra abria a mesa ampliada por cima.', 'Mesa com os amigos começa com pelo menos 2 pessoas (a turma do bairro completa as cadeiras que sobrarem). Sozinho? Tem a Mesa rápida e o jogo offline.'] },
@@ -9660,6 +9663,10 @@ function nuvemRestaurar(p) {
 // Uma vez por aparelho, na primeira vez que o app vê o tempo de Apoiador ativo: um obrigado do criador do jogo, o que o
 // apoio mantém, e o código para não perder nada (com botão de copiar).
 const CARTA_KEY = 'dmz-carta-apoio';
+// coração de verdade (vermelho, com brilho), no lugar do ♥ da fonte, que ficava fino e da cor do texto
+const CORACAO = `<svg class="carta-coracao" viewBox="0 0 32 30" aria-hidden="true"><defs><linearGradient id="cartaCor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a6b"/><stop offset="1" stop-color="#d63b3b"/></linearGradient></defs>
+  <path d="M16 28.5C9.5 23.6 2 17.9 2 10.4 2 5.8 5.5 2.3 9.9 2.3c2.6 0 4.8 1.3 6.1 3.4 1.3-2.1 3.5-3.4 6.1-3.4 4.4 0 7.9 3.5 7.9 8.1 0 7.5-7.5 13.2-14 18.1Z" fill="url(#cartaCor)" stroke="#ffd0c4" stroke-opacity=".5" stroke-width="1"/>
+  <path d="M8.2 7.4c-1.6.6-2.6 2-2.7 3.6" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="2" stroke-linecap="round"/></svg>`;
 function cartaApoiador(forcar) {
   if (!nuvemPode() || typeof temPlano !== 'function' || !temPlano()) return;
   if (!forcar && (store.get(CARTA_KEY) || sheetKind || screen !== 'home')) return;
@@ -9668,7 +9675,7 @@ function cartaApoiador(forcar) {
   const p = planoLocal() || {}, cod = p.codigo ? codigoBonito(p.codigo) : null;
   const primeiros = Date.now() < Date.parse('2027-01-01T00:00:00-04:00');
   const nome = profile && profile.name ? esc(profile.name) : '';
-  openSheet('fb', `<p class="eyebrow">Apoie o jogo</p><h2 id="sheetTitle">Muito obrigado${nome ? ', ' + nome : ''}! ♥</h2>
+  openSheet('fb', `<p class="eyebrow">Apoie o jogo</p><h2 id="sheetTitle">Muito obrigado${nome ? ', ' + nome : ''}!${CORACAO}</h2>
     <p>Você é ${primeiros ? 'um dos primeiros Apoiadores' : 'Apoiador'} do Dominó Manauara. É com gente como você que a tradição do dominó da calçada continua viva: mesas novas, campeonatos, atualizações e muita diversão para a turma toda.</p>
     <p>Seu progresso agora fica guardado com a gente: nível, conquistas, avatar e histórico.${cod ? ' Se trocar de celular, é só usar o seu código em "Apoie o jogo › Já apoio em outro celular":' : ''}</p>
     ${cod ? `<div class="carta-cod"><b>${esc(cod)}</b><button type="button" class="linkbtn" id="cartaCopiar">Copiar</button></div><p class="note">Guarde o código (um print da tela já serve).</p>` : ''}
@@ -10270,7 +10277,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.39.1-4ed77dcd';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.39.1-0a0b0c94';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
