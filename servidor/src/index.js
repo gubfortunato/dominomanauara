@@ -2,7 +2,7 @@
 // Caixa de mensagens "Fale com a gente", lembretes para jogar (Web Push), painel do dono e mesa online por convite.
 import { enviarPush } from './webpush.js';
 import { Mesa } from './mesa.js';
-import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolver, manterChaveAsaas, donoCortesia } from './pagamentos.js';
+import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolver, manterChaveAsaas, donoCortesia, guardarProgresso, verProgresso } from './pagamentos.js';
 import { atuais, imagem, contar, donoLista, donoImagem, donoSalvar, donoApagar } from './patrocinadores.js';
 import * as fotos from './fotos.js';
 import * as turmas from './turmas.js';
@@ -353,6 +353,8 @@ export default {
       if (pd && req.method === 'GET') return await pedido(env, origin, H, pd[1]);
       if (url.pathname === '/plano' && req.method === 'GET') return await plano(env, origin, H, url);
       if (url.pathname === '/plano/trazer' && req.method === 'POST') return await trazerPlano(req, env, origin, H);
+      if (url.pathname === '/progresso' && req.method === 'POST') return await guardarProgresso(req, env, origin, H);   // 3.39
+      if (url.pathname === '/progresso' && req.method === 'GET') return await verProgresso(env, origin, H, url);
       if (url.pathname === '/asaas/webhook' && req.method === 'POST') return await webhook(req, env, origin, H);
       if (url.pathname === '/dono/pagamentos' && req.method === 'GET') return await donoPagamentos(req, env, origin, H);
       if (url.pathname === '/dono/cortesia' && req.method === 'POST') return await donoCortesia(req, env, origin, H);

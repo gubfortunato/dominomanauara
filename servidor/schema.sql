@@ -98,3 +98,7 @@ CREATE TABLE IF NOT EXISTS calcada (periodo TEXT NOT NULL, aparelho TEXT NOT NUL
 CREATE INDEX IF NOT EXISTS calcada_top ON calcada (periodo, pontos DESC);
 CREATE TABLE IF NOT EXISTS calcada_robo (dia TEXT NOT NULL, aparelho TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (dia, aparelho));
 CREATE TABLE IF NOT EXISTS calcada_par (dia TEXT NOT NULL, a TEXT NOT NULL, b TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (dia, a, b));
+
+-- 3.39: progresso do jogo guardado para quem apoia (nível, conquistas, avatar e histórico), para não perder ao trocar de
+-- celular ou se o navegador apagar os dados. Ligado ao código do aparelho; vai junto com o código do plano.
+CREATE TABLE IF NOT EXISTS progresso (aparelho TEXT PRIMARY KEY, dados TEXT NOT NULL, atualizado INTEGER NOT NULL);

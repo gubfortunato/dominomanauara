@@ -178,6 +178,41 @@ export async function plano(env, origin, h, url) {
   return h.json(await contaDe(env, ap), 200, origin);
 }
 
+// ---------- 3.39: progresso do jogo guardado para quem apoia ----------
+// Só as partes do progresso (nada de chave do dono, código do aparelho, plano ou pedidos). Até 64 KB.
+export const PROGRESSO_CHAVES = ['dmz-perfil', 'dmz-historico', 'dmz-nivel', 'dmz-missoes', 'dmz-avatar-montado', 'dmz-conquistas-vistas',
+  'dmz-mesa-cor', 'dmz-copa357', 'dmz-laterais', 'dmz-torneio', 'dmz-mesas-rodizio'];
+const PROGRESSO_MAX = 64 * 1024;
+async function apoia(env, aparelho) {
+  if (await env.DB.prepare('SELECT 1 AS x FROM planos WHERE aparelho = ?').bind(aparelho).first()) return true;
+  return !!(await cortesiaDe(env, aparelho));
+}
+async function progressoDe(env, aparelho) {
+  const r = await env.DB.prepare('SELECT dados, atualizado FROM progresso WHERE aparelho = ?').bind(aparelho).first();
+  if (!r) return null;
+  try { return { dados: JSON.parse(r.dados), atualizado: r.atualizado }; } catch (e) { return null; }
+}
+// POST /progresso {aparelho, dados: {chave: texto}} -> guarda (só quem apoia)
+export async function guardarProgresso(req, env, origin, h) {
+  let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
+  if (!b || !idOk(b.aparelho) || !b.dados || typeof b.dados !== 'object') return h.json({ erro: 'dados' }, 400, origin);
+  if (!(await apoia(env, b.aparelho))) return h.json({ erro: 'so-apoiador' }, 403, origin);
+  const dados = {};
+  for (const k of PROGRESSO_CHAVES) if (typeof b.dados[k] === 'string') dados[k] = b.dados[k];
+  const txt = JSON.stringify(dados);
+  if (txt.length > PROGRESSO_MAX) return h.json({ erro: 'grande' }, 413, origin);
+  await env.DB.prepare('INSERT INTO progresso (aparelho, dados, atualizado) VALUES (?, ?, ?) ON CONFLICT(aparelho) DO UPDATE SET dados = excluded.dados, atualizado = excluded.atualizado')
+    .bind(b.aparelho, txt, Date.now()).run();
+  return h.json({ ok: true }, 200, origin);
+}
+// GET /progresso?aparelho= -> o progresso guardado deste aparelho
+export async function verProgresso(env, origin, h, url) {
+  const ap = url.searchParams.get('aparelho');
+  if (!idOk(ap)) return h.json({ erro: 'aparelho' }, 400, origin);
+  const p = await progressoDe(env, ap);
+  return p ? h.json(p, 200, origin) : h.json({ erro: 'nao-encontrado' }, 404, origin);
+}
+
 // POST /plano/trazer {codigo, aparelho} -> leva o plano de outro celular para este
 export async function trazerPlano(req, env, origin, h) {
   let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
@@ -201,8 +236,14 @@ export async function trazerPlano(req, env, origin, h) {
       await env.DB.prepare('DELETE FROM fotos WHERE aparelho = ?').bind(b.aparelho).run();
       await env.DB.prepare('UPDATE fotos SET aparelho = ? WHERE aparelho = ?').bind(b.aparelho, p.aparelho).run();
     }
+    // 3.39: e o progresso do jogo guardado
+    if (await env.DB.prepare('SELECT 1 FROM progresso WHERE aparelho = ?').bind(p.aparelho).first()) {
+      await env.DB.prepare('DELETE FROM progresso WHERE aparelho = ?').bind(b.aparelho).run();
+      await env.DB.prepare('UPDATE progresso SET aparelho = ? WHERE aparelho = ?').bind(b.aparelho, p.aparelho).run();
+    }
   }
-  return h.json(await contaDe(env, b.aparelho), 200, origin);
+  const conta = await contaDe(env, b.aparelho), prog = await progressoDe(env, b.aparelho);
+  return h.json(Object.assign(conta, prog ? { progresso: prog } : {}), 200, origin);
 }
 
 // POST /asaas/webhook -> o Asaas avisa que o pagamento foi feito

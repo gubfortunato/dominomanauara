@@ -1687,6 +1687,11 @@ html[data-mesa="palacio"] .table.wood{--wood-1:#2a2a40;--wood-2:#2a2a40;--wood-e
 .ap-lead p:first-child{font-size:17px;font-weight:600}
 .ap-lead .ap-lead-k{font-weight:700;color:var(--nos);margin-top:2px}
 
+/* 3.39: carta de agradecimento para quem apoia */
+.carta-cod{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 0;padding:12px 16px;border-radius:14px;border:1.5px dashed var(--glow);background:rgba(243,192,99,.08)}
+.carta-cod b{font-family:var(--font-display);font-weight:400;font-size:30px;letter-spacing:.06em;color:var(--nos)}
+.carta-ass{margin:6px 0 2px;font-style:italic;font-weight:700;color:var(--muted)}
+
 /* ===== Patrocinadores: espaços e painel do dono ===== */
 /* Banner no alto do início: tamanho contido no celular deitado e no tablet */
 #scrHome .sponsor{max-width:560px;width:100%;justify-self:center;margin-inline:auto}
@@ -3009,6 +3014,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.39', data: '21/10/2026', itens: ['Apoiadores: o progresso do jogo (nível, conquistas, avatar e histórico) fica guardado com a gente. No celular novo, o código do plano traz tudo de volta.', 'Carta de agradecimento para quem apoia o jogo, com o código para guardar.'] },
   { v: '3.38.2', data: '21/10/2026', itens: ['No início, o convite do WhatsApp fica embaixo do cartão de instalar o jogo.', 'Quem estiver com um apelido que fere as regras termina a partida e é levado para escolher outro; depois pode voltar a jogar.', 'Mesa online: a cadeira de quem é Apoiador ficava mais alta, mudava a forma das outras e o nome encostava no avatar. Agora fica igual às outras.', 'Filtro de apelidos mais esperto: pega frases de duplo sentido escritas do jeito que se fala e letras trocadas de mesmo som (k no lugar de c, z no lugar de s). Quem já usava um apelido desses precisa escolher outro.'] },
   { v: '3.38.1', data: '21/10/2026', itens: ['Consertado: tocar na ponta para jogar a pedra abria a mesa ampliada por cima.', 'Mesa com os amigos começa com pelo menos 2 pessoas (a turma do bairro completa as cadeiras que sobrarem). Sozinho? Tem a Mesa rápida e o jogo offline.'] },
   { v: '3.38', data: '21/10/2026', itens: ['Apoiadores: o jogo avisa com mais antecedência para renovar (a partir de 7 dias antes) e também no dia em que o tempo acaba. Na tela de apoio, dá para ver sempre quantos dias faltam, e renovar antes soma ao tempo que você já tem.', 'Quem já foi Apoiador recebe, no fim das partidas, o convite para voltar.'] },
@@ -5985,6 +5991,8 @@ async function acompanharPedido(id, insistir) {
   acompanhando = null;
 }
 function obrigado(plano, ate, nivelAntes, produto) {
+  // 3.39: quem acabou de virar Apoiador recebe a carta de agradecimento (com o código e o progresso guardado)
+  if (plano && ate && typeof cartaApoiador === 'function' && temPlano()) { store.set('dmz-carta-apoio', String(Date.now())); cartaApoiador(true); return; }
   const titulo = plano ? (/^(apoio|livre)/.test(produto || '') ? 'Obrigado pela doação! ♥' : 'Você agora é Apoiador!') : 'Obrigado pela doação!';
   const nv = nivelDoador(), selo = plano && ate && nv > (nivelAntes || 0) ? (nivelAntes ? ` Seu selo de doador subiu para ${coracoes(nv)}!` : ` E ganhou, para sempre, o selo de doador ${coracoes(nv)} e o avatar do doador.`) : '';
   const txt = plano ? (ate ? `Você é Apoiador até ${dataBR(ate)}. Já dá para mostrar a sua foto na mesa online (ligue no seu perfil), e tudo do Personalizar está liberado.${selo}` : 'O apoio ficou no aparelho em que você tocou em pagar. Abra o jogo por lá.')
@@ -6133,6 +6141,7 @@ $('#apTrazer').addEventListener('click', async () => {
     const j = await r.json().catch(() => ({}));
     if (r.ok && (j.ate || j.doador)) {
       guardarConta(j); $('#apTrazerCod').value = ''; renderApoioTela();
+      if (j.progresso && typeof nuvemRestaurar === 'function' && nuvemRestaurar(j.progresso)) return;   // 3.39: o progresso veio junto
       toast(j.ate > Date.now() ? `Pronto! Seu tempo de Apoiador veio junto, vale até ${dataBR(j.ate)}.` : 'Pronto! Seu selo ♥ veio junto.');
     }
     else toast(r.status === 404 ? 'Não achei esse código. Confira no outro celular.' : r.status === 429 ? 'Muitas tentativas. Tente de novo mais tarde.' : 'Não deu agora. Tente de novo.');
@@ -9590,6 +9599,92 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('mess
   } catch (err) {}
 });
 
+// ===== Progresso guardado para quem apoia (3.39) =====
+// Pedido do dono no primeiro Apoiador: "precisamos garantir que ele não perca seus dados do jogo". O progresso (nível,
+// conquistas, avatar montado, histórico e missões) fica no navegador; o navegador pode apagar, e trocar de celular perde
+// tudo. Para quem apoia, o app manda uma cópia para o servidor sempre que algo muda (no máximo a cada 15 s, e só se
+// mudou). No celular novo, o código do plano ("Já apoio em outro celular") traz o tempo de Apoiador, o selo e o progresso.
+const NUVEM_CHAVES = ['dmz-perfil', 'dmz-historico', 'dmz-nivel', 'dmz-missoes', 'dmz-avatar-montado', 'dmz-conquistas-vistas',
+  'dmz-mesa-cor', 'dmz-copa357', 'dmz-laterais', 'dmz-torneio', 'dmz-mesas-rodizio'];
+const NUVEM_KEY = 'dmz-nuvem';
+function nuvemPode() {
+  return !!CONFIG.api && typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !!profile
+    && ((typeof temPlano === 'function' && temPlano()) || (typeof souDoador === 'function' && souDoador()));
+}
+function nuvemFoto() { const d = {}; NUVEM_CHAVES.forEach(k => { const v = localStorage.getItem(k); if (v != null) d[k] = v; }); return d; }
+const nuvemResumo = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return String(h >>> 0) + ':' + s.length; };
+let nuvemT = null, nuvemIndo = false;
+function nuvemGuardar(jaJa) {
+  if (!nuvemPode()) return;
+  clearTimeout(nuvemT); nuvemT = setTimeout(nuvemEnviar, jaJa ? 0 : 15000);
+}
+async function nuvemEnviar(final) {
+  if (!nuvemPode() || nuvemIndo) return;
+  const dados = nuvemFoto(), resumo = nuvemResumo(JSON.stringify(dados));
+  let st = {}; try { st = JSON.parse(store.get(NUVEM_KEY) || '{}') || {}; } catch (e) {}
+  if (st.r === resumo) return;
+  nuvemIndo = true;
+  try {
+    const r = await fetch(CONFIG.api + '/progresso', { method: 'POST', headers: { 'content-type': 'application/json' }, keepalive: !!final,
+      body: JSON.stringify({ aparelho: meuId(), dados }) });
+    if (r.ok) store.set(NUVEM_KEY, JSON.stringify({ r: resumo, em: Date.now() }));
+  } catch (e) {}
+  nuvemIndo = false;
+}
+// guarda depois de cada partida (o histórico e o nível mudam), de vez em quando e ao sair do app
+setInterval(() => nuvemGuardar(true), 120000);
+setTimeout(() => nuvemGuardar(true), 5000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') nuvemEnviar(true); });
+const bumpHistNuvem = bumpHist;
+bumpHist = function () { const r = bumpHistNuvem.apply(this, arguments); nuvemGuardar(); return r; };
+// Trouxe o plano de outro celular: se o progresso de lá é maior que o daqui, ele entra no lugar e o app recarrega
+function nuvemXp(d) { try { return Number((JSON.parse(d['dmz-nivel'] || 'null') || {}).xp) || 0; } catch (e) { return 0; } }
+function nuvemJogos(d) { try { return Number((JSON.parse(d['dmz-historico'] || 'null') || {}).jogos) || 0; } catch (e) { return 0; } }
+function nuvemRestaurar(p) {
+  if (!p || !p.dados || typeof p.dados !== 'object') return false;
+  const aqui = nuvemFoto();
+  const la = [nuvemXp(p.dados), nuvemJogos(p.dados)], ca = [nuvemXp(aqui), nuvemJogos(aqui)];
+  if (!(la[0] > ca[0] || (la[0] === ca[0] && la[1] > ca[1]))) return false;
+  NUVEM_CHAVES.forEach(k => { if (typeof p.dados[k] === 'string') localStorage.setItem(k, p.dados[k]); });
+  store.del(NUVEM_KEY);
+  track('progresso-restaurado');
+  toast(`Seu progresso veio junto (${la[1]} ${la[1] === 1 ? 'partida' : 'partidas'}). Abrindo de novo…`);
+  setTimeout(() => location.reload(), 1600);
+  return true;
+}
+
+// ===== Carta de agradecimento para quem apoia (3.39) =====
+// Uma vez por aparelho, na primeira vez que o app vê o tempo de Apoiador ativo: um obrigado do criador do jogo, o que o
+// apoio mantém, e o código para não perder nada (com botão de copiar).
+const CARTA_KEY = 'dmz-carta-apoio';
+function cartaApoiador(forcar) {
+  if (!nuvemPode() || typeof temPlano !== 'function' || !temPlano()) return;
+  if (!forcar && (store.get(CARTA_KEY) || sheetKind || screen !== 'home')) return;
+  if (typeof menorDeIdade === 'function' && menorDeIdade()) return;
+  store.set(CARTA_KEY, String(Date.now()));
+  const p = planoLocal() || {}, cod = p.codigo ? codigoBonito(p.codigo) : null;
+  const primeiros = Date.now() < Date.parse('2027-01-01T00:00:00-04:00');
+  const nome = profile && profile.name ? esc(profile.name) : '';
+  openSheet('fb', `<p class="eyebrow">Apoie o jogo</p><h2 id="sheetTitle">Muito obrigado${nome ? ', ' + nome : ''}! ♥</h2>
+    <p>Você é ${primeiros ? 'um dos primeiros Apoiadores' : 'Apoiador'} do Dominó Manauara. É com gente como você que a tradição do dominó da calçada continua viva: mesas novas, campeonatos, atualizações e muita diversão para a turma toda.</p>
+    <p>Seu progresso agora fica guardado com a gente: nível, conquistas, avatar e histórico.${cod ? ' Se trocar de celular, é só usar o seu código em "Apoie o jogo › Já apoio em outro celular":' : ''}</p>
+    ${cod ? `<div class="carta-cod"><b>${esc(cod)}</b><button type="button" class="linkbtn" id="cartaCopiar">Copiar</button></div><p class="note">Guarde o código (um print da tela já serve).</p>` : ''}
+    <p class="carta-ass">Gustavo, criador do Dominó Manauara</p>
+    <button type="button" class="primary" id="cartaOk">Bora pra mesa!</button>
+    <button type="button" class="secondary" id="cartaPerso" style="width:100%;margin-top:10px">Montar meu avatar de Apoiador</button>`);
+  track('carta-apoiador');
+  try { confete(['#f0b45e', '#e5a650', '#ffd27a', '#f6eedf', '#86c98f'], 3500); } catch (e) {}
+  const cp = $('#cartaCopiar');
+  if (cp) cp.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(p.codigo ? codigoBonito(p.codigo) : ''); toast('Código copiado.'); } catch (e) { toast('Não deu para copiar. Tire um print da tela.'); }
+  });
+  $('#cartaOk').addEventListener('click', closeSheet);
+  $('#cartaPerso').addEventListener('click', () => { closeSheet(); abrirEstilo(screen === 'apoio' ? 'apoio' : 'home'); });
+  nuvemGuardar(true);
+}
+const renderHomeCarta = renderHome;
+renderHome = function () { renderHomeCarta.apply(this, arguments); setTimeout(cartaApoiador, 1200); };
+
 
 // ---- Desenho das peças ----
 function tileSVG(p, cls, shadow) {
@@ -10172,7 +10267,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.38.2-ac113e6e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.39-b6456c5f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
