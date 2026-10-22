@@ -3014,6 +3014,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.39.1', data: '21/10/2026', itens: ['Filtro de apelidos: mais um duplo sentido barrado.'] },
   { v: '3.39', data: '21/10/2026', itens: ['Apoiadores: o progresso do jogo (nível, conquistas, avatar e histórico) fica guardado com a gente. No celular novo, o código do plano traz tudo de volta.', 'Carta de agradecimento para quem apoia o jogo, com o código para guardar.'] },
   { v: '3.38.2', data: '21/10/2026', itens: ['No início, o convite do WhatsApp fica embaixo do cartão de instalar o jogo.', 'Quem estiver com um apelido que fere as regras termina a partida e é levado para escolher outro; depois pode voltar a jogar.', 'Mesa online: a cadeira de quem é Apoiador ficava mais alta, mudava a forma das outras e o nome encostava no avatar. Agora fica igual às outras.', 'Filtro de apelidos mais esperto: pega frases de duplo sentido escritas do jeito que se fala e letras trocadas de mesmo som (k no lugar de c, z no lugar de s). Quem já usava um apelido desses precisa escolher outro.'] },
   { v: '3.38.1', data: '21/10/2026', itens: ['Consertado: tocar na ponta para jogar a pedra abria a mesa ampliada por cima.', 'Mesa com os amigos começa com pelo menos 2 pessoas (a turma do bairro completa as cadeiras que sobrarem). Sozinho? Tem a Mesa rápida e o jogo offline.'] },
@@ -3541,7 +3542,9 @@ const NOME_RUIM_FRASE = [
   /c[ou]m(o|i|e|endo|er|edor|edora)(de|da|das|do|dos|a|as|o|os|sua|tua|teu|seu|tu|vc|voce)?(casad|mulher|esposa|mae|irma|namorad|noiv|filha|sogra|vizinh|cunhad|prima|tia|vo|novinh|mina)/,
   /(pego|pega|peguei|pegador|catei|cato|traco|tracei)(de|da|das|a|as|o|os|sua|tua)?(casad|mulher|esposa|mae|irma|namorad|noiv|novinh|mina)/,
   /(sua|tua)(mae|irma|mulher|esposa|namorad)(e|eh|ta|tah)?(minha|gostos|safad|puta)/,
-  /sentanomeu|sentanele|sentaaqui|sentaemmim|mamanomeu|chupaaqui|chupanomeu/
+  /sentanomeu|sentanele|sentaaqui|sentaemmim|mamanomeu|chupaaqui|chupanomeu/,
+  // 3.39.1: "leite" com duplo sentido ("Leite Europeu"); "Leite" sozinho e sobrenomes (Ana Leite) continuam valendo
+  /leite?(europ|quent|gros|branc|nacara|naboca)|leitinh|(toma|da|dar|dou|mama|mamar|chupa|bebe|beber)leite/
 ];
 const somDeNome = s => s.replace(/ph/g, 'f').replace(/k/g, 'c').replace(/z/g, 's').replace(/y/g, 'i').replace(/w/g, 'u');
 function nomeOfensivo(nome) {
@@ -10267,7 +10270,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.39-b6456c5f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.39.1-4ed77dcd';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

@@ -531,7 +531,9 @@ const NOME_RUIM_FRASE = [
   /c[ou]m(o|i|e|endo|er|edor|edora)(de|da|das|do|dos|a|as|o|os|sua|tua|teu|seu|tu|vc|voce)?(casad|mulher|esposa|mae|irma|namorad|noiv|filha|sogra|vizinh|cunhad|prima|tia|vo|novinh|mina)/,
   /(pego|pega|peguei|pegador|catei|cato|traco|tracei)(de|da|das|a|as|o|os|sua|tua)?(casad|mulher|esposa|mae|irma|namorad|noiv|novinh|mina)/,
   /(sua|tua)(mae|irma|mulher|esposa|namorad)(e|eh|ta|tah)?(minha|gostos|safad|puta)/,
-  /sentanomeu|sentanele|sentaaqui|sentaemmim|mamanomeu|chupaaqui|chupanomeu/
+  /sentanomeu|sentanele|sentaaqui|sentaemmim|mamanomeu|chupaaqui|chupanomeu/,
+  // 3.39.1: "leite" com duplo sentido ("Leite Europeu"); "Leite" sozinho e sobrenomes (Ana Leite) continuam valendo
+  /leite?(europ|quent|gros|branc|nacara|naboca)|leitinh|(toma|da|dar|dou|mama|mamar|chupa|bebe|beber)leite/
 ];
 const somDeNome = s => s.replace(/ph/g, 'f').replace(/k/g, 'c').replace(/z/g, 's').replace(/y/g, 'i').replace(/w/g, 'u');
 function nomeOfensivo(nome) {
