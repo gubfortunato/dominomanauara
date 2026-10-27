@@ -60,6 +60,7 @@ export class Mesa {
     this.ctx = ctx; this.env = env; this.m = null; this.reacoes = {};
     // TEMPO_FATOR só existe no teste local (acelera os robôs); no Cloudflare vale 1
     const f = Number(env && env.TEMPO_FATOR) || 1;
+    this.cacheVivo = Math.max(3000, 15000 * Math.min(1, f));   // 27/10: lista das mesas guardada por 15 s (no teste, menos)
     this.T = Object.fromEntries(Object.entries(TEMPO).map(([k, v]) => [k, v * f]));
     // "ping" responde sozinho, sem acordar a mesa (economiza)
     try { ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong')); } catch (e) {}
@@ -143,7 +144,7 @@ export class Mesa {
   // Só números, sem nome de ninguém; guardado por alguns segundos para não acordar as mesas a cada pergunta.
   async statusFila() {
     const agora = Date.now();
-    if (this.resumo && agora - this.resumo.t < 8000) return this.resumo.v;
+    if (this.resumo && agora - this.resumo.t < this.cacheVivo) return this.resumo.v;
     const l = ((await this.ctx.storage.get('abertas')) || []).filter(x => agora - x.criada < FILA.idade);
     let pessoas = 0, mesas = 0, esperando = 0;
     for (const x of l) {
@@ -166,12 +167,14 @@ export class Mesa {
     let l = ((await this.ctx.storage.get('ativas')) || []).filter(x => x.codigo !== codigo && agora - x.t < 3 * 3600000);
     l.unshift({ codigo, publica: !!b.publica, t: agora });
     await this.ctx.storage.put('ativas', l.slice(0, 60));
+    this.vivoCache = null; this.vivoCacheT = null;   // 27/10: mesa nova ou alguém entrou: a lista se renova na hora
     return { ok: true };
   }
   async mesasAoVivo(todas) {
     const agora = Date.now(), k = todas ? 'vivoCacheT' : 'vivoCache';
-    if (this[k] && agora - this[k].t < 4000) return this[k].v;
-    const ativas = (await this.ctx.storage.get('ativas')) || [];
+    if (this[k] && agora - this[k].t < this.cacheVivo) return this[k].v;
+    // 27/10: só as mesas que deram sinal nos últimos 40 min (cada partida nova e cada entrada renovam o sinal); antes, 3 h
+    const ativas = ((await this.ctx.storage.get('ativas')) || []).filter(x => agora - x.t < 40 * 60000);
     const abertas = ((await this.ctx.storage.get('abertas')) || []).filter(x => agora - x.criada < FILA.idade).map(x => ({ codigo: x.codigo, publica: true }));
     const vistas = new Set(), l = [];
     for (const x of ativas.concat(abertas)) { if (vistas.has(x.codigo)) continue; vistas.add(x.codigo); l.push(x); }

@@ -70,7 +70,7 @@ async function novaMesa(req, env, origin) {
     const stub = env.MESA.get(env.MESA.idFromName(codigo));
     const res = await stub.fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, nv: b.nv, codigo }) });
     if (res.status === 201) {
-      await env.DB.prepare('INSERT INTO mesas_criadas (marca, criado_em) VALUES (?, ?)').bind(marca, Date.now()).run();
+      try { await env.DB.prepare('INSERT INTO mesas_criadas (marca, criado_em) VALUES (?, ?)').bind(marca, Date.now()).run(); } catch (e) {}   // limite do banco: a mesa vale assim mesmo
       return json({ codigo }, 201, origin);
     }
     if (res.status === 400) return json({ erro: 'dados' }, 400, origin);
@@ -88,7 +88,7 @@ async function mesaRapida(req, env, origin) {
   const res = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila', { method: 'POST',
     body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro, nv: b.nv }) });
   const j = await res.json().catch(() => ({}));
-  if (res.status === 201) await env.DB.prepare('INSERT INTO mesas_criadas (marca, criado_em) VALUES (?, ?)').bind(marca, Date.now()).run();
+  if (res.status === 201) { try { await env.DB.prepare('INSERT INTO mesas_criadas (marca, criado_em) VALUES (?, ?)').bind(marca, Date.now()).run(); } catch (e) {} }
   return json(j, res.status === 201 ? 200 : res.status, origin);
 }
 async function rotaMesa(req, env, origin, codigo, ws) {

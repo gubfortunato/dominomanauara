@@ -1,7 +1,8 @@
 // "Hoje no Dominó Manauara" (3.24): números de verdade do dia (dia de Manaus) — partidas terminadas, galos e
 // batidas de carroça. Offline, o celular de quem jogou avisa ao fim de cada mão em que houve algo para contar;
 // online, a própria mesa conta (assim a mesma partida não é contada por cada jogador).
-const LIMITE_POR_HORA = 120;   // por rede, contra quem quiser inflar os números
+const LIMITE_POR_HORA = 120;
+const ENVIOS = { h: 0, m: new Map() };   // por rede, contra quem quiser inflar os números
 export const diaManaus = (t) => new Date((t || Date.now()) - 4 * 3600000).toISOString().slice(0, 10);
 
 export async function somarVivo(env, partidas, galos, carrocas) {
@@ -16,11 +17,12 @@ export async function conta(req, env, origin, h) {
   const n = (v, max) => Math.max(0, Math.min(max, Math.floor(Number(v) || 0)));
   const partida = n(b && b.partida, 1), galos = n(b && b.galos, 6), carrocas = n(b && b.carrocas, 2);
   if (!partida && !galos && !carrocas) return h.json({ ok: true }, 200, origin);
-  const marca = await h.marcaDoDia(req, env), agora = Date.now();
-  const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM vivo_envios WHERE marca = ? AND criado_em > ?').bind(marca, agora - 3600000).first();
-  if (r && r.n >= LIMITE_POR_HORA) return h.json({ erro: 'muitas' }, 429, origin);
-  await env.DB.prepare('INSERT INTO vivo_envios (marca, criado_em) VALUES (?, ?)').bind(marca, agora).run();
-  await somarVivo(env, partida, galos, carrocas);
+  const marca = await h.marcaDoDia(req, env), hora = Math.floor(Date.now() / 3600000);
+  // 27/10: o controle por hora fica na memória (antes, uma linha no banco por aviso: escrita demais no plano grátis)
+  if (ENVIOS.h !== hora) { ENVIOS.h = hora; ENVIOS.m.clear(); }
+  const qtd = (ENVIOS.m.get(marca) || 0) + 1; ENVIOS.m.set(marca, qtd);
+  if (qtd > LIMITE_POR_HORA) return h.json({ erro: 'muitas' }, 429, origin);
+  try { await somarVivo(env, partida, galos, carrocas); } catch (e) {}
   return h.json({ ok: true }, 200, origin);
 }
 
