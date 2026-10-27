@@ -1,0 +1,54 @@
+# Diagnóstico de robôs de fora (pedido do dono): só números agregados, sem apelido nem código de ninguém.
+# Roda à mão (Actions › diagnostico › Run workflow) e grava o resultado no ramo "diagnostico" (diagnostico.txt).
+name: diagnostico
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  diagnostico:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || 'c5f546c10d461c0d2e3e1d54f83fba39' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Consultar
+        working-directory: servidor
+        shell: bash
+        run: |
+          set +e
+          ST="$GITHUB_WORKSPACE/diagnostico.txt"; : > "$ST"
+          log() { echo "$*" | tee -a "$ST"; }
+          npm i -g wrangler@4 > /dev/null 2>&1
+          id=$(wrangler d1 list --json 2>/dev/null | jq -r '.[] | select(.name=="dominomanauara") | .uuid')
+          sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
+          AGORA=$(($(date +%s) * 1000)); H=3600000; D=86400000
+          q() { r=$(wrangler d1 execute dominomanauara --remote --json --command "$2" 2>&1); log "$1: $(echo "$r" | jq -c '.[0].results' 2>/dev/null || echo "$r" | grep -iE 'error|✘' | head -2 | tr '\n' ' ')"; }
+          log "diagnóstico $(date -u +%FT%TZ) (horário UTC; Manaus = UTC-4)"
+          q "jogaram online (24 h / 7 dias)" "SELECT SUM(visto_em > $AGORA - $D) AS h24, COUNT(*) AS d7 FROM jogadores_vistos WHERE visto_em > $AGORA - 7 * $D"
+          q "app aberto agora / nas últimas 24 h" "SELECT SUM(visto_em > $AGORA - 60000) AS agora, SUM(visto_em > $AGORA - $D) AS h24, SUM(visto_em = 0) AS sairam FROM presenca"
+          q "jogou online na última hora sem o app aberto na última hora" "SELECT COUNT(*) AS n FROM jogadores_vistos v WHERE v.visto_em > $AGORA - $H AND NOT EXISTS (SELECT 1 FROM presenca p WHERE p.aparelho = v.aparelho AND (p.visto_em > $AGORA - $H OR p.visto_em = 0))"
+          for per in atual anterior; do
+            if [ $per = atual ]; then PSQL="(SELECT MAX(periodo) FROM calcada WHERE periodo LIKE 'S%')"; else PSQL="(SELECT MAX(periodo) FROM calcada WHERE periodo LIKE 'S%' AND periodo < (SELECT MAX(periodo) FROM calcada WHERE periodo LIKE 'S%'))"; fi
+            q "ranking semana $per" "SELECT periodo, COUNT(*) AS jogadores, SUM(jogadas) AS partidas, MAX(jogadas) AS mais_partidas, SUM(jogadas >= 60) AS com_60_ou_mais, MAX(CASE WHEN jogadas >= 20 THEN ROUND(1.0 * ganhas / jogadas, 2) END) AS maior_aproveitamento_20mais, SUM(jogadas >= 20 AND 1.0 * ganhas / jogadas >= 0.75) AS aproveitamento_75_20mais, SUM(jogadas_gente) AS partidas_com_gente FROM calcada WHERE periodo = $PSQL"
+            q "ranking semana $per: 8 maiores números de partidas" "SELECT jogadas, ganhas, jogadas_gente FROM calcada WHERE periodo = $PSQL ORDER BY jogadas DESC LIMIT 8"
+          done
+          q "contra robôs por dia (7 dias): maior / dias com 40+" "SELECT MAX(n) AS maior, SUM(n >= 40) AS com_40_ou_mais, COUNT(*) AS linhas FROM calcada_robo WHERE dia >= date('now', '-7 day')"
+          q "mesma dupla por dia (7 dias): maior / com 20+" "SELECT MAX(n) AS maior, SUM(n >= 20) AS com_20_ou_mais FROM calcada_par WHERE dia >= date('now', '-7 day')"
+          q "mesas criadas por endereço por dia (7 dias): maior" "SELECT MAX(c) AS maior, SUM(c >= 20) AS com_20_ou_mais FROM (SELECT marca, COUNT(*) AS c FROM mesas_criadas WHERE criado_em > $AGORA - 7 * $D GROUP BY marca)"
+          q "jogaram online por hora do dia (Manaus, 7 dias, pelo último jogo)" "SELECT CAST(((visto_em / $H) - 4 + 24) % 24 AS INTEGER) AS hora, COUNT(*) AS n FROM jogadores_vistos WHERE visto_em > $AGORA - 7 * $D GROUP BY hora ORDER BY hora"
+          rm -f wrangler.toml
+      - name: Guardar o resultado
+        if: always()
+        shell: bash
+        run: |
+          cp diagnostico.txt /tmp/d.txt 2>/dev/null || echo "sem resultado" > /tmp/d.txt
+          git config user.name "github-actions"; git config user.email "github-actions@users.noreply.github.com"
+          git checkout -q --orphan dg
+          git rm -rfq . > /dev/null 2>&1
+          cp /tmp/d.txt diagnostico.txt
+          git add diagnostico.txt && git commit -qm "diagnóstico ${GITHUB_SHA::7}" && git push -qf origin HEAD:diagnostico
