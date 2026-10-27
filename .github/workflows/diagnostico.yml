@@ -31,7 +31,11 @@ jobs:
           log "diagnóstico $(date -u +%FT%TZ) (horário UTC; Manaus = UTC-4)"
           q "jogaram online (24 h / 7 dias)" "SELECT SUM(visto_em > $AGORA - $D) AS h24, COUNT(*) AS d7 FROM jogadores_vistos WHERE visto_em > $AGORA - 7 * $D"
           q "app aberto agora / nas últimas 24 h" "SELECT SUM(visto_em > $AGORA - 60000) AS agora, SUM(visto_em > $AGORA - $D) AS h24, SUM(visto_em = 0) AS sairam FROM presenca"
-          q "jogou online na última hora sem o app aberto na última hora" "SELECT COUNT(*) AS n FROM jogadores_vistos v WHERE v.visto_em > $AGORA - $H AND NOT EXISTS (SELECT 1 FROM presenca p WHERE p.aparelho = v.aparelho AND (p.visto_em > $AGORA - $H OR p.visto_em = 0))"
+          # A presença ("No app agora") só é limpa às 21, 22 e 23 h UTC; desde a última limpeza, todo aparelho que abriu o app
+          # tem uma linha nela. Quem entrou numa mesa online desde então sem linha nenhuma jogou sem o app (programa de fora).
+          H_UTC=$(date -u +%H); if [ "$H_UTC" -ge 21 ]; then LIMPA=$(date -u -d "today ${H_UTC}:05" +%s); else LIMPA=$(date -u -d "yesterday 23:05" +%s); fi; LIMPA=$((LIMPA * 1000))
+          log "janela sem limpeza da presença: desde $(date -u -d @$((LIMPA / 1000)) +%FT%TZ)"
+          q "entraram em mesa online na janela / sem o app aberto nenhuma vez" "SELECT COUNT(*) AS entraram, SUM(NOT EXISTS (SELECT 1 FROM presenca p WHERE p.aparelho = v.aparelho)) AS sem_app FROM jogadores_vistos v WHERE v.visto_em > $LIMPA"
           for per in atual anterior; do
             if [ $per = atual ]; then PSQL="(SELECT MAX(periodo) FROM calcada WHERE periodo LIKE 'S%')"; else PSQL="(SELECT MAX(periodo) FROM calcada WHERE periodo LIKE 'S%' AND periodo < (SELECT MAX(periodo) FROM calcada WHERE periodo LIKE 'S%'))"; fi
             q "ranking semana $per" "SELECT periodo, COUNT(*) AS jogadores, SUM(jogadas) AS partidas, MAX(jogadas) AS mais_partidas, SUM(jogadas >= 60) AS com_60_ou_mais, MAX(CASE WHEN jogadas >= 20 THEN ROUND(1.0 * ganhas / jogadas, 2) END) AS maior_aproveitamento_20mais, SUM(jogadas >= 20 AND 1.0 * ganhas / jogadas >= 0.75) AS aproveitamento_75_20mais, SUM(jogadas_gente) AS partidas_com_gente FROM calcada WHERE periodo = $PSQL"
