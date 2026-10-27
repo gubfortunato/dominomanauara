@@ -103,6 +103,26 @@ jobs:
           log "== banco D1 hora a hora: linhas escritas / consultas de escrita =="
           r=$(gq "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg db "$DB" --arg ini "$INI" --arg fim "$FIM" '{query: "query($acc: string!, $db: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) { d1AnalyticsAdaptiveGroups(limit: 2000, filter: {datetimeHour_geq: $ini, datetimeHour_leq: $fim, databaseId: $db}) { sum { rowsWritten writeQueries } dimensions { datetimeHour } } } } }", variables: {acc: $acc, db: $db, ini: $ini, fim: $fim}}')")
           log "$(echo "$r" | jq -r '(.errors // []) as $e | if ($e|length) > 0 then ([$e[].message] | join("; ")) else [.data.viewer.accounts[0].d1AnalyticsAdaptiveGroups[] | "\(.dimensions.datetimeHour[5:13]) \(.sum.rowsWritten)/\(.sum.writeQueries)"] | sort | join("  ") end' 2>/dev/null || echo "$r" | head -c 300)"
+      - name: Campos de consumo das mesas (SQLite) e hoje até agora
+        working-directory: servidor
+        shell: bash
+        if: always()
+        run: |
+          set +e
+          ST="$GITHUB_WORKSPACE/diagnostico.txt"
+          log() { echo "$*" | tee -a "$ST"; }
+          gq() { curl -s -m 40 https://api.cloudflare.com/client/v4/graphql -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' --data "$1"; }
+          log ""
+          log "== campos que o Cloudflare tem para as mesas (Durable Objects) =="
+          for t in AccountDurableObjectsPeriodicGroupsSum AccountDurableObjectsSqlStorageGroupsMax AccountDurableObjectsStorageGroupsMax; do
+            r=$(gq "$(jq -n --arg t "$t" '{query: "query($t: String!) { __type(name: $t) { fields { name } } }", variables: {t: $t}}')")
+            log "$t: $(echo "$r" | jq -c '[.data.__type.fields[]?.name]' 2>/dev/null)"
+          done
+          r=$(gq '{"query":"{ __type(name: \"account\") { fields { name } } }"}')
+          log "conjuntos com durable: $(echo "$r" | jq -c '[.data.__type.fields[]?.name | select(test("urable"))]' 2>/dev/null)"
+          HOJE=$(date -u +%Y-%m-%dT00:00:00Z); FIM=$(date -u +%FT%TZ)
+          r=$(gq "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg ini "$HOJE" --arg fim "$FIM" '{query: "query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) { workersInvocationsAdaptive(limit: 100, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { requests } } } } }", variables: {acc: $acc, ini: $ini, fim: $fim}}')")
+          log "Worker hoje (desde 00:00 UTC) até $FIM: $(echo "$r" | jq -c '[.data.viewer.accounts[0].workersInvocationsAdaptive[].sum.requests] | add' 2>/dev/null) pedidos (limite 100 mil)"
       - name: Guardar o resultado
         if: always()
         shell: bash
