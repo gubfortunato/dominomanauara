@@ -46,6 +46,42 @@ jobs:
           q "mesas criadas por endereço por dia (7 dias): maior" "SELECT MAX(c) AS maior, SUM(c >= 20) AS com_20_ou_mais FROM (SELECT marca, COUNT(*) AS c FROM mesas_criadas WHERE criado_em > $AGORA - 7 * $D GROUP BY marca)"
           q "jogaram online por hora do dia (Manaus, 7 dias, pelo último jogo)" "SELECT CAST(((visto_em / $H) - 4 + 24) % 24 AS INTEGER) AS hora, COUNT(*) AS n FROM jogadores_vistos WHERE visto_em > $AGORA - 7 * $D GROUP BY hora ORDER BY hora"
           rm -f wrangler.toml
+      - name: Saúde e consumo do Cloudflare (plano grátis)
+        working-directory: servidor
+        shell: bash
+        if: always()
+        run: |
+          set +e
+          ST="$GITHUB_WORKSPACE/diagnostico.txt"
+          log() { echo "$*" | tee -a "$ST"; }
+          url=https://api.gubfort.workers.dev
+          log ""
+          log "== saúde agora ($(date -u +%FT%TZ)) =="
+          log "saúde: $(curl -s -m 15 -w ' (http %{http_code})' $url/saude)"
+          log "mesa online (cria, entra pelo WebSocket e sai): $(timeout 40 node teste_publicado.mjs "$url" 2>&1 | tail -1)"
+          log "mesa online, de novo: $(timeout 40 node teste_publicado.mjs "$url" 2>&1 | tail -1)"
+          log ""
+          log "== consumo por dia (UTC; o dia vira às 20h de Manaus). Limites do plano grátis: Workers 100 mil pedidos/dia; Durable Objects 100 mil pedidos/dia e 13 mil GB-s/dia; D1 5 milhões de linhas lidas e 100 mil escritas/dia =="
+          gql() { curl -s -m 30 https://api.cloudflare.com/client/v4/graphql -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' \
+                    --data "$(jq -n --arg q "$1" --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg ini "$2" --arg fim "$3" --arg dini "${2%%T*}" --arg dfim "${3%%T*}" '{query:$q, variables:{acc:$acc, ini:$ini, fim:$fim, dini:$dini, dfim:$dfim}}')"; }
+          INI=$(date -u -d '6 days ago' +%Y-%m-%dT00:00:00Z); FIM=$(date -u +%FT%TZ)
+          r=$(gql 'query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) {
+              workersInvocationsAdaptive(limit: 500, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { requests errors subrequests } dimensions { date status } } } } }' "$INI" "$FIM")
+          log "Worker (pedidos por dia e situação): $(echo "$r" | jq -c '(.errors // []) as $e | if ($e|length) > 0 then {erro: [$e[].message]} else [.data.viewer.accounts[0].workersInvocationsAdaptive[] | {d: .dimensions.date, s: .dimensions.status, n: .sum.requests, err: .sum.errors}] | group_by(.d) | map({dia: .[0].d, pedidos: (map(.n) | add), erros: (map(.err) | add), situacoes: (map({(.s): .n}) | add)}) end' 2>/dev/null || echo "$r" | head -c 400)"
+          r=$(gql 'query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) {
+              durableObjectsInvocationsAdaptiveGroups(limit: 500, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { requests errors } dimensions { date status } } } } }' "$INI" "$FIM")
+          log "Mesas / Durable Objects (pedidos por dia): $(echo "$r" | jq -c '(.errors // []) as $e | if ($e|length) > 0 then {erro: [$e[].message]} else [.data.viewer.accounts[0].durableObjectsInvocationsAdaptiveGroups[] | {d: .dimensions.date, s: .dimensions.status, n: .sum.requests, err: .sum.errors}] | group_by(.d) | map({dia: .[0].d, pedidos: (map(.n) | add), erros: (map(.err) | add), situacoes: (map({(.s): .n}) | add)}) end' 2>/dev/null || echo "$r" | head -c 400)"
+          r=$(gql 'query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) {
+              durableObjectsPeriodicGroups(limit: 500, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { activeTime cpuTime exceededCpuErrors exceededMemoryErrors inboundWebsocketMsgCount outboundWebsocketMsgCount storageReadUnits storageWriteUnits } dimensions { date } } } } }' "$INI" "$FIM")
+          log "Mesas / Durable Objects (tempo e mensagens por dia): $(echo "$r" | jq -c '(.errors // []) as $e | if ($e|length) > 0 then {erro: [$e[].message]} else [.data.viewer.accounts[0].durableObjectsPeriodicGroups[] | {d: .dimensions.date} + .sum] | group_by(.d) | map({dia: .[0].d, gb_s: ((map(.activeTime) | add) / 1000000 * 0.125 | floor), msgs_entrada: (map(.inboundWebsocketMsgCount) | add), msgs_saida: (map(.outboundWebsocketMsgCount) | add), estouros_cpu: (map(.exceededCpuErrors) | add), estouros_memoria: (map(.exceededMemoryErrors) | add), leituras: (map(.storageReadUnits) | add), escritas: (map(.storageWriteUnits) | add)}) end' 2>/dev/null || echo "$r" | head -c 400)"
+          DB=$(npx -y wrangler@4 d1 list --json 2>/dev/null | jq -r '.[] | select(.name=="dominomanauara") | .uuid')
+          r=$(curl -s -m 30 https://api.cloudflare.com/client/v4/graphql -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' \
+                --data "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg db "$DB" --arg dini "${INI%%T*}" --arg dfim "${FIM%%T*}" '{query: "query($acc: string!, $db: string!, $dini: Date!, $dfim: Date!) { viewer { accounts(filter: {accountTag: $acc}) { d1AnalyticsAdaptiveGroups(limit: 100, filter: {date_geq: $dini, date_leq: $dfim, databaseId: $db}) { sum { readQueries writeQueries rowsRead rowsWritten } dimensions { date } } } } }", variables: {acc: $acc, db: $db, dini: $dini, dfim: $dfim}}')")
+          log "Banco D1 (por dia): $(echo "$r" | jq -c '(.errors // []) as $e | if ($e|length) > 0 then {erro: [$e[].message]} else [.data.viewer.accounts[0].d1AnalyticsAdaptiveGroups[] | {dia: .dimensions.date} + .sum] | sort_by(.dia) end' 2>/dev/null || echo "$r" | head -c 400)"
+          INI2=$(date -u -d '30 hours ago' +%Y-%m-%dT%H:00:00Z)
+          r=$(gql 'query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) {
+              workersInvocationsAdaptive(limit: 2000, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { requests errors } dimensions { datetimeHour status } } } } }' "$INI2" "$FIM")
+          log "Worker por hora (últimas 30 h; hora UTC): $(echo "$r" | jq -c '(.errors // []) as $e | if ($e|length) > 0 then {erro: [$e[].message]} else [.data.viewer.accounts[0].workersInvocationsAdaptive[] | {h: .dimensions.datetimeHour[5:13], s: .dimensions.status, n: .sum.requests}] | group_by(.h) | map({h: .[0].h, n: (map(.n) | add), s: (map(select(.s != "success")) | map({(.s): .n}) | add)}) end' 2>/dev/null || echo "$r" | head -c 400)"
       - name: Guardar o resultado
         if: always()
         shell: bash
