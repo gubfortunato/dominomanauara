@@ -3051,6 +3051,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.40.2', data: '27/10/2026', itens: ['Mais leve para o servidor: o app avisa que está aberto a cada minuto (antes, a cada 20 s) e as listas de mesas jogando e de quem está no app se atualizam com menos frequência.'] },
   { v: '3.40.1', data: '21/10/2026', itens: ['O selo de quem apoia ficou mais bonito: a estrela do Apoiador e o coração de quem doou agora têm o mesmo tamanho, na mesa online e ao lado do seu nome no início.', 'Mesa online: o selo aparece sempre junto do nome, mesmo quando o apelido é comprido e fica cortado.', 'O convite "Seja um Apoiador" no início ganhou um brilho que corre pela borda.'] },
   { v: '3.40', data: '21/10/2026', itens: ['A lista do que mudou em cada versão e o aviso de atualização ficam só para o administrador; para o público, o número da versão é só texto.'] },
   { v: '3.39.2', data: '21/10/2026', itens: ['Quem assiste a uma mesa online agora vê o selo ★ e ♥ também do jogador que aparece embaixo.'] },
@@ -8552,7 +8553,7 @@ const VIVO_LANCE = (v) => {
   return 'Partida rolando';
 };
 async function vivoMesas(agora) {
-  if (!CONFIG.api || VIVO.buscando || (!agora && Date.now() - VIVO.buscadoEm < 6000)) return;
+  if (!CONFIG.api || VIVO.buscando || (!agora && Date.now() - VIVO.buscadoEm < 15000)) return;
   VIVO.buscando = true; VIVO.buscadoEm = Date.now();
   try {
     // 3.26.3: o administrador vê todas as mesas em jogo (inclusive as com os amigos); os jogadores, só as mesas rápidas
@@ -8634,7 +8635,7 @@ let presBuscadoEm = 0;
 async function vivoPresenca(agora) {
   const box = $('#vivoPres'); if (!box) return;
   box.hidden = !vivoDetalhes();
-  if (box.hidden || (!agora && Date.now() - presBuscadoEm < 4000)) return;
+  if (box.hidden || (!agora && Date.now() - presBuscadoEm < 15000)) return;
   presBuscadoEm = Date.now();
   try {
     const j = await dnMsgPedir('/dono/presenca');
@@ -8651,7 +8652,7 @@ function vivoTique() {
   if (!vivoMostra() || document.visibilityState !== 'visible') return;
   // 3.27: na Calçada, atualiza a cada poucos segundos; no início, de vez em quando (para o aviso "mesas jogando agora")
   if (screen === 'calcada') { vivoHoje(); vivoMesas(); vivoPresenca(); }
-  else if (screen === 'home' && Date.now() - VIVO.buscadoEm > 15000) vivoMesas(true);
+  else if (screen === 'home' && Date.now() - VIVO.buscadoEm > 60000) vivoMesas(true);
 }
 // Entrar numa mesa da lista: mesmo cuidado da mesa rápida (maiores de 18, uma mesa por vez); senta no lugar de um robô
 function entrarAoVivo(codigo) {
@@ -8826,7 +8827,7 @@ function presAvisar(forcar) {
   fetch(CONFIG.api + '/presenca', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo), keepalive: true }).catch(() => {});
 }
 // 3.26.2: tempo real — a cada 20 s, na hora em que troca de tela e, ao sair do app, avisa que saiu
-setInterval(() => presAvisar(false), 20000);
+setInterval(() => presAvisar(false), 60000);
 function presSaiu() {
   if (!CONFIG.api) return;
   const corpo = JSON.stringify({ aparelho: meuId(), saiu: true });
@@ -10327,7 +10328,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.40.1-35c2d2e5';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.40.2-df1cd523';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
