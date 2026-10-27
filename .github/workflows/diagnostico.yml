@@ -82,6 +82,27 @@ jobs:
           r=$(gql 'query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) {
               workersInvocationsAdaptive(limit: 2000, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { requests errors } dimensions { datetimeHour status } } } } }' "$INI2" "$FIM")
           log "Worker por hora (últimas 30 h; hora UTC): $(echo "$r" | jq -c '(.errors // []) as $e | if ($e|length) > 0 then {erro: [$e[].message]} else [.data.viewer.accounts[0].workersInvocationsAdaptive[] | {h: .dimensions.datetimeHour[5:13], s: .dimensions.status, n: .sum.requests}] | group_by(.h) | map({h: .[0].h, n: (map(.n) | add), s: (map(select(.s != "success")) | map({(.s): .n}) | add)}) end' 2>/dev/null || echo "$r" | head -c 400)"
+      - name: Consumo hora a hora (últimos 4 dias)
+        working-directory: servidor
+        shell: bash
+        if: always()
+        run: |
+          set +e
+          ST="$GITHUB_WORKSPACE/diagnostico.txt"
+          log() { echo "$*" | tee -a "$ST"; }
+          gq() { curl -s -m 40 https://api.cloudflare.com/client/v4/graphql -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' --data "$1"; }
+          INI=$(date -u -d '3 days ago' +%Y-%m-%dT00:00:00Z); FIM=$(date -u +%FT%TZ)
+          log ""
+          log "== mesas (Durable Objects) hora a hora desde $INI (hora UTC; Manaus = UTC-4): pedidos ok / outros =="
+          r=$(gq "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg ini "$INI" --arg fim "$FIM" '{query: "query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) { durableObjectsInvocationsAdaptiveGroups(limit: 5000, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { requests } dimensions { datetimeHour status } } } } }", variables: {acc: $acc, ini: $ini, fim: $fim}}')")
+          log "$(echo "$r" | jq -r '(.errors // []) as $e | if ($e|length) > 0 then ([$e[].message] | join("; ")) else [.data.viewer.accounts[0].durableObjectsInvocationsAdaptiveGroups[] | {h: .dimensions.datetimeHour[5:13], ok: (if .dimensions.status == "success" then .sum.requests else 0 end), out: (if .dimensions.status == "success" then 0 else .sum.requests end)}] | group_by(.h) | map("\(.[0].h) \(map(.ok) | add)/\(map(.out) | add)") | join("  ") end' 2>/dev/null || echo "$r" | head -c 300)"
+          log "== Worker hora a hora: pedidos ok / outros =="
+          r=$(gq "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg ini "$INI" --arg fim "$FIM" '{query: "query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) { workersInvocationsAdaptive(limit: 5000, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { requests } dimensions { datetimeHour status } } } } }", variables: {acc: $acc, ini: $ini, fim: $fim}}')")
+          log "$(echo "$r" | jq -r '(.errors // []) as $e | if ($e|length) > 0 then ([$e[].message] | join("; ")) else [.data.viewer.accounts[0].workersInvocationsAdaptive[] | {h: .dimensions.datetimeHour[5:13], ok: (if .dimensions.status == "success" then .sum.requests else 0 end), out: (if .dimensions.status == "success" then 0 else .sum.requests end)}] | group_by(.h) | map("\(.[0].h) \(map(.ok) | add)/\(map(.out) | add)") | join("  ") end' 2>/dev/null || echo "$r" | head -c 300)"
+          DB=$(npx -y wrangler@4 d1 list --json 2>/dev/null | jq -r '.[] | select(.name=="dominomanauara") | .uuid')
+          log "== banco D1 hora a hora: linhas escritas / consultas de escrita =="
+          r=$(gq "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg db "$DB" --arg ini "$INI" --arg fim "$FIM" '{query: "query($acc: string!, $db: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) { d1AnalyticsAdaptiveGroups(limit: 2000, filter: {datetimeHour_geq: $ini, datetimeHour_leq: $fim, databaseId: $db}) { sum { rowsWritten writeQueries } dimensions { datetimeHour } } } } }", variables: {acc: $acc, db: $db, ini: $ini, fim: $fim}}')")
+          log "$(echo "$r" | jq -r '(.errors // []) as $e | if ($e|length) > 0 then ([$e[].message] | join("; ")) else [.data.viewer.accounts[0].d1AnalyticsAdaptiveGroups[] | "\(.dimensions.datetimeHour[5:13]) \(.sum.rowsWritten)/\(.sum.writeQueries)"] | sort | join("  ") end' 2>/dev/null || echo "$r" | head -c 300)"
       - name: Guardar o resultado
         if: always()
         shell: bash
