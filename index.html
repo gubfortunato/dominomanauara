@@ -2108,6 +2108,27 @@ button.dn-ag:active{transform:scale(.98)}
 /* 3.37: no perfil com foto, o avatar que os outros veem na mesa online */
 .nota-av{display:inline-block;width:22px;height:22px;border-radius:50%;vertical-align:-6px;margin:0 2px;box-shadow:0 0 0 1.5px var(--line)}
 .sc-coroa{position:absolute;top:-14px;left:50%;transform:translateX(-50%) rotate(-12deg);font-size:21px;font-style:normal;line-height:1;z-index:2;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4));pointer-events:none}
+/* 28/10 (pedido do dono): Área do administrador reorganizada. Título do grupo é um botão que abre e fecha; a linha das
+   pendências fica logo abaixo do "Agora" e leva ao cartão. */
+#scrDono .dn-grupo{display:flex;align-items:center;gap:8px;width:100%;margin:10px 0 -6px;padding:8px 4px;border:0;background:transparent;font:inherit;font-size:13.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:left;cursor:pointer}
+#scrDono .dn-grupo[hidden]{display:none}
+#scrDono .dn-grupo-t{flex:1}
+#scrDono .dn-grupo-n{min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#e5484d;color:#fff;font-size:13px;line-height:22px;letter-spacing:0;text-align:center}
+#scrDono .dn-grupo-n[hidden]{display:none}
+#scrDono .dn-grupo-seta{width:20px;height:20px;flex:none;transition:transform .2s}
+#scrDono .dn-grupo[aria-expanded="false"] .dn-grupo-seta{transform:rotate(-90deg)}
+#scrDono .dn-grupo-corpo{display:flex;flex-direction:column;gap:inherit}
+#scrDono .dn-grupo-corpo[hidden]{display:none}
+#scrDono .dn-grupo-corpo > .dn-anuncie{align-self:flex-start}
+.dn-pend{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:-4px}
+.dn-pend:empty{display:none}
+.dn-pend-k{width:100%;font-size:13.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 4px}
+.dn-pend-i{font:inherit;font-size:16px;font-weight:700;padding:8px 14px;border-radius:999px;border:1.5px solid #e5484d;background:var(--bg-2);color:var(--fg);cursor:pointer}
+.dn-pend-i b{color:#e5484d;margin-right:2px}
+.dn-pend-ok{font-size:16px;font-weight:700;color:var(--ok);padding:4px 4px}
+@keyframes dnPisca{0%,100%{box-shadow:0 0 0 0 rgba(243,192,99,0)}30%{box-shadow:0 0 0 4px rgba(243,192,99,.9)}}
+.dn-pisca{animation:dnPisca 1.4s ease-out 1}
+@media (prefers-reduced-motion: reduce){.dn-pisca{animation:none}#scrDono .dn-grupo-seta{transition:none}}
 /* ===== Papo de mesa (3.42) ===== */
 .papo-bt{position:relative}
 .papo-nao{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#e5484d;color:#fff;font:800 13px/20px var(--font-body, inherit);text-align:center;box-shadow:0 0 0 2px var(--bg)}
@@ -3274,6 +3295,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.42.3', data: '28/10/2026', itens: ['Corrigido: a pedra arrastada podia ficar congelada na tela, por cima de tudo (por exemplo, quando o celular puxava a Central de Controle ou uma notificação no meio do arrasto). Agora ela sempre volta para a mão.', 'Área do administrador reorganizada: logo abaixo do "Agora", as pendências (mensagens novas, papo denunciado, fotos esperando, possíveis robôs), com toque que leva ao cartão. Depois, os grupos na ordem de uso: Precisa de você, Jogadores, Dinheiro, Falar com os jogadores, Números e Ajustes. Tocar no título abre e fecha o grupo.'] },
   { v: '3.42.2', data: '28/10/2026', itens: ['Papo de mesa: fundo de vidro fosco (a mesa aparece borrada atrás e dá para ver de quem é a vez). Abre subindo macio e fecha descendo. Dá também para puxar para baixo pela alça para fechar. As mensagens novas entram deslizando.', 'Na sala da mesa com os amigos, o aviso de segurança agora fala do papo de mesa (com filtro e botão de denunciar).'] },
   { v: '3.42.1', data: '28/10/2026', itens: ['A mesa Vitória-régia volta a ser escrita com r minúsculo.'] },
   { v: '3.42', data: '28/10/2026', itens: ['Papo de mesa: nas mesas com os amigos, agora dá para conversar por escrito, desde a sala até a garagem. Toque em "Papo de mesa": em cima, as frases prontas; embaixo, o campo para escrever (até 80 letras). A mensagem aparece no balão de quem falou.', 'Respeito na mesa: o papo não deixa passar palavrão, link, telefone, e-mail nem convite para outro app. Toque numa mensagem para silenciar a pessoa (só para você) ou denunciar. Dá também para silenciar o papo todo neste celular.', 'Para proteger os menores de 18: quando tem menor na mesa, o papo fica só com as frases prontas para todo mundo. Quem assiste só lê.', 'A mesa rápida continua só com as frases do "Reagir". Nada do papo fica guardado: some quando a mesa fecha (a não ser a mensagem denunciada, que o administrador vê por até 30 dias).', 'Mesa Boto-rosa redesenhada: o boto saindo do rio de bico para cima, com a mata na outra margem.'] },
@@ -5255,6 +5277,43 @@ runDeal = async function () {
   }
   return runDealClara.apply(this, args);
 };
+// ===== Pedra presa na tela (28/10, bug visto pelo dono no iPhone) =====
+// A pedra arrastada ficou "congelada" por cima de tudo (até do menu), com a mesma pedra apagada na mão. Acontece quando o
+// celular não entrega o fim do toque: o iPhone puxou a Central de Controle ou uma notificação no meio do arrasto, o app
+// foi para o fundo, ou o fim do toque foi para a pedra que já tinha sido redesenhada na mão. Como cada toque novo tem
+// outro número, o app esperava para sempre pelo fim daquele toque. Agora a pedra nunca fica presa:
+// 1) o toque fica preso à mão (#hand), que nunca sai da tela: o fim do toque chega mesmo com a pedra redesenhada;
+// 2) qualquer toque novo, com o anterior ainda "aberto", larga a pedra de volta na mão;
+// 3) se o toque acabou (touchend) e o fim do arrasto não veio, termina o arrasto do mesmo jeito (cancelado: volta à mão);
+// 4) app indo para o fundo, a janela perdendo o foco ou uma folha abrindo (menu, regras) também largam a pedra.
+function largarPedra() {
+  if (!drag) return false;
+  endDrag();
+  try { if (G && screen === 'game') render(); } catch (e) {}
+  return true;
+}
+(function () {
+  const hand = $('#hand'); if (!hand) return;
+  // (no primeiro movimento, antes de a mão ser redesenhada; o arrasto começa no código do jogo, que vem depois deste)
+  window.addEventListener('pointermove', e => {
+    if (drag && !drag.preso && e.pointerId === drag.pid) { drag.preso = true; try { hand.setPointerCapture(e.pointerId); } catch (er) {} }
+  }, true);
+  window.addEventListener('pointerdown', e => {
+    if (drag) largarPedra();   // toque novo com o arrasto ainda "aberto" (outro dedo, ou o fim do toque que nunca chegou)
+  }, true);
+  const fimDoToque = e => {
+    if (!drag || (e.touches && e.touches.length)) return;
+    const pid = drag.pid;
+    setTimeout(() => { if (drag && drag.pid === pid) largarPedra(); }, 120);
+  };
+  window.addEventListener('touchend', fimDoToque, { passive: true });
+  window.addEventListener('touchcancel', fimDoToque, { passive: true });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState !== 'visible') largarPedra(); });
+  window.addEventListener('pagehide', largarPedra);
+  window.addEventListener('blur', largarPedra);
+})();
+const openSheetArrasto = openSheet;
+openSheet = function () { largarPedra(); return openSheetArrasto.apply(this, arguments); };
 
 // ---- Lembretes para jogar (notificações push) ----
 // Só para maiores de 18 que pedirem. No iPhone, só com o app instalado na tela de início.
@@ -7471,7 +7530,7 @@ async function dnFotosCarregar() {
     if (!r.ok) { box.hidden = true; return; }
     const j = await r.json(), l = j.fotos || [];
     $('#dnFotosTx').textContent = (l.length ? `${l.length} ${l.length === 1 ? 'foto esperando' : 'fotos esperando'} você.` : 'Nenhuma foto esperando.') + ` ${j.aprovadas} ${j.aprovadas === 1 ? 'aprovada' : 'aprovadas'} no ar.`
-      + (j.ia ? ` A IA aprovou ${j.iaAprovou || 0} e recusou ${j.iaRecusou || 0} nos últimos 30 dias; aqui ficam só as que ela não teve certeza e as denunciadas.` : ' A IA de fotos está desligada: aprove aqui.');
+      + (j.ia ? ` IA em 30 dias: ${j.iaAprovou || 0} aprovadas, ${j.iaRecusou || 0} recusadas. Aqui só as duvidosas e as denunciadas.` : ' A IA de fotos está desligada: aprove aqui.');
     $('#dnFotosLista').innerHTML = l.map(f => `<li><img src="${esc(f.img)}" alt=""><span>${f.status === 'denunciada' ? `<b class="dn-den">Denunciada${f.denuncias > 1 ? ` ${f.denuncias} vezes` : ''}</b>` : '<b>Nova</b>'}<small>${dataBR(f.criado_em)}</small></span>
       <span class="dn-fotobt"><button type="button" class="primary" data-pub="${esc(f.pub)}" data-a="aprovar">Aprovar</button><button type="button" class="linkbtn" data-pub="${esc(f.pub)}" data-a="recusar">Recusar</button></span></li>`).join('');
   } catch (e) { box.hidden = true; }
@@ -9200,7 +9259,7 @@ const quandoFoi = ms => { const m = Math.round((Date.now() - ms) / 60000); retur
   const ref = $('#dnFotos'); if (!ref) return;
   ref.insertAdjacentHTML('afterend', `<div class="dn-list wood dn-jog" id="dnJog" hidden>
     <span class="ck">Jogadores da mesa online</span>
-    <p class="dn-avn">Quem jogou online nos últimos 7 dias. Apelido ou foto ofensiva: bloqueie. A pessoa sai da mesa na hora e não joga mais online.</p>
+    <p class="dn-avn">Quem jogou online nos últimos 7 dias. Bloquear tira da mesa na hora e do online.</p>
     <ul class="dn-joglista" id="dnJogLista"></ul>
     <span class="ck dn-jog-k" id="dnBloqK" hidden>Bloqueados</span>
     <ul class="dn-joglista" id="dnBloqLista"></ul>
@@ -9261,7 +9320,7 @@ document.addEventListener('click', async e => {
   const ref = $('#dnJog'); if (!ref) return;
   ref.insertAdjacentHTML('beforebegin', `<div class="dn-list wood dn-jog" id="dnNoApp" hidden>
     <span class="ck" id="dnNoAppK">No app agora</span>
-    <p class="dn-avn">Quem está com o app aberto agora. Apelido ofensivo: derrube (a pessoa sai da mesa e escolhe outro apelido). Quem insiste: bloqueie.</p>
+    <p class="dn-avn">Com o app aberto agora. Apelido ofensivo: Derrubar (troca o apelido). Quem insiste: Bloquear.</p>
     <ul class="dn-joglista" id="dnNoAppLista"></ul>
   </div>`);
 })();
@@ -10282,7 +10341,7 @@ async function dnPapoCarregar() {
   if (box.hidden) return;
   try {
     const l = (await dnMsgPedir('/dono/papo')).lista || [];
-    $('#dnPapoTx').textContent = l.length ? 'Mensagens que a turma denunciou no papo das mesas com os amigos (com o que veio antes). Ofensa ou golpe: bloqueie.' : 'Nenhuma mensagem denunciada no papo. Tudo em paz nas mesas.';
+    $('#dnPapoTx').textContent = l.length ? 'Denunciadas no papo de mesa, com o que veio antes. Ofensa ou golpe: Bloquear.' : 'Nenhuma denúncia no papo de mesa.';
     $('#dnPapoLista').innerHTML = l.map(x => {
       const antes = (x.contexto || []).slice(0, -1).map(c => `<span class="${c.autor ? 'dp-autor' : ''}"><b>${esc(c.nome || '?')}:</b> ${esc(c.txt != null ? c.txt : (REACOES[c.k] || ''))}</span>`).join('');
       const chave = `data-mesa="${esc(x.mesa)}" data-em="${x.msg_em}" data-autor="${esc(x.autor)}"`;
@@ -10493,14 +10552,30 @@ async function rkFora(fora) {
 //    o líder do ranking da semana e os apoios do mês — tudo do nosso servidor, atualizando sozinho;
 // 2) o resto em grupos, do mais urgente ao menos: mensagens e moderação, dinheiro, falar com os jogadores, números do
 //    Umami e ajustes deste aparelho; as medidas da tela (técnico) ficam recolhidas.
+// 28/10 (pedido do dono: "informações e cards dispersos de forma aleatória"): os cartões que vieram depois (No app
+// agora, Possíveis robôs, Papo denunciado) tinham ficado fora dos grupos, no fim da tela. Agora: "Agora", a linha das
+// pendências (só o que pede ação; tocar leva ao cartão) e os grupos na ordem de uso. Tocar no título do grupo abre e
+// fecha (o app lembra); os de uso diário começam abertos.
 const DN_GRUPOS = [
-  ['Mensagens e moderação', ['dnMsgs', 'dnJog', 'dnFotos']],
-  ['Dinheiro', ['dnPag', 'dnApoiadores', 'dnPatroCard']],
-  ['Falar com os jogadores', ['dnAvisos']],
-  ['Números do Umami', ['dnOpen', 'dnLive', 'dnRange', 'dnBody', 'dnErr', 'dnKey', 'dnFull']],
-  ['Ajustes deste aparelho', ['dnSemContar', 'dnTestePag', 'dnKeyTrocar', 'dnSair', 'dnTela']]
+  ['Precisa de você', ['dnMsgs', 'dnPapo', 'dnFotos', 'dnRobo'], true],
+  ['Jogadores', ['dnNoApp', 'dnJog'], true],
+  ['Dinheiro', ['dnPag', 'dnApoiadores', 'dnPatroCard', 'dnAnuncieLink'], false],
+  ['Falar com os jogadores', ['dnAvisos'], false],
+  ['Números do Umami', ['dnOpen', 'dnLive', 'dnRange', 'dnBody', 'dnErr', 'dnKey', 'dnFull'], false],
+  ['Ajustes deste aparelho', ['dnSemContar', 'dnTestePag', 'dnKeyTrocar', 'dnSair', 'dnTela'], false]
 ];
+const DN_GKEY = 'dmz-dono-grupos';
 const DN_AG = { em: 0, buscando: false, timer: null };
+function dnGrupoAberto(gi) {
+  let g = {}; try { g = JSON.parse(store.get(DN_GKEY) || '{}') || {}; } catch (e) {}
+  const t = DN_GRUPOS[gi][0];
+  return t in g ? !!g[t] : DN_GRUPOS[gi][2];
+}
+function dnGrupoAbrir(gi, abrir, guardar) {
+  const h = $('#dnGrupo' + gi), c = $('#dnGrupoC' + gi); if (!h || !c) return;
+  h.setAttribute('aria-expanded', String(abrir)); c.hidden = !abrir || h.hidden;
+  if (guardar) { let g = {}; try { g = JSON.parse(store.get(DN_GKEY) || '{}') || {}; } catch (e) {} g[DN_GRUPOS[gi][0]] = abrir; store.set(DN_GKEY, JSON.stringify(g)); }
+}
 (function () {
   const scr = $('#scrDono'); if (!scr) return;
   const cab = scr.querySelector('.kicker') && scr.querySelector('.kicker').parentElement;
@@ -10516,30 +10591,64 @@ const DN_AG = { em: 0, buscando: false, timer: null };
     <p class="dn-ag-linha" id="dnAgLider" hidden></p>
     <p class="dn-ag-linha" id="dnAgDin" hidden></p>
     <button type="button" class="dn-ag-ver" data-ir="calcada">Ver as mesas e quem está no app <span aria-hidden="true">›</span></button>
-  </section>`);
+  </section>
+  <div class="dn-pend" id="dnPend" role="status" aria-live="polite"></div>`);
   $('#dnAgora').addEventListener('click', e => { const b = e.target.closest('[data-ir]'); if (b) { track('dono-agora-calcada'); show(b.dataset.ir); } });
-  // grupos, na ordem
-  let depois = $('#dnAgora');
+  // grupos, na ordem: título (botão que abre e fecha) e o corpo com os cartões
+  let depois = $('#dnPend');
   DN_GRUPOS.forEach(([titulo, ids], gi) => {
-    const h = document.createElement('p'); h.className = 'dn-grupo'; h.id = 'dnGrupo' + gi; h.textContent = titulo;
-    depois.after(h); depois = h;
+    const h = document.createElement('button'); h.type = 'button'; h.className = 'dn-grupo'; h.id = 'dnGrupo' + gi;
+    h.setAttribute('aria-controls', 'dnGrupoC' + gi);
+    h.innerHTML = `<span class="dn-grupo-t">${titulo}</span><span class="dn-grupo-n" hidden></span><svg class="dn-grupo-seta" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    const c = document.createElement('div'); c.className = 'dn-grupo-corpo'; c.id = 'dnGrupoC' + gi;
+    depois.after(h); h.after(c); depois = c;
     ids.forEach(id => {
       let el = $('#' + id); if (!el) return;
       if (el.matches('input')) el = el.closest('label') || el;
       if (id === 'dnTela') {
         const d = document.createElement('details'); d.className = 'dn-tec'; d.innerHTML = '<summary>Medidas da tela (técnico)</summary>';
-        depois.after(d); d.appendChild(el); depois = d; return;
+        c.appendChild(d); d.appendChild(el); return;
       }
-      depois.after(el); depois = el;
+      c.appendChild(el);
     });
+    h.addEventListener('click', () => dnGrupoAbrir(gi, h.getAttribute('aria-expanded') !== 'true', true));
+    dnGrupoAbrir(gi, dnGrupoAberto(gi), false);
+  });
+  // pendências: contadas nos próprios cartões, sempre que eles mudam
+  const ob = new MutationObserver(() => { clearTimeout(DN_AG.pendT); DN_AG.pendT = setTimeout(dnPendencias, 120); });
+  ['dnMsgN', 'dnPapoLista', 'dnFotosLista', 'dnRoboLista'].forEach(id => { const el = $('#' + id); if (el) ob.observe(el, { childList: true, subtree: true, characterData: true }); });
+  $('#dnPend').addEventListener('click', e => {
+    const b = e.target.closest('[data-alvo]'); if (!b) return;
+    dnGrupoAbrir(0, true, false);
+    const alvo = $('#' + b.dataset.alvo); if (!alvo) return;
+    alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    alvo.classList.remove('dn-pisca'); void alvo.offsetWidth; alvo.classList.add('dn-pisca');
   });
 })();
+function dnPendencias() {
+  const box = $('#dnPend'); if (!box) return;
+  const n = sel => $$(sel).length;
+  const msg = (((($('#dnMsgN') || {}).textContent) || '').match(/^(\d+) nova/) || [])[1] | 0;
+  const itens = [
+    ['dnMsgs', msg, 'mensagem nova', 'mensagens novas'],
+    ['dnPapo', n('#dnPapoLista > li'), 'papo denunciado', 'papos denunciados'],
+    ['dnFotos', n('#dnFotosLista > li'), 'foto esperando', 'fotos esperando'],
+    ['dnRobo', n('#dnRoboLista > li:not(.bloq)'), 'possível robô', 'possíveis robôs']
+  ].filter(([id, k]) => k > 0 && $('#' + id) && !$('#' + id).hidden);
+  const total = itens.reduce((a, x) => a + x[1], 0);
+  box.innerHTML = itens.length
+    ? `<span class="dn-pend-k">Pendências</span>${itens.map(([id, k, um, varios]) => `<button type="button" class="dn-pend-i" data-alvo="${id}"><b>${k}</b> ${k === 1 ? um : varios}</button>`).join('')}`
+    : '<span class="dn-pend-ok">✓ Tudo em dia: nenhuma pendência</span>';
+  const gn = $('#dnGrupo0 .dn-grupo-n'); if (gn) { gn.hidden = !total; gn.textContent = total > 9 ? '9+' : String(total); }
+}
 // um grupo some quando tudo dentro dele está escondido
 function dnGruposVer() {
   DN_GRUPOS.forEach(([, ids], gi) => {
     const h = $('#dnGrupo' + gi); if (!h) return;
     h.hidden = !ids.some(id => { let el = $('#' + id); if (!el) return false; if (el.matches('input')) el = el.closest('label') || el; if (id === 'dnTela') el = el.closest('details') || el; return !el.hidden; });
+    dnGrupoAbrir(gi, h.getAttribute('aria-expanded') === 'true', false);
   });
+  dnPendencias();
 }
 const dnN = (v, um, varios) => `${v} ${v === 1 ? um : varios}`;
 async function dnAgora(forca) {
@@ -11386,7 +11495,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.42.2-222facec';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.42.3-0472c83a';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
