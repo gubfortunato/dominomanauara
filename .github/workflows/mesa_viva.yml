@@ -17,4 +17,7 @@ jobs:
           cd servidor
           r=$(timeout 40 node teste_publicado.mjs https://api.gubfort.workers.dev 2>&1 | tail -1)
           echo "::notice title=mesa online::$r"
+          v=$(curl -s -m 20 -H 'origin: https://dominomanauara.com.br' https://api.gubfort.workers.dev/vivo/mesas | jq -c '{mesas: (.mesas | length), conectados: ([.mesas[].on] | add // 0)}' 2>&1)
+          f=$(curl -s -m 20 -H 'origin: https://dominomanauara.com.br' https://api.gubfort.workers.dev/mesa/rapida/status 2>&1 | head -c 200)
+          echo "::notice title=lista ao vivo (só contagens)::$v · mesa rápida: $f"
           echo "RESULTADO: $r" >> "$GITHUB_STEP_SUMMARY"
