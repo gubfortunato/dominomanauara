@@ -16,5 +16,5 @@ jobs:
         run: |
           cd servidor
           r=$(timeout 40 node teste_publicado.mjs https://api.gubfort.workers.dev 2>&1 | tail -1)
-          echo "RESULTADO: $r"
+          echo "::notice title=mesa online::$r"
           echo "RESULTADO: $r" >> "$GITHUB_STEP_SUMMARY"
