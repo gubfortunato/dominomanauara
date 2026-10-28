@@ -2115,11 +2115,27 @@ button.dn-ag:active{transform:scale(.98)}
 .papo-linha[hidden]{display:none}
 .papo-res-linha{margin:4px 0 12px}
 /* painel */
-.papo-painel{position:fixed;inset:0;z-index:25;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}
+.papo-painel{position:fixed;inset:0;z-index:25;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center;animation:papoFundoEntra .3s ease-out both}
 .papo-painel[hidden]{display:none}
-.papo-caixa{width:100%;max-width:560px;height:min(78vh, 640px);height:min(78dvh, 640px);display:flex;flex-direction:column;background:var(--bg-2);color:var(--fg);border-radius:22px 22px 0 0;padding:16px 16px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 30px rgba(0,0,0,.35);animation:papoSobe .22s ease-out}
-@keyframes papoSobe{from{transform:translateY(24px);opacity:.4}to{transform:none;opacity:1}}
-@media (prefers-reduced-motion: reduce){.papo-caixa{animation:none}}
+.papo-caixa{width:100%;max-width:560px;height:min(78vh, 640px);height:min(78dvh, 640px);display:flex;flex-direction:column;background:var(--bg-2);color:var(--fg);border-radius:22px 22px 0 0;padding:16px 16px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 30px rgba(0,0,0,.35);animation:papoSobe .42s cubic-bezier(.22,1,.36,1);will-change:transform;touch-action:pan-y}
+/* 28/10 (pedido do dono): abrir e fechar mais macio. Abre subindo de baixo com uma mola leve e o fundo escurecendo junto;
+   fecha descendo e o fundo clareando; dá também para puxar para baixo pela alça. Com "reduzir movimento", só aparece e some. */
+@keyframes papoSobe{from{transform:translateY(100%)}to{transform:none}}
+@keyframes papoDesce{to{transform:translateY(100%)}}
+@keyframes papoFundoEntra{from{background-color:transparent}}
+@keyframes papoFundoSai{to{background-color:transparent}}
+.papo-painel.saindo{animation:papoFundoSai .26s ease-in both;pointer-events:none}
+.papo-painel.saindo .papo-caixa{animation:papoDesce .26s cubic-bezier(.55,0,.75,.35) both}
+.papo-painel.puxando .papo-caixa{animation:none;transition:none}
+.papo-caixa.volta{transition:transform .3s cubic-bezier(.22,1,.36,1)}
+.papo-pega{flex:none;align-self:center;width:44px;height:5px;border-radius:999px;background:var(--line);margin:-6px 0 10px;cursor:grab}
+.papo-caixa.parada{animation:none}
+.papo-pega,.papo-topo{touch-action:none}
+.papo-pega{position:relative}
+.papo-pega::before{content:"";position:absolute;inset:-12px -40px}
+.papo-painel .papo-lista > .papo-item.chegou{animation:papoItem .32s cubic-bezier(.22,1,.36,1) both}
+@keyframes papoItem{from{opacity:0;transform:translateY(8px)}}
+@media (prefers-reduced-motion: reduce){.papo-painel,.papo-caixa,.papo-painel.saindo,.papo-painel.saindo .papo-caixa,.papo-item.chegou{animation:none}}
 .papo-topo{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .papo-topo h2{flex:1;margin:0;font-size:21px}
 .papo-mudo{font:inherit;font-size:15px;font-weight:700;padding:7px 11px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--fg);cursor:pointer;white-space:nowrap}
@@ -2172,6 +2188,19 @@ body.papo-aberto{overflow:hidden}
 #scrGame .me-head .papo-bt{align-self:start;height:30px;margin-bottom:4px;padding:0 13px;gap:6px;font-size:15px;box-sizing:border-box}
 #scrGame .me-head .papo-bt svg{width:18px;height:18px}
 @media (max-width:360px){#scrGame .me-head .papo-bt{font-size:14px;padding:0 10px}}
+/* 28/10 (pedido do dono): fundo do papo de vidro fosco leve. A mesa aparece borrada atrás do papo e mais clara acima
+   dele (dá para ver de quem é a vez); as mensagens, as frases e o campo continuam sólidos. No claro o vidro é mais
+   fechado (a mesa escura atrás deixaria o creme acinzentado). Sem suporte a desfoque, fica sólido como antes. */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .papo-painel{background:rgba(10,7,5,.32)}
+  .papo-caixa{background:color-mix(in srgb, var(--bg-2) 78%, transparent);-webkit-backdrop-filter:blur(16px) saturate(1.15);backdrop-filter:blur(16px) saturate(1.15)}
+  :root[data-theme="light"] .papo-painel{background:rgba(40,26,14,.24)}
+  :root[data-theme="light"] .papo-caixa{background:color-mix(in srgb, var(--bg-2) 88%, transparent)}
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]) .papo-painel{background:rgba(40,26,14,.24)}
+    :root:not([data-theme="dark"]) .papo-caixa{background:color-mix(in srgb, var(--bg-2) 88%, transparent)}
+  }
+}
 </style>
 </head>
 <body>
@@ -2377,7 +2406,7 @@ body.papo-aberto{overflow:hidden}
         <div class="sala-cod"><input type="text" id="salaCodigo" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="off" placeholder="00000" aria-describedby="salaCodDica"><button type="button" class="secondary" id="salaEntrar">Entrar</button></div>
         <small class="note" id="salaCodDica">São 5 números.</small>
       </div>
-      <p class="note sala-seguro">Sem chat e sem desconhecidos: só entra quem tem o número da mesa. Cadeira vazia fica com a turma do bairro.</p>
+      <p class="note sala-seguro">Sem desconhecidos: só entra quem tem o número da mesa. O papo de mesa tem filtro e botão de denunciar. Cadeira vazia fica com a turma do bairro.</p>
     </div>
     <div class="sala-espera" id="salaEspera" hidden>
       <div class="sala-num"><span>Número da mesa</span><b id="salaNum">00000</b></div>
@@ -3245,6 +3274,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.42.2', data: '28/10/2026', itens: ['Papo de mesa: fundo de vidro fosco (a mesa aparece borrada atrás e dá para ver de quem é a vez). Abre subindo macio e fecha descendo. Dá também para puxar para baixo pela alça para fechar. As mensagens novas entram deslizando.', 'Na sala da mesa com os amigos, o aviso de segurança agora fala do papo de mesa (com filtro e botão de denunciar).'] },
   { v: '3.42.1', data: '28/10/2026', itens: ['A mesa Vitória-régia volta a ser escrita com r minúsculo.'] },
   { v: '3.42', data: '28/10/2026', itens: ['Papo de mesa: nas mesas com os amigos, agora dá para conversar por escrito, desde a sala até a garagem. Toque em "Papo de mesa": em cima, as frases prontas; embaixo, o campo para escrever (até 80 letras). A mensagem aparece no balão de quem falou.', 'Respeito na mesa: o papo não deixa passar palavrão, link, telefone, e-mail nem convite para outro app. Toque numa mensagem para silenciar a pessoa (só para você) ou denunciar. Dá também para silenciar o papo todo neste celular.', 'Para proteger os menores de 18: quando tem menor na mesa, o papo fica só com as frases prontas para todo mundo. Quem assiste só lê.', 'A mesa rápida continua só com as frases do "Reagir". Nada do papo fica guardado: some quando a mesa fecha (a não ser a mensagem denunciada, que o administrador vê por até 30 dias).', 'Mesa Boto-rosa redesenhada: o boto saindo do rio de bico para cima, com a mata na outra margem.'] },
   { v: '3.41.5', data: '28/10/2026', itens: ['Mesa online: os 20 segundos da jogada continuam, mas o relógio só aparece nos últimos 10, calmo (sem vermelho e sem pulsar). Na primeira jogada de cada partida, os 20 s também só contam depois de distribuir as pedras.', 'Mesa Arara-Vermelha: a arara voando redesenhada, com a asa da frente larga (vermelho, faixa amarela e azul) e a cauda comprida.', 'Largo de São Sebastião: o Teatro Amazonas igual ao da mesa Teatro.'] },
@@ -9967,6 +9997,7 @@ const papoBotao = id => `<button type="button" class="reagir papo-bt" id="${id}"
   document.body.insertAdjacentHTML('beforeend', `<div class="papo-flutua" id="papoFlutua" hidden role="status"></div>
   <div class="papo-painel" id="papoPainel" hidden>
     <div class="papo-caixa" role="dialog" aria-modal="true" aria-labelledby="papoTitulo">
+      <div class="papo-pega" aria-hidden="true"></div>
       <div class="papo-topo">
         <h2 id="papoTitulo">Papo de mesa</h2>
         <button type="button" class="papo-mudo" id="papoMudo" aria-pressed="false"></button>
@@ -10006,6 +10037,30 @@ const papoBotao = id => `<button type="button" class="reagir papo-bt" id="${id}"
   $$('#papoFrases .papo-frase').forEach(b => b.addEventListener('click', () => papoEnviar({ k: Number(b.dataset.k) })));
 })();
 
+// Puxar o papo para baixo pela alça ou pelo título: passa de um quarto da altura (ou puxa rápido), fecha; senão volta
+(function () {
+  const p = $('#papoPainel'), cx = p && p.querySelector('.papo-caixa'); if (!cx) return;
+  cx.addEventListener('animationend', e => { if (e.animationName === 'papoSobe') cx.classList.add('parada'); });
+  let y0 = null, dy = 0, t0 = 0, id = null;
+  const comeca = e => {
+    if (!PP.aberto || e.target.closest('button') || (e.button != null && e.button > 0)) return;
+    y0 = e.clientY; dy = 0; t0 = performance.now(); id = e.pointerId;
+    try { e.currentTarget.setPointerCapture(id); } catch (er) {}
+    cx.classList.add('parada'); cx.classList.remove('volta'); p.classList.add('puxando');
+  };
+  const move = e => { if (y0 == null || e.pointerId !== id) return; dy = Math.max(0, e.clientY - y0); cx.style.transform = dy ? `translateY(${dy}px)` : ''; };
+  const solta = () => {
+    if (y0 == null) return;
+    const v = dy / Math.max(1, performance.now() - t0); y0 = null; p.classList.remove('puxando');
+    if (dy > Math.min(150, cx.offsetHeight * .25) || (v > .6 && dy > 30)) { fecharPapo(); return; }
+    cx.classList.add('volta'); cx.style.transform = ''; setTimeout(() => cx.classList.remove('volta'), 330);
+  };
+  for (const el of [cx.querySelector('.papo-pega'), cx.querySelector('.papo-topo')]) {
+    el.addEventListener('pointerdown', comeca); el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', solta); el.addEventListener('pointercancel', solta);
+  }
+})();
+
 // Os três botões: aparecem na mesa com os amigos; a bolinha conta o que chegou com o papo fechado
 function papoBotoes() {
   const pode = papoNaMesa(), v = papoVista();
@@ -10029,16 +10084,27 @@ function abrirPapo() {
   if (!papoNaMesa()) return;
   PP.aberto = true; PP.nao = 0; PP.acao = null; PP.denunciar = null;
   $('#papoFlutua').hidden = true;
-  $('#papoPainel').hidden = false; document.body.classList.add('papo-aberto');
+  const p = $('#papoPainel'), cx = p.querySelector('.papo-caixa');
+  clearTimeout(PP.fechaT); p.classList.remove('saindo', 'puxando'); cx.classList.remove('parada', 'volta'); cx.style.transform = '';
+  p.hidden = false; document.body.classList.add('papo-aberto');
   desenharPapo(); papoBotoes();
   const l = $('#papoLista'); l.scrollTop = l.scrollHeight;
 }
-function fecharPapo() {
+// Fecha descendo (o fundo clareia junto); "rapido" (troca de tela, saiu da mesa) some na hora
+function fecharPapo(rapido) {
+  const estava = PP.aberto;
   PP.aberto = false; PP.acao = null; PP.denunciar = null;
-  const p = $('#papoPainel'); if (p) p.hidden = true;
   document.body.classList.remove('papo-aberto');
   try { $('#papoTxt').blur(); } catch (e) {}
   papoBotoes();
+  const p = $('#papoPainel'); if (!p || p.hidden) return;
+  const cx = p.querySelector('.papo-caixa');
+  const some = () => { p.hidden = true; p.classList.remove('saindo', 'puxando'); cx.classList.remove('volta'); cx.style.transform = ''; };
+  clearTimeout(PP.fechaT);
+  let calmo = false; try { calmo = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  if (rapido === true || calmo || !estava) { some(); return; }
+  p.classList.remove('puxando'); p.classList.add('saindo');
+  PP.fechaT = setTimeout(some, 280);
 }
 function desenharPapo() {
   if (!PP.aberto) return;
@@ -10051,11 +10117,12 @@ function desenharPapo() {
   l.innerHTML = (lista.length ? lista.map(it => {
     const aberto = PP.acao === it.n && !it.eu;
     const acoes = aberto ? `<span class="papo-acoes"><button type="button" class="papo-calar" data-nome="${esc(it.nome)}">Silenciar ${esc(it.nome)}</button>${it.txt != null && gente ? `<button type="button" class="papo-denuncia${PP.denunciar === it.n ? ' confirma' : ''}" data-n="${it.n}">${PP.denunciar === it.n ? 'Toque de novo para denunciar' : 'Denunciar'}</button>` : ''}</span>` : '';
-    return `<li class="papo-item${it.eu ? ' eu' : ''}${it.txt == null ? ' frase' : ''}${aberto ? ' aberto' : ''}" data-n="${it.n}"><span class="papo-quem">${it.eu ? 'Você' : esc(it.nome)}<time>${papoHora(it.em)}</time></span><span class="papo-tx">${esc(papoTexto(it))}</span>${acoes}</li>`;
+    const chegou = PP.vistos && !PP.vistos.has(it.n);
+    return `<li class="papo-item${it.eu ? ' eu' : ''}${it.txt == null ? ' frase' : ''}${aberto ? ' aberto' : ''}${chegou ? ' chegou' : ''}" data-n="${it.n}"><span class="papo-quem">${it.eu ? 'Você' : esc(it.nome)}<time>${papoHora(it.em)}</time></span><span class="papo-tx">${esc(papoTexto(it))}</span>${acoes}</li>`;
   }).join('') : '<li class="papo-vazio">Ninguém falou ainda. Mande um oi para a turma!</li>')
     + (PP.calados.size ? `<li class="papo-calados">Silenciado nesta mesa: ${[...PP.calados].map(n => `<button type="button" class="papo-ouvir" data-nome="${esc(n)}">${esc(n)} · ouvir de novo</button>`).join(' ')}</li>` : '');
   if (embaixo || !PP.desenhou) l.scrollTop = l.scrollHeight;
-  PP.desenhou = true;
+  PP.desenhou = true; PP.vistos = new Set(lista.map(it => it.n));
   $$('#papoLista .papo-item:not(.eu)').forEach(li => li.addEventListener('click', e => {
     if (e.target.closest('.papo-acoes')) return;
     const n = Number(li.dataset.n); PP.acao = PP.acao === n ? null : n; PP.denunciar = null; desenharPapo();
@@ -10190,11 +10257,11 @@ renderSala = function () { renderSalaPapo.apply(this, arguments); try { papoBoto
 const showPapo = show;
 show = function (name) {
   const r = showPapo.apply(this, arguments);
-  try { if (name !== 'game' && name !== 'sala') { fecharPapo(); $('#papoFlutua').hidden = true; } papoBotoes(); } catch (e) {}
+  try { if (name !== 'game' && name !== 'sala') { fecharPapo(true); $('#papoFlutua').hidden = true; } papoBotoes(); } catch (e) {}
   return r;
 };
 const pausarOnlinePapo = pausarOnline;
-pausarOnline = function () { const r = pausarOnlinePapo.apply(this, arguments); try { fecharPapo(); $('#papoFlutua').hidden = true; } catch (e) {} return r; };
+pausarOnline = function () { const r = pausarOnlinePapo.apply(this, arguments); try { fecharPapo(true); $('#papoFlutua').hidden = true; } catch (e) {} return r; };
 const sairDaMesaPapo = sairDaMesa;
 sairDaMesa = function () { const r = sairDaMesaPapo.apply(this, arguments); PP.itens = []; PP.cod = null; PP.nao = 0; PP.calados = new Set(); return r; };
 
@@ -11319,7 +11386,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.42.1-fdc983c2';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.42.2-222facec';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
