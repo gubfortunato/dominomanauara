@@ -1,10 +1,14 @@
 // Confere a mesa online publicada: cria uma mesa, entra pelo WebSocket, lê a resposta e sai (a mesa some).
 const url = process.argv[2];
 const id = 'teste-publicacao-0001';
+// 3.41: só cria mesa quem está com o app aberto: o teste avisa que está no app antes (e que saiu, no fim)
+const H = { 'content-type': 'application/json', origin: 'https://dominomanauara.com.br' };
+await fetch(url + '/presenca', { method: 'POST', headers: H, body: JSON.stringify({ aparelho: id, nome: 'Teste', av: 'a1', tela: 'home' }) }).catch(() => {});
+const saiu = () => fetch(url + '/presenca', { method: 'POST', headers: H, body: JSON.stringify({ aparelho: id, saiu: true }) }).catch(() => {});
 const r = await fetch(url + '/mesa/nova', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://dominomanauara.com.br' },
   body: JSON.stringify({ id, nome: 'Teste', av: 'a1' }) });
 const j = await r.json().catch(() => ({}));
-if (r.status !== 201) { console.log('criar mesa: código ' + r.status + ' ' + JSON.stringify(j)); process.exit(0); }
+if (r.status !== 201) { console.log('criar mesa: código ' + r.status + ' ' + JSON.stringify(j)); await saiu(); process.exit(0); }
 const resumo = await new Promise(res => {
   const ws = new WebSocket(url.replace(/^http/, 'ws') + '/mesa/' + j.codigo + '/ws');
   const t = setTimeout(() => res('sem resposta em 10 s'), 10000);
@@ -18,4 +22,5 @@ const resumo = await new Promise(res => {
   ws.onerror = () => { clearTimeout(t); res('erro no WebSocket'); };
 });
 console.log(`mesa ${j.codigo}: ${resumo}`);
+await saiu();
 setTimeout(() => process.exit(0), 600);
