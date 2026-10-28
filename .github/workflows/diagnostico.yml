@@ -30,6 +30,8 @@ jobs:
           q() { r=$(wrangler d1 execute dominomanauara --remote --json --command "$2" 2>&1); log "$1: $(echo "$r" | jq -c '.[0].results' 2>/dev/null || echo "$r" | grep -iE 'error|✘' | head -2 | tr '\n' ' ')"; }
           log "diagnóstico $(date -u +%FT%TZ) (horário UTC; Manaus = UTC-4)"
           q "notificações por tipo de celular (assinaturas, envios que deram certo, último envio)" "SELECT CASE WHEN endpoint LIKE '%fcm.googleapis.com%' THEN 'android/chrome (FCM)' WHEN endpoint LIKE '%push.apple.com%' THEN 'iphone (Apple)' WHEN endpoint LIKE '%mozilla%' THEN 'firefox' ELSE 'outro' END AS tipo, COUNT(*) AS assinaturas, SUM(envios) AS envios_ok, SUM(envios > 0) AS receberam_alguma, MAX(ultimo_envio) AS ultimo_envio, MAX(criado_em) AS ultima_assinatura FROM avisos GROUP BY tipo"
+          q "aparelho do teste automático bloqueado? (quantos, motivo, quando)" "SELECT COUNT(*) AS n, MAX(motivo) AS motivo, MAX(em) AS em FROM bloqueios WHERE aparelho LIKE 'teste-%'"
+          q "bloqueados no total / nas últimas 24 h" "SELECT COUNT(*) AS total, SUM(em > $AGORA - $D) AS h24 FROM bloqueios"
           q "jogaram online (24 h / 7 dias)" "SELECT SUM(visto_em > $AGORA - $D) AS h24, COUNT(*) AS d7 FROM jogadores_vistos WHERE visto_em > $AGORA - 7 * $D"
           q "app aberto agora / nas últimas 24 h" "SELECT SUM(visto_em > $AGORA - 60000) AS agora, SUM(visto_em > $AGORA - $D) AS h24, SUM(visto_em = 0) AS sairam FROM presenca"
           # A presença ("No app agora") só é limpa às 21, 22 e 23 h UTC; desde a última limpeza, todo aparelho que abriu o app
