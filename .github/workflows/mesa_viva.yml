@@ -1,0 +1,20 @@
+# 28/10: teste rápido da mesa online publicada (cria uma mesa, entra pelo WebSocket e sai). Só o resultado, sem dados de ninguém.
+name: mesa_viva
+on:
+  workflow_dispatch:
+jobs:
+  testar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: servidor
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Mesa online
+        run: |
+          cd servidor
+          r=$(timeout 40 node teste_publicado.mjs https://api.gubfort.workers.dev 2>&1 | tail -1)
+          echo "RESULTADO: $r"
+          echo "RESULTADO: $r" >> "$GITHUB_STEP_SUMMARY"
