@@ -768,7 +768,9 @@ export class Mesa {
       this.enviar(ws, { t: 'erro', cod }); a.id = null; ws.serializeAttachment(a); try { ws.close(cod === 'bloqueado' ? 4003 : 4000, cod); } catch (e) {}
     }
     if (m.fase === 'espera') m.cad[p] = null;
-    else {
+    else if (!c.bot && this.substituir(p, 'saiu')) {
+      // 28/10: robô da turma com nome próprio e etiqueta "robô", e todos na mesa recebem o aviso
+    } else {
       const usados = m.cad.filter(Boolean).map(x => x.nome.toLowerCase());
       const livres = BOT_NAMES.filter(n => !usados.includes(n.toLowerCase()));
       const robo = livres[Math.floor(Math.random() * livres.length)] || 'Juca';

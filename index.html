@@ -242,7 +242,7 @@ a.card{text-decoration:none}
 .me-name{font-weight:700;font-size:15px;min-width:0}
 .me-name small{font-weight:500;color:var(--muted);font-size:13px}
 .me-name img{width:24px;height:24px;border-radius:50%;object-fit:cover;vertical-align:-7px;margin-right:6px;box-shadow:0 0 0 2px var(--nos)}
-.prompt{font-size:14px;font-weight:600;color:var(--muted)}
+.prompt{font-size:13px;font-weight:600;color:var(--muted)}
 .prompt.you{color:var(--nos)}
 .hand{display:flex;justify-content:center;gap:6px;min-height:calc(var(--tw)*2 + 10px);align-items:flex-end}
 .ht{width:var(--tw);aspect-ratio:1/2;max-width:100%;padding:0;border:0;background:none;cursor:pointer;border-radius:8px;transition:transform .15s ease, opacity .15s;filter:drop-shadow(0 3px 4px var(--shadow))}
@@ -669,7 +669,7 @@ body{touch-action:manipulation}
 .bubble{font-size:16px;padding:6px 11px}
 .feed{font-size:16px;line-height:1.35}
 .ends{font-size:14.5px}
-.prompt{font-size:16.5px}
+.prompt{font-size:15.5px}
 .me-name{font-size:17px}
 .me-name small{font-size:14.5px}
 .me-name img{width:28px;height:28px}
@@ -713,7 +713,7 @@ body{touch-action:manipulation}
   .av{width:34px;height:34px;font-size:15px}
   .sn{font-size:15px} .sc{font-size:13px}
   .me-name{font-size:15.5px}
-  .prompt{font-size:15px}
+  .prompt{font-size:14px}
 }
 /* Mesa ampliada */
 .tablefoot{gap:8px}
@@ -821,7 +821,7 @@ body{touch-action:manipulation}
 .meta .sr{order:1}
 .meta .menubtn{order:2}
 /* Sua vez: aviso bem visível acima da mão, e a mão ganha um brilho */
-.prompt.you{justify-self:start;display:inline-block;width:auto;font-size:19.5px;font-weight:800;line-height:1.25;color:#2a1a08;background:var(--glow);padding:7px 16px;border-radius:999px;animation:suaVez 1.4s ease-in-out infinite alternate}
+.prompt.you{justify-self:start;display:inline-block;width:auto;font-size:18px;font-weight:800;line-height:1.25;color:#2a1a08;background:var(--glow);padding:7px 16px;border-radius:999px;animation:suaVez 1.4s ease-in-out infinite alternate}
 @keyframes suaVez{from{filter:brightness(1)}to{filter:brightness(1.18)}}
 .me{gap:12px}
 .me-head{gap:10px;min-height:0}
@@ -1193,6 +1193,10 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
   -webkit-backdrop-filter:brightness(1.5) saturate(1.12);backdrop-filter:brightness(1.5) saturate(1.12);transition:opacity 1.4s cubic-bezier(.45,0,.55,1)}
 .table.clara::before{opacity:1;transition:none}
 @media (prefers-reduced-motion:reduce){.table::before{transition:none}}
+
+/* 28/10 (o dono achou o balão da vez imprensado): letra um pouco menor e mais ar dentro do balão */
+#scrGame #prompt.you{font-size:16.5px;padding-inline:14px}
+@media (max-width:360px){#scrGame #prompt.you{font-size:14px}}
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
 .sala-lead{margin:0;font-size:18px;line-height:1.5;color:var(--fg)}
@@ -1737,6 +1741,12 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .vivo-pl2 li{line-height:1.35}
 .vivo-pl2 li span{color:var(--muted)}
 .vivo-pl2 li em{font-style:normal;font-size:12px;font-weight:800;color:#e5484d;text-transform:uppercase}
+/* 28/10: Derrubar em cada linha (só o administrador vê a lista) */
+.vivo-pl2 li{display:flex;align-items:center;gap:8px}
+.vivo-pl2 li > .vivo-pl-t{flex:1;min-width:0;color:inherit}
+.vivo-pl2 .vivo-derrubar{flex:none;font:inherit;font-size:13px;font-weight:800;line-height:1;padding:6px 10px;border-radius:999px;border:1.5px solid rgba(229,72,77,.65);background:transparent;color:#e5484d;cursor:pointer}
+.vivo-pl2 .vivo-derrubar[data-armado]{background:#e5484d;border-color:#e5484d;color:#fff}
+.vivo-pl2 .vivo-derrubar:disabled{opacity:.6}
 .vivo-pjan{font-size:13px;color:var(--muted);margin-top:-2px}
 .vivo-ha{font-size:12.5px;color:var(--muted);font-weight:700;white-space:nowrap}
 .vivo-ponto-p{display:inline-block;width:8px;height:8px;margin-right:6px;vertical-align:1px}
@@ -3155,6 +3165,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.41.1', data: '27/10/2026', itens: ['O aviso "Sua vez de jogar!" ficou um pouco menor, com mais folga dentro do balão.', 'Na escolha da mesa, primeiro Madeira, Vermelha e Azul; depois as demais.', 'Administrador: Derrubar (pedir outro apelido) em cada linha do "No app agora" da Calçada. Quem é derrubado no meio do jogo dá o lugar a um robô da turma, com aviso para a mesa.'] },
   { v: '3.41', data: '27/10/2026', itens: ['Administrador: além de bloquear, dá para pedir outro apelido a quem usa um apelido ofensivo que passou pelo filtro. A pessoa sai da mesa na hora (um robô assume a cadeira), recebe o aviso e o app a leva para escolher outro apelido; com o novo, volta a jogar.', 'Entrada e troca de telas mais fluidas: a tela nova só se mexe quando já está pronta, os movimentos da entrada ficaram mais macios e o brilho do banner do Apoiador não pesa mais no celular.', 'Revisão dos textos: concordância, "0 pontos", Termos e Privacidade atualizados; sem "de graça" e sem "doação": agora é apoio e Plano Apoiador.', 'Mesa online: 20 segundos por jogada para todo mundo, com o relógio à vista (o aviso da sua vez esvazia e o avatar de quem está na vez ganha um anel); passou, o robô joga.', 'Contra robôs de fora: só entra na mesa online quem está com o app aberto, e o administrador vê quem joga rápido demais para uma pessoa.', 'Administrador: "No app agora" completo na Calçada e, na Área do administrador, com Derrubar (pedir outro apelido) e Bloquear.', 'O bucho vira na própria carroça quando a coluna já está do tamanho certo, e as pedras encolhem menos.', 'O aviso da sua vez diminui a letra para caber, sem cortar o texto.', 'Mesas novas: Araras, Boto-rosa, Beiradão e Barco regional. Teatro Amazonas, Encontro das Águas e Ponte Rio Negro ganharam desenho novo.', 'Notificações: um sino no alto do início, com um número vermelho quando chega novidade. Tocar abre a lista das mensagens.', 'Notificações no Android: cada uma toca e vibra (antes, a nova trocava a anterior em silêncio) e tem um ícone próprio na barra do celular.', 'Letras das telas um pouco maiores.', 'Administrador: lista dos Apoiadores, com apelido, até quando vale o plano, quanto e quantas vezes cada um apoiou.', 'O jogo ficou mais leve para o servidor: se o banco do dia lotar, as mesas continuam funcionando.', 'Antes do jogo a mesa fica mais clara, para todo mundo ver bem; quando começam a embaralhar, ela escurece aos poucos.', 'Botão de modo claro e escuro à vista no início.', 'O nome da mesa nos prêmios sai com maiúscula (a mesa Vitória-régia).', 'Mesa online: quem sai no meio do jogo (ou fica 1 min e meio sem conexão) dá o lugar a um robô da turma do bairro, com o nome dele e a etiqueta "robô" na cadeira, e todo mundo na mesa recebe o aviso. Se a pessoa voltar, retoma a cadeira.', 'Mesa online: a lista das mesas ao vivo pesa bem menos para o servidor.'] },
   { v: '3.40.2', data: '27/10/2026', itens: ['Mais leve para o servidor: o app avisa que está aberto a cada minuto (antes, a cada 20 s) e as listas de mesas jogando e de quem está no app se atualizam com menos frequência.'] },
   { v: '3.40.1', data: '21/10/2026', itens: ['O selo de quem apoia ficou mais bonito: a estrela do Apoiador e o coração de quem doou agora têm o mesmo tamanho, na mesa online e ao lado do seu nome no início.', 'Mesa online: o selo aparece sempre junto do nome, mesmo quando o apelido é comprido e fica cortado.', 'O convite "Seja um Apoiador" no início ganhou um brilho que corre pela borda.'] },
@@ -6068,10 +6079,11 @@ imgMesa('teatro', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 350"
 // Mesas: grátis (o regional fica de graça), por conquista (req) ou do Plano Apoiador (plano)
 const MESAS = [
   { id: 'madeira', nome: 'Madeira', c1: '#3d2719', c2: '#26180f' },
-  { id: 'encontro', nome: 'Encontro das Águas', bg: 'var(--img-encontro-sw) center 42%/140% auto no-repeat, #1e2840' },
   // Mesas de cor lisa, sem símbolo de ninguém (os ids antigos ficam, para quem já tinha escolhido)
   { id: 'garantido', nome: 'Vermelha', c1: '#9a2222', c2: '#4a0d0d' },
   { id: 'caprichoso', nome: 'Azul', c1: '#23489c', c2: '#0c1f4a' },
+  // 28/10 (pedido do dono): primeiro Madeira, Vermelha e Azul; depois as demais
+  { id: 'encontro', nome: 'Encontro das Águas', bg: 'var(--img-encontro-sw) center 42%/140% auto no-repeat, #1e2840' },
   { id: 'feltro', nome: 'MUSA', bg: 'var(--img-musa-sw) center 25%/140% auto no-repeat, #163a29' },   // id antigo mantido (quem já escolheu continua com ela)
   { id: 'pontanegra', nome: 'Ponta Negra', bg: 'var(--img-pontanegra-sw) center 60%/140% auto no-repeat, #22182e', req: 'vit10' },
   { id: 'acai', nome: 'Cupuaçu', bg: 'var(--img-cupuacu-sw) center 26%/140% auto no-repeat, #47330f', req: 'jogo3' },   // era o Açaí (marca de Belém); o id fica
@@ -8907,6 +8919,7 @@ async function vivoPresenca(agora) {
   const box = $('#vivoPres'); if (!box) return;
   box.hidden = !vivoDetalhes();
   if (box.hidden || (!agora && Date.now() - presBuscadoEm < 15000)) return;
+  if (!agora && box.querySelector('[data-armado], .vivo-derrubar:disabled')) return;   // 28/10: não apaga o botão no meio da confirmação
   presBuscadoEm = Date.now();
   try {
     const j = await dnMsgPedir('/dono/presenca');
@@ -8915,9 +8928,24 @@ async function vivoPresenca(agora) {
     // 3.26.2: tempo real — só quem está com o app aberto agora; quem sai some na hora
     const extras = [j.semCadastro ? `${j.semCadastro} na entrada, sem cadastro` : '', j.menores ? `${j.menores} ${j.menores === 1 ? 'menor de 18' : 'menores de 18'}, sem nome` : ''].filter(Boolean);
     box.innerHTML = `<span class="vivo-pk"><span class="vivo-ponto vivo-ponto-p" aria-hidden="true"></span>No app agora · ${n} ${n === 1 ? 'pessoa' : 'pessoas'}</span>${extras.length ? `<small class="vivo-pjan">${extras.join(' · ')}</small>` : ''}` +
-      (l.length ? `<ul class="vivo-pl2">${l.map(x => `<li><b>${esc(x.nome || 'Sem apelido')}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span>${x.bloq ? ' <em>bloqueado</em>' : x.trocar ? ' <em>trocando o apelido</em>' : ''}</li>`).join('')}</ul>` : '');   // 3.41 (pedido do dono): todo mundo na lista, sem botões (derrubar e bloquear ficam na Área do administrador)
+      (l.length ? `<ul class="vivo-pl2">${l.map(x => `<li><span class="vivo-pl-t"><b>${esc(x.nome || 'Sem apelido')}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span>${x.bloq ? ' <em>bloqueado</em>' : x.trocar ? ' <em>trocando o apelido</em>' : ''}</span>`
+        // 28/10 (pedido do dono): Derrubar (pedir outro apelido) em cada linha; o Bloquear continua na Área do administrador
+        + (x.aparelho && x.aparelho !== meu && x.nome && !x.bloq && !x.trocar ? `<button type="button" class="vivo-derrubar" data-derrubar="${esc(x.aparelho)}" data-nome="${esc(x.nome)}">Derrubar</button>` : '') + '</li>').join('')}</ul>` : '');
   } catch (e) {}
 }
+// 28/10: Derrubar na lista da Calçada — dois toques (o primeiro arma, por 5 s), como na Área do administrador
+document.addEventListener('click', async e => {
+  const t = e.target.closest && e.target.closest('#vivoPres [data-derrubar]'); if (!t || !souAdmin()) return;
+  if (!t.dataset.armado) {
+    t.dataset.armado = '1'; t.textContent = 'Confirmar';
+    setTimeout(() => { if (t.isConnected && !t.disabled) { delete t.dataset.armado; t.textContent = 'Derrubar'; } }, 5000);
+    return;
+  }
+  t.disabled = true; t.textContent = 'Derrubando…';
+  try { await donoPedirApelido({ aparelho: t.dataset.derrubar, nome: t.dataset.nome || undefined }, t.dataset.nome); }
+  catch (er) { toast('Não deu agora. Tente de novo.'); }
+  try { vivoPresenca(true); vivoMesas(true); } catch (er) {}
+});
 function vivoTique() {
   vivoVisivel();
   if (!vivoMostra() || document.visibilityState !== 'visible') return;
@@ -10820,7 +10848,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.41-73cb555a';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.41.1-2fd31130';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
