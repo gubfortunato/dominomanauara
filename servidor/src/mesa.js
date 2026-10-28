@@ -608,7 +608,7 @@ export class Mesa {
     this.sentarRobos();
     m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = !!m.torneio && !m.publica; startHand(m.G); m.robo = null; this.inicioDePartida();
     m.fase = 'jogo'; m.seq++; m.porRobo = null; m.iniciaEm = null;
-    m.ultimo = m.turnoDesde = Date.now();
+    m.ultimo = Date.now(); m.turnoDesde = m.ultimo + this.T.distribuir;   // 28/10: os 20 s contam depois de distribuir
     this.agendar(this.T.distribuir);
     await this.salvar(); this.espalhar();
     await this.registrarAtiva();
