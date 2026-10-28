@@ -3245,6 +3245,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.42.1', data: '28/10/2026', itens: ['A mesa Vitória-régia volta a ser escrita com r minúsculo.'] },
   { v: '3.42', data: '28/10/2026', itens: ['Papo de mesa: nas mesas com os amigos, agora dá para conversar por escrito, desde a sala até a garagem. Toque em "Papo de mesa": em cima, as frases prontas; embaixo, o campo para escrever (até 80 letras). A mensagem aparece no balão de quem falou.', 'Respeito na mesa: o papo não deixa passar palavrão, link, telefone, e-mail nem convite para outro app. Toque numa mensagem para silenciar a pessoa (só para você) ou denunciar. Dá também para silenciar o papo todo neste celular.', 'Para proteger os menores de 18: quando tem menor na mesa, o papo fica só com as frases prontas para todo mundo. Quem assiste só lê.', 'A mesa rápida continua só com as frases do "Reagir". Nada do papo fica guardado: some quando a mesa fecha (a não ser a mensagem denunciada, que o administrador vê por até 30 dias).', 'Mesa Boto-rosa redesenhada: o boto saindo do rio de bico para cima, com a mata na outra margem.'] },
   { v: '3.41.5', data: '28/10/2026', itens: ['Mesa online: os 20 segundos da jogada continuam, mas o relógio só aparece nos últimos 10, calmo (sem vermelho e sem pulsar). Na primeira jogada de cada partida, os 20 s também só contam depois de distribuir as pedras.', 'Mesa Arara-Vermelha: a arara voando redesenhada, com a asa da frente larga (vermelho, faixa amarela e azul) e a cauda comprida.', 'Largo de São Sebastião: o Teatro Amazonas igual ao da mesa Teatro.'] },
   { v: '3.41.4', data: '28/10/2026', itens: ['O sino das notificações e o botão claro/escuro ficam no alto de todas as telas (menos na entrada e na partida).', 'Mesa online: no fim de cada mão, o botão da próxima fica travado por 10 segundos, com a contagem, para todo mundo ler a garagem.', 'A mesa Vitória-Régia com R maiúsculo.', 'Mesas sorteadas por igual: cada mesa online nova e cada partida nova começam num desenho sorteado entre todos (sem repetir o anterior). Quem criou a mesa continua trocando; trocou, fica a escolha dele. No jogo offline também.', 'A mesa Araras virou Arara-Vermelha: a arara-vermelha voando sobre a mata, de asas abertas.', 'Estatística (Umami): sem o aviso de "online" a cada 4 minutos, que gastava o limite do plano grátis; o tempo real fica no painel do administrador.'] },
@@ -6198,7 +6199,7 @@ const MESAS = [
   { id: 'tucuma', nome: 'Tucumã', bg: 'var(--img-tucuma-sw) center 60%/110% auto no-repeat, #4f2608', c1: '#a3581a', c2: '#4f2608', req: 'vit25' },
   { id: 'arena', nome: 'Arena da Amazônia', bg: 'var(--img-arena-sw) center 52%/140% auto no-repeat, #7a8a7e', req: 'par100' },
   { id: 'mercado', nome: 'Mercado Adolpho Lisboa', bg: 'var(--img-mercado-sw) center 58%/190% auto no-repeat, #2f6cc0', req: 'bat50' },
-  { id: 'vitoria', nome: 'Vitória-Régia', bg: 'var(--img-vitoria-sw) center 55%/140% auto no-repeat, #072019', req: 'jogo10' },
+  { id: 'vitoria', nome: 'Vitória-régia', bg: 'var(--img-vitoria-sw) center 55%/140% auto no-repeat, #072019', req: 'jogo10' },
   { id: 'calcadao', nome: 'Largo de São Sebastião', bg: 'var(--img-calcadao-sw) center 46%/140% auto no-repeat, #cdd6de', req: 'par25' },
   { id: 'centro', nome: 'Centro Histórico', bg: 'var(--img-centro-sw) center 60%/140% auto no-repeat, #2c63b0', req: 'galo10' },
   { id: 'relogio', nome: 'Relógio Municipal', bg: 'var(--img-relogio-sw) center 30%/160% auto no-repeat, #4f88d0', req: 'mao300' },
@@ -11318,7 +11319,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.42-1fdb53fa';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.42.1-fdc983c2';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
