@@ -10,7 +10,7 @@ const r = await fetch(url + '/mesa/nova', { method: 'POST', headers: { 'content-
 const j = await r.json().catch(() => ({}));
 if (r.status !== 201) { console.log('criar mesa: código ' + r.status + ' ' + JSON.stringify(j)); await saiu(); process.exit(0); }
 const resumo = await new Promise(res => {
-  const ws = new WebSocket(url.replace(/^http/, 'ws') + '/mesa/' + j.codigo + '/ws');
+  const ws = new WebSocket(url.replace(/^http/, 'ws') + '/mesa/' + j.codigo + '/ws', { headers: { origin: H.origin } });   // 3.41: a mesa só aceita a conexão vinda do app
   const t = setTimeout(() => res('sem resposta em 10 s'), 10000);
   ws.onopen = () => ws.send(JSON.stringify({ t: 'entrar', id, nome: 'Teste', av: 'a1' }));
   ws.onmessage = e => {
