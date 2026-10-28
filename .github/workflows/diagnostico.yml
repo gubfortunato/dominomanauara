@@ -124,6 +124,25 @@ jobs:
           HOJE=$(date -u +%Y-%m-%dT00:00:00Z); FIM=$(date -u +%FT%TZ)
           r=$(gq "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg ini "$HOJE" --arg fim "$FIM" '{query: "query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) { workersInvocationsAdaptive(limit: 100, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { requests } } } } }", variables: {acc: $acc, ini: $ini, fim: $fim}}')")
           log "Worker hoje (desde 00:00 UTC) até $FIM: $(echo "$r" | jq -c '[.data.viewer.accounts[0].workersInvocationsAdaptive[].sum.requests] | add' 2>/dev/null) pedidos (limite 100 mil)"
+      - name: Erro exato da mesa (wrangler tail durante um teste)
+        working-directory: servidor
+        shell: bash
+        if: always()
+        run: |
+          set +e
+          ST="$GITHUB_WORKSPACE/diagnostico.txt"
+          log() { echo "$*" | tee -a "$ST"; }
+          url=https://api.gubfort.workers.dev
+          log ""
+          log "== erro exato da mesa (só o resultado e a mensagem de erro de cada chamada que falhou) =="
+          timeout 40 npx -y wrangler@4 tail api --format json > /tmp/tail.json 2>/tmp/tail.err &
+          sleep 12
+          log "teste: $(timeout 30 node teste_publicado.mjs "$url" 2>&1 | tail -1)"
+          sleep 10
+          wait
+          log "chamadas vistas: $(grep -c '"outcome"' /tmp/tail.json 2>/dev/null)"
+          log "$(jq -c 'select(.outcome != "ok" or ((.exceptions // []) | length) > 0) | {outcome, script: .scriptName, exc: [(.exceptions // [])[] | ((.name // "") + ": " + (.message // ""))[0:300]], url: ((.event.request.url // "") | sub("\\?.*"; ""))}' /tmp/tail.json 2>/dev/null | head -8)"
+          log "erro do tail: $(head -c 300 /tmp/tail.err)"
       - name: Guardar o resultado
         if: always()
         shell: bash
