@@ -19,6 +19,18 @@ const STATUS = ['novo', 'lido', 'resolvido'];
 const LIMITE_POR_HORA = 6;
 const MESAS_POR_HORA = 20;
 
+// 28/10: as listas iguais para todos (mesas ao vivo, mesa rápida) ficam alguns segundos guardadas no próprio Worker:
+// a pergunta de cada celular não acorda a fila. No teste local, CACHE_LISTA_MS (ou CACHE_VIVO_MS) muda o tempo.
+const LISTAS = new Map();
+async function daFila(env, caminho) {
+  const f = Number(env.TEMPO_FATOR) || 1;
+  const ms = env.CACHE_LISTA_MS != null ? Number(env.CACHE_LISTA_MS) : env.CACHE_VIVO_MS != null ? Number(env.CACHE_VIVO_MS) : f < 1 ? 0 : 8000;
+  const agora = Date.now(), c = LISTAS.get(caminho);
+  if (c && agora - c.t < ms) return c.v;
+  const v = await (await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa' + caminho)).json();
+  LISTAS.set(caminho, { t: agora, v });
+  return v;
+}
 const origemOk = origin => origin === SITE || /^http:\/\/localhost(:\d+)?$/.test(origin || '');
 function cors(origin) {
   const ok = origemOk(origin);
@@ -334,8 +346,7 @@ export default {
       if (url.pathname === '/mesa/nova' && req.method === 'POST') return await novaMesa(req, env, origin);
       if (url.pathname === '/mesa/rapida' && req.method === 'POST') return await mesaRapida(req, env, origin);
       if (url.pathname === '/mesa/rapida/status' && req.method === 'GET') {
-        const r = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila/status');
-        return json(await r.json(), 200, origin);
+        return json(await daFila(env, '/fila/status'), 200, origin);
       }
       const mc = url.pathname.match(/^\/mesa\/(\d{5})(\/ws)?$/);
       if (mc && req.method === 'GET') return await rotaMesa(req, env, origin, mc[1], !!mc[2]);
@@ -395,7 +406,7 @@ export default {
         if (!(await ehDono(req, env))) return json({ erro: 'nao-autorizado' }, 401, origin);
         const r = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila/vivo?todas=1'); return json(await r.json(), 200, origin);
       }
-      if (url.pathname === '/vivo/mesas' && req.method === 'GET') { const r = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila/vivo'); return json(await r.json(), 200, origin); }
+      if (url.pathname === '/vivo/mesas' && req.method === 'GET') return json(await daFila(env, '/fila/vivo'), 200, origin);
       if (url.pathname === '/vivo/conta' && req.method === 'POST') return await vivo.conta(req, env, origin, H);
       if (url.pathname === '/avisos/chave' && req.method === 'GET') return json({ chave: env.VAPID_PUBLIC || null }, env.VAPID_PUBLIC ? 200 : 503, origin);
       if (url.pathname === '/avisos/inscrever' && req.method === 'POST') return await avisosInscrever(req, env, origin);

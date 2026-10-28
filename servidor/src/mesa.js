@@ -29,6 +29,8 @@ const TEMPO = {
   vazia: 180000      // 3.25: fim de mão sem nenhuma pessoa conectada: espera 3 min e encerra a mesa
 };
 const FILA = { mesas: 20, idade: 60 * 60 * 1000 };   // mesas rápidas lembradas pela fila e por quanto tempo
+// 28/10: quadro das mesas na fila: vale 30 min sem notícia, some depois de 3 h, até 80 mesas; a mesa repete a cada 5 min jogando
+const QUADRO = { validade: 30 * 60000, guarda: 3 * 3600000, max: 80, renova: 5 * 60000 };
 const SILENCIO = 50000;
 const REACAO = { intervalo: 2000, porMinuto: 8, maior: 23 };   // reações: só o número de uma frase pronta, nunca texto              // sem sinal do celular há 50 s: conta como desconectado
 const VIDA = 24 * 60 * 60 * 1000;    // a mesa some 24 h depois da última ação
@@ -125,8 +127,17 @@ export class Mesa {
     let l = ((await this.ctx.storage.get('abertas')) || []).filter(x => agora - x.criada < FILA.idade);
     const mesa = cod => this.env.MESA.get(this.env.MESA.idFromName(cod));
     const fim = async (codigo, nova) => { await this.ctx.storage.put('abertas', l.slice(0, FILA.mesas)); return Response.json({ codigo, nova }, { status: nova ? 201 : 200 }); };
+    // 28/10: pelo quadro, pula a mesa que acabou ou que não serve agora (a não ser que a pessoa já esteja nela)
+    const q = await this.quadro(), acabaram = this.acabaram || new Set();
+    l = l.filter(x => !acabaram.has(x.codigo));
+    const naoServe = (x, so) => {
+      const e = q.get(x.codigo), j = e && e.resumo;
+      if (!j || agora - e.t >= QUADRO.validade || (Array.isArray(j.ids) && j.ids.includes(String(b.id || '')))) return false;
+      return j.fase !== so || !j.publica || !(so === 'espera' ? j.vagaEspera : j.vagaJogo);
+    };
     for (const so of ['espera', 'jogo']) {
       for (const x of l.slice()) {
+        if (naoServe(x, so)) continue;
         const r = await mesa(x.codigo).fetch('https://mesa/reservar', { method: 'POST', body: JSON.stringify(Object.assign({}, b, { so })) });
         if (r.status === 200) return fim(x.codigo, false);
         if (r.status === 410) l = l.filter(y => y.codigo !== x.codigo);   // acabou ou não serve mais
@@ -143,71 +154,105 @@ export class Mesa {
   // Quantas pessoas estão numa mesa rápida com lugar sobrando (esperando gente ou jogando com robô).
   // Só números, sem nome de ninguém; guardado por alguns segundos para não acordar as mesas a cada pergunta.
   async statusFila() {
-    const agora = Date.now();
-    if (this.resumo && agora - this.resumo.t < this.cacheVivo) return this.resumo.v;
+    // 28/10: sai do quadro (cada mesa conta à fila como está); antes, a fila perguntava a cada mesa
+    const agora = Date.now(), q = await this.quadro();
     const l = ((await this.ctx.storage.get('abertas')) || []).filter(x => agora - x.criada < FILA.idade);
     let pessoas = 0, mesas = 0, esperando = 0;
     for (const x of l) {
-      try {
-        const j = await (await this.env.MESA.get(this.env.MESA.idFromName(x.codigo)).fetch('https://mesa/info')).json();
-        if (!j.existe || !j.publica || !(j.livres > 0) || !(j.humanos > 0)) continue;
-        pessoas += j.humanos; mesas++; if (j.fase === 'espera') esperando += j.humanos;
-      } catch (e) {}
+      const e = q.get(x.codigo), j = e && agora - e.t < QUADRO.validade ? e.resumo : null;
+      if (!j || !j.publica || !(j.livres > 0) || !(j.humanos > 0)) continue;
+      pessoas += j.humanos; mesas++; if (j.fase === 'espera') esperando += j.humanos;
     }
-    this.resumo = { t: agora, v: { pessoas, mesas, esperando } };
-    return this.resumo.v;
+    return { pessoas, mesas, esperando };
+  }
+  // 28/10: o quadro — o que cada mesa contou por último (fica na memória e no armazenamento da fila)
+  async quadro() {
+    if (!this.quadroMem) {
+      const mapa = new Map();
+      try { const l = await this.ctx.storage.list({ prefix: 'q:' }); for (const [k, v] of l) mapa.set(k.slice(2), v); } catch (e) {}
+      this.quadroMem = new Map([...mapa.values()].sort((a, b) => a.t - b.t).map(v => [v.codigo, v]));
+    }
+    return this.quadroMem;
   }
   // 3.25: "Agora na calçada" — as mesas rápidas que estão jogando agora com pelo menos uma pessoa de verdade conectada
-  // (mesa só de robôs não aparece). Só mesas públicas (as com os amigos são por convite e não aparecem). Guardado 5 s.
-  // 3.26.3: toda mesa em jogo se registra aqui (ao começar, a cada partida nova e quando alguém entra), mesmo as com os
-  // amigos e as que passam de 1 hora. A lista para os jogadores mostra só as mesas rápidas; o administrador vê todas.
+  // (mesa só de robôs não aparece). Só mesas públicas (as com os amigos são por convite e não aparecem).
+  // 3.26.3: toda mesa em jogo se registra aqui, mesmo as com os amigos. A lista para os jogadores mostra só as mesas
+  // rápidas; o administrador vê todas. 28/10: cada mesa manda junto como está (o quadro); a mesa que acabou avisa.
   async mesaAtiva(b) {
     const codigo = String((b && b.codigo) || ''); if (!/^\d{5}$/.test(codigo)) return { ok: false };
-    const agora = Date.now();
-    let l = ((await this.ctx.storage.get('ativas')) || []).filter(x => x.codigo !== codigo && agora - x.t < 3 * 3600000);
-    l.unshift({ codigo, publica: !!b.publica, t: agora });
-    await this.ctx.storage.put('ativas', l.slice(0, 60));
-    this.vivoCache = null; this.vivoCacheT = null;   // 27/10: mesa nova ou alguém entrou: a lista se renova na hora
+    const agora = Date.now(), q = await this.quadro();
+    this.acabaram = this.acabaram && this.acabaram.size < 300 ? this.acabaram : new Set();
+    if (b.fim) {
+      q.delete(codigo); this.acabaram.add(codigo);
+      try { await this.ctx.storage.delete('q:' + codigo); } catch (e) {}
+      return { ok: true };
+    }
+    const v = { codigo, publica: !!b.publica, t: agora, info: b.info || null, resumo: b.resumo || null };
+    q.delete(codigo); q.set(codigo, v); this.acabaram.delete(codigo);   // a mais recente fica por último
+    const fora = [];
+    for (const x of q.values()) if (agora - x.t > QUADRO.guarda) fora.push(x.codigo);
+    let sobra = q.size - fora.length - QUADRO.max;
+    for (const x of q.values()) { if (sobra <= 0) break; if (!fora.includes(x.codigo)) { fora.push(x.codigo); sobra--; } }
+    for (const c of fora) q.delete(c);
+    try { await this.ctx.storage.put('q:' + codigo, v); if (fora.length) await this.ctx.storage.delete(fora.map(c => 'q:' + c)); } catch (e) {}
     return { ok: true };
   }
   async mesasAoVivo(todas) {
-    const agora = Date.now(), k = todas ? 'vivoCacheT' : 'vivoCache';
-    if (this[k] && agora - this[k].t < this.cacheVivo) return this[k].v;
-    // 27/10: só as mesas que deram sinal nos últimos 40 min (cada partida nova e cada entrada renovam o sinal); antes, 3 h
-    const ativas = ((await this.ctx.storage.get('ativas')) || []).filter(x => agora - x.t < 40 * 60000);
-    const abertas = ((await this.ctx.storage.get('abertas')) || []).filter(x => agora - x.criada < FILA.idade).map(x => ({ codigo: x.codigo, publica: true }));
-    const vistas = new Set(), l = [];
-    for (const x of ativas.concat(abertas)) { if (vistas.has(x.codigo)) continue; vistas.add(x.codigo); l.push(x); }
+    const agora = Date.now(), q = await this.quadro();
+    const l = [...q.values()].filter(x => x.info && agora - x.t < QUADRO.validade).reverse();   // a que deu notícia por último primeiro
     let mesas = [];
     for (const x of l) {
-      try {
-        const j = await (await this.env.MESA.get(this.env.MESA.idFromName(x.codigo)).fetch('https://mesa/info?vivo=1')).json();
-        if (todas && j && j.existe && j.fase !== 'jogo' && j.on > 0) mesas.push(Object.assign({ codigo: x.codigo }, j, { espera: true }));
-        else if (j && j.existe && j.fase === 'jogo' && j.on > 0) {
-          if (todas) mesas.push(Object.assign({ codigo: x.codigo }, j));
-          // 3.27: a lista pública (aba Calçada) não leva o bairro de ninguém
-          else if (j.publica) mesas.push(Object.assign({ codigo: x.codigo }, j, { cad: (j.cad || []).map(c => c ? Object.assign({}, c, { bairro: null, menor: undefined }) : c) }));
-          // 3.27: mesa com os amigos sem número da mesa (só entra e assiste quem tem o número).
-          // 3.37.1 (pedido do dono): aparece o apelido, o avatar desenhado e o nível de quem está jogando — menos de quem
-          // tem menos de 18 anos, que continua só na conta ("1 pessoa"); robô continua sem nome
-          else mesas.push({ publica: false, existe: true, fase: 'jogo', tema: j.tema || null, on: j.on, livres: 0,
-            cad: (j.cad || []).map(c => !c ? null : c.bot || c.menor ? { bot: !!c.bot, tipo: c.tipo } : { nome: c.nome, bot: false, av: c.av || null, nv: c.nv || 1, tipo: c.tipo }),
-            partida: j.partida, mao: j.mao, placar: j.placar,
-            lance: j.lance ? { type: j.lance.type, pts: j.lance.pts, carroca: j.lance.carroca, voided: j.lance.voided } : null });
-        }
-      } catch (e) {}
+      const j = x.info;
+      if (todas && j && j.existe && j.fase !== 'jogo' && j.on > 0) mesas.push(Object.assign({ codigo: x.codigo }, j, { espera: true }));
+      else if (j && j.existe && j.fase === 'jogo' && j.on > 0) {
+        if (todas) mesas.push(Object.assign({ codigo: x.codigo }, j));
+        // 3.27: a lista pública (aba Calçada) não leva o bairro de ninguém
+        else if (j.publica) mesas.push(Object.assign({ codigo: x.codigo }, j, { cad: (j.cad || []).map(c => c ? Object.assign({}, c, { bairro: null, menor: undefined }) : c) }));
+        // 3.27: mesa com os amigos sem número da mesa (só entra e assiste quem tem o número).
+        // 3.37.1 (pedido do dono): aparece o apelido, o avatar desenhado e o nível de quem está jogando — menos de quem
+        // tem menos de 18 anos, que continua só na conta ("1 pessoa"); robô continua sem nome
+        else mesas.push({ publica: false, existe: true, fase: 'jogo', tema: j.tema || null, on: j.on, livres: 0,
+          cad: (j.cad || []).map(c => !c ? null : c.bot || c.menor ? { bot: !!c.bot, tipo: c.tipo } : { nome: c.nome, bot: false, av: c.av || null, nv: c.nv || 1, tipo: c.tipo }),
+          partida: j.partida, mao: j.mao, placar: j.placar,
+          lance: j.lance ? { type: j.lance.type, pts: j.lance.pts, carroca: j.lance.carroca, voided: j.lance.voided } : null });
+      }
       if (mesas.length >= 16) break;
     }
     // primeiro as mesas rápidas com lugar vago (dá para entrar), depois as rápidas cheias, depois as com os amigos
     const ordem = v => v.espera ? 3 : v.publica ? (v.livres > 0 ? 0 : 1) : 2;   // as da sala (só o administrador vê) por último
     mesas = mesas.map((v, i) => [v, i]).sort((a, b) => ordem(a[0]) - ordem(b[0]) || a[1] - b[1]).map(x => x[0]).slice(0, todas ? 16 : 10);
-    this[k] = { t: agora, v: { mesas } };
-    return this[k].v;
+    return { mesas };
   }
-  async registrarAtiva() {
-    const m = this.m; if (!m || !m.codigo) return;
-    try { await this.env.MESA.get(this.env.MESA.idFromName('fila')).fetch('https://mesa/fila/ativa', { method: 'POST', body: JSON.stringify({ codigo: m.codigo, publica: !!m.publica }) }); } catch (e) {}
+  // 28/10: a mesa conta à fila como está — só quando muda o que a lista mostra (quem está, conexão, placar), ou a cada
+  // 5 min jogando. Antes, a fila perguntava a cada mesa a cada 15 s: eram 2 de cada 3 pedidos das mesas no Cloudflare.
+  resumoFila(m) {
+    return { fase: m.fase, publica: !!m.publica, humanos: m.cad.filter(c => c && !c.bot).length,
+      livres: m.cad.filter(c => !c || (c.bot && !c.saiu)).length,
+      vagaEspera: m.cad.some(c => !c || c.bot), vagaJogo: m.cad.some(c => c && c.bot),
+      ids: m.cad.filter(c => c && c.id).map(c => c.id) };   // só para a fila saber quem volta para a própria mesa
   }
+  async contarAFila(fim) {
+    const m = this.m, codigo = m && m.codigo;
+    if (!codigo || !/^\d{5}$/.test(codigo)) return;
+    let corpo;
+    if (fim) corpo = { codigo, fim: true };
+    else {
+      if (!this.viva()) return;
+      const info = this.infoVivo(), resumo = this.resumoFila(m);
+      const sig = JSON.stringify([resumo, info.fase, info.on, info.livres, info.cad, info.placar, info.tema]);
+      if (sig === this.sigFila && Date.now() - (this.tFila || 0) < QUADRO.renova) return;
+      this.sigFila = sig; this.tFila = Date.now();
+      corpo = { codigo, publica: !!m.publica, info, resumo };
+    }
+    // um aviso de cada vez e na ordem, sem a mesa esperar a fila (a fila pode estar esperando esta mesa, na mesa rápida)
+    this.stubFila = this.stubFila || this.env.MESA.get(this.env.MESA.idFromName('fila'));
+    const corpoTx = JSON.stringify(corpo);
+    this.envioFila = (this.envioFila || Promise.resolve()).then(async () => {
+      try { const r = await this.stubFila.fetch('https://mesa/fila/ativa', { method: 'POST', body: corpoTx }); if (!r.ok) this.sigFila = null; }
+      catch (e) { this.sigFila = null; }   // não deu: tenta de novo na próxima mudança
+    });
+  }
+  async registrarAtiva() { await this.contarAFila(); }
   infoVivo() {
     const m = this.viva();
     if (!m) return { existe: false, fase: null };
@@ -866,8 +911,9 @@ export class Mesa {
       else if (a.assiste) this.enviar(ws, deFora || (deFora = this.vista(null)));
     }
   }
-  async salvar() { if (this.m) await this.ctx.storage.put('m', this.m); }
+  async salvar() { if (this.m) { await this.ctx.storage.put('m', this.m); await this.contarAFila(); } }   // 28/10: e conta à fila, se mudou
   async apagar() {
+    await this.contarAFila(true);   // 28/10: sai do quadro da fila
     for (const ws of this.ctx.getWebSockets()) { this.enviar(ws, { t: 'erro', cod: 'encerrada' }); try { ws.close(4001, 'encerrada'); } catch (e) {} }
     this.m = null;
     await this.ctx.storage.deleteAll();
