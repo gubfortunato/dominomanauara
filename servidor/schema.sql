@@ -113,3 +113,10 @@ CREATE TABLE IF NOT EXISTS caixa (id INTEGER PRIMARY KEY AUTOINCREMENT, chave TE
 -- 28/10: o aparelho do teste automático de cada publicação nunca fica bloqueado (ele cria uma mesa, entra e sai)
 DELETE FROM bloqueios WHERE aparelho LIKE 'teste-publicacao-%';
 DELETE FROM ritmo WHERE aparelho LIKE 'teste-publicacao-%';
+
+-- 3.42: papo da mesa (mesa com os amigos). As mensagens ficam só na mesa enquanto ela existe; aqui fica apenas a
+-- mensagem denunciada (com as 10 de antes) para o administrador ver, por até 30 dias.
+CREATE TABLE IF NOT EXISTS papo_denuncias (id INTEGER PRIMARY KEY AUTOINCREMENT, em INTEGER NOT NULL, mesa TEXT NOT NULL, msg_em INTEGER NOT NULL,
+  autor TEXT NOT NULL, autor_nome TEXT, denunciante TEXT NOT NULL, texto TEXT, contexto TEXT);
+CREATE UNIQUE INDEX IF NOT EXISTS papo_denuncias_um ON papo_denuncias (mesa, msg_em, autor, denunciante);
+CREATE INDEX IF NOT EXISTS papo_denuncias_em ON papo_denuncias (em);

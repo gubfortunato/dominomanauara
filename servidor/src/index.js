@@ -10,6 +10,7 @@ import * as vivo from './vivo.js';
 import * as presenca from './presenca.js';
 import * as rk from './ranking.js';
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos } from './bloqueio.js';
+import { donoPapo, donoPapoApagar } from './papo.js';
 export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
@@ -399,6 +400,8 @@ export default {
       if (url.pathname === '/dono/jogadores' && req.method === 'GET') return await donoJogadores(req, env, origin, H);
       if (url.pathname === '/dono/bloquear' && req.method === 'POST') return await donoBloquear(req, env, origin, H);
       if (url.pathname === '/dono/desbloquear' && req.method === 'POST') return await donoDesbloquear(req, env, origin, H);
+      if (url.pathname === '/dono/papo' && req.method === 'GET') return await donoPapo(req, env, origin, H);   // 3.42: papo denunciado
+      if (url.pathname === '/dono/papo/apagar' && req.method === 'POST') return await donoPapoApagar(req, env, origin, H);
       if (url.pathname === '/dono/apelido' && req.method === 'POST') return await donoApelido(req, env, origin, H);   // 3.41
       if (url.pathname === '/dono/robos' && req.method === 'GET') return await donoRobos(req, env, origin, H);   // 3.41
       const dv = url.pathname.match(/^\/dono\/pagamentos\/([0-9a-f]{20})\/devolver$/);
