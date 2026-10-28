@@ -20,4 +20,6 @@ jobs:
           v=$(curl -s -m 20 -H 'origin: https://dominomanauara.com.br' https://api.gubfort.workers.dev/vivo/mesas | jq -c '{mesas: (.mesas | length), conectados: ([.mesas[].on] | add // 0)}' 2>&1)
           f=$(curl -s -m 20 -H 'origin: https://dominomanauara.com.br' https://api.gubfort.workers.dev/mesa/rapida/status 2>&1 | head -c 200)
           echo "::notice title=lista ao vivo (só contagens)::$v · mesa rápida: $f"
+          t=$(curl -s -m 20 -H 'origin: https://dominomanauara.com.br' https://api.gubfort.workers.dev/vivo/mesas | jq -c '[.mesas[] | (.tema // "sem-tema")] | group_by(.) | map({(.[0]): length}) | add' 2>&1)
+          echo "::notice title=desenho das mesas ao vivo (contagem)::$t"
           echo "RESULTADO: $r" >> "$GITHUB_STEP_SUMMARY"
