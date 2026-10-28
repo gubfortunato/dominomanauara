@@ -109,3 +109,7 @@ CREATE TABLE IF NOT EXISTS ritmo (dia TEXT NOT NULL, aparelho TEXT NOT NULL, jog
 
 -- 3.41: caixa de notificações do app (mensagens para todos e avisos de evento; o celular busca no máximo a cada 30 min)
 CREATE TABLE IF NOT EXISTS caixa (id INTEGER PRIMARY KEY AUTOINCREMENT, chave TEXT UNIQUE, titulo TEXT NOT NULL, texto TEXT NOT NULL, url TEXT, em INTEGER NOT NULL);
+
+-- 28/10: o aparelho do teste automático de cada publicação nunca fica bloqueado (ele cria uma mesa, entra e sai)
+DELETE FROM bloqueios WHERE aparelho LIKE 'teste-publicacao-%';
+DELETE FROM ritmo WHERE aparelho LIKE 'teste-publicacao-%';

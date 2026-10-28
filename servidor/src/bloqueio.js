@@ -24,7 +24,7 @@ export async function donoJogadores(req, env, origin, h) {
       (SELECT pub FROM fotos f WHERE f.aparelho = v.aparelho AND f.status IN ('aprovada', 'denunciada')) AS foto,
       (SELECT 1 FROM bloqueios b WHERE b.aparelho = v.aparelho) AS bloq,
       (SELECT 1 FROM apelidos_trocar t WHERE t.aparelho = v.aparelho) AS trocar
-    FROM jogadores_vistos v WHERE v.visto_em > ? ORDER BY v.visto_em DESC LIMIT 60`).bind(Date.now() - 7 * DIA).all();
+    FROM jogadores_vistos v WHERE v.visto_em > ? AND v.aparelho NOT LIKE 'teste-publicacao-%' ORDER BY v.visto_em DESC LIMIT 60`).bind(Date.now() - 7 * DIA).all();
   const { results: bloqueados } = await env.DB.prepare('SELECT aparelho, nome, motivo, em FROM bloqueios ORDER BY em DESC LIMIT 100').all();
   return h.json({ recentes: recentes || [], bloqueados: bloqueados || [] }, 200, origin);
 }
@@ -142,7 +142,7 @@ export async function donoRobos(req, env, origin, h) {
   const { results } = await env.DB.prepare(`SELECT r.aparelho, SUM(r.jogadas) AS jogadas, SUM(r.rapidas) AS rapidas, SUM(r.soma_ms) AS soma, SUM(r.sem_app) AS sem_app,
       MAX(r.dia) AS ultimo, (SELECT nome FROM jogadores_vistos v WHERE v.aparelho = r.aparelho) AS nome,
       (SELECT nome FROM presenca p WHERE p.aparelho = r.aparelho) AS nome2, (SELECT 1 FROM bloqueios b WHERE b.aparelho = r.aparelho) AS bloq
-    FROM ritmo r WHERE r.dia >= ? GROUP BY r.aparelho`).bind(desde).all();
+    FROM ritmo r WHERE r.dia >= ? AND r.aparelho NOT LIKE 'teste-publicacao-%' GROUP BY r.aparelho`).bind(desde).all();   // 28/10: sem o aparelho do teste automático
   const lista = (results || []).map(x => {
     const media = x.jogadas ? Math.round(x.soma / x.jogadas) : null, pctRap = x.jogadas ? x.rapidas / x.jogadas : 0;
     const motivos = [];

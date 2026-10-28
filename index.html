@@ -574,7 +574,9 @@ body{touch-action:manipulation}
 @media (prefers-color-scheme: light){ :root:not([data-theme="dark"]) .home-top .tema-btn{color:#5a3d8a} }
 
 /* 3.41: sino das notificações (ao lado do botão claro/escuro) e a lista */
-.home-top .home-acoes{flex:none;display:flex;flex-direction:column;gap:6px;margin-left:auto;margin-right:10px}
+/* 28/10 (escolha do dono, opção A): sino e claro/escuro lado a lado, numa linha no alto, à direita; título e foto livres */
+.home-top{position:relative;padding-top:46px}
+.home-top .home-acoes{position:absolute;top:0;right:0;display:flex;flex-direction:row;gap:10px;margin:0}
 .home-top .home-acoes .tema-btn{margin:0;width:38px;height:38px}
 .home-top .home-acoes .tema-btn svg{width:20px;height:20px}
 .home-top .caixa-btn{position:relative}
@@ -590,7 +592,7 @@ body{touch-action:manipulation}
 .caixa-lista p{margin:4px 0 6px;font-size:16px;line-height:1.4;color:var(--fg);opacity:.9}
 .caixa-lista small{font-size:14px;color:var(--muted)}
 /* 3.41: em tela bem estreita (320 px), o título do início diminui um pouco para caber o sino, o claro/escuro e a foto */
-@media (max-width: 350px){ .home-top{gap:8px} .home-top h1.brand{font-size:34px} .home-top .home-acoes{margin-right:4px} }
+
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:13px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
@@ -1030,10 +1032,14 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 @keyframes relogioPouco{to{transform:scale(1.07)}}
 /* 3.41: relógio da vez de quem está jogando (mesa online): anel que esvazia em volta do avatar e os segundos no canto */
 .table .seat.relogio .av{position:relative}
-.table .seat.relogio .av::after{content:"";position:absolute;inset:-6px;border-radius:50%;pointer-events:none;z-index:2;
+/* 28/10: o anel é um elemento próprio (.seat-anel): o ::after do avatar já é a etiqueta do nível ("Nv 3"), e os dois
+   juntos viravam uma elipse amarela fora do lugar */
+.table .seat.relogio .av[data-nv]::after{display:none}   /* na vez, os segundos ficam no lugar do nível */
+.seat-anel{position:absolute;inset:-6px;border-radius:50%;pointer-events:none;z-index:2;
   background:conic-gradient(#ffd877 calc(var(--resto,1) * 360deg),rgba(255,255,255,.14) 0);
   -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3.5px),#000 calc(100% - 3px));mask:radial-gradient(farthest-side,transparent calc(100% - 3.5px),#000 calc(100% - 3px))}
-.table .seat.relogio.pouco .av::after{background:conic-gradient(#ff5a4f calc(var(--resto,1) * 360deg),rgba(255,255,255,.14) 0)}
+.table .seat.relogio.pouco .seat-anel{background:conic-gradient(#ff5a4f calc(var(--resto,1) * 360deg),rgba(255,255,255,.14) 0)}
+.table .seat:not(.relogio) .seat-anel{display:none}
 .seat-relogio{position:absolute;right:-9px;bottom:-7px;z-index:4;min-width:20px;height:20px;padding:0 4px;border-radius:999px;background:#1d1611;color:#ffd877;border:1.5px solid #ffd877;
   font:800 11px/17px var(--font,inherit);font-style:normal;text-align:center;font-variant-numeric:tabular-nums}
 .table .seat:not(.relogio) .seat-relogio{display:none}
@@ -1196,6 +1202,8 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 
 /* 28/10 (o dono achou o balão da vez imprensado): letra um pouco menor e mais ar dentro do balão */
 #scrGame #prompt.you{font-size:16.5px;padding-inline:14px}
+/* 28/10 ("grudado na borda do dominó"): balão mais baixo e no alto da linha, com a mesma folga em cima (mesa) e embaixo (borda acesa da mão) */
+#scrGame #prompt.you{height:30px;padding-block:3px;align-self:flex-start;margin-bottom:4px}
 @media (max-width:360px){#scrGame #prompt.you{font-size:14px}}
 
 /* ===== Mesa online: sala de espera, convite e conexão ===== */
@@ -1747,6 +1755,7 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .vivo-pl2 .vivo-derrubar{flex:none;font:inherit;font-size:13px;font-weight:800;line-height:1;padding:6px 10px;border-radius:999px;border:1.5px solid rgba(229,72,77,.65);background:transparent;color:#e5484d;cursor:pointer}
 .vivo-pl2 .vivo-derrubar[data-armado]{background:#e5484d;border-color:#e5484d;color:#fff}
 .vivo-pl2 .vivo-derrubar:disabled{opacity:.6}
+.vivo-pl2 .vivo-desbloq{border-color:rgba(70,160,110,.7);color:#3f9a68}
 .vivo-pjan{font-size:13px;color:var(--muted);margin-top:-2px}
 .vivo-ha{font-size:12.5px;color:var(--muted);font-weight:700;white-space:nowrap}
 .vivo-ponto-p{display:inline-block;width:8px;height:8px;margin-right:6px;vertical-align:1px}
@@ -3165,6 +3174,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.41.2', data: '28/10/2026', itens: ['Início: o sino e o botão claro/escuro ficam lado a lado, no alto, à direita.', 'Mesa online: o anel do relógio da vez fica em volta da foto de quem está jogando (antes aparecia uma elipse amarela fora do lugar), com os segundos no canto.', 'O aviso "Sua vez de jogar!" fica centralizado entre a mesa e as suas pedras.', 'Administrador: Desbloquear na lista "No app agora" da Calçada e na Área do administrador.', 'O aparelho do teste automático de cada publicação não aparece mais nas listas do administrador.'] },
   { v: '3.41.1', data: '27/10/2026', itens: ['O aviso "Sua vez de jogar!" ficou um pouco menor, com mais folga dentro do balão.', 'Na escolha da mesa, primeiro Madeira, Vermelha e Azul; depois as demais.', 'Administrador: Derrubar (pedir outro apelido) em cada linha do "No app agora" da Calçada. Quem é derrubado no meio do jogo dá o lugar a um robô da turma, com aviso para a mesa.'] },
   { v: '3.41', data: '27/10/2026', itens: ['Administrador: além de bloquear, dá para pedir outro apelido a quem usa um apelido ofensivo que passou pelo filtro. A pessoa sai da mesa na hora (um robô assume a cadeira), recebe o aviso e o app a leva para escolher outro apelido; com o novo, volta a jogar.', 'Entrada e troca de telas mais fluidas: a tela nova só se mexe quando já está pronta, os movimentos da entrada ficaram mais macios e o brilho do banner do Apoiador não pesa mais no celular.', 'Revisão dos textos: concordância, "0 pontos", Termos e Privacidade atualizados; sem "de graça" e sem "doação": agora é apoio e Plano Apoiador.', 'Mesa online: 20 segundos por jogada para todo mundo, com o relógio à vista (o aviso da sua vez esvazia e o avatar de quem está na vez ganha um anel); passou, o robô joga.', 'Contra robôs de fora: só entra na mesa online quem está com o app aberto, e o administrador vê quem joga rápido demais para uma pessoa.', 'Administrador: "No app agora" completo na Calçada e, na Área do administrador, com Derrubar (pedir outro apelido) e Bloquear.', 'O bucho vira na própria carroça quando a coluna já está do tamanho certo, e as pedras encolhem menos.', 'O aviso da sua vez diminui a letra para caber, sem cortar o texto.', 'Mesas novas: Araras, Boto-rosa, Beiradão e Barco regional. Teatro Amazonas, Encontro das Águas e Ponte Rio Negro ganharam desenho novo.', 'Notificações: um sino no alto do início, com um número vermelho quando chega novidade. Tocar abre a lista das mensagens.', 'Notificações no Android: cada uma toca e vibra (antes, a nova trocava a anterior em silêncio) e tem um ícone próprio na barra do celular.', 'Letras das telas um pouco maiores.', 'Administrador: lista dos Apoiadores, com apelido, até quando vale o plano, quanto e quantas vezes cada um apoiou.', 'O jogo ficou mais leve para o servidor: se o banco do dia lotar, as mesas continuam funcionando.', 'Antes do jogo a mesa fica mais clara, para todo mundo ver bem; quando começam a embaralhar, ela escurece aos poucos.', 'Botão de modo claro e escuro à vista no início.', 'O nome da mesa nos prêmios sai com maiúscula (a mesa Vitória-régia).', 'Mesa online: quem sai no meio do jogo (ou fica 1 min e meio sem conexão) dá o lugar a um robô da turma do bairro, com o nome dele e a etiqueta "robô" na cadeira, e todo mundo na mesa recebe o aviso. Se a pessoa voltar, retoma a cadeira.', 'Mesa online: a lista das mesas ao vivo pesa bem menos para o servidor.'] },
   { v: '3.40.2', data: '27/10/2026', itens: ['Mais leve para o servidor: o app avisa que está aberto a cada minuto (antes, a cada 20 s) e as listas de mesas jogando e de quem está no app se atualizam com menos frequência.'] },
@@ -7920,6 +7930,7 @@ setInterval(() => {
     el.style.setProperty('--resto', String(ms / TORNEIO_MS));
     el.classList.toggle('pouco', ms <= 5000);
     const t = el.querySelector('.seat-relogio') || el.querySelector('.av').appendChild(Object.assign(document.createElement('i'), { className: 'seat-relogio' }));
+    if (!el.querySelector('.seat-anel')) el.querySelector('.av').appendChild(Object.assign(document.createElement('i'), { className: 'seat-anel' }));   // 28/10
     t.textContent = String(Math.ceil(ms / 1000));
   });
 }, 250);
@@ -8930,7 +8941,9 @@ async function vivoPresenca(agora) {
     box.innerHTML = `<span class="vivo-pk"><span class="vivo-ponto vivo-ponto-p" aria-hidden="true"></span>No app agora · ${n} ${n === 1 ? 'pessoa' : 'pessoas'}</span>${extras.length ? `<small class="vivo-pjan">${extras.join(' · ')}</small>` : ''}` +
       (l.length ? `<ul class="vivo-pl2">${l.map(x => `<li><span class="vivo-pl-t"><b>${esc(x.nome || 'Sem apelido')}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span>${x.bloq ? ' <em>bloqueado</em>' : x.trocar ? ' <em>trocando o apelido</em>' : ''}</span>`
         // 28/10 (pedido do dono): Derrubar (pedir outro apelido) em cada linha; o Bloquear continua na Área do administrador
-        + (x.aparelho && x.aparelho !== meu && x.nome && !x.bloq && !x.trocar ? `<button type="button" class="vivo-derrubar" data-derrubar="${esc(x.aparelho)}" data-nome="${esc(x.nome)}">Derrubar</button>` : '') + '</li>').join('')}</ul>` : '');
+        + (x.aparelho && x.aparelho !== meu && x.nome && !x.bloq && !x.trocar ? `<button type="button" class="vivo-derrubar" data-derrubar="${esc(x.aparelho)}" data-nome="${esc(x.nome)}">Derrubar</button>` : '')
+        // 28/10 (pedido do dono): e Desbloquear na linha de quem está bloqueado
+        + (x.aparelho && x.aparelho !== meu && x.bloq ? `<button type="button" class="vivo-derrubar vivo-desbloq" data-desbloquear="${esc(x.aparelho)}" data-nome="${esc(x.nome || '')}">Desbloquear</button>` : '') + '</li>').join('')}</ul>` : '');
   } catch (e) {}
 }
 // 28/10: Derrubar na lista da Calçada — dois toques (o primeiro arma, por 5 s), como na Área do administrador
@@ -8945,6 +8958,16 @@ document.addEventListener('click', async e => {
   try { await donoPedirApelido({ aparelho: t.dataset.derrubar, nome: t.dataset.nome || undefined }, t.dataset.nome); }
   catch (er) { toast('Não deu agora. Tente de novo.'); }
   try { vivoPresenca(true); vivoMesas(true); } catch (er) {}
+});
+// 28/10: Desbloquear na lista da Calçada (um toque; dá para bloquear de novo pela Área do administrador)
+document.addEventListener('click', async e => {
+  const t = e.target.closest && e.target.closest('#vivoPres [data-desbloquear]'); if (!t || !souAdmin()) return;
+  t.disabled = true; t.textContent = 'Desbloqueando…';
+  try {
+    await dnMsgPedir('/dono/desbloquear', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ aparelho: t.dataset.desbloquear }) });
+    toast(`${t.dataset.nome || 'A pessoa'} foi desbloqueado e já pode jogar online.`); track('dono-desbloqueou-calcada');
+  } catch (er) { toast('Não deu para desbloquear agora.'); }
+  try { vivoPresenca(true); if (typeof dnJogCarregar === 'function') dnJogCarregar(); } catch (er) {}
 });
 function vivoTique() {
   vivoVisivel();
@@ -9064,7 +9087,7 @@ async function dnJogCarregar() {
     const rec = j.recentes || [], blq = j.bloqueados || [];
     $('#dnJogLista').innerHTML = rec.length ? rec.map(x => `<li class="${x.bloq ? 'bloq' : ''}"><span class="dn-jog-r">${dnJogRosto(x)}</span>
         <span class="dn-jog-t"><b>${esc(x.nome || '—')}</b><small>${quandoFoi(x.visto_em)}${x.mesa ? ' · mesa ' + esc(x.mesa) : ''}${x.trocar && !x.bloq ? ' · trocando o apelido' : ''}</small></span>
-        ${x.bloq ? '<span class="dn-jog-st">bloqueado</span>' : `<span class="dn-jog-acoes">${x.trocar ? '' : `<button type="button" class="linkbtn dn-jog-b" data-apelido="${esc(x.aparelho)}" data-nome="${esc(x.nome || '')}">Derrubar</button>`}<button type="button" class="linkbtn dn-jog-b" data-bloq="${esc(x.aparelho)}">Bloquear</button></span>`}</li>`).join('')
+        ${x.bloq ? `<span class="dn-jog-acoes"><span class="dn-jog-st">bloqueado</span><button type="button" class="linkbtn dn-jog-b" data-desbloq="${esc(x.aparelho)}">Desbloquear</button></span>` : `<span class="dn-jog-acoes">${x.trocar ? '' : `<button type="button" class="linkbtn dn-jog-b" data-apelido="${esc(x.aparelho)}" data-nome="${esc(x.nome || '')}">Derrubar</button>`}<button type="button" class="linkbtn dn-jog-b" data-bloq="${esc(x.aparelho)}">Bloquear</button></span>`}</li>`).join('')
       : '<li class="dn-jog-vazio">Ninguém jogou online nos últimos 7 dias.</li>';
     $('#dnBloqK').hidden = !blq.length;
     $('#dnBloqLista').innerHTML = blq.map(x => `<li><span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')}</b><small>${x.motivo ? esc(x.motivo) + ' · ' : ''}${quandoFoi(x.em)}</small></span>
@@ -9079,7 +9102,7 @@ document.addEventListener('click', async e => {
   dnJogCarregar(); dnAgoraCarregar();
 });
 document.addEventListener('click', async e => {
-  const b = e.target.closest && e.target.closest('#dnJog [data-bloq], #dnJog [data-desbloq], #dnNoApp [data-bloq]'); if (!b) return;
+  const b = e.target.closest && e.target.closest('#dnJog [data-bloq], #dnJog [data-desbloq], #dnNoApp [data-bloq], #dnNoApp [data-desbloq], #dnRobo [data-desbloq]'); if (!b) return;
   const bloq = !!b.dataset.bloq, ap = b.dataset.bloq || b.dataset.desbloq;
   if (bloq && !b.dataset.armado) { b.dataset.armado = '1'; b.textContent = 'Toque de novo para bloquear'; return; }
   b.disabled = true;
@@ -9087,7 +9110,7 @@ document.addEventListener('click', async e => {
     await dnMsgPedir(bloq ? '/dono/bloquear' : '/dono/desbloquear', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ aparelho: ap, motivo: bloq ? 'pela lista do administrador' : undefined }) });
     toast(bloq ? 'Jogador bloqueado.' : 'Jogador desbloqueado.');
   } catch (er) { toast('Não deu agora. Tente de novo.'); }
-  dnJogCarregar(); dnAgoraCarregar();
+  dnJogCarregar(); dnAgoraCarregar(); try { dnRoboCarregar(); } catch (er) {}
 });
 // ---- 3.41 (pedido do dono): "No app agora" na Área do administrador, com todo mundo e os botões Derrubar e Bloquear
 // (na Calçada, a lista ficou só para ver, sem botões). Atualiza sozinha a cada 15 s enquanto a área está aberta.
@@ -9110,7 +9133,7 @@ async function dnAgoraCarregar() {
     const extras = [j.semCadastro ? `${j.semCadastro} na entrada, sem cadastro` : '', j.menores ? `${j.menores} ${j.menores === 1 ? 'menor de 18' : 'menores de 18'}, sem nome` : ''].filter(Boolean);
     $('#dnNoAppLista').innerHTML = (l.length ? l.map(x => `<li class="${x.bloq ? 'bloq' : ''}"><span class="dn-jog-r">${dnJogRosto(x)}</span>
         <span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')}</b><small>${esc(typeof presOnde === 'function' ? presOnde(x) : '')}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}${x.trocar && !x.bloq ? ' · trocando o apelido' : ''}</small></span>
-        ${x.bloq ? '<span class="dn-jog-st">bloqueado</span>' : `<span class="dn-jog-acoes">${x.trocar ? '' : `<button type="button" class="linkbtn dn-jog-b" data-apelido="${esc(x.aparelho)}" data-nome="${esc(x.nome || '')}">Derrubar</button>`}<button type="button" class="linkbtn dn-jog-b" data-bloq="${esc(x.aparelho)}">Bloquear</button></span>`}</li>`).join('')
+        ${x.bloq ? `<span class="dn-jog-acoes"><span class="dn-jog-st">bloqueado</span><button type="button" class="linkbtn dn-jog-b" data-desbloq="${esc(x.aparelho)}">Desbloquear</button></span>` : `<span class="dn-jog-acoes">${x.trocar ? '' : `<button type="button" class="linkbtn dn-jog-b" data-apelido="${esc(x.aparelho)}" data-nome="${esc(x.nome || '')}">Derrubar</button>`}<button type="button" class="linkbtn dn-jog-b" data-bloq="${esc(x.aparelho)}">Bloquear</button></span>`}</li>`).join('')
       : '<li class="dn-jog-vazio">Ninguém com o app aberto agora, além de você.</li>') + (extras.length ? `<li class="dn-jog-vazio">${esc(extras.join(' · '))}</li>` : '');
   } catch (e) { $('#dnNoAppLista').innerHTML = '<li class="dn-jog-vazio">Não deu para carregar agora.</li>'; }
 }
@@ -9142,7 +9165,7 @@ async function dnRoboCarregar() {
     $('#dnRoboTx').textContent = (j.medidos ? `Últimos 7 dias: ${j.medidos} ${j.medidos === 1 ? 'jogador medido' : 'jogadores medidos'} na mesa online${j.tipico ? `, ${seg(j.tipico)} por jogada no ritmo típico` : ''}. ` : '')
       + (l.length ? 'Estes jogaram de um jeito que não parece de gente. Confira antes de bloquear.' : 'Ninguém com jeito de robô: todo mundo jogou pelo app e no ritmo de gente.');
     $('#dnRoboLista').innerHTML = l.map(x => `<li class="${x.bloq ? 'bloq' : ''}"><span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')}</b><small>${esc(x.motivos.map(dnRoboMotivo).join(' · '))}${x.jogadas ? ` · ${x.jogadas} ${x.jogadas === 1 ? 'jogada' : 'jogadas'}` : ''}</small></span>
-      ${x.bloq ? '<span class="dn-jog-st">bloqueado</span>' : `<button type="button" class="linkbtn dn-jog-b" data-robobloq="${esc(x.aparelho)}">Bloquear</button>`}</li>`).join('');
+      ${x.bloq ? `<span class="dn-jog-acoes"><span class="dn-jog-st">bloqueado</span><button type="button" class="linkbtn dn-jog-b" data-desbloq="${esc(x.aparelho)}">Desbloquear</button></span>` : `<button type="button" class="linkbtn dn-jog-b" data-robobloq="${esc(x.aparelho)}">Bloquear</button>`}</li>`).join('');
   } catch (e) { $('#dnRoboTx').textContent = 'Não deu para carregar agora.'; }
 }
 document.addEventListener('click', async e => {
@@ -10848,7 +10871,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.41.1-2fd31130';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.41.2-088ad9f0';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
