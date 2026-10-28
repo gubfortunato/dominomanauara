@@ -22,6 +22,7 @@ const TEMPO = {
   semPedra: 2600,    // pessoa sem pedra que encaixe: passa sozinha
   distribuir: 4300,  // tempo da animação de embaralhar e distribuir no celular
   ausente: 25000,    // pessoa sem conexão: o robô joga por ela depois disso
+  leitura: 12000,   // 28/10 (pedido do dono): fim da mão: 10 s para todo mundo ler a garagem (a janela abre uns 2 s depois da última pedra)
   largou: 90000,     // 28/10: sem conexão por 1 min e meio no meio do jogo: um robô da turma entra no lugar (com aviso)
   conferir: 60000,   // vez de uma pessoa conectada: confere de novo se ela continua lá
   espera: 20000,     // mesa rápida: espera por mais gente antes de começar com robôs
@@ -44,6 +45,13 @@ const ASSISTIR_MAX = 30;           // 3.28: quantas pessoas podem assistir a mes
 const nivelOk = v => { const n = Math.floor(Number(v)); return n >= 1 && n <= 50 ? n : 1; };
 const nivelRobo = () => 1 + Math.floor(Math.pow(Math.random(), 1.8) * 24);
 const temaOk = v => typeof v === 'string' && /^[a-z][a-z0-9]{2,15}$/.test(v) ? v : null;   // manaus357 tem número
+// 28/10 (pedido do dono): o desenho da mesa é sorteado por igual entre todas — a cada mesa nova e a cada partida nova
+// (sem repetir o da partida anterior). Quem criou continua trocando como sempre; trocou, fica a escolha dele.
+// (De fora: a Manaus 357, que é prêmio da Copa, e a Igreja de São Sebastião, que é da época de janeiro.)
+const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pontanegra', 'acai', 'acairoxo', 'ponte', 'rionegro',
+  'tucuma', 'arena', 'mercado', 'vitoria', 'calcadao', 'centro', 'relogio', 'teatro', 'palacio', 'chamine', 'anavilhanas',
+  'arara', 'boto', 'beiradao', 'barco'];
+const sortearTema = atual => { const l = TEMAS.filter(t => t !== atual); return l[Math.floor(Math.random() * l.length)]; };
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 
 // Ranking (3.29; 3.37): quem conta na partida que acabou — só quem jogou a partida inteira (sem robô no lugar). Para os
@@ -108,7 +116,7 @@ export class Mesa {
     const agora = Date.now();
     this.m = { codigo: limpa(b.codigo, 5), criada: agora, ultimo: agora, fase: 'espera', seq: 0, dono: quem.id,
       cad: [quem, null, null, null], G: null, proximo: null, turnoDesde: agora, porRobo: null,
-      publica: !!b.publica, iniciaEm: b.publica ? agora + this.T.espera : null };
+      publica: !!b.publica, iniciaEm: b.publica ? agora + this.T.espera : null, tema: sortearTema(null), temaSorteado: true };   // 28/10
     if (this.m.publica) this.m.chegadas = this.sortearChegadas(this.m.iniciaEm);
     if (this.m.publica) this.agendar();
     await this.salvar();
@@ -428,7 +436,10 @@ export class Mesa {
     try { await visto(this.env, quem, m.codigo); } catch (e) {}
     if (!m.dono || !m.cad.some(c => c && c.id === m.dono && !c.bot)) m.dono = quem.id;
     // a mesa de quem criou vale para todos (até ele trocar)
-    if (!m.tema && m.dono === quem.id && temaOk(msg.mesa)) m.tema = msg.mesa;
+    if (m.dono === quem.id && temaOk(msg.mesa) && (!m.tema || (msg.mesaFixa && m.temaSorteado && m.fase === 'espera'))) {
+      m.tema = msg.mesa;   // 28/10: mesa escolhida de propósito por quem criou (a Copa 357): fica; senão vale o sorteio
+      if (msg.mesaFixa) { m.temaDono = true; m.temaSorteado = false; }
+    }
     m.ultimo = Date.now();
     if (m.fase === 'jogo') this.agendar();
     await this.salvar();
@@ -524,7 +535,7 @@ export class Mesa {
   async trocarTema(id) {
     const m = this.m, t = temaOk(id);
     if (!t || t === m.tema) return;
-    m.tema = t; m.ultimo = Date.now();
+    m.tema = t; m.temaDono = true; m.temaSorteado = false; m.ultimo = Date.now();   // 28/10: a escolha de quem criou fica
     await this.salvar(); this.espalhar();
   }
   // Na espera: o segundo senta de adversário, o terceiro de parceiro do primeiro, o quarto completa.
@@ -625,9 +636,17 @@ export class Mesa {
   async proxima(msg) {
     const m = this.m, G = m.G;
     if (m.fase !== 'jogo' || !G || G.phase !== 'handEnd' || msg.seq !== m.seq) return;
+    // 28/10 (pedido do dono): antes dos 10 s de leitura da garagem, o pedido fica guardado e a mesa segue sozinha na hora
+    // (o app novo trava o botão; o app antigo, que deixa tocar antes, não corta a leitura de ninguém)
+    if (Date.now() < m.turnoDesde + this.T.leitura - 50) {
+      if (m.proximaPedida !== m.seq) { m.proximaPedida = m.seq; this.agendar(); await this.salvar(); }
+      return;
+    }
+    delete m.proximaPedida;
     const r = G.result;
     // 3.38.2: sem esperar nada aqui (dois 'proxima' ao mesmo tempo não podem passar juntos); só apaga se não sobrou ninguém
     if (r && r.matchWinner != null && this.tirarApelidosRuins() === 'vazia') { await this.apagar(); return; }
+    if (r && r.matchWinner != null && !m.temaDono) { m.tema = sortearTema(m.tema); m.temaSorteado = true; }   // 28/10: partida nova, mesa sorteada
     if (r && r.matchWinner != null && !m.publica) {
       const w = r.matchWinner;
       m.fica = m.fica && m.fica.team === w ? { team: w, n: m.fica.n + 1 } : { team: w, n: 1 };
@@ -809,6 +828,8 @@ export class Mesa {
       m.proximo = m.cad.some(c => !c) && robo < m.iniciaEm ? robo : m.iniciaEm;
     }
     if (m.fase === 'jogo' && G && G.phase === 'handEnd' && !this.alguemOnline()) m.proximo = Date.now() + this.T.vazia;
+    // 28/10: alguém pediu a próxima durante os 10 s de leitura: a mesa segue sozinha quando passarem
+    else if (m.fase === 'jogo' && G && G.phase === 'handEnd' && m.proximaPedida === m.seq) m.proximo = Math.max(Date.now() + 200, m.turnoDesde + this.T.leitura);
     if (m.fase === 'jogo' && G && G.phase === 'play') {
       const p = G.turn, c = m.cad[p], tem = legalMoves(G, p).length > 0, agora = Date.now();
       let espera;
@@ -836,6 +857,7 @@ export class Mesa {
     const agora = Date.now();
     if (m.ultimo + VIDA <= agora) { await this.apagar(); return; }
     if (m.fase === 'jogo' && m.G && m.G.phase === 'handEnd') {
+      if (m.proximaPedida === m.seq && this.alguemOnline() && agora >= m.turnoDesde + this.T.leitura - 50) return this.proxima({ seq: m.seq });   // 28/10
       if (!this.alguemOnline() && m.proximo && agora >= m.proximo - 50) { await this.apagar(); return; }
       this.agendar(); await this.salvar(); return;
     }
@@ -997,8 +1019,9 @@ export class Mesa {
       });
     }
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
+      leituraMs: G && G.phase === 'handEnd' ? Math.max(0, Math.round(m.turnoDesde + this.T.leitura - Date.now())) : 0, proximaPedida: !!(G && G.phase === 'handEnd' && m.proximaPedida === m.seq),   // 28/10
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
-      tema: m.tema || null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
+      tema: m.tema || null, temaSorteado: !!m.temaSorteado, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
       cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || !id ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
       jogo, agora: Date.now(), assistindo: this.quantosAssistem() };
