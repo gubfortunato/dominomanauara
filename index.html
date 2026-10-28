@@ -1667,8 +1667,11 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .vivo-cab{display:flex;align-items:center;flex-wrap:wrap;column-gap:8px;row-gap:0}
 .vivo-cab b{font-family:var(--font-display);font-weight:400;font-size:21.5px;white-space:nowrap}
 .vivo-cab small{flex-basis:100%;padding-left:18px;font-size:14px;color:var(--muted);font-weight:700}
-.vivo-ponto{width:10px;height:10px;border-radius:50%;background:#e5484d;align-self:center;box-shadow:0 0 0 0 rgba(229,72,77,.6);animation:vivoPulsa 1.1s ease-in-out infinite}
-@keyframes vivoPulsa{0%{background:#ff4d55;box-shadow:0 0 0 0 rgba(229,72,77,.8)}45%{background:rgba(229,72,77,.18)}70%{box-shadow:0 0 0 10px rgba(229,72,77,0)}100%{background:#ff4d55;box-shadow:0 0 0 0 rgba(229,72,77,0)}}
+.vivo-ponto{flex:none;width:.72em;height:.72em;border-radius:50%;background:#e5484d;align-self:center;box-shadow:0 0 0 .16em var(--bg-2);animation:vivoPulsa 1.6s infinite}
+/* 28/10 (pedido do dono): a bolinha do "ao vivo" igual à do botão da Calçada — vermelha cheia, com a onda que abre e some —
+   no tamanho de cada lugar (em proporção à letra: na Calçada, 9 px com a onda de 8 px) */
+@keyframes vivoPulsa{0%{box-shadow:0 0 0 .16em var(--bg-2),0 0 0 .16em rgba(229,72,77,.6)}70%{box-shadow:0 0 0 .16em var(--bg-2),0 0 0 .64em rgba(229,72,77,0)}100%{box-shadow:0 0 0 .16em var(--bg-2),0 0 0 .16em rgba(229,72,77,0)}}
+@media (prefers-reduced-motion:reduce){.vivo-ponto{animation:none}}
 .vivo-hoje{font-size:15px;color:var(--muted);font-weight:600;padding:2px 2px 4px}
 .vivo-hoje span{display:block;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--nos);margin-bottom:2px}
 .vivo-hoje b{color:var(--fg);font-weight:800}
@@ -1758,7 +1761,7 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .vivo-pl2 .vivo-desbloq{border-color:rgba(70,160,110,.7);color:#3f9a68}
 .vivo-pjan{font-size:13px;color:var(--muted);margin-top:-2px}
 .vivo-ha{font-size:12.5px;color:var(--muted);font-weight:700;white-space:nowrap}
-.vivo-ponto-p{display:inline-block;width:8px;height:8px;margin-right:6px;vertical-align:1px}
+.vivo-ponto-p{display:inline-block;margin-right:.5em;vertical-align:.05em}
 .vivo-convite span{color:var(--muted)}
 /* 3.32: mesas novas de cartão-postal (cena inteira, bem apagada atrás das pedras) */
 html[data-mesa="chamine"] .table.wood{--wood-1:#2a2430;--wood-2:#2a2430;--wood-edge:#d0643c;
@@ -1984,8 +1987,7 @@ body.com-abas #profileBack{display:none}
 .vivo-gp::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--ok);vertical-align:1px}
 /* 3.27.1: o "AO VIVO" fica rente à borda da tela, que corta o que passa dela: o pulso dessa bolinha é menor e ela
    sai um pouco da borda (antes aparecia pela metade) */
-.aba-cab .kicker .vivo-ponto{margin-left:5px;animation-name:vivoPulsaP}
-@keyframes vivoPulsaP{0%{background:#ff4d55;box-shadow:0 0 0 0 rgba(229,72,77,.8)}45%{background:rgba(229,72,77,.18)}70%{box-shadow:0 0 0 6px rgba(229,72,77,0)}100%{background:#ff4d55;box-shadow:0 0 0 0 rgba(229,72,77,0)}}
+.aba-cab .kicker .vivo-ponto{margin-left:5px}
 /* 3.27.1: aviso de quem abriu o jogo dentro do Instagram/Facebook */
 .dentro-app{display:grid;gap:4px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--alert);background:color-mix(in srgb,var(--alert) 10%,var(--bg-2));font-size:15px;line-height:1.4;color:var(--fg)}
 .dentro-app b:first-child{font-size:16px}
@@ -3174,6 +3176,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.41.3', data: '28/10/2026', itens: ['A bolinha vermelha do "ao vivo" ficou igual à do botão da Calçada (cheia, com a onda que abre e some), no tamanho de cada lugar.'] },
   { v: '3.41.2', data: '28/10/2026', itens: ['Início: o sino e o botão claro/escuro ficam lado a lado, no alto, à direita.', 'Mesa online: o anel do relógio da vez fica em volta da foto de quem está jogando (antes aparecia uma elipse amarela fora do lugar), com os segundos no canto.', 'O aviso "Sua vez de jogar!" fica centralizado entre a mesa e as suas pedras.', 'Administrador: Desbloquear na lista "No app agora" da Calçada e na Área do administrador.', 'O aparelho do teste automático de cada publicação não aparece mais nas listas do administrador.'] },
   { v: '3.41.1', data: '27/10/2026', itens: ['O aviso "Sua vez de jogar!" ficou um pouco menor, com mais folga dentro do balão.', 'Na escolha da mesa, primeiro Madeira, Vermelha e Azul; depois as demais.', 'Administrador: Derrubar (pedir outro apelido) em cada linha do "No app agora" da Calçada. Quem é derrubado no meio do jogo dá o lugar a um robô da turma, com aviso para a mesa.'] },
   { v: '3.41', data: '27/10/2026', itens: ['Administrador: além de bloquear, dá para pedir outro apelido a quem usa um apelido ofensivo que passou pelo filtro. A pessoa sai da mesa na hora (um robô assume a cadeira), recebe o aviso e o app a leva para escolher outro apelido; com o novo, volta a jogar.', 'Entrada e troca de telas mais fluidas: a tela nova só se mexe quando já está pronta, os movimentos da entrada ficaram mais macios e o brilho do banner do Apoiador não pesa mais no celular.', 'Revisão dos textos: concordância, "0 pontos", Termos e Privacidade atualizados; sem "de graça" e sem "doação": agora é apoio e Plano Apoiador.', 'Mesa online: 20 segundos por jogada para todo mundo, com o relógio à vista (o aviso da sua vez esvazia e o avatar de quem está na vez ganha um anel); passou, o robô joga.', 'Contra robôs de fora: só entra na mesa online quem está com o app aberto, e o administrador vê quem joga rápido demais para uma pessoa.', 'Administrador: "No app agora" completo na Calçada e, na Área do administrador, com Derrubar (pedir outro apelido) e Bloquear.', 'O bucho vira na própria carroça quando a coluna já está do tamanho certo, e as pedras encolhem menos.', 'O aviso da sua vez diminui a letra para caber, sem cortar o texto.', 'Mesas novas: Araras, Boto-rosa, Beiradão e Barco regional. Teatro Amazonas, Encontro das Águas e Ponte Rio Negro ganharam desenho novo.', 'Notificações: um sino no alto do início, com um número vermelho quando chega novidade. Tocar abre a lista das mensagens.', 'Notificações no Android: cada uma toca e vibra (antes, a nova trocava a anterior em silêncio) e tem um ícone próprio na barra do celular.', 'Letras das telas um pouco maiores.', 'Administrador: lista dos Apoiadores, com apelido, até quando vale o plano, quanto e quantas vezes cada um apoiou.', 'O jogo ficou mais leve para o servidor: se o banco do dia lotar, as mesas continuam funcionando.', 'Antes do jogo a mesa fica mais clara, para todo mundo ver bem; quando começam a embaralhar, ela escurece aos poucos.', 'Botão de modo claro e escuro à vista no início.', 'O nome da mesa nos prêmios sai com maiúscula (a mesa Vitória-régia).', 'Mesa online: quem sai no meio do jogo (ou fica 1 min e meio sem conexão) dá o lugar a um robô da turma do bairro, com o nome dele e a etiqueta "robô" na cadeira, e todo mundo na mesa recebe o aviso. Se a pessoa voltar, retoma a cadeira.', 'Mesa online: a lista das mesas ao vivo pesa bem menos para o servidor.'] },
@@ -10871,7 +10874,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.41.2-088ad9f0';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.41.3-7cbdcc56';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
