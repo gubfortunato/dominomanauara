@@ -2,6 +2,7 @@
 // parte do jogo a pessoa está — início, partida offline, mesa online, sala de espera... O administrador vê a lista.
 // Guarda o código aleatório do aparelho, o apelido, o avatar, o nível e a tela, por no máximo 1 dia. Menor de 18 entra
 // só na contagem (sem apelido nem avatar).
+import { apelidoBarrado } from './bloqueio.js';
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 // 27/10 (limite de escritas do plano grátis): o app avisa a cada 20 s, mas o banco só é escrito quando algo muda
@@ -23,7 +24,10 @@ export async function avisar(req, env, origin, h) {
   const vals = [b.aparelho, menor ? null : limpa(b.nome, 16) || null, menor ? null : (/^[a-z0-9_-]{1,16}$/i.test(String(b.av || '')) ? String(b.av) : null),
       Math.max(1, Math.min(50, Math.floor(Number(b.nv) || 1))), tela, modo, menor ? null : limpa(b.detalhe, 60) || null, menor ? 1 : 0, Date.now()];
   const chave = JSON.stringify(vals.slice(0, -1)), u = ULT.get(b.aparelho), agora = Date.now();
-  if (u && u.k === chave && agora - u.t < REPETE_MS) return h.json({ ok: true }, 200, origin);
+  // 3.41: o administrador pediu outro apelido: o app mostra o aviso e leva para a troca (com o app aberto, em até 1 minuto).
+  // Vem antes do 'aviso repetido' (que não grava de novo), para não pular o aviso.
+  const barrado = !menor && b.nome && await apelidoBarrado(env, b.aparelho, limpa(b.nome, 16));
+  if (u && u.k === chave && agora - u.t < REPETE_MS) return h.json(barrado ? { ok: true, apelido: 'trocar' } : { ok: true }, 200, origin);
   if (ULT.size > 3000) ULT.clear();
   try {
     await env.DB.prepare(`INSERT INTO presenca (aparelho, nome, av, nv, tela, modo, detalhe, menor, visto_em) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -32,14 +36,14 @@ export async function avisar(req, env, origin, h) {
       .bind(...vals).run();
     ULT.set(b.aparelho, { k: chave, t: agora });
   } catch (e) {}   // banco sem escrita (limite do dia): o jogo segue; a lista do administrador fica sem esta pessoa
-
-  return h.json({ ok: true }, 200, origin);
+  return h.json(barrado ? { ok: true, apelido: 'trocar' } : { ok: true }, 200, origin);
 }
 // GET /dono/presenca -> quem está com o app aberto agora (avisou nos últimos 50 s e não saiu)
 export async function donoPresenca(req, env, origin, h) {
   if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
   const { results } = await env.DB.prepare(`SELECT p.aparelho, p.nome, p.av, p.nv, p.tela, p.modo, p.detalhe, p.menor, p.visto_em,
-      (SELECT 1 FROM bloqueios b WHERE b.aparelho = p.aparelho) AS bloq
+      (SELECT 1 FROM bloqueios b WHERE b.aparelho = p.aparelho) AS bloq,
+      (SELECT 1 FROM apelidos_trocar t WHERE t.aparelho = p.aparelho) AS trocar
     FROM presenca p WHERE p.visto_em > ? ORDER BY p.visto_em DESC LIMIT 120`).bind(Date.now() - JANELA_MS).all();
   const lista = results || [];
   // 3.26.1: quem está na entrada sem cadastro (sem apelido) entra só na contagem, como os menores

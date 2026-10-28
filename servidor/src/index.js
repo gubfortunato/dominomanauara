@@ -2,14 +2,14 @@
 // Caixa de mensagens "Fale com a gente", lembretes para jogar (Web Push), painel do dono e mesa online por convite.
 import { enviarPush } from './webpush.js';
 import { Mesa } from './mesa.js';
-import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolver, manterChaveAsaas, donoCortesia, guardarProgresso, verProgresso } from './pagamentos.js';
+import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolver, manterChaveAsaas, donoCortesia, guardarProgresso, verProgresso, donoApoiadores } from './pagamentos.js';
 import { atuais, imagem, contar, donoLista, donoImagem, donoSalvar, donoApagar } from './patrocinadores.js';
 import * as fotos from './fotos.js';
 import * as turmas from './turmas.js';
 import * as vivo from './vivo.js';
 import * as presenca from './presenca.js';
 import * as rk from './ranking.js';
-import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos } from './bloqueio.js';
+import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos } from './bloqueio.js';
 export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
@@ -74,6 +74,9 @@ async function novaMesa(req, env, origin) {
   let b;
   try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
   if (await bloqueado(env, b && b.id)) return json({ erro: 'bloqueado' }, 403, origin);
+  if (await apelidoBarrado(env, b && b.id, b && b.nome)) return json({ erro: 'apelido' }, 403, origin);   // 3.41
+  // 3.41: só pelo app aberto (robôs de fora não passam)
+  if (exigeApp(env) && (!origemOk(origin) || !(await appAberto(env, b && b.id)))) { await anotarRitmo(env, b && b.id, { semApp: 1 }); return json({ erro: 'app' }, 403, origin); }
   const marca = await marcaDoDia(req, env);
   const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM mesas_criadas WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();
   if (r && r.n >= MESAS_POR_HORA) return json({ erro: 'muitas' }, 429, origin);
@@ -94,6 +97,9 @@ async function mesaRapida(req, env, origin) {
   let b;
   try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
   if (await bloqueado(env, b && b.id)) return json({ erro: 'bloqueado' }, 403, origin);
+  if (await apelidoBarrado(env, b && b.id, b && b.nome)) return json({ erro: 'apelido' }, 403, origin);   // 3.41
+  // 3.41: só pelo app aberto (robôs de fora não passam)
+  if (exigeApp(env) && (!origemOk(origin) || !(await appAberto(env, b && b.id)))) { await anotarRitmo(env, b && b.id, { semApp: 1 }); return json({ erro: 'app' }, 403, origin); }
   const marca = await marcaDoDia(req, env);
   const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM mesas_criadas WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();
   if (r && r.n >= MESAS_POR_HORA) return json({ erro: 'muitas' }, 429, origin);
@@ -107,7 +113,7 @@ async function rotaMesa(req, env, origin, codigo, ws) {
   const stub = env.MESA.get(env.MESA.idFromName(codigo));
   if (ws) {
     if ((req.headers.get('upgrade') || '').toLowerCase() !== 'websocket') return json({ erro: 'ws' }, 426, origin);
-    if (origin && !origemOk(origin)) return new Response('origem', { status: 403 });
+    if ((origin || exigeApp(env)) && !origemOk(origin)) return new Response('origem', { status: 403 });   // 3.41: sem o app (sem origem), não entra
     return stub.fetch(req);
   }
   const r = await stub.fetch('https://mesa/info');
@@ -210,19 +216,36 @@ async function avisosJogou(req, env, origin) {
   await env.DB.prepare('UPDATE avisos SET ultimo_jogo = ? WHERE endpoint = ?').bind(Date.now(), b.endpoint).run();
   return json({ ok: true }, 200, origin);
 }
+// 3.41: caixa de notificações. Guarda a mensagem uma vez (a chave evita repetir o aviso do mesmo evento no mesmo dia)
+// e devolve o número dela, que vai junto na notificação (o celular não mostra duas vezes a mesma na caixa).
+async function guardarNaCaixa(env, chave, msg) {
+  try {
+    await env.DB.prepare('INSERT OR IGNORE INTO caixa (chave, titulo, texto, url, em) VALUES (?, ?, ?, ?, ?)')
+      .bind(chave, String(msg.titulo || 'Dominó Manauara').slice(0, 80), String(msg.texto || '').slice(0, 240), String(msg.url || '/').slice(0, 120), Date.now()).run();
+    const r = chave ? await env.DB.prepare('SELECT id FROM caixa WHERE chave = ?').bind(chave).first()
+      : await env.DB.prepare('SELECT id FROM caixa ORDER BY id DESC LIMIT 1').first();
+    return r ? r.id : null;
+  } catch (e) { return null; }
+}
+// GET /caixa -> as mensagens dos últimos 30 dias (no máximo 30)
+async function caixaLista(env, origin) {
+  let lista = [];
+  try { const { results } = await env.DB.prepare('SELECT id, titulo, texto, url, em FROM caixa WHERE em > ? ORDER BY id DESC LIMIT 30').bind(Date.now() - 30 * DIA).all(); lista = results || []; } catch (e) {}
+  return json({ lista }, 200, origin);
+}
 // Manda para uma lista e limpa as inscrições que o navegador já desativou.
 async function mandarPara(lista, msgDe, env) {
   let ok = 0, falhas = 0;
   for (const s of lista) {
     let st = 0;
     try { st = await enviarPush(s, msgDe(s), env); } catch (e) { st = 0; }
+    // 3.41: escrita que falha (limite do dia do banco) não interrompe mais o envio para o resto da lista
     if (st === 404 || st === 410) {
-      await env.DB.prepare('DELETE FROM avisos WHERE id = ?').bind(s.id).run();
-      await env.DB.prepare('DELETE FROM avisos_id WHERE endpoint = ?').bind(s.endpoint).run();
+      try { await env.DB.prepare('DELETE FROM avisos WHERE id = ?').bind(s.id).run(); await env.DB.prepare('DELETE FROM avisos_id WHERE endpoint = ?').bind(s.endpoint).run(); } catch (e) {}
     }
     if (st >= 200 && st < 300) {
       ok++;
-      await env.DB.prepare('UPDATE avisos SET ultimo_envio = ?, envios = envios + 1 WHERE id = ?').bind(Date.now(), s.id).run();
+      try { await env.DB.prepare('UPDATE avisos SET ultimo_envio = ?, envios = envios + 1 WHERE id = ?').bind(Date.now(), s.id).run(); } catch (e) {}
     } else falhas++;
   }
   return { ok, falhas };
@@ -283,7 +306,8 @@ async function lembreteDaData(env, limite, agora) {
     ? await env.DB.prepare('SELECT id, endpoint, p256dh, auth FROM avisos WHERE COALESCE(ultimo_envio, 0) < ? AND endpoint NOT IN (SELECT endpoint FROM avisos_id WHERE aparelho = ?) ORDER BY RANDOM() LIMIT ?')
       .bind(inicio, ev.rei.aparelho, Math.max(0, limite)).all()
     : await env.DB.prepare('SELECT id, endpoint, p256dh, auth FROM avisos WHERE COALESCE(ultimo_envio, 0) < ? ORDER BY RANDOM() LIMIT ?').bind(inicio, Math.max(0, limite)).all();
-  const r = await mandarPara(results || [], () => ev.msg, env);
+  const caixa = await guardarNaCaixa(env, 'ev:' + diaManaus(agora) + ':' + ev.tipo, ev.msg);   // 3.41: também na caixa do app
+  const r = await mandarPara(results || [], () => Object.assign({ id: caixa }, ev.msg), env);
   return { tipo: ev.tipo, ok: ok + r.ok, falhas: falhas + r.falhas };
 }
 // Plano Apoiador acabando (até 3 dias antes): um aviso por vencimento, só para quem ligou os lembretes.
@@ -320,10 +344,12 @@ async function donoAvisosEnviar(req, env, origin) {
   let b; try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
   const titulo = limpa(b.titulo, 60), texto = limpa(b.texto, 180), depois = Number(b.depois) || 0;
   if (!titulo || !texto) return json({ erro: 'texto' }, 400, origin);
+  // 3.41: a mensagem vai também para a caixa de notificações do app (uma vez, no primeiro lote)
+  const caixa = depois ? (Number(b.caixa) || null) : await guardarNaCaixa(env, null, { titulo, texto, url: '/' });
   const { results } = await env.DB.prepare('SELECT id, endpoint, p256dh, auth FROM avisos WHERE id > ? ORDER BY id LIMIT 15').bind(depois).all();
   const lista = results || [];
-  const r = await mandarPara(lista, () => ({ titulo, texto, url: '/' }), env);
-  return json(Object.assign(r, { proximo: lista.length === 15 ? lista[lista.length - 1].id : null }), 200, origin);
+  const r = await mandarPara(lista, () => ({ id: caixa, titulo, texto, url: '/' }), env);
+  return json(Object.assign(r, { caixa, proximo: lista.length === 15 ? lista[lista.length - 1].id : null }), 200, origin);
 }
 
 async function mudarStatus(req, env, origin, id) {
@@ -368,10 +394,13 @@ export default {
       if (url.pathname === '/progresso' && req.method === 'GET') return await verProgresso(env, origin, H, url);
       if (url.pathname === '/asaas/webhook' && req.method === 'POST') return await webhook(req, env, origin, H);
       if (url.pathname === '/dono/pagamentos' && req.method === 'GET') return await donoPagamentos(req, env, origin, H);
+      if (url.pathname === '/dono/apoiadores' && req.method === 'GET') return await donoApoiadores(req, env, origin, H);   // 3.41
       if (url.pathname === '/dono/cortesia' && req.method === 'POST') return await donoCortesia(req, env, origin, H);
       if (url.pathname === '/dono/jogadores' && req.method === 'GET') return await donoJogadores(req, env, origin, H);
       if (url.pathname === '/dono/bloquear' && req.method === 'POST') return await donoBloquear(req, env, origin, H);
       if (url.pathname === '/dono/desbloquear' && req.method === 'POST') return await donoDesbloquear(req, env, origin, H);
+      if (url.pathname === '/dono/apelido' && req.method === 'POST') return await donoApelido(req, env, origin, H);   // 3.41
+      if (url.pathname === '/dono/robos' && req.method === 'GET') return await donoRobos(req, env, origin, H);   // 3.41
       const dv = url.pathname.match(/^\/dono\/pagamentos\/([0-9a-f]{20})\/devolver$/);
       if (dv && req.method === 'POST') return await donoDevolver(req, env, origin, H, dv[1]);
       // Foto na mesa online (Plano Apoiador)
@@ -408,6 +437,7 @@ export default {
       }
       if (url.pathname === '/vivo/mesas' && req.method === 'GET') return json(await daFila(env, '/fila/vivo'), 200, origin);
       if (url.pathname === '/vivo/conta' && req.method === 'POST') return await vivo.conta(req, env, origin, H);
+      if (url.pathname === '/caixa' && req.method === 'GET') return await caixaLista(env, origin);   // 3.41
       if (url.pathname === '/avisos/chave' && req.method === 'GET') return json({ chave: env.VAPID_PUBLIC || null }, env.VAPID_PUBLIC ? 200 : 503, origin);
       if (url.pathname === '/avisos/inscrever' && req.method === 'POST') return await avisosInscrever(req, env, origin);
       if (url.pathname === '/avisos/cancelar' && req.method === 'POST') return await avisosCancelar(req, env, origin);

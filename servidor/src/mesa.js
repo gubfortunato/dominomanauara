@@ -10,17 +10,19 @@ import { fotoPublica } from './fotos.js';
 import { pontuar, nomeDaTurma, apelido as apelidoNaTurma } from './turmas.js';
 import { somarVivo } from './vivo.js';
 import { somarRanking, reiDaSemana } from './ranking.js';
-import { bloqueado, visto } from './bloqueio.js';
+import { bloqueado, visto, apelidoBarrado, exigeApp, appAberto, anotarRitmo, RAPIDA_MS } from './bloqueio.js';
 // 3.38.2: na Calçada, apelido que o filtro passou a barrar (de quem entrou antes) aparece como "Jogador"
 const nomeVisivel = c => !c.bot && nomeOfensivo(c.nome) ? 'Jogador' : c.nome;
 
 const TEMPO = {
   jogada: 4500,      // robô: espera antes de jogar (igual ao jogo offline)
   torneio: 20000,    // modo torneio: tempo de cada jogada; passou, o robô joga pela pessoa
+  vez: 20000,        // 3.41 (pedido do dono): toda jogada online tem 20 s, com o relógio à vista; passou, o robô joga pela pessoa
   passe: 3000,       // robô: espera antes de passar
   semPedra: 2600,    // pessoa sem pedra que encaixe: passa sozinha
   distribuir: 4300,  // tempo da animação de embaralhar e distribuir no celular
   ausente: 25000,    // pessoa sem conexão: o robô joga por ela depois disso
+  largou: 90000,     // 28/10: sem conexão por 1 min e meio no meio do jogo: um robô da turma entra no lugar (com aviso)
   conferir: 60000,   // vez de uma pessoa conectada: confere de novo se ela continua lá
   espera: 20000,     // mesa rápida: espera por mais gente antes de começar com robôs
   cheia: 2500,       // mesa rápida completa: começa logo (dá tempo de ver quem sentou)
@@ -62,8 +64,9 @@ export class Mesa {
     this.ctx = ctx; this.env = env; this.m = null; this.reacoes = {};
     // TEMPO_FATOR só existe no teste local (acelera os robôs); no Cloudflare vale 1
     const f = Number(env && env.TEMPO_FATOR) || 1;
-    this.cacheVivo = Math.max(3000, 15000 * Math.min(1, f));   // 27/10: lista das mesas guardada por 15 s (no teste, menos)
+    this.cacheVivo = Number(env && env.CACHE_VIVO_MS) || Math.max(3000, 15000 * Math.min(1, f));   // 27/10: lista das mesas guardada por 15 s (no teste, menos)
     this.T = Object.fromEntries(Object.entries(TEMPO).map(([k, v]) => [k, v * f]));
+    this.T.vez = TEMPO.vez * (Number(env && env.VEZ_FATOR) || 1);   // 3.41: nos testes, os 20 s da vez só encurtam com VEZ_FATOR
     // "ping" responde sozinho, sem acordar a mesa (economiza)
     try { ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong')); } catch (e) {}
     ctx.blockConcurrencyWhile(async () => { this.m = (await ctx.storage.get('m')) || null; });
@@ -229,7 +232,7 @@ export class Mesa {
     return { fase: m.fase, publica: !!m.publica, humanos: m.cad.filter(c => c && !c.bot).length,
       livres: m.cad.filter(c => !c || (c.bot && !c.saiu)).length,
       vagaEspera: m.cad.some(c => !c || c.bot), vagaJogo: m.cad.some(c => c && c.bot),
-      ids: m.cad.filter(c => c && c.id).map(c => c.id) };   // só para a fila saber quem volta para a própria mesa
+      ids: m.cad.filter(c => c && (c.id || c.lugarDe)).map(c => c.id || c.lugarDe) };   // só para a fila saber quem volta para a própria mesa
   }
   async contarAFila(fim) {
     const m = this.m, codigo = m && m.codigo;
@@ -281,6 +284,7 @@ export class Mesa {
     const quem = this.pessoa(b);
     if (!quem) return Response.json({ erro: 'dados' }, { status: 400 });
     if (await bloqueado(this.env, quem.id)) return Response.json({ erro: 'bloqueado' }, { status: 403 });
+    if (await apelidoBarrado(this.env, quem.id, quem.nome)) return Response.json({ erro: 'apelido' }, { status: 403 });   // 3.41
     let p = m.cad.findIndex(c => c && c.id === quem.id);
     if (p >= 0) {
       const c = m.cad[p];
@@ -294,12 +298,15 @@ export class Mesa {
       m.cad[p] = quem;
       if (m.cad.every(c => c && !c.bot)) m.iniciaEm = Math.min(m.iniciaEm || Infinity, Date.now() + this.T.cheia);
     } else {
-      if (b.so !== 'jogo') return Response.json({ erro: 'cheia' }, { status: 409 });
-      // na mesa rápida, quem saiu de vez libera a cadeira (o robô que estava no lugar dá a vez)
-      p = m.cad.findIndex(c => c && c.bot);
-      if (p < 0) return Response.json({ erro: 'cheia' }, { status: 409 });
-      quem.nome = this.nomeUnico(quem.nome, p);
-      m.cad[p] = quem; m.G.names[p] = quem.nome;
+      if ((p = this.voltarAoLugar(quem)) < 0) {   // 28/10: quem volta retoma a cadeira que o robô guardava
+        if (b.so !== 'jogo') return Response.json({ erro: 'cheia' }, { status: 409 });
+        // na mesa rápida, quem saiu de vez libera a cadeira (o robô que estava no lugar dá a vez)
+        p = m.cad.findIndex(c => c && c.bot && !c.lugarDe);
+        if (p < 0) p = m.cad.findIndex(c => c && c.bot);
+        if (p < 0) return Response.json({ erro: 'cheia' }, { status: 409 });
+        quem.nome = this.nomeUnico(quem.nome, p);
+        m.cad[p] = quem; m.G.names[p] = quem.nome;
+      }
     }
     m.ultimo = Date.now();
     this.agendar();
@@ -378,6 +385,11 @@ export class Mesa {
     if (!quem) return this.enviar(ws, { t: 'erro', cod: 'dados' });
     att.apelido = !!msg.apelido;   // 3.38.2: este app entende o aviso 'apelido' (escolher outro apelido)
     if (await bloqueado(this.env, quem.id)) return this.recusar(ws, 'bloqueado');
+    // 3.41: o administrador pediu outro apelido e a pessoa voltou com o mesmo (app antigo: 'nao-existe', volta ao início)
+    if (await apelidoBarrado(this.env, quem.id, quem.nome)) return this.recusar(ws, att.apelido ? 'apelido' : 'nao-existe');
+    // 3.41: quem chega agora (não estava sentado nem na fila) precisa estar com o app aberto
+    const jaEstava = m.cad.some(c => c && c.id === quem.id) || (m.fila || []).some(c => c.id === quem.id);
+    if (!jaEstava && exigeApp(this.env) && !(await appAberto(this.env, quem.id))) { await anotarRitmo(this.env, quem.id, { semApp: 1 }); return this.recusar(ws, 'app'); }
     Object.assign(quem, await this.apoiador(quem.id));
     try { await apelidoNaTurma(this.env, quem.id, quem.nome); } catch (e) {}
     let p = m.cad.findIndex(c => c && c.id === quem.id);
@@ -400,9 +412,13 @@ export class Mesa {
       if (p == null) return (m.publica || !msg.fila) ? this.recusar(ws, 'cheia') : this.entrarNaFila(ws, att, quem);
       quem.nome = this.nomeUnico(quem.nome, p);
       m.cad[p] = quem;
+    } else if ((p = this.voltarAoLugar(quem)) >= 0) {
+      // 28/10: voltou: retoma a cadeira que o robô da turma guardava
     } else {
       // jogo já começou: entra no lugar de um robô da turma, se houver (na mesa rápida, também no de quem saiu de vez)
-      p = m.cad.findIndex(c => c && c.bot && !c.saiu);
+      // 28/10: primeiro o de um robô que não guarda lugar de ninguém
+      p = m.cad.findIndex(c => c && c.bot && !c.saiu && !c.lugarDe);
+      if (p < 0) p = m.cad.findIndex(c => c && c.bot && !c.saiu);
       if (p < 0 && m.publica) p = m.cad.findIndex(c => c && c.bot);
       if (p < 0) return (m.publica || !msg.fila) ? this.recusar(ws, 'cheia') : this.entrarNaFila(ws, att, quem);
       quem.nome = this.nomeUnico(quem.nome, p);
@@ -595,6 +611,12 @@ export class Mesa {
     const i = G.hands[p].findIndex(x => tkey(x) === tkey(t));
     const mv = legalMoves(G, p).find(x => x.i === i && x.side === msg.lado);
     if (!mv) return this.enviar(ws, { t: 'erro', cod: 'jogada' });
+    // 3.41: ritmo da jogada (tempo desde que a vez chegou); vai para o banco no fim da mão
+    const c = m.cad[p], dt = Date.now() - (m.turnoDesde || 0);
+    if (c && !c.bot && c.id && m.turnoDesde && dt >= 0 && dt < 120000) {
+      const r = (m.ritmo || (m.ritmo = {}))[c.id] || (m.ritmo[c.id] = { n: 0, rapidas: 0, soma: 0 });
+      r.n++; if (dt < RAPIDA_MS) r.rapidas++; r.soma += Math.min(dt, 30000);
+    }
     applyMove(G, p, mv);
     await this.depoisDaAcao(null);
     this.reacaoDosRobos();
@@ -617,6 +639,69 @@ export class Mesa {
     if (r && r.matchWinner != null) await this.registrarAtiva();
   }
 
+  // 28/10 (pedido do dono): a cadeira de quem saiu no meio do jogo (ou ficou sem conexão) — antes ficava com o nome da
+  // pessoa e o robô jogava escondido. Agora entra o primeiro da fila (mesa com os amigos) ou um robô da turma do bairro com
+  // o nome dele, e todos na mesa recebem o aviso. O robô guarda o lugar: se a pessoa voltar, retoma a cadeira.
+  nomeDeRobo() {
+    const usados = this.m.cad.filter(Boolean).concat(this.m.fila || []).map(x => x.nome.toLowerCase());
+    const livres = BOT_NAMES.filter(n => !usados.includes(n.toLowerCase()));
+    return livres[Math.floor(Math.random() * livres.length)] || 'Juca';
+  }
+  avisarTroca(t) {
+    const m = this.m;
+    m.trocaN = (m.trocaN || 0) + 1;
+    m.troca = Object.assign({ seq: m.seq, ficam: [], n: m.trocaN }, t);
+  }
+  substituir(p, motivo) {
+    const m = this.m, c = m.cad[p];
+    if (!c || c.bot || !c.id) return false;
+    const i = !m.publica ? (m.fila || []).findIndex(x => this.conectadoId(x.id)) : -1;
+    if (i >= 0) {
+      const novo = m.fila.splice(i, 1)[0];
+      m.cad[p] = null; novo.nome = this.nomeUnico(novo.nome, p);
+      m.cad[p] = novo; if (m.G) m.G.names[p] = novo.nome;
+      this.avisarTroca({ entraram: [novo.nome], sairam: [c.nome], motivo });
+      return true;
+    }
+    const robo = this.nomeDeRobo();
+    m.cad[p] = { id: null, nome: robo, av: null, nv: nivelRobo(), bot: true, saiu: false, lugarDe: c.id };
+    if (m.G) m.G.names[p] = robo;
+    this.avisarTroca({ entraram: [robo], sairam: [c.nome], robo: true, motivo });
+    return true;
+  }
+  // quem voltou para a mesa onde um robô guardava o lugar dele: retoma a cadeira (devolve a cadeira, ou -1)
+  voltarAoLugar(quem) {
+    const m = this.m;
+    if (m.fase !== 'jogo' || !m.G) return -1;
+    const p = m.cad.findIndex(c => c && c.bot && c.lugarDe && c.lugarDe === quem.id);
+    if (p < 0) return -1;
+    const robo = m.cad[p].nome;
+    quem.nome = this.nomeUnico(quem.nome, p);
+    m.cad[p] = quem; m.G.names[p] = quem.nome;
+    this.avisarTroca({ entraram: [quem.nome], sairam: [robo], volta: true });
+    return p;
+  }
+  // sem conexão no meio do jogo por mais de 1 min e meio: o robô da turma entra no lugar. Só se tiver mais alguém
+  // conectado na mesa (mesa só com quem caiu fica como está e acaba sozinha, como antes)
+  verificarAusentes() {
+    const m = this.m; if (!m || m.fase !== 'jogo' || !m.G || m.G.phase !== 'play') return false;
+    const agora = Date.now(); let trocou = false;
+    for (let p = 0; p < 4; p++) {
+      const c = m.cad[p]; if (!c || c.bot || !c.id) continue;
+      if (this.conectado(p)) { if (c.foraDesde) delete c.foraDesde; continue; }
+      if (!c.foraDesde) { c.foraDesde = agora; continue; }
+      if (agora - c.foraDesde < this.T.largou - 50) continue;
+      if (!m.cad.some((x, k) => k !== p && x && !x.bot && x.id && this.conectado(k))) continue;
+      const id = c.id;
+      if (this.substituir(p, 'conexao')) {
+        trocou = true;
+        // se o celular dela ainda estiver pendurado na mesa, fecha: ao voltar, o app entra de novo e retoma a cadeira
+        for (const ws of this.ctx.getWebSockets()) { const a = ws.deserializeAttachment() || {}; if (a.id === id) { try { ws.close(4002, 'voltar'); } catch (e) {} } }
+      }
+    }
+    return trocou;
+  }
+
   async sair(ws, p) {
     const m = this.m;
     if (m.fase === 'espera') {
@@ -625,14 +710,9 @@ export class Mesa {
       const i = !m.publica ? (m.fila || []).findIndex(c => this.conectadoId(c.id)) : -1;
       if (i >= 0) { const novo = m.fila.splice(i, 1)[0]; novo.nome = this.nomeUnico(novo.nome, p); m.cad[p] = novo; }
     } else {
-      // no meio do jogo: se tem gente na fila, o primeiro entra no lugar; senão, um robô assume a cadeira até a pessoa voltar
-      const i = !m.publica ? (m.fila || []).findIndex(c => this.conectadoId(c.id)) : -1;
-      if (i >= 0) {
-        const novo = m.fila.splice(i, 1)[0], saiu = m.cad[p].nome;
-        m.cad[p] = null; novo.nome = this.nomeUnico(novo.nome, p);
-        m.cad[p] = novo; m.G.names[p] = novo.nome;
-        m.troca = { seq: m.seq, entraram: [novo.nome], sairam: [saiu], ficam: [] };
-      } else { m.cad[p].saiu = true; m.cad[p].bot = true; }
+      // no meio do jogo: se tem gente na fila, o primeiro entra no lugar; senão, um robô da turma do bairro (28/10: com o
+      // nome dele, não mais o de quem saiu) assume a cadeira até a pessoa voltar
+      this.substituir(p, 'saiu');
     }
     const att = ws.deserializeAttachment() || {}; att.id = null; ws.serializeAttachment(att);
     try { ws.close(1000, 'saiu'); } catch (e) {}
@@ -674,6 +754,7 @@ export class Mesa {
   }
 
   // 3.25: o administrador bloqueou alguém: sai da mesa na hora e um robô da turma assume a cadeira (com nome de robô)
+  // 3.41: com motivo 'apelido' (pediu outro apelido), o aviso é para trocar o apelido, não de bloqueio
   async expulsar(b) {
     const m = this.viva(); if (!m) return { id: null };
     const p = Number.isInteger(b.cadeira) ? b.cadeira : m.cad.findIndex(c => c && c.id && c.id === b.id);
@@ -682,7 +763,9 @@ export class Mesa {
     const id = c.id, nome = c.nome;
     for (const ws of this.ctx.getWebSockets()) {
       const a = ws.deserializeAttachment() || {};
-      if (a.id === id) { this.enviar(ws, { t: 'erro', cod: 'bloqueado' }); a.id = null; ws.serializeAttachment(a); try { ws.close(4003, 'bloqueado'); } catch (e) {} }
+      if (a.id !== id) continue;
+      const cod = b.motivo === 'apelido' ? (a.apelido ? 'apelido' : 'nao-existe') : 'bloqueado';
+      this.enviar(ws, { t: 'erro', cod }); a.id = null; ws.serializeAttachment(a); try { ws.close(cod === 'bloqueado' ? 4003 : 4000, cod); } catch (e) {}
     }
     if (m.fase === 'espera') m.cad[p] = null;
     else {
@@ -718,7 +801,7 @@ export class Mesa {
   // ---------- Relógio: robôs, passe automático e quem caiu ----------
   agendar(extra) {
     const m = this.m, G = m.G;
-    m.proximo = null;
+    m.proximo = null; m.turnoEm = null;
     if (m.fase === 'espera' && m.publica && m.iniciaEm) {
       const robo = this.horaDoRobo();
       m.proximo = m.cad.some(c => !c) && robo < m.iniciaEm ? robo : m.iniciaEm;
@@ -729,9 +812,18 @@ export class Mesa {
       let espera;
       if (c.bot) espera = tem ? this.T.jogada : this.T.passe;
       else if (!tem) espera = this.T.semPedra;
-      else if (!this.conectado(p)) espera = Math.max(0, m.turnoDesde + (G.torneio ? Math.min(this.T.ausente, this.T.torneio) : this.T.ausente) - agora);
-      else espera = G.torneio ? Math.max(0, m.turnoDesde + this.T.torneio - agora) : this.T.conferir;
-      m.proximo = agora + espera + (extra || 0);
+      else espera = Math.max(0, m.turnoDesde + Math.min(this.T.ausente, this.T.vez) - agora);   // 3.41: 20 s para todo mundo
+      m.proximo = m.turnoEm = agora + espera + (extra || 0);
+      // 28/10: quem ficou sem conexão: confere quando passar o tempo (o robô da turma entra no lugar). Só agenda se
+      // ainda vai passar, ou se tem mais alguém conectado (senão não há troca e o alarme ficaria batendo à toa)
+      const outro = k => m.cad.some((y, j) => j !== k && y && !y.bot && y.id && this.conectado(j));
+      for (let k = 0; k < 4; k++) {
+        const x = m.cad[k]; if (!x || x.bot || !x.id) continue;
+        if (this.conectado(k)) { if (x.foraDesde) delete x.foraDesde; continue; }
+        if (!x.foraDesde) x.foraDesde = agora;
+        const t = x.foraDesde + this.T.largou;
+        if (t > agora + 500 || outro(k)) m.proximo = Math.min(m.proximo, Math.max(agora + 1000, t));
+      }
     }
     const quando = m.proximo ? Math.min(m.proximo, m.ultimo + VIDA) : m.ultimo + VIDA;
     this.ctx.storage.setAlarm(quando);
@@ -745,6 +837,12 @@ export class Mesa {
       if (!this.alguemOnline() && m.proximo && agora >= m.proximo - 50) { await this.apagar(); return; }
       this.agendar(); await this.salvar(); return;
     }
+    if (this.verificarAusentes()) {   // 28/10: um robô da turma entrou no lugar de quem ficou sem conexão
+      const humanos = m.cad.filter(c => c && !c.bot);
+      if (!humanos.some(c => c.id === m.dono) && humanos.length) m.dono = humanos[0].id;
+      m.ultimo = agora; this.agendar(); await this.salvar(); this.espalhar();
+      return;
+    }
     if (m.fase === 'espera' && m.publica && m.iniciaEm && agora >= m.iniciaEm - 50) return this.comecarPublica();
     if (m.fase === 'espera' && m.publica && m.iniciaEm && m.cad.some(c => !c) && agora >= this.horaDoRobo() - 50) {
       this.sentarUmRobo(); m.ultimo = agora;
@@ -753,7 +851,8 @@ export class Mesa {
       this.agendar(); await this.salvar(); this.espalhar();
       return;
     }
-    if (!m.proximo || agora < m.proximo - 50 || m.fase !== 'jogo') { this.agendar(); return; }
+    // 28/10: o alarme pode acordar antes da hora do lance (para conferir quem ficou sem conexão): o lance espera a hora dele
+    if (!m.proximo || agora < (m.turnoEm != null ? m.turnoEm : m.proximo) - 50 || m.fase !== 'jogo') { this.agendar(); return; }
     const G = m.G, p = G.turn, c = m.cad[p], moves = legalMoves(G, p);
     if (c.bot) {
       this.marcarRobo(p);
@@ -763,9 +862,9 @@ export class Mesa {
       return this.reacaoDosRobos();
     }
     if (!moves.length) { applyPass(G, p); await this.depoisDaAcao(null); return this.reacaoDosRobos(); }
-    // modo torneio: passou dos 20 s, o robô joga pela pessoa (e pede o ponto)
-    const limite = G.torneio ? Math.min(this.T.torneio, this.conectado(p) ? this.T.torneio : this.T.ausente) : this.T.ausente;
-    if ((G.torneio || !this.conectado(p)) && agora - m.turnoDesde >= limite - 50) {
+    // 3.41: passou dos 20 s (em qualquer mesa online, não só no modo torneio), o robô joga pela pessoa (e pede o ponto)
+    const limite = Math.min(this.T.ausente, this.T.vez);
+    if (agora - m.turnoDesde >= limite - 50) {
       this.marcarRobo(p);
       applyMove(G, p, botChoose(G, p));
       if (G.pedido) pedirPonto(G, p, true);
@@ -795,8 +894,10 @@ export class Mesa {
     await this.contarDesafio();
     await this.contarVivo();
     await this.contarRanking();
+    // 3.41: ritmo vai para o banco no fim da partida, ou ao fim da mão para quem já tem 15 jogadas medidas (menos escrita)
+    if (m.G && m.G.phase === 'handEnd' && m.ritmo) { const fimPartida = !!(m.G.result && m.G.result.matchWinner != null); for (const id of Object.keys(m.ritmo)) { const x = m.ritmo[id]; if (fimPartida || x.n >= (Number(this.env.RITMO_LOTE) || 15)) { delete m.ritmo[id]; try { await anotarRitmo(this.env, id, x); } catch (e) {} } } }
     if (await this.encerrarSeVazia()) return;
-    m.seq++; m.porRobo = porRobo; m.ultimo = m.turnoDesde = Date.now();
+    m.seq++; m.porRobo = porRobo; m.porTempo = porRobo != null && this.conectado(porRobo); m.ultimo = Date.now(); m.turnoDesde = m.ultimo + (extra || 0);   // 3.41: os 20 s contam depois de distribuir as pedras
     this.agendar(extra);
     await this.salvar(); this.espalhar();
   }
@@ -895,8 +996,8 @@ export class Mesa {
     }
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
-      tema: m.tema || null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, publica: !!m.publica, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
-      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || !id ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p) } : null),
+      tema: m.tema || null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
+      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || !id ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
       jogo, agora: Date.now(), assistindo: this.quantosAssistem() };
   }

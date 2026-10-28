@@ -1,6 +1,6 @@
 // Dominó Manauara: guarda o jogo no celular para abrir rápido e funcionar sem internet.
 // Ao publicar uma versão nova, troque o número abaixo para os celulares baixarem tudo de novo.
-const CACHE = 'dominomanauara-3.40.2-df1cd523';
+const CACHE = 'dominomanauara-3.41-73cb555a';
 const FILES = [
   './',
   './index.html',
@@ -11,7 +11,8 @@ const FILES = [
   './fonts/figtree.woff',
   './icons/icon-192-v2.png',
   './icons/icon-512-v2.png',
-  './icons/apple-touch-icon-v2.png'
+  './icons/apple-touch-icon-v2.png',
+  './icons/badge-96.png'
 ];
 
 self.addEventListener('install', e => {
@@ -63,13 +64,20 @@ self.addEventListener('fetch', e => {
 self.addEventListener('push', e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (err) { d = { texto: e.data ? e.data.text() : '' }; }
-  e.waitUntil(self.registration.showNotification(d.titulo || 'Dominó Manauara', {
-    body: d.texto || 'A mesa tá montada. Bora uma partida?',
+  // 3.41: no Android, uma notificação com a mesma etiqueta trocava a anterior sem tocar nem vibrar (parecia que não chegou):
+  // agora cada uma toca de novo (renotify), vibra e usa o ícone branco da barra de status. E fica guardada no celular para a
+  // área de notificações do app (caixa), com o número para não repetir a mesma mensagem.
+  const titulo = d.titulo || 'Dominó Manauara', texto = d.texto || 'A mesa tá montada. Bora uma partida?';
+  const guardar = caches.open('dmz-caixa').then(c => c.put('./__caixa/' + (d.id || Date.now()), new Response(JSON.stringify({ id: d.id || null, titulo, texto, url: d.url || './', em: Date.now() }), { headers: { 'content-type': 'application/json' } }))).catch(() => {});
+  e.waitUntil(Promise.all([guardar, self.registration.showNotification(titulo, {
+    body: texto,
     icon: './icons/icon-192-v2.png',
-    badge: './icons/icon-192-v2.png',
-    tag: 'dominomanauara',
+    badge: './icons/badge-96.png',
+    tag: d.tag || 'dominomanauara',
+    renotify: true,
+    vibrate: [120, 60, 120],
     data: { url: d.url || './' }
-  }));
+  }), self.clients.matchAll({ type: 'window' }).then(l => l.forEach(c => { try { c.postMessage({ tipo: 'caixa' }); } catch (err) {} }))]));
 });
 // Tocou na notificação: abre o jogo (ou traz para a frente se já estiver aberto).
 self.addEventListener('notificationclick', e => {

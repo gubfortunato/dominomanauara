@@ -328,8 +328,8 @@ function layoutTable(T, Xmax) {
     armLayout(right, { x: 0.5, y: 0, dir: 1, vdir: 1, lo: 2, hi: Xmax }, toMain);
     armLayout(left, { x: -0.5, y: 0, dir: -1, vdir: -1, lo: -Xmax, hi: -2 }, toMain);
     const asArm = arr => (arr || []).map(t => ({ near: t.n, far: t.f }));
-    armLayout(asArm(bu.D), { mode: 'col', colX: 0, colEnd: 1, dir: 1, vdir: 1, lo: -Xmax, hi: -0.5, firstNeed: colunaBucho(Xmax) }, (t, p) => res.D.push(p));
-    armLayout(asArm(bu.U), { mode: 'col', colX: 0, colEnd: -1, dir: -1, vdir: -1, lo: 0.5, hi: Xmax, firstNeed: colunaBucho(Xmax) }, (t, p) => res.U.push(p));
+    armLayout(asArm(bu.D), { mode: 'col', colX: 0, colEnd: 1, dir: 1, vdir: 1, lo: -Xmax, hi: -0.5, firstNeed: colunaBucho(Xmax), viraNaCarroca: true }, (t, p) => res.D.push(p));
+    armLayout(asArm(bu.U), { mode: 'col', colX: 0, colEnd: -1, dir: -1, vdir: -1, lo: 0.5, hi: Xmax, firstNeed: colunaBucho(Xmax), viraNaCarroca: true }, (t, p) => res.U.push(p));
   } else {
     res.main[center] = { x: 0, y: 0, o: 'h', v1: c.a, v2: c.b };
     armLayout(right, { x: 1, y: 0, dir: 1, vdir: 1, lo: -Xmax, hi: Xmax }, toMain);
@@ -381,6 +381,13 @@ function armLayout(tiles, o, put) {
     }
     const need = rows === 0 && o.firstNeed ? o.firstNeed : Math.abs(y) + 2;
     const ny = colEnd + vdir * 0.5;
+    if (o.viraNaCarroca && colAfterDbl && Math.abs(ny) >= need - eps) {
+      // vira na carroça (só no bucho, cada um no seu canto): a fileira sai da ponta dela, na altura dela
+      const dy = colEnd - vdir * 0.5;
+      dir = -dir;
+      put(t, { x: colX + dir * 2, y: dy, o: 'h', v1: dir > 0 ? t.near : t.far, v2: dir > 0 ? t.far : t.near });
+      x = colX + dir * 3; y = dy; mode = 'row'; rows++; lastDbl = null; colAfterDbl = false; continue;
+    }
     if (Math.abs(ny) < need - eps || colAfterDbl) {
       put(t, Object.assign({ x: colX, y: colEnd + vdir, o: 'v' }, vert()));
       colEnd += vdir * 2; colAfterDbl = false; continue;

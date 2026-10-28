@@ -102,3 +102,10 @@ CREATE TABLE IF NOT EXISTS calcada_par (dia TEXT NOT NULL, a TEXT NOT NULL, b TE
 -- 3.39: progresso do jogo guardado para quem apoia (nível, conquistas, avatar e histórico), para não perder ao trocar de
 -- celular ou se o navegador apagar os dados. Ligado ao código do aparelho; vai junto com o código do plano.
 CREATE TABLE IF NOT EXISTS progresso (aparelho TEXT PRIMARY KEY, dados TEXT NOT NULL, atualizado INTEGER NOT NULL);
+-- 3.41: o administrador pediu outro apelido (apelido ofensivo que passou pelo filtro); some quando o apelido muda
+CREATE TABLE IF NOT EXISTS apelidos_trocar (aparelho TEXT PRIMARY KEY, nome TEXT NOT NULL, em INTEGER NOT NULL);
+-- 3.41: ritmo das jogadas por aparelho e dia (robôs de fora); 30 dias
+CREATE TABLE IF NOT EXISTS ritmo (dia TEXT NOT NULL, aparelho TEXT NOT NULL, jogadas INTEGER NOT NULL DEFAULT 0, rapidas INTEGER NOT NULL DEFAULT 0, soma_ms INTEGER NOT NULL DEFAULT 0, sem_app INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (dia, aparelho));
+
+-- 3.41: caixa de notificações do app (mensagens para todos e avisos de evento; o celular busca no máximo a cada 30 min)
+CREATE TABLE IF NOT EXISTS caixa (id INTEGER PRIMARY KEY AUTOINCREMENT, chave TEXT UNIQUE, titulo TEXT NOT NULL, texto TEXT NOT NULL, url TEXT, em INTEGER NOT NULL);

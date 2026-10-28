@@ -22,9 +22,9 @@ export const PRODUTOS = {
   // antigos (até a 3.21): continuam valendo para os pedidos já feitos e para algum celular que ainda não atualizou
   mensal: { nome: 'Plano Apoiador · 30 dias', desc: 'Dominó Manauara: sua foto na mesa online, selo de apoiador, avatares exclusivos e tudo do Personalizar liberado na hora, por 30 dias.', valor: 4.90, dias: 31 },
   anual: { nome: 'Plano Apoiador · 1 ano', desc: 'Dominó Manauara: sua foto na mesa online, selo de apoiador, avatares exclusivos e tudo do Personalizar liberado na hora, por 1 ano.', valor: 39.90, dias: 366 },
-  doacao5: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter o jogo de graça. Quem doa pode mostrar a foto na mesa online.', valor: 5 },
-  doacao10: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter o jogo de graça. Quem doa pode mostrar a foto na mesa online.', valor: 10 },
-  doacao20: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter o jogo de graça. Quem doa pode mostrar a foto na mesa online. De presente: 30 dias de Plano Apoiador.', valor: 20, brinde: 31 }
+  doacao5: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter viva a tradição do dominó.', valor: 5 },
+  doacao10: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter viva a tradição do dominó.', valor: 10 },
+  doacao20: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter viva a tradição do dominó. Quem doa pode mostrar a foto na mesa online. De presente: 30 dias de Plano Apoiador.', valor: 20, brinde: 31 }
 };
 // Os botões que estão no app agora (o teste da publicação abre uma cobrança de cada)
 export const A_VENDA = ['apoio990', 'apoio1990', 'apoio2990', 'livre'];
@@ -298,4 +298,24 @@ export async function donoPagamentos(req, env, origin, h) {
   const ativos = await env.DB.prepare('SELECT COUNT(*) AS n FROM planos WHERE ate > ? AND aparelho NOT IN (SELECT aparelho FROM cortesias)').bind(Date.now()).first();
   const { results } = await env.DB.prepare("SELECT id, produto, valor, pago_em, status FROM pedidos WHERE status IN ('pago', 'devolvido') ORDER BY pago_em DESC LIMIT 20").all();
   return h.json({ mes, tudo, planosAtivos: (ativos && ativos.n) || 0, ultimos: results || [], ligado: !!env.ASAAS_API_KEY }, 200, origin);
+}
+
+// 3.41 (pedido do dono): quem apoia — plano ativo até quando, quanto já apoiou, quantas vezes e quando foi o último apoio.
+// O apelido e o avatar vêm do último lugar em que a pessoa apareceu (no app, na mesa online ou no ranking).
+export async function donoApoiadores(req, env, origin, h) {
+  if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
+  const { results } = await env.DB.prepare(`SELECT a.aparelho,
+      (SELECT ate FROM planos p WHERE p.aparelho = a.aparelho) AS ate,
+      (SELECT desde FROM planos p WHERE p.aparelho = a.aparelho) AS desde,
+      COALESCE((SELECT SUM(valor) FROM pedidos d WHERE d.aparelho = a.aparelho AND d.status = 'pago'), 0) AS total,
+      (SELECT COUNT(*) FROM pedidos d WHERE d.aparelho = a.aparelho AND d.status = 'pago') AS n,
+      (SELECT MAX(pago_em) FROM pedidos d WHERE d.aparelho = a.aparelho AND d.status = 'pago') AS ultimo,
+      (SELECT 1 FROM cortesias c WHERE c.aparelho = a.aparelho) AS cortesia,
+      COALESCE((SELECT nome FROM presenca WHERE aparelho = a.aparelho AND nome IS NOT NULL), (SELECT nome FROM jogadores_vistos WHERE aparelho = a.aparelho),
+        (SELECT nome FROM ranking WHERE aparelho = a.aparelho ORDER BY atualizado DESC LIMIT 1)) AS nome,
+      COALESCE((SELECT av FROM presenca WHERE aparelho = a.aparelho AND av IS NOT NULL), (SELECT av FROM jogadores_vistos WHERE aparelho = a.aparelho),
+        (SELECT av FROM ranking WHERE aparelho = a.aparelho ORDER BY atualizado DESC LIMIT 1)) AS av
+    FROM (SELECT aparelho FROM pedidos WHERE status = 'pago' AND aparelho IS NOT NULL AND aparelho <> '' UNION SELECT aparelho FROM planos) a
+    ORDER BY COALESCE(ultimo, desde) DESC LIMIT 300`).all();
+  return h.json({ lista: results || [], agora: Date.now() }, 200, origin);
 }
