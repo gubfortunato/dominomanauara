@@ -408,6 +408,8 @@ export default {
       if (m && req.method === 'POST') return await mudarStatus(req, env, origin, Number(m[1]));
       return json({ erro: 'nao-encontrado' }, 404, origin);
     } catch (e) {
+      // Registro do erro (só o caminho e a mensagem, sem dados de jogador) para enxergar a causa nos logs.
+      try { console.error('falha', url.pathname, (e && e.name) || '', String((e && e.message) || e).slice(0, 300)); } catch (x) {}
       return json({ erro: 'servidor' }, 500, origin);
     }
   },

@@ -141,7 +141,7 @@ jobs:
           sleep 10
           wait
           log "chamadas vistas: $(grep -c '"outcome"' /tmp/tail.json 2>/dev/null)"
-          log "$(jq -c 'select(.outcome != "ok" or ((.exceptions // []) | length) > 0) | {outcome, script: .scriptName, exc: [(.exceptions // [])[] | ((.name // "") + ": " + (.message // ""))[0:300]], url: ((.event.request.url // "") | sub("\\?.*"; ""))}' /tmp/tail.json 2>/dev/null | head -8)"
+          log "$(jq -c 'select(((.event.request.url // "") | test("/mesa/nova|/criar")) or .outcome != "ok" or ((.exceptions // []) | length) > 0) | {outcome, script: .scriptName, ent: .entrypoint, exc: [(.exceptions // [])[] | ((.name // "") + ": " + (.message // ""))[0:300]], logs: [(.logs // [])[] | (.message | tostring)[0:400]], url: ((.event.request.url // "") | sub("\\?.*"; ""))}' /tmp/tail.json 2>/dev/null | head -8)"
           log "erro do tail: $(head -c 300 /tmp/tail.err)"
       - name: Guardar o resultado
         if: always()
