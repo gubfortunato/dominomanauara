@@ -142,8 +142,11 @@ CREATE TABLE IF NOT EXISTS limites_rede (dia TEXT NOT NULL, marca TEXT NOT NULL,
   PRIMARY KEY (dia, marca, tipo, aparelho));
 -- 28/10: aviso dos planos no sino, uma vez (7 dias antes de os limites valerem)
 INSERT OR IGNORE INTO caixa (chave, titulo, texto, url, em) VALUES ('planos-2026-11-05', 'Chegou o Sócio da Calçada',
-  'Sócio da Calçada: partidas sem limite, ranking completo, estatísticas, foto, selo e avatares. Promoção de lançamento até 4/11: R$ 9,90 por mês nos 3 primeiros meses (depois R$ 14,90). Quem já tinha pago ganhou 1 ano de sócio de presente. A partir de 5/11, sem plano: 5 partidas por dia na mesa rápida e 1 partida por dia com os amigos. O jogo offline continua sem limite. Toque para ver.',
+  'Sócio da Calçada: partidas sem limite, ranking completo, estatísticas, foto, selo e avatares. Promoção de lançamento até 4/11: R$ 9,90 por mês nos 3 primeiros meses (depois R$ 14,90). A partir de 5/11, sem plano: 5 partidas por dia na mesa rápida e 1 partida por dia com os amigos. O jogo offline continua sem limite. Toque para ver.',
   './?apoio=renovar', CAST(strftime('%s', 'now') AS INTEGER) * 1000);   -- a hora da publicação (não no futuro: o sino marcaria como nova de novo)
+
+-- 28/10 (pedido do dono): o aviso já publicado sai sem a frase do presente de quem já tinha pago (a hora fica a mesma)
+UPDATE caixa SET texto = 'Sócio da Calçada: partidas sem limite, ranking completo, estatísticas, foto, selo e avatares. Promoção de lançamento até 4/11: R$ 9,90 por mês nos 3 primeiros meses (depois R$ 14,90). A partir de 5/11, sem plano: 5 partidas por dia na mesa rápida e 1 partida por dia com os amigos. O jogo offline continua sem limite. Toque para ver.' WHERE chave = 'planos-2026-11-05' AND texto <> 'Sócio da Calçada: partidas sem limite, ranking completo, estatísticas, foto, selo e avatares. Promoção de lançamento até 4/11: R$ 9,90 por mês nos 3 primeiros meses (depois R$ 14,90). A partir de 5/11, sem plano: 5 partidas por dia na mesa rápida e 1 partida por dia com os amigos. O jogo offline continua sem limite. Toque para ver.';
 
 -- 28/10: Sócio da Calçada que renova sozinho (assinatura do Asaas, no cartão): mensal, trimestral ou anual. Uma linha por
 -- pedido de assinatura: o aparelho, o checkout, a assinatura e o cliente do Asaas (só os códigos, para ligar cada cobrança
