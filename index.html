@@ -2272,9 +2272,9 @@ button.dn-ag:active{transform:scale(.98)}
 .minha-fala.papo{white-space:normal;font-size:17px;line-height:1.3;overflow-wrap:anywhere}
 body.papo-aberto{overflow:hidden}
 /* 28/10: nada da mesa (balão de cadeira, fala comprida) pode sair pela lateral e alargar a página no celular */
-#scrGame{overflow-x:clip}
+.shell{overflow-x:clip}   /* 28/10: corta só na borda da tela (no #scrGame cortava o anel do avatar e a moldura da mão) */
 /* área do administrador */
-.dp-msg{display:block;white-space:normal;overflow-wrap:anywhere;font-size:17px;font-weight:700;line-height:1.35;margin:2px 0 3px}
+.dp-msg{display:block;white-space:normal;overflow-wrap:anywhere;font-size:16px;font-weight:700;line-height:1.35;margin:2px 0 3px}
 .dn-papo .dn-jog-t{min-width:0}
 .dp-antes{margin-top:6px;font-size:14.5px}
 .dp-antes summary{cursor:pointer;font-weight:700}
@@ -9992,15 +9992,22 @@ function caixaQuando(ms) {
   if (dia(d) === dia(ontem)) return 'ontem às ' + hm;
   return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0') + ' às ' + hm;
 }
+const caixaItensHTML = t => CX.itens.map((x, i) => `<li class="${x.em > t ? 'nova' : ''}"${x.url && x.url !== '/' && x.url !== './' ? ` data-i="${i}" role="button" tabindex="0"` : ''}>
+        <b>${esc(x.titulo)}</b><p>${esc(x.texto || '')}</p><small>${esc(caixaQuando(x.em))}</small></li>`).join('');
 async function abrirCaixa() {
   await caixaJuntar();
   const t = caixaLida();
   openSheet('caixa', `<p class="eyebrow">Notificações</p><h2 id="sheetTitle">Suas notificações</h2>
-    ${CX.itens.length ? `<ul class="caixa-lista">${CX.itens.map((x, i) => `<li class="${x.em > t ? 'nova' : ''}"${x.url && x.url !== '/' && x.url !== './' ? ` data-i="${i}" role="button" tabindex="0"` : ''}>
-        <b>${esc(x.titulo)}</b><p>${esc(x.texto || '')}</p><small>${esc(caixaQuando(x.em))}</small></li>`).join('')}</ul>`
+    ${CX.itens.length ? `<ul class="caixa-lista">${caixaItensHTML(t)}</ul>`
       : '<p class="note">Nenhuma notificação ainda. Quando a gente mandar novidades, elas aparecem aqui.</p>'}
     <button type="button" class="secondary" id="caixaOk" style="width:100%;margin-top:12px">Fechar</button>`);
   track('caixa-abrir');
+  // 28/10: ao abrir, confere no servidor (o texto de um aviso pode ter mudado); se mudou, troca na hora
+  const antes = JSON.stringify(caixaServidor());
+  caixaBuscar(true).then(async () => {
+    if (sheetKind !== 'caixa' || JSON.stringify(caixaServidor()) === antes) return;
+    await caixaJuntar(); const ul = document.querySelector('#sheet .caixa-lista'); if (ul) ul.innerHTML = caixaItensHTML(t);
+  });
   store.set(CXKEY, String(Math.max(Date.now(), ...CX.itens.map(x => Number(x.em) || 0)))); caixaSinal();   // 28/10: lida até a mais nova (mesmo com hora no futuro)
   $('#caixaOk').addEventListener('click', closeSheet);
   const lista = document.querySelector('#sheet .caixa-lista');
@@ -10020,7 +10027,9 @@ async function abrirCaixa() {
   ref.insertAdjacentHTML('beforebegin', `<button type="button" class="tema-btn caixa-btn" id="caixaBtn" aria-label="Notificações">${SINO}<span class="caixa-n" id="caixaN" aria-hidden="true"></span></button>`);
   $('#caixaBtn').addEventListener('click', abrirCaixa);
   caixaJuntar();
-  setTimeout(async () => { await caixaBuscar(); caixaJuntar(); }, 3000);
+  // 28/10: nesta versão, busca de novo na hora (o texto do aviso do Sócio da Calçada mudou)
+  const nova = store.get('dmz-caixa-v') !== '2'; if (nova) store.set('dmz-caixa-v', '2');
+  setTimeout(async () => { await caixaBuscar(nova); caixaJuntar(); }, 3000);
   document.addEventListener('visibilitychange', async () => { if (document.visibilityState === 'visible') { await caixaBuscar(); caixaJuntar(); } });
   if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if ((e.data || {}).tipo === 'caixa') caixaJuntar(); });
 })();
@@ -11885,7 +11894,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.43-5b662d20';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.43-c4031182';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
