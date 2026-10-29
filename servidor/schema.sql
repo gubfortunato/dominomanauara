@@ -130,10 +130,13 @@ CREATE TABLE IF NOT EXISTS limites (dia TEXT NOT NULL, aparelho TEXT NOT NULL, m
 -- limite hoje, por rede (só um resumo do endereço com o dia, que muda todo dia; o endereço nunca é guardado), por 2 dias.
 CREATE TABLE IF NOT EXISTS marcos (chave TEXT PRIMARY KEY, em INTEGER NOT NULL);   -- (o que roda uma vez só; criada aqui antes do 1º uso)
 CREATE TABLE IF NOT EXISTS aparelhos (aparelho TEXT PRIMARY KEY, desde INTEGER NOT NULL);
-INSERT OR IGNORE INTO aparelhos (aparelho, desde)
-  SELECT aparelho, 0 FROM (SELECT aparelho FROM jogadores_vistos UNION SELECT aparelho FROM planos UNION SELECT aparelho FROM presenca
-    UNION SELECT aparelho FROM ranking UNION SELECT aparelho FROM calcada UNION SELECT aparelho FROM pedidos WHERE aparelho IS NOT NULL)
-  WHERE aparelho IS NOT NULL AND aparelho <> '' AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'aparelhos-antigos');
+-- (uma tabela por vez: o D1 recusa SELECT composto grande, "too many terms in compound SELECT")
+INSERT OR IGNORE INTO aparelhos (aparelho, desde) SELECT aparelho, 0 FROM jogadores_vistos WHERE aparelho IS NOT NULL AND aparelho <> '' AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'aparelhos-antigos');
+INSERT OR IGNORE INTO aparelhos (aparelho, desde) SELECT aparelho, 0 FROM planos WHERE aparelho IS NOT NULL AND aparelho <> '' AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'aparelhos-antigos');
+INSERT OR IGNORE INTO aparelhos (aparelho, desde) SELECT aparelho, 0 FROM presenca WHERE aparelho IS NOT NULL AND aparelho <> '' AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'aparelhos-antigos');
+INSERT OR IGNORE INTO aparelhos (aparelho, desde) SELECT DISTINCT aparelho, 0 FROM ranking WHERE aparelho IS NOT NULL AND aparelho <> '' AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'aparelhos-antigos');
+INSERT OR IGNORE INTO aparelhos (aparelho, desde) SELECT DISTINCT aparelho, 0 FROM calcada WHERE aparelho IS NOT NULL AND aparelho <> '' AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'aparelhos-antigos');
+INSERT OR IGNORE INTO aparelhos (aparelho, desde) SELECT DISTINCT aparelho, 0 FROM pedidos WHERE aparelho IS NOT NULL AND aparelho <> '' AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'aparelhos-antigos');
 INSERT OR IGNORE INTO marcos (chave, em) VALUES ('aparelhos-antigos', CAST(strftime('%s', 'now') AS INTEGER) * 1000);
 CREATE TABLE IF NOT EXISTS limites_rede (dia TEXT NOT NULL, marca TEXT NOT NULL, tipo TEXT NOT NULL, aparelho TEXT NOT NULL, nome TEXT, em INTEGER NOT NULL,
   PRIMARY KEY (dia, marca, tipo, aparelho));
