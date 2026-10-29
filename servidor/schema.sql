@@ -120,3 +120,57 @@ CREATE TABLE IF NOT EXISTS papo_denuncias (id INTEGER PRIMARY KEY AUTOINCREMENT,
   autor TEXT NOT NULL, autor_nome TEXT, denunciante TEXT NOT NULL, texto TEXT, contexto TEXT);
 CREATE UNIQUE INDEX IF NOT EXISTS papo_denuncias_um ON papo_denuncias (mesa, msg_em, autor, denunciante);
 CREATE INDEX IF NOT EXISTS papo_denuncias_em ON papo_denuncias (em);
+
+-- 28/10: planos. Sem plano: nas mesas com os amigos, cria 1 mesa e joga 1 partida por dia; na mesa rápida, 5 partidas
+-- completas por dia (dia de Brasília). Guarda só a contagem do dia por aparelho, por 7 dias.
+CREATE TABLE IF NOT EXISTS limites (dia TEXT NOT NULL, aparelho TEXT NOT NULL, mesas INTEGER NOT NULL DEFAULT 0, partidas INTEGER NOT NULL DEFAULT 0,
+  publicas INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (dia, aparelho));
+-- 28/10 (pedido do dono): contra quem apaga os dados do app para jogar mais de graça no mesmo dia. aparelhos: quando cada
+-- código de aparelho apareceu numa mesa online pela 1ª vez (os que já existiam ficam com 0). limites_rede: quem bateu o
+-- limite hoje, por rede (só um resumo do endereço com o dia, que muda todo dia; o endereço nunca é guardado), por 2 dias.
+CREATE TABLE IF NOT EXISTS marcos (chave TEXT PRIMARY KEY, em INTEGER NOT NULL);   -- (o que roda uma vez só; criada aqui antes do 1º uso)
+CREATE TABLE IF NOT EXISTS aparelhos (aparelho TEXT PRIMARY KEY, desde INTEGER NOT NULL);
+INSERT OR IGNORE INTO aparelhos (aparelho, desde)
+  SELECT aparelho, 0 FROM (SELECT aparelho FROM jogadores_vistos UNION SELECT aparelho FROM planos UNION SELECT aparelho FROM presenca
+    UNION SELECT aparelho FROM ranking UNION SELECT aparelho FROM calcada UNION SELECT aparelho FROM pedidos WHERE aparelho IS NOT NULL)
+  WHERE aparelho IS NOT NULL AND aparelho <> '' AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'aparelhos-antigos');
+INSERT OR IGNORE INTO marcos (chave, em) VALUES ('aparelhos-antigos', CAST(strftime('%s', 'now') AS INTEGER) * 1000);
+CREATE TABLE IF NOT EXISTS limites_rede (dia TEXT NOT NULL, marca TEXT NOT NULL, tipo TEXT NOT NULL, aparelho TEXT NOT NULL, nome TEXT, em INTEGER NOT NULL,
+  PRIMARY KEY (dia, marca, tipo, aparelho));
+-- 28/10: aviso dos planos no sino, uma vez (7 dias antes de os limites valerem)
+INSERT OR IGNORE INTO caixa (chave, titulo, texto, url, em) VALUES ('planos-2026-11-05', 'Chegou o Sócio da Calçada',
+  'Sócio da Calçada: partidas sem limite, ranking completo, estatísticas, foto, selo e avatares. Promoção de lançamento até 4/11: R$ 9,90 por mês nos 3 primeiros meses (depois R$ 14,90). Quem já tinha pago ganhou 1 ano de sócio de presente. A partir de 5/11, sem plano: 5 partidas por dia na mesa rápida e 1 partida por dia com os amigos. O jogo offline continua sem limite. Toque para ver.',
+  './?apoio=renovar', CAST(strftime('%s', 'now') AS INTEGER) * 1000);   -- a hora da publicação (não no futuro: o sino marcaria como nova de novo)
+
+-- 28/10: Sócio da Calçada que renova sozinho (assinatura do Asaas, no cartão): mensal, trimestral ou anual. Uma linha por
+-- pedido de assinatura: o aparelho, o checkout, a assinatura e o cliente do Asaas (só os códigos, para ligar cada cobrança
+-- ao aparelho), o produto, o valor da 1ª cobrança, quantas cobranças têm o preço da promoção (0 = sem promoção), quantas
+-- já foram pagas e quando o valor passou para o normal no Asaas (reajustada; reajuste_erro guarda o último erro).
+CREATE TABLE IF NOT EXISTS assinaturas (pedido TEXT PRIMARY KEY, aparelho TEXT NOT NULL, checkout TEXT, assinatura TEXT, cliente TEXT,
+  status TEXT NOT NULL, criado_em INTEGER NOT NULL, pago_em INTEGER, cancelada_em INTEGER,
+  produto TEXT NOT NULL DEFAULT 'apm', valor REAL, promo INTEGER NOT NULL DEFAULT 0, pagos INTEGER NOT NULL DEFAULT 0,
+  reajustada INTEGER, reajuste_tentado INTEGER, reajuste_erro TEXT);
+CREATE INDEX IF NOT EXISTS assinaturas_ass ON assinaturas (assinatura);
+CREATE INDEX IF NOT EXISTS assinaturas_cli ON assinaturas (cliente);
+CREATE INDEX IF NOT EXISTS assinaturas_ap ON assinaturas (aparelho);
+CREATE INDEX IF NOT EXISTS assinaturas_ck ON assinaturas (checkout);
+
+-- 28/10 (pedido do dono: honrar quem já pagou): na primeira publicação com o Sócio da Calçada, todo aparelho que já tinha
+-- pago qualquer valor ganha 1 ano (365 dias) de sócio de presente, contados do lançamento dos limites (LANCAMENTO_MS) e
+-- somados ao tempo que ainda tiver. Roda uma vez só (marco 'presente-fundador'); quem pagar depois não entra.
+CREATE TABLE IF NOT EXISTS marcos (chave TEXT PRIMARY KEY, em INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS presentes (aparelho TEXT NOT NULL, tipo TEXT NOT NULL, dias INTEGER NOT NULL, ate INTEGER NOT NULL, em INTEGER NOT NULL, PRIMARY KEY (aparelho, tipo));
+INSERT OR IGNORE INTO presentes (aparelho, tipo, dias, ate, em)
+  SELECT DISTINCT aparelho, 'fundador', 365, 0, CAST(strftime('%s', 'now') AS INTEGER) * 1000 FROM pedidos
+  WHERE status = 'pago' AND aparelho IS NOT NULL AND aparelho <> '' AND aparelho NOT LIKE 'teste-publicacao-%'
+    AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'presente-fundador');
+INSERT OR IGNORE INTO planos (aparelho, ate, desde, codigo)
+  SELECT p.aparelho, 0, CAST(strftime('%s', 'now') AS INTEGER) * 1000, upper(hex(randomblob(4))) FROM presentes p
+  WHERE p.tipo = 'fundador' AND NOT EXISTS (SELECT 1 FROM planos x WHERE x.aparelho = p.aparelho)
+    AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'presente-fundador');
+UPDATE planos SET ate = MAX(ate, 1793847600000) + 365 * 86400000   -- LANCAMENTO_MS; 28/10 (dono): 1 ano de presente
+  WHERE aparelho IN (SELECT aparelho FROM presentes WHERE tipo = 'fundador')
+    AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'presente-fundador');
+UPDATE presentes SET ate = (SELECT ate FROM planos WHERE planos.aparelho = presentes.aparelho)
+  WHERE tipo = 'fundador' AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'presente-fundador');
+INSERT OR IGNORE INTO marcos (chave, em) VALUES ('presente-fundador', CAST(strftime('%s', 'now') AS INTEGER) * 1000);

@@ -1,6 +1,7 @@
 // Confere a mesa online publicada: cria uma mesa, entra pelo WebSocket, lê a resposta e sai (a mesa some).
 const url = process.argv[2];
-const id = 'teste-publicacao-0001';
+// 28/10 (planos): um aparelho novo a cada teste (quem não é Apoiador cria 1 mesa por dia); o painel esconde 'teste-publicacao-*'
+const id = 'teste-publicacao-' + Date.now().toString(36);
 // 3.41: só cria mesa quem está com o app aberto: o teste avisa que está no app antes (e que saiu, no fim)
 const H = { 'content-type': 'application/json', origin: 'https://dominomanauara.com.br' };
 await fetch(url + '/presenca', { method: 'POST', headers: H, body: JSON.stringify({ aparelho: id, nome: 'Teste', av: 'a1', tela: 'home' }) }).catch(() => {});

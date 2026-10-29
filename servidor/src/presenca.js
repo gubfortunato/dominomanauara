@@ -48,7 +48,7 @@ export async function donoPresenca(req, env, origin, h) {
   const lista = results || [];
   // 3.26.1: quem está na entrada sem cadastro (sem apelido) entra só na contagem, como os menores
   // 3.30: quantos abriram o app nas últimas 24 h (a presença guarda 1 dia; só a contagem, sem nomes)
-  const dia = await env.DB.prepare('SELECT COUNT(*) AS n, SUM(CASE WHEN menor THEN 1 ELSE 0 END) AS menores FROM presenca WHERE visto_em > ?').bind(Date.now() - 86400000).first();
+  const dia = await env.DB.prepare('SELECT COUNT(*) AS n, SUM(CASE WHEN menor THEN 1 ELSE 0 END) AS menores FROM presenca WHERE visto_em > ? AND aparelho NOT LIKE \'teste-publicacao-%\'').bind(Date.now() - 86400000).first();   // 28/10: sem o teste automático
   return h.json({ agora: lista.filter(x => !x.menor && x.nome), menores: lista.filter(x => x.menor).length,
     semCadastro: lista.filter(x => !x.menor && !x.nome).length, agoraServidor: Date.now(),
     dia: { n: (dia && dia.n) || 0, menores: (dia && dia.menores) || 0 } }, 200, origin);

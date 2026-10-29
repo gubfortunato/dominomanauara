@@ -15,6 +15,7 @@
 // Rei da Calçada: o 1º da semana passada ganha a coroa na mesa online durante a semana seguinte.
 // Apelido genérico ("Anonimous", "Jogador"...) não aparece no ranking: a pessoa vê o aviso para escolher um apelido.
 import { nomeGenerico, nomeOfensivo } from './motor.js';
+import { limitesValem, temPlano } from './planos.js';   // 28/10: ranking completo é dos sócios
 
 const DIA = 86400000, MANAUS = 4 * 3600000;
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
@@ -125,14 +126,21 @@ export async function reiDaSemana(env) {
   REI.sem = sem; REI.em = agora; REI.dados = x ? { aparelho: x.aparelho, nome: x.nome, av: x.av, nv: x.nv } : null;
   return REI.dados;
 }
-// GET /ranking?aparelho= -> { semana, mes, fora, rei, regras }
+// GET /ranking?aparelho= -> { semana, mes, fora, rei, regras, completo }
+// Planos (28/10): sem plano, depois do lançamento, o ranking mostra só o Rei da Calçada e os 3 primeiros da semana; a
+// lista completa da semana e do mês e a sua posição são dos sócios (completo = false: o app mostra o convite).
+export const TOP_GRATIS = 3;
 export async function ranking(req, env, origin, h, url) {
   const ap = idOk(url.searchParams.get('aparelho')) ? url.searchParams.get('aparelho') : null;
   const p = periodos(agoraDe(env));
   const fora = ap ? !!(await env.DB.prepare('SELECT 1 AS x FROM ranking_fora WHERE aparelho = ?').bind(ap).first()) : false;
   let rei = null; try { rei = await reiDaSemana(env); } catch (e) {}
   const eu = fora ? null : ap, reiAp = rei && rei.aparelho;
-  return h.json({ semana: await lista(env, p.sem, p.fimSem, eu, reiAp), mes: await lista(env, p.mes, p.fimMes, eu, reiAp), fora,
+  const completo = !limitesValem(env) || (!!ap && await temPlano(env, ap));
+  const semana = await lista(env, p.sem, p.fimSem, eu, reiAp);
+  const mes = completo ? await lista(env, p.mes, p.fimMes, eu, reiAp) : { top: [], eu: null, fim: p.fimMes, pontos: usaPontos(env, p.mes), trancado: true };
+  if (!completo) { semana.top = semana.top.slice(0, TOP_GRATIS); semana.eu = null; semana.trancado = true; }
+  return h.json({ semana, mes, fora, completo, topGratis: TOP_GRATIS,
     rei: rei ? { nome: rei.nome, av: rei.av, nv: rei.nv, eu: !!ap && ap === reiAp } : null,
     regras: { pontosDesde: pontosDesde(env), ...PTS, roboPorDia: ROBO_POR_DIA, parPorDia: PAR_POR_DIA } }, 200, origin);
 }

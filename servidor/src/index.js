@@ -2,7 +2,7 @@
 // Caixa de mensagens "Fale com a gente", lembretes para jogar (Web Push), painel do dono e mesa online por convite.
 import { enviarPush } from './webpush.js';
 import { Mesa } from './mesa.js';
-import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolver, manterChaveAsaas, donoCortesia, guardarProgresso, verProgresso, donoApoiadores } from './pagamentos.js';
+import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolver, manterChaveAsaas, donoCortesia, guardarProgresso, verProgresso, donoApoiadores, cancelarAssinatura, precos, reajustesPendentes } from './pagamentos.js';
 import { atuais, imagem, contar, donoLista, donoImagem, donoSalvar, donoApagar } from './patrocinadores.js';
 import * as fotos from './fotos.js';
 import * as turmas from './turmas.js';
@@ -11,6 +11,7 @@ import * as presenca from './presenca.js';
 import * as rk from './ranking.js';
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
+import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteDaRede } from './planos.js';
 export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
@@ -81,12 +82,27 @@ async function novaMesa(req, env, origin) {
   const marca = await marcaDoDia(req, env);
   const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM mesas_criadas WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();
   if (r && r.n >= MESAS_POR_HORA) return json({ erro: 'muitas' }, 429, origin);
+  // planos (28/10): quem não é sócio cria 1 mesa com os amigos por dia (e precisa ter a partida do dia para jogar)
+  let uso = null, apoia = false;
+  const rede = await marcaRede(req.headers.get('cf-connecting-ip'), env);
+  if (limitesValem(env)) {
+    apoia = await temPlano(env, b && b.id);
+    if (!apoia) {
+      uso = await usoDoDia(env, b && b.id);
+      if (uso.mesas >= LIMITE.mesas) return json({ erro: 'limite-mesa' }, 403, origin);
+      if (uso.partidas >= LIMITE.partidas) return json({ erro: 'limite-partida' }, 403, origin);
+      // aparelho novo na mesma rede de quem acabou de bater o limite (apagou os dados do app): o limite continua
+      if (!uso.partidas && !uso.mesas && await limiteDaRede(env, rede, 'partidas', b && b.id, b && b.nome)) return json({ erro: 'limite-partida' }, 403, origin);
+    }
+  }
+  if (!uso && b && b.id) await aparelhoDesde(env, b.id);
   for (let k = 0; k < 8; k++) {
     const codigo = String(10000 + Math.floor(Math.random() * 90000));
     const stub = env.MESA.get(env.MESA.idFromName(codigo));
-    const res = await stub.fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, nv: b.nv, codigo }) });
+    const res = await stub.fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, nv: b.nv, codigo, uso, apoiador: apoia }) });
     if (res.status === 201) {
       try { await env.DB.prepare('INSERT INTO mesas_criadas (marca, criado_em) VALUES (?, ?)').bind(marca, Date.now()).run(); } catch (e) {}   // limite do banco: a mesa vale assim mesmo
+      if (uso) await somarUso(env, b.id, 'mesas');
       return json({ codigo }, 201, origin);
     }
     if (res.status === 400) return json({ erro: 'dados' }, 400, origin);
@@ -104,6 +120,14 @@ async function mesaRapida(req, env, origin) {
   const marca = await marcaDoDia(req, env);
   const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM mesas_criadas WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();
   if (r && r.n >= MESAS_POR_HORA) return json({ erro: 'muitas' }, 429, origin);
+  // planos (28/10): sem plano, 5 partidas completas por dia na mesa rápida (o limite é do aparelho: trocar de apelido
+  // não muda nada; aparelho novo na mesma rede de quem acabou de bater o limite fica com o limite também)
+  const rede = await marcaRede(req.headers.get('cf-connecting-ip'), env);
+  if (limitesValem(env) && !(await temPlano(env, b && b.id))) {
+    const uso = await usoDoDia(env, b && b.id);
+    if (uso.publicas >= LIMITE.publicas) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);
+    if (!uso.publicas && await limiteDaRede(env, rede, 'publicas', b && b.id, b && b.nome)) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);
+  } else if (b && b.id) await aparelhoDesde(env, b.id);
   const res = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila', { method: 'POST',
     body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro, nv: b.nv }) });
   const j = await res.json().catch(() => ({}));
@@ -115,7 +139,9 @@ async function rotaMesa(req, env, origin, codigo, ws) {
   if (ws) {
     if ((req.headers.get('upgrade') || '').toLowerCase() !== 'websocket') return json({ erro: 'ws' }, 426, origin);
     if ((origin || exigeApp(env)) && !origemOk(origin)) return new Response('origem', { status: 403 });   // 3.41: sem o app (sem origem), não entra
-    return stub.fetch(req);
+    // 28/10: a mesa recebe só o resumo da rede (para o limite de quem apaga os dados do app), nunca o endereço
+    const hd = new Headers(req.headers); hd.set('x-rede', (await marcaRede(req.headers.get('cf-connecting-ip'), env)) || ''); hd.delete('cf-connecting-ip');
+    return stub.fetch(new Request(req, { headers: hd }));
   }
   const r = await stub.fetch('https://mesa/info');
   return json(await r.json(), 200, origin);
@@ -319,18 +345,20 @@ async function lembretesPlano(env) {
   const { results } = await env.DB.prepare(`SELECT a.id, a.endpoint, a.p256dh, a.auth, p.aparelho, p.ate FROM planos p
     JOIN avisos_id i ON i.aparelho = p.aparelho JOIN avisos a ON a.endpoint = i.endpoint
     WHERE p.ate > ? AND p.ate <= ? AND NOT EXISTS (SELECT 1 FROM lembretes_plano l WHERE l.aparelho = p.aparelho AND l.ate = p.ate)
+      AND NOT EXISTS (SELECT 1 FROM assinaturas s WHERE s.aparelho = p.aparelho AND s.status = 'ativa')
     ORDER BY p.ate LIMIT 8`).bind(agora, agora + 3 * DIA).all();
   const lista = results || [];
   for (const s of lista) await env.DB.prepare('INSERT OR IGNORE INTO lembretes_plano (aparelho, ate, enviado_em) VALUES (?, ?, ?)').bind(s.aparelho, s.ate, agora).run();
-  const r1 = await mandarPara(lista, s => ({ titulo: 'Seu tempo de Apoiador está acabando', texto: `Ele vale até ${diaMes(s.ate)}. Toque para continuar com a foto na mesa e os extras.`, url: '/?apoio=renovar' }), env);
+  const r1 = await mandarPara(lista, s => ({ titulo: 'Seu tempo de sócio está acabando', texto: `Ele vale até ${diaMes(s.ate)}. Toque para continuar com as partidas sem limite e os extras.`, url: '/?apoio=renovar' }), env);
   // 3.38: no dia em que acaba (nas últimas 24 horas), mais um aviso, também um por vencimento
   const { results: fim } = await env.DB.prepare(`SELECT a.id, a.endpoint, a.p256dh, a.auth, p.aparelho, p.ate FROM planos p
     JOIN avisos_id i ON i.aparelho = p.aparelho JOIN avisos a ON a.endpoint = i.endpoint
     WHERE p.ate > 0 AND p.ate <= ? AND p.ate > ? AND NOT EXISTS (SELECT 1 FROM lembretes_plano_fim l WHERE l.aparelho = p.aparelho AND l.ate = p.ate)
+      AND NOT EXISTS (SELECT 1 FROM assinaturas s WHERE s.aparelho = p.aparelho AND s.status = 'ativa')
     ORDER BY p.ate LIMIT 6`).bind(agora, agora - DIA).all();
   const lf = fim || [];
   for (const s of lf) await env.DB.prepare('INSERT OR IGNORE INTO lembretes_plano_fim (aparelho, ate, enviado_em) VALUES (?, ?, ?)').bind(s.aparelho, s.ate, agora).run();
-  const r2 = await mandarPara(lf, () => ({ titulo: 'Seu tempo de Apoiador acabou', texto: 'Renove para voltar com a foto na mesa, o selo ★ e os avatares exclusivos. A tradição agradece!', url: '/?apoio=renovar' }), env);
+  const r2 = await mandarPara(lf, () => ({ titulo: 'Seu tempo de sócio acabou', texto: 'Renove para voltar às partidas sem limite, ao ranking completo e aos extras de sócio. A tradição agradece!', url: '/?apoio=renovar' }), env);
   return { ok: r1.ok + r2.ok, falhas: r1.falhas + r2.falhas, fim: r2.ok };
 }
 async function donoAvisos(req, env, origin) {
@@ -390,7 +418,9 @@ export default {
       const pd = url.pathname.match(/^\/pedido\/([0-9a-f]{20})$/);
       if (pd && req.method === 'GET') return await pedido(env, origin, H, pd[1]);
       if (url.pathname === '/plano' && req.method === 'GET') return await plano(env, origin, H, url);
+      if (url.pathname === '/precos' && req.method === 'GET') return precos(env, origin, H);   // 28/10: preços de agora (promoção)
       if (url.pathname === '/plano/trazer' && req.method === 'POST') return await trazerPlano(req, env, origin, H);
+      if (url.pathname === '/plano/cancelar' && req.method === 'POST') return await cancelarAssinatura(req, env, origin, H);   // 28/10: cancelar a renovação do mensal
       if (url.pathname === '/progresso' && req.method === 'POST') return await guardarProgresso(req, env, origin, H);   // 3.39
       if (url.pathname === '/progresso' && req.method === 'GET') return await verProgresso(env, origin, H, url);
       if (url.pathname === '/asaas/webhook' && req.method === 'POST') return await webhook(req, env, origin, H);
@@ -461,8 +491,8 @@ export default {
   // 3.37.2: de manhã (9h às 11h em Manaus) só os avisos de evento (data especial, Desafio, Rei da Calçada).
   async scheduled(evento, env, ctx) {
     const hora = new Date((evento && evento.scheduledTime) || Date.now()).getUTCHours();
-    if (hora >= 12 && hora < 18) { ctx.waitUntil((async () => { try { await lembreteDaData(env, EVENTO_POR_RODADA.manha); } catch (e) {} })()); return; }
-    ctx.waitUntil((async () => { try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env, EVENTO_POR_RODADA.tarde); } catch (e) {} try { await fotos.moderarPendentes(env); } catch (e) {} try { await turmas.fecharDesafio(env); } catch (e) {} try { await manterChaveAsaas(env); } catch (e) {} try { await vivo.limparVivo(env); } catch (e) {} try { await limparVistos(env); } catch (e) {} try { await presenca.limparPresenca(env); } catch (e) {} await lembretesDoDia(env);  try { await rk.limparRanking(env); } catch (e) {} })());
+    if (hora >= 12 && hora < 18) { ctx.waitUntil((async () => { try { await lembreteDaData(env, EVENTO_POR_RODADA.manha); } catch (e) {} try { await reajustesPendentes(env); } catch (e) {} })()); return; }
+    ctx.waitUntil((async () => { try { await reajustesPendentes(env); } catch (e) {} try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env, EVENTO_POR_RODADA.tarde); } catch (e) {} try { await fotos.moderarPendentes(env); } catch (e) {} try { await turmas.fecharDesafio(env); } catch (e) {} try { await manterChaveAsaas(env); } catch (e) {} try { await vivo.limparVivo(env); } catch (e) {} try { await limparVistos(env); } catch (e) {} try { await presenca.limparPresenca(env); } catch (e) {} await lembretesDoDia(env);  try { await rk.limparRanking(env); } catch (e) {} })());
   }
 };
 export { lembretesDoDia, lembretesPlano, lembreteDaData };

@@ -59,6 +59,9 @@ jobs:
           sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/${GITHUB_SHA::7}/" wrangler.template.toml > wrangler.toml
           out=$(wrangler d1 execute dominomanauara --remote --file=schema.sql 2>&1); rc=$?
           log "tabelas: código $rc $(echo "$out" | grep -iE 'success|error|✘|executed' | head -3 | tr '\n' ' ')"
+          # 28/10: quantos aparelhos ganharam o presente de quem já tinha pago (só o número)
+          n=$(wrangler d1 execute dominomanauara --remote --json --command "SELECT COUNT(*) AS n FROM presentes WHERE tipo = 'fundador'" 2>/dev/null | jq -r '.[0].results[0].n' 2>/dev/null)
+          log "presente de quem já tinha pago: ${n:-?} aparelhos"
           out=$(wrangler deploy 2>&1); rc=$?
           log "publicar: código $rc"
           if [ "$rc" != "0" ] && grep -q '^\[ai\]' wrangler.toml; then
@@ -97,12 +100,20 @@ jobs:
             hooks=$(curl -s -H "access_token: $ASAAS_API_KEY" -H "$UA" "$AS/webhooks")
             alvo="$url/asaas/webhook"
             tem=$(echo "$hooks" | jq -r --arg u "$alvo" '[.data[]? | select(.url == $u)] | length')
-            if [ "${tem:-0}" = "0" ] || ! wrangler secret list 2>/dev/null | grep -q ASAAS_WEBHOOK_TOKEN; then
+            # 28/10: o mensal que renova precisa também dos avisos de cobrança e de assinatura; o aviso antigo é refeito
+            novo=$(echo "$hooks" | jq -r --arg u "$alvo" '[.data[]? | select(.url == $u) | select((.events // []) | index("PAYMENT_CONFIRMED"))] | length')
+            if [ "${tem:-0}" = "0" ] || [ "${novo:-0}" = "0" ] || ! wrangler secret list 2>/dev/null | grep -q ASAAS_WEBHOOK_TOKEN; then
               for hid in $(echo "$hooks" | jq -r --arg u "$alvo" '.data[]? | select(.url == $u) | .id'); do curl -s -X DELETE -H "access_token: $ASAAS_API_KEY" -H "$UA" "$AS/webhooks/$hid" > /dev/null; done
               tok=$(openssl rand -hex 32)
               printf '%s' "$tok" | wrangler secret put ASAAS_WEBHOOK_TOKEN > /dev/null 2>&1
-              corpo=$(jq -nc --arg u "$alvo" --arg t "$tok" --arg e "$email" '{name:"Dominó Manauara", url:$u, email:$e, enabled:true, interrupted:false, apiVersion:3, authToken:$t, sendType:"SEQUENTIALLY", events:["CHECKOUT_PAID","CHECKOUT_CANCELED","CHECKOUT_EXPIRED"]}')
+              corpo=$(jq -nc --arg u "$alvo" --arg t "$tok" --arg e "$email" '{name:"Dominó Manauara", url:$u, email:$e, enabled:true, interrupted:false, apiVersion:3, authToken:$t, sendType:"SEQUENTIALLY", events:["CHECKOUT_PAID","CHECKOUT_CANCELED","CHECKOUT_EXPIRED","PAYMENT_CONFIRMED","PAYMENT_RECEIVED","SUBSCRIPTION_CREATED","SUBSCRIPTION_DELETED","SUBSCRIPTION_INACTIVATED"]}')
               r=$(curl -s -X POST -H "access_token: $ASAAS_API_KEY" -H "$UA" -H 'content-type: application/json' --data "$corpo" "$AS/webhooks")
+              # se o Asaas não aceitar os avisos de assinatura, fica com os de cobrança (a assinatura liga pelo cliente)
+              if [ "$(echo "$r" | jq -r '.id // empty')" = "" ]; then
+                log "asaas aviso com assinatura recusado: $(echo "$r" | jq -c '.errors')"
+                corpo=$(echo "$corpo" | jq -c '.events = ["CHECKOUT_PAID","CHECKOUT_CANCELED","CHECKOUT_EXPIRED","PAYMENT_CONFIRMED","PAYMENT_RECEIVED"]')
+                r=$(curl -s -X POST -H "access_token: $ASAAS_API_KEY" -H "$UA" -H 'content-type: application/json' --data "$corpo" "$AS/webhooks")
+              fi
               log "asaas aviso de pagamento (webhook): $(echo "$r" | jq -c '{criado: (.id != null), ativo: .enabled, erro: .errors}')"
               sleep 8
             else
