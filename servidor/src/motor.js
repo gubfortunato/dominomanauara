@@ -568,5 +568,6 @@ function nomeGenerico(nome) {
   const t = String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
   return t.length < 2 || /^(.)\1+$/.test(t) || NOME_GENERICO.includes(t);
 }
-const BOT_NAMES = ["Raimundo", "Nonato", "Socorro", "Tonhão", "Chiquinho", "Graça", "Tião", "Conceição", "Bené", "Rosinha", "Zeca", "Arlindo", "Cleide", "Juca", "Lucinha", "Mané", "Dico", "Nazaré", "Dita", "Piaba", "Chica", "Curica", "Dorinha", "Valdir", "Zuleide", "Deco", "Tetê", "Dodó", "Ciça"];
+// 03/11 (pedido do dono): a turma do bairro ficou mais nova (os mesmos nomes do app)
+const BOT_NAMES = ["Kauã", "Yasmin", "Ryan", "Tainá", "Davi", "Duda", "Juninho", "Ketlen", "Vitinho", "Bia", "Kadu", "Lari", "Biel", "Gabi", "Léo", "Rayssa", "Igor", "Maju", "Caio", "Nanda", "Kaique", "Iara", "Thaís", "Tonhão", "Piaba", "Curica", "Lucinha", "Mané"];
 export { TEAM, TARGET, tkey, isDbl, pips, newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, botForte, reacaoRobo, openEnds, tableSum, nomeOfensivo, nomeGenerico, BOT_NAMES, pedirPonto };
