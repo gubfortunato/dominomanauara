@@ -2213,8 +2213,12 @@ button.dn-ag:active{transform:scale(.98)}
 @keyframes papoItem{from{opacity:0;transform:translateY(8px)}}
 @media (prefers-reduced-motion: reduce){.papo-painel,.papo-caixa,.papo-painel.saindo,.papo-painel.saindo .papo-caixa,.papo-item.chegou{animation:none}}
 .papo-topo{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.papo-topo h2{flex:1;margin:0;font-size:21px}
-.papo-mudo{font:inherit;font-size:15px;font-weight:700;padding:7px 11px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--fg);cursor:pointer;white-space:nowrap}
+.papo-tit{flex:1;min-width:0;display:grid}
+.papo-topo h2{margin:0;font-size:21px}
+.papo-tit small{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.papo-tit small:empty{display:none}
+.papo-mudo{font:inherit;font-size:14.5px;font-weight:700;padding:7px 12px 7px 9px;border-radius:999px;border:0;background:color-mix(in srgb, var(--fg) 8%, transparent);color:var(--fg);cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.papo-mudo svg{width:18px;height:18px}
 .papo-mudo[aria-pressed="true"]{background:var(--line)}
 .papo-x{font:inherit;font-size:28px;line-height:1;width:40px;height:40px;border-radius:999px;border:0;background:transparent;color:var(--fg);cursor:pointer}
 .papo-vez{font:inherit;font-weight:800;font-size:16.5px;padding:10px 12px;margin:0 0 8px;border-radius:12px;border:0;background:var(--glow);color:#1b1206;cursor:pointer;animation:papoVezPulsa 1.6s ease-in-out infinite}
@@ -2223,11 +2227,24 @@ button.dn-ag:active{transform:scale(.98)}
 @keyframes papoVezPulsa{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb, var(--glow) 55%, transparent)}50%{box-shadow:0 0 0 5px color-mix(in srgb, var(--glow) 35%, transparent)}}
 .papo-caixa{overflow:hidden}
 .papo-vez[hidden]{display:none}
-.papo-lista{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;list-style:none;margin:0;padding:2px 2px 8px;display:flex;flex-direction:column;gap:8px}
-.papo-item{align-self:flex-start;max-width:86%;background:var(--bg);border:1.5px solid var(--line);border-radius:4px 16px 16px 16px;padding:7px 12px 8px;cursor:pointer;overflow-wrap:anywhere}
-.papo-item.eu{align-self:flex-end;background:var(--tile);color:var(--pip);border-color:transparent;border-radius:16px 4px 16px 16px;cursor:default}
+.papo-lista{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;list-style:none;margin:0 -4px;padding:6px 4px 10px;display:flex;flex-direction:column;gap:2px;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 16px);mask-image:linear-gradient(to bottom,transparent 0,#000 16px)}
+/* 03/11 (pedido do dono: melhorar a tela do papo): como nos grupos do WhatsApp. Cada linha é avatar + balão; as
+   mensagens seguidas da mesma pessoa ficam juntas (nome e avatar só na primeira) e o grupo seguinte ganha espaço. */
+.papo-item{display:flex;align-items:flex-end;gap:8px;max-width:88%;align-self:flex-start;cursor:pointer}
+.papo-item.ini{margin-top:10px}
+.papo-item.eu{align-self:flex-end;cursor:default}
+.papo-av{flex:none;width:34px;height:34px;align-self:flex-start;border-radius:50%;overflow:hidden;display:grid;place-items:center}
+.papo-item.ini .papo-av{background:color-mix(in srgb, var(--pc, var(--glow)) 30%, var(--bg))}
+.papo-av img{width:100%;height:100%;display:block}
+.papo-av b{font-size:16px;font-weight:800;color:var(--pc, var(--fg))}
+.papo-bolha{min-width:0;background:var(--bg);border-radius:18px;padding:7px 12px 7px;overflow-wrap:anywhere;box-shadow:0 1px 0 rgba(0,0,0,.18)}
+.papo-item.ini:not(.eu) .papo-bolha{border-top-left-radius:6px}
+.papo-item.eu .papo-bolha{background:var(--tile);color:var(--pip)}
+.papo-item.eu.ini .papo-bolha{border-top-right-radius:6px}
+.papo-item[class*=" pc"] .papo-bolha{background:color-mix(in srgb, var(--pc) 9%, var(--bg))}
+.papo-item.aberto .papo-bolha{box-shadow:0 0 0 2px var(--glow)}
 .papo-item.frase .papo-tx{font-weight:800}
-.papo-item.aberto{border-color:var(--glow)}
 /* 28/10 (pedido do dono): uma cor por jogador, como nos grupos do WhatsApp: o nome na cor e o balão levemente tingido.
    No escuro, cores claras; no claro, cores fechadas (o nome sempre legível). */
 .papo-item.pc0{--pc:#ff8f73}.papo-item.pc1{--pc:#6fb9ff}.papo-item.pc2{--pc:#7fd48b}.papo-item.pc3{--pc:#d5a0ff}
@@ -2238,30 +2255,43 @@ button.dn-ag:active{transform:scale(.98)}
   :root:not([data-theme="dark"]) .papo-item.pc0{--pc:#b23a1f}:root:not([data-theme="dark"]) .papo-item.pc1{--pc:#1d64a8}:root:not([data-theme="dark"]) .papo-item.pc2{--pc:#2c7a35}:root:not([data-theme="dark"]) .papo-item.pc3{--pc:#8a3fb5}
   :root:not([data-theme="dark"]) .papo-item.pc4{--pc:#a05a00}:root:not([data-theme="dark"]) .papo-item.pc5{--pc:#0c7770}:root:not([data-theme="dark"]) .papo-item.pc6{--pc:#b0286b}:root:not([data-theme="dark"]) .papo-item.pc7{--pc:#4d52c4}
 }
-.papo-item[class*=" pc"]{background:color-mix(in srgb, var(--pc) 13%, var(--bg));border-color:color-mix(in srgb, var(--pc) 45%, var(--line))}
-.papo-item[class*=" pc"] .papo-quem{color:var(--pc);opacity:1}
-.papo-item[class*=" pc"] .papo-quem time{color:var(--fg);opacity:.6}
-.papo-item[class*=" pc"].aberto{border-color:var(--glow)}
-.papo-quem{display:flex;align-items:baseline;gap:8px;font-size:14px;font-weight:800;opacity:.8}
-.papo-quem time{font-weight:600;opacity:.75}
-.papo-tx{display:block;font-size:18px;line-height:1.35;margin-top:1px}
+.papo-quem{display:block;font-size:14px;font-weight:800;margin-bottom:1px;color:var(--pc, var(--fg))}
+.papo-tx{display:block;font-size:18px;line-height:1.35}
+.papo-tx time{float:right;margin:7px -2px -3px 10px;font-size:12px;font-weight:600;line-height:1;opacity:.6;font-variant-numeric:tabular-nums}
+/* só emoji: grande e sem balão */
+.papo-item.emoji .papo-bolha{background:none;box-shadow:none;padding:0 2px}
+.papo-item.emoji .papo-quem{margin-bottom:2px}
+.papo-item.emoji .papo-tx{font-size:40px;line-height:1.1}
+.papo-item.emoji .papo-tx time{font-size:12px;margin-top:22px;color:var(--fg)}
+.papo-item.eu.emoji .papo-bolha{color:var(--fg)}
 .papo-acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .papo-acoes button,.papo-ouvir{font:inherit;font-size:15px;font-weight:700;padding:7px 11px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);cursor:pointer}
 .papo-denuncia.confirma{background:#e5484d;border-color:#e5484d;color:#fff}
 .papo-vazio,.papo-calados{align-self:center;text-align:center;font-size:16px;opacity:.75;padding:18px 8px}
 .papo-calados{padding:4px 8px;font-size:14.5px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center}
-.papo-frases{display:flex;gap:8px;overflow-x:auto;padding:8px 2px 10px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none;flex:none}
+.papo-regra{align-self:center;max-width:92%;margin:4px 0 6px;padding:7px 12px;border-radius:12px;background:color-mix(in srgb, var(--glow) 12%, var(--bg-2));font-size:13.5px;line-height:1.4;text-align:center;color:var(--muted)}
+.papo-novas{align-self:stretch;display:flex;align-items:center;gap:10px;margin:12px 0 2px;font-size:13px;font-weight:800;color:var(--nos);text-transform:uppercase;letter-spacing:.06em}
+.papo-novas::before,.papo-novas::after{content:"";flex:1;height:1px;background:color-mix(in srgb, var(--nos) 45%, transparent)}
+.papo-frases{display:flex;gap:8px;overflow-x:auto;padding:8px 2px 10px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none;flex:none;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
 .papo-frases::-webkit-scrollbar{display:none}
 .papo-frases[hidden]{display:none}
-.papo-frase{flex:none;font:inherit;font-size:16px;font-weight:800;padding:9px 13px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;white-space:nowrap}
+.papo-frase{flex:none;font:inherit;font-size:15.5px;font-weight:800;padding:8px 13px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;white-space:nowrap}
 .papo-frase:active{transform:scale(.97);border-color:var(--glow)}
 .papo-form{display:flex;gap:8px;align-items:center;flex:none}
 .papo-form[hidden]{display:none}
-.papo-form input{flex:1;min-width:0;font:inherit;font-size:18px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg)}
-.papo-form input:focus{outline:2px solid var(--glow);outline-offset:1px}
-.papo-form .primary{width:auto;flex:none;padding:12px 16px;margin:0}
-.papo-form .primary:disabled{opacity:.5}
-.papo-nota{margin:8px 2px 0;font-size:14.5px;line-height:1.4;opacity:.8;flex:none}
+.papo-campo{flex:1;min-width:0;position:relative}
+.papo-form input{width:100%;box-sizing:border-box;font:inherit;font-size:18px;padding:12px 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg)}
+.papo-form input:focus{outline:none;border-color:var(--glow)}
+.papo-conta{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12.5px;font-weight:700;color:var(--muted);background:var(--bg);padding-left:4px;font-variant-numeric:tabular-nums}
+.papo-conta.cheio{color:var(--alert)}
+.papo-conta[hidden]{display:none}
+.papo-campo:has(.papo-conta:not([hidden])) input{padding-right:58px}
+.papo-enviar{flex:none;width:48px;height:48px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--glow);color:#1b1206;cursor:pointer;transition:transform .12s, opacity .15s}
+.papo-enviar svg{width:22px;height:22px;margin-left:2px}
+.papo-enviar:active{transform:scale(.93)}
+.papo-enviar:disabled{opacity:.4;cursor:default}
+.papo-nota{margin:8px 2px 0;font-size:14px;line-height:1.4;color:var(--muted);flex:none}
+.papo-nota[hidden]{display:none}
 /* mensagem chegando com o papo fechado (sala, garagem, quem assiste) */
 .papo-flutua{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:26;transform:translate(-50%,-8px);opacity:0;width:max-content;max-width:min(88%,460px);background:var(--tile);color:var(--pip);font-size:17px;line-height:1.35;font-weight:600;padding:9px 15px;border-radius:14px;box-shadow:0 8px 22px rgba(0,0,0,.35);cursor:pointer;transition:opacity .2s, transform .2s;overflow-wrap:anywhere}
 .papo-flutua b{font-weight:800;margin-right:4px}
@@ -2844,6 +2874,7 @@ body.papo-aberto{overflow:hidden}
     <label class="dn-sw"><input type="checkbox" id="dnSemContar"><span><b>Não contar meus acessos</b><small>Seus testes neste aparelho ficam fora dos números.</small></span></label>
     <label class="dn-sw"><input type="checkbox" id="dnTestePag"><span><b>Testar os planos neste celular</b><small>Só você vê os botões. Para os jogadores, continua desligado até ajustarmos o Asaas.</small></span></label>
     <button type="button" class="linkbtn" id="dnKeyTrocar">Tenho o plano Pro do Umami: colar a chave</button>
+    <button type="button" class="linkbtn" id="dnVerCarta">Ver a carta de boas-vindas do sócio</button>
     <button type="button" class="linkbtn" id="dnSair">Sair da Área do administrador neste aparelho</button>
     <p class="note dn-tela" id="dnTela"></p>
   </section>
@@ -3451,6 +3482,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.44.1', data: '03/11/2026', itens: ['Papo de mesa de cara nova: as mensagens seguidas da mesma pessoa ficam juntas, com o avatar e o nome só na primeira, a hora dentro do balão, emoji sozinho aparece grande, aviso de quantas mensagens novas chegaram, botão de enviar redondo e contagem de letras perto do limite.'] },
   { v: '3.44', data: '03/11/2026', itens: ['Carteira de sócio do clube Dominó Manauara: quem é Sócio da Calçada ganha a carteira com o apelido, a foto ou o avatar, o número de sócio, desde quando é sócio e até quando vale. Fica na tela do Sócio da Calçada e dá para compartilhar como imagem.', 'Administrador: números do jogo do nosso servidor, com quantos já jogaram desde o início, quem jogou hoje, em 7 e em 30 dias, novos, quantos voltaram, média de partidas por jogador, partidas por dia, horário de acesso, picos de gente ao mesmo tempo, sócios e mesas criadas.'] },
   { v: '3.43.2', data: '03/11/2026', itens: ['Mesa online: quem está conectado e passa dos 20 segundos não perde mais a partida inteira. A turma joga aquela pedra por você e a partida continua valendo (ranking e bônus de vitória) até 3 vezes por partida. Na 4ª, ela deixa de contar. Quem cai da internet continua como antes.'] },
   { v: '3.43.1', data: '03/11/2026', itens: ['Corrigido: arrastando a pedra para uma ponta onde ela não encaixa, ela podia ir sozinha para a outra ponta. Agora ela volta para a mão, e a jogada só vai para a ponta onde você soltou.', 'Nova carta de boas-vindas de quem vira Sócio da Calçada, com tudo o que o sócio tem.'] },
@@ -4982,11 +5014,12 @@ document.addEventListener('visibilitychange', () => {
 });
 // 3.25: o aparelho do administrador fica como doador e Apoiador (cortesia, sem pagamento): uma vez por aparelho
 async function garantirCortesia() {
-  if (!souAdmin() || !CONFIG.api || store.get('dmz-cortesia') === meuId()) return;
+  // 03/11 (pedido do dono): pede de novo uma vez (marca nova), para o plano de sócio chegar a este aparelho
+  if (!souAdmin() || !CONFIG.api || store.get('dmz-cortesia-socio') === meuId()) return;
   try {
     const r = await fetch(CONFIG.api + '/dono/cortesia', { method: 'POST', headers: { 'content-type': 'application/json', 'x-admin-key': dono.admin }, body: JSON.stringify({ aparelho: meuId() }) });
     if (!r.ok) return;
-    guardarConta(await r.json()); store.set('dmz-cortesia', meuId());
+    guardarConta(await r.json()); store.set('dmz-cortesia', meuId()); store.set('dmz-cortesia-socio', meuId());
     if (screen === 'home') renderHome();
   } catch (e) {}
 }
@@ -10584,6 +10617,23 @@ const papoCalado = it => !it.eu && PP.calados.has(it.nome);
 const papoTexto = it => it.txt != null ? it.txt : (REACOES[it.k] || '');
 const papoHora = em => { try { return new Date(em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
 
+// 03/11: avatar de quem falou (da cadeira ou da fila; quem não está mais lá fica com a inicial), figurinha sozinha e
+// a contagem de letras perto do limite
+function papoAvatar(it) {
+  const v = papoVista(), l = [].concat((v && v.cad) || [], (v && v.fila) || []);
+  const c = l.find(x => x && !x.bot && x.nome === it.nome) || l.find(x => x && x.nome === it.nome);
+  try { const a = c && c.av && avatarDe(c.av); if (a) return `<img src="${avatarURI(a)}" alt="">`; } catch (e) {}
+  return `<b>${esc(([...String(it.nome || '?')][0] || '?').toUpperCase())}</b>`;
+}
+const papoSoEmoji = t => { const s = String(t || '').trim(); return !!s && [...s].length <= 8 && /\p{Extended_Pictographic}/u.test(s) && /^[\p{Extended_Pictographic}\p{Emoji_Modifier}\u200d\ufe0f\s]+$/u.test(s); };
+function papoConta() {
+  const n = [...$('#papoTxt').value].length, c = $('#papoConta');
+  $('#papoEnviar').disabled = !n;
+  c.hidden = n < PAPO_MAX - 20; c.textContent = `${n}/${PAPO_MAX}`; c.classList.toggle('cheio', n >= PAPO_MAX);
+}
+const PAPO_SINO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5l1.5 1.7H5Z M10 20.2a2.2 2.2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+const PAPO_SINO_X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5l1.5 1.7H5Z M10 20.2a2.2 2.2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M4 4l16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+
 // ---------- botões (jogo, sala e garagem) ----------
 const PAPO_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v10H9.5L5 19.5v-4H4z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M8 9.3h8M8 12.3h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 const papoBotao = id => `<button type="button" class="reagir papo-bt" id="${id}" hidden>${PAPO_IC}Papo de mesa<span class="papo-nao" hidden></span></button>`;
@@ -10597,7 +10647,7 @@ const papoBotao = id => `<button type="button" class="reagir papo-bt" id="${id}"
     <div class="papo-caixa" role="dialog" aria-modal="true" aria-labelledby="papoTitulo">
       <div class="papo-pega" aria-hidden="true"></div>
       <div class="papo-topo">
-        <h2 id="papoTitulo">Papo de mesa</h2>
+        <div class="papo-tit"><h2 id="papoTitulo">Papo de mesa</h2><small id="papoSub"></small></div>
         <button type="button" class="papo-mudo" id="papoMudo" aria-pressed="false"></button>
         <button type="button" class="papo-x" id="papoFechar" aria-label="Fechar o papo">×</button>
       </div>
@@ -10605,8 +10655,8 @@ const papoBotao = id => `<button type="button" class="reagir papo-bt" id="${id}"
       <ol class="papo-lista" id="papoLista" aria-live="polite"></ol>
       <div class="papo-frases" id="papoFrases"></div>
       <form class="papo-form" id="papoForm" autocomplete="off">
-        <input id="papoTxt" type="text" maxlength="${PAPO_MAX}" enterkeyhint="send" placeholder="Escreva para a mesa" aria-label="Mensagem para a mesa">
-        <button type="submit" class="primary" id="papoEnviar">Enviar</button>
+        <div class="papo-campo"><input id="papoTxt" type="text" maxlength="${PAPO_MAX}" enterkeyhint="send" placeholder="Escreva para a mesa" aria-label="Mensagem para a mesa"><span class="papo-conta" id="papoConta" aria-live="polite" hidden></span></div>
+        <button type="submit" class="papo-enviar" id="papoEnviar" aria-label="Enviar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.2 12.1 19.6 4.6c.6-.3 1.2.3.9.9l-7.5 15.4c-.3.6-1.2.5-1.3-.2l-1.4-6.4-6.4-1.4c-.7-.1-.8-1-.2-1.3Z" fill="currentColor"/></svg></button>
       </form>
       <p class="papo-nota" id="papoNota"></p>
       <button type="button" class="secondary papo-plano" id="papoPlano" hidden>Ser Sócio da Calçada</button>
@@ -10625,7 +10675,7 @@ const papoBotao = id => `<button type="button" class="reagir papo-bt" id="${id}"
     toast(PP.mudo ? 'Papo silenciado neste celular: as mensagens ficam só aqui na lista.' : 'Papo ligado: as mensagens aparecem na mesa.');
   });
   $('#papoForm').addEventListener('submit', e => { e.preventDefault(); papoEnviar({ txt: $('#papoTxt').value }); });
-  $('#papoTxt').addEventListener('input', () => { const n = [...$('#papoTxt').value].length; $('#papoEnviar').disabled = !n; });
+  $('#papoTxt').addEventListener('input', papoConta);
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && PP.aberto) fecharPapo(); });
   // voltar do celular com o papo aberto: só fecha o papo (antes do voltar do app, que abriria o menu da partida)
   window.addEventListener('popstate', e => {
@@ -10682,6 +10732,9 @@ function papoBotoes() {
 // ---------- painel ----------
 function abrirPapo() {
   if (!papoNaMesa()) return;
+  // 03/11: "mensagens novas" em cima da primeira que chegou com o papo fechado
+  PP.novasDe = null;
+  if (PP.nao > 0 && !PP.mudo) { const de = PP.itens.filter(it => !it.eu && !papoCalado(it)); const x = de[Math.max(0, de.length - PP.nao)]; if (x) PP.novasDe = { n: x.n, qtd: Math.min(PP.nao, de.length) }; }
   PP.aberto = true; PP.nao = 0; PP.acao = null; PP.denunciar = null;
   $('#papoFlutua').hidden = true;
   const p = $('#papoPainel'), cx = p.querySelector('.papo-caixa');
@@ -10716,16 +10769,24 @@ function papoCorDe(nome) {
 function desenharPapo() {
   if (!PP.aberto) return;
   const v = papoVista(), escreve = papoEscreve(), gente = papoGente();
-  $('#papoMudo').textContent = PP.mudo ? '🔔 Ligar o papo' : '🔕 Silenciar';
+  $('#papoMudo').innerHTML = PP.mudo ? `${PAPO_SINO}<span>Ligar</span>` : `${PAPO_SINO_X}<span>Silenciar</span>`;
   $('#papoMudo').setAttribute('aria-pressed', PP.mudo ? 'true' : 'false');
   $('#papoMudo').setAttribute('aria-label', PP.mudo ? 'Papo silenciado neste celular. Toque para ligar' : 'Silenciar o papo neste celular');
   const lista = PP.itens.filter(it => !papoCalado(it));
   const l = $('#papoLista'), embaixo = l.scrollHeight - l.scrollTop - l.clientHeight < 40;
-  l.innerHTML = (lista.length ? lista.map(it => {
-    const aberto = PP.acao === it.n && !it.eu;
+  // 03/11 (pedido do dono: "melhorar a tela do chat"): como nos grupos do WhatsApp. Mensagens seguidas da mesma pessoa
+  // ficam juntas (o nome e o avatar só na primeira), a hora vai dentro do balão, a sua mensagem não repete "Você",
+  // figurinha sozinha (só emoji) aparece grande e sem balão, e a regra da mesa fica no começo da conversa.
+  const junto = (a, b) => !!a && !!b && !!a.eu === !!b.eu && a.nome === b.nome && Math.abs((b.em || 0) - (a.em || 0)) < 5 * 60000 && !(PP.novasDe && PP.novasDe.n === b.n);
+  const regra = gente ? '<li class="papo-regra">Respeito na mesa: sem palavrão, link ou telefone. Toque numa mensagem para silenciar ou denunciar.</li>' : '';
+  l.innerHTML = regra + (lista.length ? lista.map((it, i) => {
+    const aberto = PP.acao === it.n && !it.eu, ini = !junto(lista[i - 1], it), fim = !junto(it, lista[i + 1]);
     const acoes = aberto ? `<span class="papo-acoes"><button type="button" class="papo-calar" data-nome="${esc(it.nome)}">Silenciar ${esc(it.nome)}</button>${it.txt != null && gente ? `<button type="button" class="papo-denuncia${PP.denunciar === it.n ? ' confirma' : ''}" data-n="${it.n}">${PP.denunciar === it.n ? 'Toque de novo para denunciar' : 'Denunciar'}</button>` : ''}</span>` : '';
-    const chegou = PP.vistos && !PP.vistos.has(it.n);
-    return `<li class="papo-item${it.eu ? ' eu' : papoCorDe(it.nome)}${it.txt == null ? ' frase' : ''}${aberto ? ' aberto' : ''}${chegou ? ' chegou' : ''}" data-n="${it.n}"><span class="papo-quem">${it.eu ? 'Você' : esc(it.nome)}<time>${papoHora(it.em)}</time></span><span class="papo-tx">${esc(papoTexto(it))}</span>${acoes}</li>`;
+    const chegou = PP.vistos && !PP.vistos.has(it.n), tx = papoTexto(it), emoji = papoSoEmoji(tx);
+    const novas = PP.novasDe && PP.novasDe.n === it.n ? `<li class="papo-novas"><span>${PP.novasDe.qtd === 1 ? '1 mensagem nova' : PP.novasDe.qtd + ' mensagens novas'}</span></li>` : '';
+    return novas + `<li class="papo-item${it.eu ? ' eu' : papoCorDe(it.nome)}${it.txt == null ? ' frase' : ''}${ini ? ' ini' : ''}${fim ? ' fim' : ''}${emoji ? ' emoji' : ''}${aberto ? ' aberto' : ''}${chegou ? ' chegou' : ''}" data-n="${it.n}">`
+      + (it.eu ? '' : `<span class="papo-av" aria-hidden="true">${ini ? papoAvatar(it) : ''}</span>`)
+      + `<div class="papo-bolha">${!it.eu && ini ? `<span class="papo-quem">${esc(it.nome)}</span>` : ''}<span class="papo-tx">${esc(tx)}<time>${papoHora(it.em)}</time></span>${acoes}</div></li>`;
   }).join('') : '<li class="papo-vazio">Ninguém falou ainda. Mande um oi para a turma!</li>')
     + (PP.calados.size ? `<li class="papo-calados">Silenciado nesta mesa: ${[...PP.calados].map(n => `<button type="button" class="papo-ouvir" data-nome="${esc(n)}">${esc(n)} · ouvir de novo</button>`).join(' ')}</li>` : '');
   if (embaixo || !PP.desenhou) l.scrollTop = l.scrollHeight;
@@ -10745,14 +10806,14 @@ function desenharPapo() {
   // o que dá para mandar
   $('#papoFrases').hidden = !gente;
   $('#papoForm').hidden = !escreve;
-  $('#papoEnviar').disabled = ![...$('#papoTxt').value].length;
+  papoConta();
+  try { $('#papoSub').textContent = v && v.codigo ? `Mesa ${v.codigo}${!gente ? ' · assistindo' : ''}` : ''; } catch (e) {}
   let nota = '';
   if (!gente) nota = 'Quem assiste só lê o papo.';
   else if (souMenor()) nota = 'Para menores de 18, o papo é só com as frases prontas.';
   else if (!v.papo.aberto) nota = PAPO_NAO.fechado;
   else if (papoSemPlano()) nota = PAPO_NAO.plano;
-  else nota = 'Respeito na mesa: sem palavrão, link ou telefone. Toque numa mensagem para silenciar ou denunciar.';
-  $('#papoNota').textContent = nota;
+  $('#papoNota').textContent = nota; $('#papoNota').hidden = !nota;   // 03/11: a regra da mesa foi para o começo da conversa
   const bp = $('#papoPlano'); if (bp) bp.hidden = !(papoSemPlano() && typeof pagamentosAtivos === 'function' && pagamentosAtivos());
   papoVez();
 }
@@ -11212,7 +11273,7 @@ const DN_GRUPOS = [
   ['Dinheiro', ['dnPag', 'dnApoiadores', 'dnPatroCard', 'dnAnuncieLink'], false],
   ['Falar com os jogadores', ['dnAvisos'], false],
   ['Números do Umami', ['dnOpen', 'dnLive', 'dnRange', 'dnBody', 'dnErr', 'dnKey', 'dnFull'], false],
-  ['Ajustes deste aparelho', ['dnSemContar', 'dnTestePag', 'dnKeyTrocar', 'dnSair', 'dnTela'], false]
+  ['Ajustes deste aparelho', ['dnSemContar', 'dnTestePag', 'dnKeyTrocar', 'dnVerCarta', 'dnSair', 'dnTela'], false]
 ];
 const DN_GKEY = 'dmz-dono-grupos';
 const DN_AG = { em: 0, buscando: false, timer: null };
@@ -11557,12 +11618,15 @@ const CARTA_KEY = 'dmz-carta-apoio';
 const CORACAO = `<svg class="carta-coracao" viewBox="0 0 32 30" aria-hidden="true"><defs><linearGradient id="cartaCor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a6b"/><stop offset="1" stop-color="#d63b3b"/></linearGradient></defs>
   <path d="M16 28.5C9.5 23.6 2 17.9 2 10.4 2 5.8 5.5 2.3 9.9 2.3c2.6 0 4.8 1.3 6.1 3.4 1.3-2.1 3.5-3.4 6.1-3.4 4.4 0 7.9 3.5 7.9 8.1 0 7.5-7.5 13.2-14 18.1Z" fill="url(#cartaCor)" stroke="#ffd0c4" stroke-opacity=".5" stroke-width="1"/>
   <path d="M8.2 7.4c-1.6.6-2.6 2-2.7 3.6" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="2" stroke-linecap="round"/></svg>`;
+// 03/11: o dono vê a carta que o sócio recebe (só com plano de sócio neste aparelho)
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#dnVerCarta')) { if (temPlano()) cartaApoiador(true); else toast('A carta aparece quando este aparelho tem o plano de sócio. Abra o app de novo daqui a pouco.'); } });
 function cartaApoiador(forcar) {
   if (!nuvemPode() || typeof temPlano !== 'function' || !temPlano()) return;
   if (!forcar && (store.get(CARTA_KEY) || sheetKind || screen !== 'home')) return;
   // 3.41: quem só tem cortesia (o administrador) não pagou: não recebe a carta de agradecimento sozinha
   const dl = typeof doadorLocal === 'function' ? doadorLocal() : null;
-  if (!forcar && ((typeof souAdmin === 'function' && souAdmin()) || (dl && dl.cortesia && !dl.total))) return;
+  // 03/11 (pedido do dono: ver tudo o que o sócio vê): o administrador com plano de sócio também recebe a carta (uma vez)
+  if (!forcar && dl && dl.cortesia && !dl.total && !temPlano()) return;
   if (typeof menorDeIdade === 'function' && menorDeIdade()) return;
   store.set(CARTA_KEY, String(Date.now()));
   const p = planoLocal() || {}, cod = p.codigo ? codigoBonito(p.codigo) : null;
@@ -12186,7 +12250,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.44-d63d9507';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.44.1-f1f77080';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
