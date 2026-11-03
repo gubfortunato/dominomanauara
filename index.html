@@ -2298,6 +2298,11 @@ body.papo-aberto{overflow:hidden}
     :root:not([data-theme="dark"]) .papo-caixa{background:color-mix(in srgb, var(--bg-2) 76%, transparent)}
   }
 }
+/* 03/11: carta de boas-vindas do sócio */
+.carta-estrela .selo-estrela{width:.95em;height:.95em;margin-left:.25em;vertical-align:-.1em;filter:drop-shadow(0 3px 6px rgba(240,180,94,.45))}
+.carta-lista{margin:2px 0 4px;padding-left:20px;display:grid;gap:5px;font-size:16.5px;line-height:1.35}
+.carta-lista li::marker{color:var(--nos)}
+#board .zone.nao{opacity:0;pointer-events:none}   /* 03/11: ponta onde a pedra arrastada não encaixa (só para a conta de onde soltou) */
 </style>
 </head>
 <body>
@@ -3389,6 +3394,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.43.1', data: '03/11/2026', itens: ['Corrigido: arrastando a pedra para uma ponta onde ela não encaixa, ela podia ir sozinha para a outra ponta. Agora ela volta para a mão, e a jogada só vai para a ponta onde você soltou.', 'Nova carta de boas-vindas de quem vira Sócio da Calçada, com tudo o que o sócio tem.'] },
   { v: '3.43', data: '28/10/2026', itens: ['Chegou o Sócio da Calçada: partidas sem limite na mesa rápida e com os amigos, papo de mesa, ranking completo, suas estatísticas, todas as mesas, foto na mesa, selo e avatares exclusivos. Mensal, trimestral ou anual, renovando sozinho no cartão (cancela quando quiser, na tela do sócio), ou 1 mês avulso no Pix.', 'Promoção de lançamento para quem assinar até 4/11: mensal a R$ 9,90 nos 3 primeiros meses (depois R$ 14,90), trimestral a R$ 24,90 no 1º trimestre (depois R$ 37,90) e anual a R$ 74,90 no 1º ano (depois R$ 99,90).', 'Até 4/11, tudo liberado para todos. A partir de 5/11, sem plano: 5 partidas por dia na mesa rápida, 1 partida por dia nas mesas com os amigos (com papo de mesa), o ranking com o Rei da Calçada e os 3 primeiros da semana, e as mesas Madeira, Vermelha e Azul. Os limites zeram à meia-noite (horário de Brasília). O jogo offline continua sem limite.', 'Suas estatísticas detalhadas (quanto ganha, batidas e galos por partida), no Perfil.', 'Mesa nova: Manaus Skyline, a cidade acesa de noite.', 'Papo de mesa: cada jogador com a sua cor, como nos grupos do WhatsApp, e o fundo de vidro um pouco mais transparente.', 'Corrigido: depois de uma fala comprida no papo, a tela do jogo podia ficar mais larga que o celular (o papo e os avisos saíam deslocados para o lado).'] },
   { v: '3.42.4', data: '28/10/2026', itens: ['Administrador: as filas do ganha-chama das mesas com os amigos, na ordem (quem está sem internet aparece apagado), no grupo Jogadores da Área do administrador e em cada mesa da Calçada. Dá para assistir a mesa direto da lista.'] },
   { v: '3.42.3', data: '28/10/2026', itens: ['Corrigido: a pedra arrastada podia ficar congelada na tela, por cima de tudo (por exemplo, quando o celular puxava a Central de Controle ou uma notificação no meio do arrasto). Agora ela sempre volta para a mão.', 'Área do administrador reorganizada: logo abaixo do "Agora", as pendências (mensagens novas, papo denunciado, fotos esperando, possíveis robôs), com toque que leva ao cartão. Depois, os grupos na ordem de uso: Precisa de você, Jogadores, Dinheiro, Falar com os jogadores, Números e Ajustes. Tocar no título abre e fecha o grupo.'] },
@@ -6507,9 +6513,9 @@ function mostrarPresente(g) {
   store.set('dmz-presente', g.tipo);
   const nome = profile && profile.name ? ', ' + esc(profile.name) : '';
   openSheet('presente', `<p class="eyebrow">Sócio da Calçada</p><h2 id="sheetTitle">Um presente pra você${nome}!</h2>
-    <p>Você apoiou o Dominó Manauara antes do Sócio da Calçada existir. Para agradecer, ganhou <b>1 ano de sócio de presente</b>, somado ao tempo que você já tinha: partidas sem limite, ranking completo, estatísticas, foto, selo e avatares exclusivos.</p>
+    <p>Você já estava com a gente antes do Sócio da Calçada existir. Para agradecer, ganhou <b>1 ano de sócio de presente</b>, somado ao tempo que você já tinha: partidas e mesas com os amigos sem limite, todas as mesas, ranking completo, estatísticas, foto, selo e avatares exclusivos.</p>
     ${g.ate ? `<p>Seu tempo de sócio vale até <b>${dataBR(g.ate)}</b>.</p>` : ''}
-    <p class="carta-ass">Gustavo, criador do Dominó Manauara</p>
+    <p class="carta-ass">Boa diversão.<br>Time Dominó Manauara</p>
     <button type="button" class="primary" id="prOk" style="width:100%">Valeu! Bora pra mesa</button>`);
   track('presente-fundador');
   $('#prOk').addEventListener('click', closeSheet);
@@ -11272,7 +11278,7 @@ function nuvemRestaurar(p) {
   return true;
 }
 
-// ===== Carta de agradecimento para quem apoia (3.39) =====
+// ===== Carta de boas-vindas para quem vira sócio (3.39; 03/11: era o agradecimento de quem apoiava) =====
 // Uma vez por aparelho, na primeira vez que o app vê o tempo de Apoiador ativo: um obrigado do criador do jogo, o que o
 // apoio mantém, e o código para não perder nada (com botão de copiar).
 const CARTA_KEY = 'dmz-carta-apoio';
@@ -11289,14 +11295,15 @@ function cartaApoiador(forcar) {
   if (typeof menorDeIdade === 'function' && menorDeIdade()) return;
   store.set(CARTA_KEY, String(Date.now()));
   const p = planoLocal() || {}, cod = p.codigo ? codigoBonito(p.codigo) : null;
-  const primeiros = Date.now() < Date.parse('2027-01-01T00:00:00-04:00');
   const nome = profile && profile.name ? esc(profile.name) : '';
-  openSheet('fb', `<p class="eyebrow">Sócio da Calçada</p><h2 id="sheetTitle">Muito obrigado${nome ? ', ' + nome : ''}!${CORACAO}</h2>
-    <p>Você é ${primeiros ? 'um dos primeiros Sócios da Calçada' : 'Sócio da Calçada'} do Dominó Manauara. É com gente como você que a tradição do dominó da calçada continua viva: mesas novas, campeonatos, atualizações e muita diversão para a turma toda.</p>
+  // 03/11 (pedido do dono): boas-vindas ao sócio (não é mais "apoio"): o que ele tem agora, sem o coração de doação
+  openSheet('fb', `<p class="eyebrow">Sócio da Calçada</p><h2 id="sheetTitle">Bem-vindo à Calçada${nome ? ', ' + nome : ''}!<span class="carta-estrela">${seloEstrela()}</span></h2>
+    <p>Agora você é Sócio da Calçada do Dominó Manauara. Sua cadeira na calçada está garantida:</p>
+    <ul class="carta-lista"><li>Partidas sem limite na mesa rápida</li><li>Mesas com os amigos sem limite: crie quantas quiser e jogue quantas partidas quiser</li><li>Papo de mesa sem limite nas mesas com os amigos</li><li>Partidas offline ilimitadas, inclusive sem internet</li><li>Ranking completo da semana e do mês, com a sua posição, e as suas estatísticas</li><li>Todas as mesas: Teatro Amazonas, Encontro das Águas, Manaus Skyline e muitas outras</li><li>Sua foto na mesa online e o selo de sócio ao lado do seu nome</li><li>Avatares exclusivos e tudo do Personalizar liberado na hora</li><li>Seu progresso guardado com a gente: nível, conquistas, avatar e histórico</li></ul>
     ${p.renova ? '<p>Seu plano renova sozinho no cartão. Para parar, toque em "Cancelar a renovação" na tela do Sócio da Calçada.</p>' : ''}
-    <p>Seu progresso agora fica guardado com a gente: nível, conquistas, avatar e histórico.${cod ? ' Se trocar de celular, é só usar o seu código em "Sócio da Calçada › Já sou sócio em outro celular":' : ''}</p>
+    ${cod ? '<p>Se trocar de celular, é só usar o seu código em "Sócio da Calçada › Já sou sócio em outro celular":</p>' : ''}
     ${cod ? `<div class="carta-cod"><b>${esc(cod)}</b><button type="button" class="linkbtn" id="cartaCopiar">Copiar</button></div><p class="note">Guarde o código (um print da tela já serve).</p>` : ''}
-    <p class="carta-ass">Gustavo, criador do Dominó Manauara</p>
+    <p class="carta-ass">Boa diversão.<br>Time Dominó Manauara</p>
     <button type="button" class="primary" id="cartaOk">Bora pra mesa!</button>
     <button type="button" class="secondary" id="cartaPerso" style="width:100%;margin-top:10px">Montar meu avatar de sócio</button>`);
   track('carta-apoiador');
@@ -11477,8 +11484,12 @@ function renderBoard() {
   const lay = layoutTable(G, Xmax), pos = lay.main;
   const bTiles = [];
   for (const k of ['U', 'D']) ((G.bucho && G.bucho[k]) || []).forEach((t, j) => bTiles.push({ key: tkey([t.n, t.f]), pos: lay[k][j] }));
-  const zones = zonasDaPedra(dropZones());
+  const todasZonas = dropZones(), zones = zonasDaPedra(todasZonas);
   const showZones = !!(drag && drag.moved) || !!pedraEscolhida();
+  // 03/11 (jogadores: "aponto a pedra para um lado e às vezes joga do outro"): arrastando, as pontas onde a pedra NÃO
+  // encaixa também entram na conta (invisíveis). Soltou mais perto delas: a pedra volta para a mão, nunca vai sozinha
+  // para a outra ponta.
+  const zonasNao = drag && drag.moved ? todasZonas.filter(z => !zones.some(x => x.side === z.side)) : [];
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   const grow = p => { const w = p.o === 'h' ? 1 : .5, h = p.o === 'h' ? .5 : 1; minX = Math.min(minX, p.x - w); maxX = Math.max(maxX, p.x + w); minY = Math.min(minY, p.y - h); maxY = Math.max(maxY, p.y + h); };
   pos.forEach(grow); bTiles.forEach(b => grow(b.pos)); if (showZones) zones.forEach(z => grow(z.pos));
@@ -11500,9 +11511,13 @@ function renderBoard() {
       <rect class="z-body" x="${f2(p.x - w / 2 + .04)}" y="${f2(p.y - h / 2 + .04)}" width="${f2(w - .08)}" height="${f2(h - .08)}" rx=".13"/>
       <text class="z-tx" x="${f2(p.x)}" y="${f2(p.y + .15)}">${z.side === 'C' ? (drag ? 'solte aqui' : 'toque aqui') : z.side === 'U' || z.side === 'D' ? 'bucho' : 'ponta'}</text></g>`;
   });
+  if (showZones) zonasNao.forEach(z => {
+    const p = z.pos, w = p.o === 'h' ? 2 : 1, h = p.o === 'h' ? 1 : 2;
+    html += `<g class="zone nao" data-side="${z.side}" aria-hidden="true"><rect class="z-body" x="${f2(p.x - w / 2 + .04)}" y="${f2(p.y - h / 2 + .04)}" width="${f2(w - .08)}" height="${f2(h - .08)}" rx=".13"/></g>`;
+  });
   svg.innerHTML = html;
   try { deslizarPedras(svg, pos, bTiles); } catch (e) {}
-  if (showZones && drag) drag.zones = $$('#board .zone').map(g => ({ side: g.dataset.side, el: g.querySelector('.z-body'), g }));
+  if (showZones && drag) drag.zones = $$('#board .zone').map(g => ({ side: g.dataset.side, el: g.querySelector('.z-body'), g, ok: !g.classList.contains('nao') }));
   if (pendingFly) { const pf = pendingFly; pendingFly = null; flyIn(pf); }
 }
 
@@ -11688,6 +11703,7 @@ function shakeTile(i, msg) {
 function placeGhostTile(x, y) {
   drag.el.style.left = x + 'px'; drag.el.style.top = y + 'px';
 }
+// devolve o lado da ponta mais perto onde a pedra encaixa; 'nao' se a mais perto é uma ponta onde ela não encaixa
 function nearestZone(x, y) {
   const br = $('#boardWrap').getBoundingClientRect();
   if (x < br.left - 24 || x > br.right + 24 || y < br.top - 40 || y > br.bottom + 24) return null;
@@ -11696,12 +11712,12 @@ function nearestZone(x, y) {
     // distância até o retângulo da ponta (zero quando a pedra está em cima dela)
     const r = z.el.getBoundingClientRect();
     const d = Math.hypot(Math.max(r.left - x, 0, x - r.right), Math.max(r.top - y, 0, y - r.bottom));
-    if (d < bd) { seg = bd; bd = d; best = z.side; } else if (d < seg) seg = d;
+    if (d < bd) { seg = bd; bd = d; best = z; } else if (d < seg) seg = d;
   }
   const alcance = Math.max(56, ((drag.el && drag.el.getBoundingClientRect().height) || 80) * 0.9);
-  if (bd > alcance) return null;                           // longe das pontas: não joga
+  if (!best || bd > alcance) return null;                  // longe das pontas: não joga
   if (bd > 0 && seg !== Infinity && seg - bd < 18) return null;   // no meio do caminho entre duas pontas: não adivinha
-  return best;
+  return best.ok ? best.side : 'nao';
 }
 function endDrag() {
   if (!drag) return;
@@ -11732,15 +11748,20 @@ function onDragMove(e) {
   const side = nearestZone(x, y - h * 0.65);
   if (side !== drag.side) {
     drag.side = side;
-    drag.zones.forEach(z => z.g.classList.toggle('over', z.side === side));
+    drag.zones.forEach(z => z.g.classList.toggle('over', z.ok && z.side === side));
   }
 }
 function onDragEnd(e) {
   if (!drag || e.pointerId !== drag.pid) return;
-  const { i, moved, side } = drag;
-  if (moved && drag.el) { const r = drag.el.getBoundingClientRect(); lastDrop = { x: r.left + r.width / 2, y: r.top + r.height / 2, t: Date.now() }; }
+  let { i, moved, side } = drag;
+  if (moved && drag.el) {
+    const r = drag.el.getBoundingClientRect(); lastDrop = { x: r.left + r.width / 2, y: r.top + r.height / 2, t: Date.now() };
+    // 03/11: confere de novo onde a pedra foi solta (a mesa pode ter acabado de se ajustar depois do último movimento)
+    try { side = nearestZone(e.clientX, e.clientY - (r.height || 90) * 0.65); } catch (er) {}
+  }
   endDrag();
   if (!moved) { tocarPedra(i); return; }
+  if (side === 'nao') { render(); shakeTile(i, 'Essa pedra não encaixa nessa ponta.'); return; }
   if (!myTurnNow() || !side) { render(); if (myTurnNow()) $('#feed').textContent = 'Solte a pedra em cima da ponta marcada. Ou toque na pedra e depois na ponta.'; return; }
   const mv = legalMoves(G, seatMe).find(m => m.i === i && m.side === side);
   if (mv) { humanPlay(mv); return; }
@@ -11894,7 +11915,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.43-c4031182';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.43.1-a786bf7e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
