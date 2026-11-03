@@ -37,6 +37,7 @@ const FILA = { mesas: 20, idade: 60 * 60 * 1000 };   // mesas rápidas lembradas
 // 28/10: quadro das mesas na fila: vale 30 min sem notícia, some depois de 3 h, até 80 mesas; a mesa repete a cada 5 min jogando
 const QUADRO = { validade: 30 * 60000, guarda: 3 * 3600000, max: 80, renova: 5 * 60000 };
 const SILENCIO = 50000;
+const TEMPO_TOLERADO = 3;   // 03/11: quantas vezes por partida quem está conectado pode passar dos 20 s sem a partida deixar de contar
 const REACAO = { intervalo: 2000, porMinuto: 8, maior: 23 };   // reações: só o número de uma frase pronta, nunca texto              // sem sinal do celular há 50 s: conta como desconectado
 const VIDA = 24 * 60 * 60 * 1000;    // a mesa some 24 h depois da última ação
 const ASSISTIR_MAX = 30;           // 3.28: quantas pessoas podem assistir a mesma mesa
@@ -543,7 +544,7 @@ export class Mesa {
     // quem criou foi para a fila: quem ficou na mesa passa a mandar nela
     if (!m.cad.some(c => c && c.id === m.dono)) { const h = m.cad.find(c => c && !c.bot && c.id); if (h) m.dono = h.id; }
     const torneio = m.G.torneio;
-    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = torneio; startHand(m.G); m.robo = null; this.inicioDePartida();
+    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = torneio; startHand(m.G); m.robo = null; m.tempos = null; this.inicioDePartida();
     m.troca = { seq: m.seq + 1, entraram, sairam, ficam: [0, 1, 2, 3].filter(k => k % 2 === w).map(k => m.cad[k].nome) };
     return true;
   }
@@ -695,7 +696,7 @@ export class Mesa {
     const m = this.m;
     if (m.fase !== 'espera') return;
     this.sentarRobos();
-    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = !!m.torneio && !m.publica; startHand(m.G); m.robo = null; this.inicioDePartida();
+    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = !!m.torneio && !m.publica; startHand(m.G); m.robo = null; m.tempos = null; this.inicioDePartida();
     if (!m.publica) this.contarPartidas();   // planos (28/10)
     m.fase = 'jogo'; m.seq++; m.porRobo = null; m.iniciaEm = null;
     m.ultimo = Date.now(); m.turnoDesde = m.ultimo + this.T.distribuir;   // 28/10: os 20 s contam depois de distribuir
@@ -1092,7 +1093,15 @@ export class Mesa {
     // 3.41: passou dos 20 s (em qualquer mesa online, não só no modo torneio), o robô joga pela pessoa (e pede o ponto)
     const limite = Math.min(this.T.ausente, this.T.vez);
     if (agora - m.turnoDesde >= limite - 50) {
-      this.marcarRobo(p);
+      // 03/11 (pedido do dono): quem está conectado e só passou do tempo perde a experiência daquela mão, mas a partida
+      // continua valendo (ranking e bônus), até TEMPO_TOLERADO vezes na partida. Quem caiu ou saiu: como antes.
+      let soMao = false;
+      if (this.conectado(p)) {
+        const t = m.tempos || (m.tempos = [0, 0, 0, 0]);
+        t[p] = (t[p] || 0) + 1;
+        soMao = t[p] <= TEMPO_TOLERADO;
+      }
+      this.marcarRobo(p, soMao);
       applyMove(G, p, botChoose(G, p));
       if (G.pedido) pedirPonto(G, p, true);
       await this.depoisDaAcao(p);
@@ -1161,10 +1170,10 @@ export class Mesa {
 
   // 3.25: experiência só para quem jogou de verdade. Guarda, por cadeira, se o robô jogou por ela nesta mão e nesta
   // partida; cada celular recebe só a marca da própria cadeira (o app não dá experiência da mão ou da partida marcada).
-  marcarRobo(p) {
+  marcarRobo(p, soMao) {
     const m = this.m;
     if (!m.robo) m.robo = { mao: [false, false, false, false], partida: [false, false, false, false] };
-    m.robo.mao[p] = true; m.robo.partida[p] = true;
+    m.robo.mao[p] = true; if (!soMao) m.robo.partida[p] = true;
   }
   // Ranking (3.29): quem estava em cada cadeira quando a partida começou (só conta quem jogou a partida inteira)
   inicioDePartida() { const m = this.m; m.naPartida = m.cad.map(c => c && !c.bot && c.id ? c.id : null); }
@@ -1177,7 +1186,7 @@ export class Mesa {
   }
   novaMaoRobo(novaPartida) {
     const m = this.m;
-    if (novaPartida) this.inicioDePartida();
+    if (novaPartida) { this.inicioDePartida(); m.tempos = null; }   // 03/11: as vezes que passou do tempo contam por partida
     if (!m.robo) return;
     m.robo.mao = [false, false, false, false];
     if (novaPartida) m.robo.partida = [false, false, false, false];
@@ -1228,6 +1237,7 @@ export class Mesa {
       tema: m.tema || null, temaSorteado: !!m.temaSorteado, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id) }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
       cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || !id ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
+      tempos: minha >= 0 && m.tempos ? m.tempos[minha] || 0 : 0, tolerado: TEMPO_TOLERADO,   // 03/11
       jogo, agora: Date.now(), assistindo: this.quantosAssistem() };
   }
   enviar(ws, obj) { try { ws.send(JSON.stringify(obj)); } catch (e) {} }

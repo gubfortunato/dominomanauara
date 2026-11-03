@@ -3394,6 +3394,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.43.2', data: '03/11/2026', itens: ['Mesa online: quem está conectado e passa dos 20 segundos não perde mais a partida inteira. A turma joga aquela pedra por você e a partida continua valendo (ranking e bônus de vitória) até 3 vezes por partida. Na 4ª, ela deixa de contar. Quem cai da internet continua como antes.'] },
   { v: '3.43.1', data: '03/11/2026', itens: ['Corrigido: arrastando a pedra para uma ponta onde ela não encaixa, ela podia ir sozinha para a outra ponta. Agora ela volta para a mão, e a jogada só vai para a ponta onde você soltou.', 'Nova carta de boas-vindas de quem vira Sócio da Calçada, com tudo o que o sócio tem.'] },
   { v: '3.43', data: '28/10/2026', itens: ['Chegou o Sócio da Calçada: partidas sem limite na mesa rápida e com os amigos, papo de mesa, ranking completo, suas estatísticas, todas as mesas, foto na mesa, selo e avatares exclusivos. Mensal, trimestral ou anual, renovando sozinho no cartão (cancela quando quiser, na tela do sócio), ou 1 mês avulso no Pix.', 'Promoção de lançamento para quem assinar até 4/11: mensal a R$ 9,90 nos 3 primeiros meses (depois R$ 14,90), trimestral a R$ 24,90 no 1º trimestre (depois R$ 37,90) e anual a R$ 74,90 no 1º ano (depois R$ 99,90).', 'Até 4/11, tudo liberado para todos. A partir de 5/11, sem plano: 5 partidas por dia na mesa rápida, 1 partida por dia nas mesas com os amigos (com papo de mesa), o ranking com o Rei da Calçada e os 3 primeiros da semana, e as mesas Madeira, Vermelha e Azul. Os limites zeram à meia-noite (horário de Brasília). O jogo offline continua sem limite.', 'Suas estatísticas detalhadas (quanto ganha, batidas e galos por partida), no Perfil.', 'Mesa nova: Manaus Skyline, a cidade acesa de noite.', 'Papo de mesa: cada jogador com a sua cor, como nos grupos do WhatsApp, e o fundo de vidro um pouco mais transparente.', 'Corrigido: depois de uma fala comprida no papo, a tela do jogo podia ficar mais larga que o celular (o papo e os avisos saíam deslocados para o lado).'] },
   { v: '3.42.4', data: '28/10/2026', itens: ['Administrador: as filas do ganha-chama das mesas com os amigos, na ordem (quem está sem internet aparece apagado), no grupo Jogadores da Área do administrador e em cada mesa da Calçada. Dá para assistir a mesa direto da lista.'] },
@@ -5849,7 +5850,15 @@ function aplicarJogo(m) {
     trackOffline();   // histórico neste celular (você é sempre a cadeira 0)
     if (G.events.some(e => e.type === 'pass' && e.p === 0)) aviso('Você passou', 'Nenhuma pedra sua encaixa nas pontas', 3500);
     // Só quem caiu fica sabendo que o robô jogou por ele; os outros seguem o jogo normal, sem aviso de robô
-    if (m.porRobo != null && posDe(m.porRobo) === 0) toast(m.porTempo ? 'Passou dos 20 segundos: o robô jogou por você.' : 'Você ficou sem conexão e um robô jogou por você.');
+    // 03/11: passou do tempo conectado: até 3 vezes por partida ela continua valendo (o servidor conta)
+    if (m.porRobo != null && posDe(m.porRobo) === 0) {
+      const n = m.tempos || 0, lim = m.tolerado || 3;
+      toast(!m.porTempo ? 'Você ficou sem conexão e a turma jogou por você. Esta partida não conta pra você.'
+        : !n ? 'Passou dos 20 segundos: a turma jogou essa por você.'
+        : n < lim ? 'O tempo acabou e a turma jogou essa por você. A partida continua valendo.'
+        : n === lim ? 'O tempo acabou e a turma jogou essa por você. Na próxima, a partida deixa de contar pra você.'
+        : 'O tempo acabou de novo e a turma jogou por você. Esta partida não conta mais pra você.');
+    }
   }
   if (G.phase === 'handEnd') schedule(showResult, pulou ? 700 : SPEEDS[speed].end);
 }
@@ -11915,7 +11924,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.43.1-a786bf7e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.43.2-7f0de089';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
