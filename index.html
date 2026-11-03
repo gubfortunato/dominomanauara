@@ -2371,6 +2371,34 @@ body.papo-aberto{overflow:hidden}
 .papo-mudo[aria-pressed="true"]{background:none;color:var(--glow)}
 .papo-x{width:40px;height:40px;font-size:24px;background:none;color:var(--muted);display:grid;place-items:center;padding:0;margin-right:-6px}
 .papo-lista{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 28px);mask-image:linear-gradient(to bottom,transparent 0,#000 28px);padding-top:14px}
+/* 03/11: treino (lições e partida com dicas) */
+.coach{margin:6px 12px 2px;padding:12px 14px;border-radius:16px;background:color-mix(in srgb, var(--glow) 14%, var(--bg-2));border:1.5px solid color-mix(in srgb, var(--glow) 45%, transparent);display:grid;gap:6px;flex:none}
+.coach[hidden]{display:none}
+.coach-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.coach-k{font-size:12.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--nos)}
+.coach-sair{font:inherit;font-size:13.5px;font-weight:700;border:0;background:none;color:var(--muted);padding:4px 2px;cursor:pointer}
+.coach-tx{margin:0;font-size:15.5px;line-height:1.4}
+.coach-acoes{display:flex;gap:8px;flex-wrap:wrap}
+.coach-acoes[hidden]{display:none}
+.coach-acoes button{flex:1 1 auto;width:auto;margin:0;padding:11px 14px}
+#hand .ht.dica{outline:3px solid var(--glow);outline-offset:2px;border-radius:8px;animation:dicaPula 1.4s ease-in-out infinite}
+@keyframes dicaPula{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@media (prefers-reduced-motion: reduce){#hand .ht.dica{animation:none}}
+.bv-pontos{display:flex;gap:6px;justify-content:center;margin:-2px 0 10px}
+.bv-pontos span{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.bv-pontos span.on{background:var(--glow);width:22px;border-radius:999px}
+.bv-ilu{display:block;width:min(260px,80%);height:auto;margin:4px auto 10px}
+.bv-lista{margin:6px 0 12px;padding-left:20px;display:grid;gap:8px;font-size:16.5px;line-height:1.4}
+.bv-lista li::marker{color:var(--nos)}
+.apr-lista{list-style:none;margin:8px 0 12px;padding:0;display:grid;gap:8px}
+.apr-it{width:100%;display:flex;align-items:center;gap:12px;text-align:left;font:inherit;color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:11px 12px;cursor:pointer}
+.apr-n{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:color-mix(in srgb, var(--glow) 22%, var(--bg-2));color:var(--fg)}
+.apr-it.feita .apr-n{background:var(--ok);color:#10200f}
+.apr-tx{flex:1;min-width:0;display:grid}
+.apr-tx b{font-size:16.5px}
+.apr-tx small{font-size:13.5px;color:var(--muted)}
+.apr-go{font-size:22px;color:var(--muted)}
+.apr-mais{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:6px}
 </style>
 </head>
 <body>
@@ -3492,7 +3520,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.44.1', data: '03/11/2026', itens: ['Papo de mesa de cara nova: as mensagens seguidas da mesma pessoa ficam juntas, com o avatar e o nome só na primeira, a hora dentro do balão, emoji sozinho aparece grande, aviso de quantas mensagens novas chegaram, botão de enviar redondo e contagem de letras perto do limite.'] },
+  { v: '3.44.1', data: '03/11/2026', itens: ['Aprender a jogar (em Mais): boas-vindas para quem chega, 5 lições curtas com mãos montadas (encaixar a pedra, pontos na mesa, bucho, passe e galo, batida e garagem) e partida treino com dicas na sua vez. O treino não conta no seu histórico.', 'Papo de mesa de cara nova: as mensagens seguidas da mesma pessoa ficam juntas, com o avatar e o nome só na primeira, a hora dentro do balão, emoji sozinho aparece grande, aviso de quantas mensagens novas chegaram, botão de enviar redondo e contagem de letras perto do limite.'] },
   { v: '3.44', data: '03/11/2026', itens: ['Carteira de sócio do clube Dominó Manauara: quem é Sócio da Calçada ganha a carteira com o apelido, a foto ou o avatar, o número de sócio, desde quando é sócio e até quando vale. Fica na tela do Sócio da Calçada e dá para compartilhar como imagem.', 'Administrador: números do jogo do nosso servidor, com quantos já jogaram desde o início, quem jogou hoje, em 7 e em 30 dias, novos, quantos voltaram, média de partidas por jogador, partidas por dia, horário de acesso, picos de gente ao mesmo tempo, sócios e mesas criadas.'] },
   { v: '3.43.2', data: '03/11/2026', itens: ['Mesa online: quem está conectado e passa dos 20 segundos não perde mais a partida inteira. A turma joga aquela pedra por você e a partida continua valendo (ranking e bônus de vitória) até 3 vezes por partida. Na 4ª, ela deixa de contar. Quem cai da internet continua como antes.'] },
   { v: '3.43.1', data: '03/11/2026', itens: ['Corrigido: arrastando a pedra para uma ponta onde ela não encaixa, ela podia ir sozinha para a outra ponta. Agora ela volta para a mão, e a jogada só vai para a ponta onde você soltou.', 'Nova carta de boas-vindas de quem vira Sócio da Calçada, com tudo o que o sócio tem.'] },
@@ -10148,6 +10176,7 @@ function renderMais() {
   try { if (typeof renderDonoCard === 'function') renderDonoCard(); } catch (e) {}
   const itens = [
     souAdmin() && vis('donoCard') && { k: 'dono', ic: 'dono', t: 'Área do administrador', s: (el('donoCardTx') || {}).textContent || 'Os números do jogo', destaque: true },
+    { k: 'aprender', ic: 'aprender', t: 'Aprender a jogar', s: 'Lições curtas e partida treino com dicas' },   // 03/11
     { k: 'regras', ic: 'regras', t: 'Regras', s: 'Bucho, garagem, passe e galo, explicados' },
     vis('footApoio') && { k: 'apoio', ic: 'apoio', t: 'Sócio da Calçada', s: 'Mesas com os amigos sem limite e mais' },
     vis('fbCard') && { k: 'fale', ic: 'fale', t: 'Fale com a gente', s: 'Achou um erro ou tem uma ideia?' },
@@ -10167,6 +10196,7 @@ function abasMaisClique(k) {
   track('mais-' + k);
   if (k === 'dono') clica('donoCard');
   else if (k === 'regras') clica('howBtn');
+  else if (k === 'aprender') abrirAprender();
   else if (k === 'apoio') clica('footApoio');
   else if (k === 'fale') clica('fbCard');
   else if (k === 'chamar') clica('shareApp');
@@ -12265,7 +12295,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.44.1-f1f77080';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.44.1-aaf654a8';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -12421,6 +12451,351 @@ addEventListener('hashchange', () => {
   history.replaceState(null, '', location.pathname + location.search);
   openDonoLogin();
 });
+
+// ===== 03/11 (pedido do dono): boas-vindas, lições e partida treino com dicas =====
+// Quem é novo (nenhuma mão jogada neste celular) vê as boas-vindas uma vez ao chegar no início, e pode pular. Todos
+// acham depois em Mais › Aprender a jogar: as boas-vindas, 5 lições curtas com mãos montadas (encaixar, pontos na mesa,
+// bucho, passe e galo, batida e garagem) e a partida treino com dicas. Nada do treino conta: histórico, nível,
+// conquistas, missões, ranking e o "Continuar de onde parou" ficam como estavam (o jogo guardado não é mexido).
+const TUTO_KEY = 'dmz-boasvindas', LICOES_KEY = 'dmz-licoes';
+const TREINO = { on: false, tipo: null, licao: null, li: 0, passo: 0, alvos: null, fim: false };
+function licoesFeitas() { try { const l = JSON.parse(store.get(LICOES_KEY) || '[]'); return Array.isArray(l) ? l : []; } catch (e) { return []; } }
+function marcarLicao(id) { const l = licoesFeitas(); if (!l.includes(id)) { l.push(id); store.set(LICOES_KEY, JSON.stringify(l)); } }
+const pedraTx = t => `${t[0]}|${t[1]}`;
+const ch = l => l.map(([a, b]) => ({ a, b }));   // a fileira da mesa, da ponta da esquerda para a da direita
+
+// As lições: mãos montadas (todas as pedras diferentes). Cada passo diz o que fazer (pede), quais pedras valem (alvo,
+// vazio = qualquer jogada que encaixe), quando terminou (fim) e o que explicar depois (depois).
+const LICOES = [
+  { id: 'encaixar', titulo: 'Encaixar a pedra',
+    monta: () => ({ chain: ch([[6, 6]]), hands: [[[6, 2], [3, 4], [1, 1], [5, 0], [2, 3]], [[0, 1], [2, 2], [4, 5], [0, 3], [1, 5]], [[3, 3], [0, 4], [1, 2], [5, 5], [3, 6]], [[4, 4], [0, 2], [1, 3], [2, 5], [4, 6]]] }),
+    passos: [{
+      pede: 'Na mesa está a carroça de sena (6|6). Para encaixar, a sua pedra precisa ter um 6. Toque na pedra 6|2 e depois na ponta marcada, ou arraste a pedra até a ponta.',
+      alvo: [[6, 2]], fim: G => G.chain.length === 2,
+      depois: () => 'Encaixou! O 6 da sua pedra ficou colado no 6 da carroça. Agora as pontas da mesa são 6 e 2: quem jogar depois precisa de uma pedra com 6 ou com 2. Quem não tem, passa.'
+    }] },
+  { id: 'pontos', titulo: 'Pontos na mesa',
+    monta: () => ({ chain: ch([[6, 6], [6, 1]]), hands: [[[1, 3], [6, 4], [2, 5], [0, 0], [3, 5]], [[0, 1], [2, 2], [4, 5], [0, 3], [1, 5]], [[3, 3], [0, 4], [1, 2], [5, 5], [3, 6]], [[4, 4], [0, 2], [2, 3], [2, 6], [1, 1]]] }),
+    passos: [{
+      pede: 'Some as pontas da mesa: a carroça 6|6 está na ponta e conta dobrado (12); a outra ponta é 1. Total: 13. Se depois da sua jogada a soma der 5, 10, 15, 20... (múltiplo de 5), você marca esses pontos. Ache a jogada que vale 15.',
+      fim: G => G.chain.length === 3,
+      depois: G => { const p = ultimaJogada(G); return p && p.pts === 15 ? 'Isso! A carroça vale 12 e a ponta nova é 3: 12 + 3 = 15. Você marcou 15. Antes de jogar, olhe sempre as duas pontas e faça a conta.'
+        : p && p.pts ? `Marcou ${p.pts}. Mas dava para marcar 15: o 1|3 do lado do 1 deixa 12 (a carroça) + 3 = 15. Antes de jogar, olhe as duas pontas e faça a conta.`
+        : 'Desta vez não deu ponto. O 1|3 do lado do 1 deixava 12 (a carroça) + 3 = 15.'; }
+    }] },
+  { id: 'bucho', titulo: 'O bucho',
+    monta: () => ({ chain: ch([[6, 6], [6, 2]]), hands: [[[6, 3], [6, 5], [1, 4], [0, 1], [4, 4]], [[0, 0], [2, 3], [4, 5], [0, 3], [1, 5]], [[3, 3], [0, 4], [1, 2], [5, 5], [3, 5]], [[2, 2], [0, 2], [1, 3], [2, 5], [4, 6]]] }),
+    passos: [{
+      pede: 'Esta é a carroça de saída (6|6). Quando os dois lados dela têm pedra, abre o bucho. Um lado já tem: jogue uma pedra com 6 no lado livre.',
+      fim: G => G.chain.length === 3,
+      depois: G => { const p = ultimaJogada(G); return 'Abriu o bucho! Agora a mesa tem 4 pontas: esquerda, direita, em cima e embaixo da carroça. Cada lado do bucho só entra na soma depois de receber a primeira pedra.' + (p && p.pts ? ` E você ainda marcou ${p.pts}.` : ''); },
+      prox: G => { G.turn = 0; G.passStreak = []; }
+    }, {
+      pede: 'Vamos supor que a volta passou e chegou a sua vez de novo. Agora jogue no bucho: a outra pedra com 6 vai em cima ou embaixo da carroça.',
+      fim: G => (G.bucho.U.length + G.bucho.D.length) > 0,
+      depois: G => { const p = ultimaJogada(G); return p && p.pts ? `Jogou no bucho e marcou ${p.pts}: agora a soma tem três pontas (as duas da fileira e o lado do bucho que recebeu pedra).` : 'Jogou no bucho! Agora esse lado entra na soma das pontas.'; }
+    }] },
+  { id: 'galo', titulo: 'Passe e galo', robos: true,
+    monta: () => ({ chain: ch([[4, 1], [1, 5]]), hands: [[[5, 4], [0, 4], [2, 4], [3, 4], [4, 6], [4, 4]], [[0, 0], [2, 3], [1, 6], [0, 3], [5, 5]], [[3, 3], [1, 2], [0, 6], [3, 5], [2, 2]], [[1, 1], [0, 2], [1, 3], [2, 5], [6, 6]]] }),
+    passos: [{
+      pede: 'As pontas são 4 e 5, e todas as pedras com 4 estão na mesa ou na sua mão. Jogue o 5|4 do lado do 5: as duas pontas viram 4, e ninguém mais tem 4. Veja o que acontece.',
+      alvo: [[5, 4]], fim: G => (G.events || []).some(e => e.type === 'galo'),
+      depois: () => 'Galo! Os três passaram e a vez voltou para você: +50 para a sua dupla. Passe normal vale 20 para a dupla de quem jogou por último (o passe do parceiro de quem jogou não vale nada). No galo, os 50 entram no lugar dos passes.'
+    }] },
+  { id: 'batida', titulo: 'Batida e garagem',
+    monta: () => ({ chain: ch([[0, 5]]), hands: [[[5, 5]], [[6, 6], [2, 3]], [[1, 2]], [[4, 1]]] }),
+    passos: [{
+      pede: 'Você tem uma pedra só. Quem joga a última pedra bate e a mão acaba. Jogue a carroça 5|5 do lado do 5.',
+      alvo: [[5, 5]], fim: G => G.phase === 'handEnd',
+      depois: G => {
+        const r = G.result || {}, p = (G.events || []).find(e => e.type === 'play' && e.p === 0);
+        const mesa = p && p.pts ? `a mesa marcou ${p.pts} (0 + a carroça 5|5, que na ponta conta dobrado)` : 'a mesa não marcou';
+        return `Bateu com carroça! A conta: ${mesa}; a batida de carroça vale +20; e a garagem, os pontos que sobraram na mão dos adversários (6|6, 2|3 e 4|1 = ${r.garagemSum}), vão para a sua dupla arredondados para baixo: ${r.garagem}. Total da jogada: ${(p && p.pts || 0) + 20 + (r.garagem || 0)} pontos.`;
+      }
+    }] }
+];
+function ultimaJogada(G) { return (G.events || []).find(e => e.type === 'play' && e.p === 0) || null; }
+const nomesTreino = () => { const b = (typeof BOT_NAMES !== 'undefined' && BOT_NAMES.length >= 3) ? BOT_NAMES : ['Parceiro', 'Esquerda', 'Direita']; return [me || 'Você', b[1], b[0], b[2]]; };
+
+// ---------- a caixa do professor (entre a mesa e a sua mão) ----------
+(function () {
+  const tf = $('#scrGame .tablefoot'); if (!tf) return;
+  tf.insertAdjacentHTML('afterend', `<div class="coach" id="coach" hidden role="status" aria-live="polite">
+    <div class="coach-top"><span class="coach-k" id="coachK"></span><button type="button" class="coach-sair" id="coachSair">Sair</button></div>
+    <p class="coach-tx" id="coachTx"></p><div class="coach-acoes" id="coachAcoes"></div></div>`);
+  $('#coachSair').addEventListener('click', () => sairTreino(true));
+})();
+function coach(k, tx, botoes) {
+  const c = $('#coach'); if (!c) return;
+  c.hidden = false; $('#coachK').textContent = k || ''; $('#coachTx').textContent = tx || '';
+  const a = $('#coachAcoes'); a.innerHTML = (botoes || []).map((b, i) => `<button type="button" class="${b.sec ? 'secondary' : 'primary'}" data-i="${i}">${esc(b.t)}</button>`).join('');
+  a.hidden = !(botoes && botoes.length);
+  a.querySelectorAll('button').forEach(el => el.addEventListener('click', () => { const b = botoes[Number(el.dataset.i)]; if (b && b.f) b.f(); }));
+}
+function coachEsconde() { const c = $('#coach'); if (c) c.hidden = true; }
+
+// ---------- entrar e sair do treino ----------
+function prepararTreino() {
+  // um jogo guardado (offline) fica guardado como está; um jogo online não é interrompido por aqui
+  try { if (mode === 'off' && G) leaveGame(); } catch (e) {}
+  clearTimeout(timer); endDrag(); try { endDeal(); } catch (e) {}
+  closeSheet();
+  mode = 'off'; seatMe = 0; dealing = false; escolha = null;
+}
+function sairTreino(paraInicio) {
+  if (!TREINO.on) return;
+  TREINO.on = false; TREINO.tipo = null; TREINO.licao = null; TREINO.alvos = null;
+  clearTimeout(timer); endDrag(); try { endDeal(); } catch (e) {}
+  coachEsconde(); document.documentElement.classList.remove('treino');
+  mode = null; G = null; seatMe = null; escolha = null;
+  if (paraInicio) { closeSheet(); show('home'); }
+}
+function comecarLicao(li) {
+  const L = LICOES[li]; if (!L) return;
+  prepararTreino();
+  const st = newGame(nomesTreino()), m = L.monta();
+  Object.assign(st, { chain: m.chain, center: 0, bucho: { U: [], D: [] }, hands: m.hands.map(h => h.map(t => t.slice())), turn: 0, phase: 'play',
+    openMode: null, passStreak: [], lastPlayer: 3, lastKey: null, lacks: [[], [], [], []], events: [], result: null, handNo: 1, partida: 1 });
+  G = st;
+  Object.assign(TREINO, { on: true, tipo: 'licao', licao: L, li, passo: 0, fim: false });
+  document.documentElement.classList.add('treino');
+  track('licao-' + L.id);
+  show('game'); render();
+  licaoPede();
+}
+function licaoPede() {
+  const L = TREINO.licao, P = L.passos[TREINO.passo];
+  TREINO.alvos = P.alvo || null; TREINO.fim = false;
+  coach(`Lição ${TREINO.li + 1} de ${LICOES.length} · ${L.titulo}`, P.pede);
+  render();
+}
+// depois de cada lance na lição: a turma passa (só na lição do galo); quando o passo termina, explica
+function licaoSegue() {
+  const L = TREINO.licao, P = L.passos[TREINO.passo];
+  render();
+  if (TREINO.fim) return;
+  if (P.fim(G)) {
+    TREINO.fim = true; TREINO.alvos = null; render();
+    const ultimo = TREINO.passo >= L.passos.length - 1;
+    if (!ultimo) { coach(`Lição ${TREINO.li + 1} de ${LICOES.length} · ${L.titulo}`, P.depois(G), [{ t: 'Continuar', f: () => { if (P.prox) P.prox(G); TREINO.passo++; licaoPede(); } }]); return; }
+    marcarLicao(L.id);
+    const prox = LICOES[TREINO.li + 1];
+    coach(`Lição ${TREINO.li + 1} de ${LICOES.length} · ${L.titulo}`, P.depois(G), prox
+      ? [{ t: 'Próxima lição', f: () => comecarLicao(TREINO.li + 1) }, { t: 'Ver as lições', sec: true, f: () => { sairTreino(); show('home'); abrirAprender(); } }]
+      : [{ t: 'Partida treino com dicas', f: () => comecarPartidaTreino() }, { t: 'Voltar ao início', sec: true, f: () => sairTreino(true) }]);
+    return;
+  }
+  if (L.robos && G.phase === 'play' && G.turn !== 0) {
+    schedule(() => {
+      if (!TREINO.on || TREINO.tipo !== 'licao') return;
+      const p = G.turn, mv = legalMoves(G, p);
+      if (mv.length) applyMove(G, p, botChoose(G, p)); else applyPass(G, p);
+      announce(); proceed();
+    }, 1500);
+  }
+}
+
+// ---------- partida treino com dicas (uma mão por vez, contra a turma do bairro) ----------
+function comecarPartidaTreino() {
+  prepararTreino();
+  const st = newGame(nomesTreino()); startHand(st); G = st;
+  Object.assign(TREINO, { on: true, tipo: 'partida', licao: null, alvos: null, fim: false });
+  document.documentElement.classList.add('treino');
+  track('treino-partida');
+  coach('Partida treino', 'Uma mão contra a turma do bairro. Na sua vez, a dica mostra uma boa jogada e o porquê. Nada aqui conta no seu histórico.');
+  prepDeal(); show('game');
+  const g0 = G; setTimeout(() => { if (G === g0) runDeal(() => { announce(); proceed(); }); }, 460);
+}
+function pontaTx(G, side) {
+  if (side === 'U' || side === 'D') return 'no bucho';
+  if (side === 'C') return 'para sair';
+  const e = openEnds(G).find(x => x.side === side);
+  return e ? `na ponta do ${e.v}` : '';
+}
+function dicaTreino() {
+  if (!G || G.phase !== 'play' || G.turn !== 0 || dealing) return;
+  const moves = legalMoves(G, 0);
+  if (!moves.length) { TREINO.alvos = null; coach('Sua vez', 'Nenhuma pedra sua encaixa nas pontas: você passa. O passe vale 20 para a dupla de quem jogou por último, se não for o seu parceiro.'); return; }
+  let mv = moves[0]; try { mv = jogadaRobo(G, 0) || moves[0]; } catch (e) {}
+  const t = G.hands[0][mv.i], resto = G.hands[0].length - 1;
+  let pts = 0; try { const sim = cloneT(G); place(sim, t, mv.side); pts = tableScore(sim); } catch (e) {}
+  let pq;
+  if (!G.chain.length) pq = G.openMode === 'sena' ? 'A mão começa com a carroça de sena.' : 'A saída é sempre com uma carroça.';
+  else if (!resto) pq = isDbl(t) ? 'É a sua última pedra, e é carroça: você bate e ainda ganha +20.' : 'É a sua última pedra: você bate e leva a garagem.';
+  else if (pts) pq = `As pontas vão somar ${pts}: vocês marcam ${pts}.`;
+  else if (moves.length === 1) pq = 'É a única que encaixa.';
+  else if (isDbl(t)) pq = 'Carroça só encaixa num número: é bom largar cedo.';
+  else if (pips(t) >= 8) pq = 'Ela é pesada: se alguém bater, não vira garagem para os adversários.';
+  else pq = 'É a jogada mais segura agora: não deixa ponto fácil para os adversários.';
+  TREINO.alvos = [t];
+  coach('Dica', `Jogue o ${pedraTx(t)} ${pontaTx(G, mv.side)}. ${pq}`);
+  render();
+}
+// o que aconteceu no lance dos outros, explicado
+function explicaLance() {
+  const evs = G.events || [];
+  for (const ev of evs) {
+    const n = who(ev.p);
+    if (ev.type === 'galo') return `Galo! Os três passaram e a vez voltou para ${n === 'Você' ? 'você' : n}: +50 para ${teamName(ev.team) === 'Nós' ? 'a sua dupla' : 'a outra dupla'}, no lugar dos passes.`;
+  }
+  for (const ev of evs) {
+    const n = who(ev.p);
+    if (ev.type === 'play' && ev.p !== 0 && ev.pts) return `${n} jogou ${pedraTx(ev.t)} e marcou ${ev.pts}: as pontas somaram ${ev.pts}, que é múltiplo de 5.`;
+    if (ev.type === 'pass' && ev.p !== 0) {
+      const pontas = [...new Set(openEnds(G).map(e => e.v))].join(' nem ');
+      return ev.pts ? `${n} passou: não tinha ${pontas}. O passe vale 20 para ${teamName(ev.team) === 'Nós' ? 'a sua dupla' : 'a outra dupla'} (a dupla de quem jogou por último).`
+        : `${n} passou, mas é parceiro de quem jogou por último: esse passe não vale ponto.`;
+    }
+    if (ev.type === 'semCarroca') return `${n} não tinha carroça para sair e perdeu a vez: +20 para a outra dupla.`;
+    if (ev.type === 'play' && ev.p !== 0 && (ev.side === 'U' || ev.side === 'D')) return `${n} jogou no bucho: esse lado agora entra na soma das pontas.`;
+  }
+  return null;
+}
+function treinoResultado() {
+  const r = G.result; if (!r) return;
+  const L = TEAM(base()), R = 1 - L;
+  let titulo, tx;
+  if (r.kind === 'batida') {
+    titulo = `${who(r.p)} bateu${r.carroca ? ' com carroça' : ''}`;
+    const nossa = TEAM(r.p) === TEAM(0);
+    tx = (r.carroca ? 'Batida de carroça vale +20. ' : '') + (r.lastPts ? `A última pedra ainda marcou ${r.lastPts}. ` : '')
+      + `Garagem: sobraram ${r.garagemSum} pontos na mão de ${nossa ? 'quem não bateu (a outra dupla)' : 'vocês'}; ${r.garagem ? `arredondado para baixo, ${r.garagem} vão para ${nossa ? 'a sua dupla' : 'a outra dupla'}` : 'não chega a 5, então não vale'}.`;
+  } else {
+    titulo = 'Jogo fechado';
+    tx = `Ninguém tinha pedra para jogar. Somam-se as mãos: ${teamName(0)} ${r.sums[0]}, ${teamName(1)} ${r.sums[1]}. ` + (r.team == null ? 'Empate: ninguém marca.' : `A dupla com mais pontos na mão dá ${r.pts} para ${teamName(r.team)}.`);
+  }
+  openSheet('treino', `<p class="eyebrow">Partida treino · não conta no histórico</p><h2 id="sheetTitle">${esc(titulo)}</h2><p>${esc(tx)}</p>
+    <div class="tally"><div class="L"><span>${esc(teamName(L))}</span><b>${r.score[L]}</b></div><div class="R"><span>${esc(teamName(R))}</span><b>${r.score[R]}</b></div></div>
+    <p class="note">A partida de verdade vai a 200 pontos, mão a mão. O jogo é em melhor de 3 partidas.</p>
+    <button type="button" class="primary" id="trMais" style="width:100%">Mais uma mão de treino</button>
+    <button type="button" class="secondary" id="trJogar" style="width:100%;margin-top:8px">Jogar de verdade</button>
+    <button type="button" class="linkbtn" id="trSair" style="width:100%;margin-top:4px">Sair do treino</button>`);
+  const maisUma = () => { closeSheet(); nextHand(G); TREINO.alvos = null; coach('Partida treino', 'Nova mão. Na sua vez, a dica mostra uma boa jogada e o porquê.'); prepDeal(); render(); runDeal(() => { announce(); proceed(); }); };
+  coach('Fim da mão', titulo + '.', [{ t: 'Mais uma mão', f: maisUma }, { t: 'Sair do treino', sec: true, f: () => sairTreino(true) }]);
+  $('#trMais').addEventListener('click', maisUma);
+  $('#trJogar').addEventListener('click', () => { sairTreino(); closeSheet(); show('home'); const b = $('#goOffline'); if (b) b.click(); });
+  $('#trSair').addEventListener('click', () => sairTreino(true));
+}
+
+// ---------- ganchos no jogo ----------
+const trackOfflineTreino = trackOffline;
+trackOffline = function () { if (TREINO.on) return; return trackOfflineTreino.apply(this, arguments); };   // treino não conta
+const proceedTreino = proceed;
+proceed = function () {
+  if (!TREINO.on) return proceedTreino.apply(this, arguments);
+  if (TREINO.tipo === 'licao') { licaoSegue(); return; }
+  const r = proceedTreino.apply(this, arguments);
+  try {
+    if (G && G.phase === 'play' && G.turn === 0) dicaTreino();
+    else if (G && G.phase === 'play') { TREINO.alvos = null; const x = explicaLance(); if (x) coach('O que aconteceu', x); render(); }
+  } catch (e) {}
+  return r;
+};
+const showResultTreino = showResult;
+showResult = function () { if (TREINO.on) { if (TREINO.tipo === 'partida') treinoResultado(); return; } return showResultTreino.apply(this, arguments); };
+const humanPlayTreino = humanPlay;
+humanPlay = function (mv) {
+  if (TREINO.on && TREINO.tipo === 'licao') {
+    if (TREINO.fim) { render(); return; }
+    const t = G.hands[0][mv.i], alvo = TREINO.licao.passos[TREINO.passo].alvo;
+    if (alvo && t && !alvo.some(a => tkey(a) === tkey(t))) { render(); shakeTile(mv.i, `Nesta lição, jogue o ${pedraTx(alvo[0])}.`); return; }
+  }
+  return humanPlayTreino.apply(this, arguments);
+};
+const renderTreino = render;
+render = function () {
+  const r = renderTreino.apply(this, arguments);
+  try {
+    if (TREINO.on && TREINO.alvos && G && G.hands[0]) {
+      const ks = TREINO.alvos.map(tkey);
+      G.hands[0].forEach((t, i) => { const b = $(`#hand .ht[data-i="${i}"]`); if (b) b.classList.toggle('dica', ks.includes(tkey(t))); });
+    }
+  } catch (e) {}
+  return r;
+};
+const showTreino = show;
+show = function (name) {
+  if (TREINO.on && name !== 'game') sairTreino();
+  const r = showTreino.apply(this, arguments);
+  try { if (name === 'home') boasVindasTalvez(); } catch (e) {}
+  return r;
+};
+// no treino, o Menu da mesa vira um menu do treino (não mexe no jogo guardado)
+$('#menuBtn').addEventListener('click', e => {
+  if (!TREINO.on) return;
+  e.stopImmediatePropagation(); e.preventDefault(); clearTimeout(timer);
+  openSheet('treinomenu', `<p class="eyebrow">Treino</p><h2 id="sheetTitle">${TREINO.tipo === 'licao' ? 'Lição ' + (TREINO.li + 1) + ' de ' + LICOES.length : 'Partida treino'}</h2>
+    <button type="button" class="primary" id="tmVolta" style="width:100%">Voltar à mesa</button>
+    <button type="button" class="secondary" id="tmLicoes" style="width:100%;margin-top:8px">Ver as lições</button>
+    <button type="button" class="secondary" id="tmRegras" style="width:100%;margin-top:8px">Ver as regras</button>
+    <button type="button" class="linkbtn" id="tmSair" style="width:100%;margin-top:4px">Sair do treino</button>`);
+  $('#tmVolta').addEventListener('click', () => { closeSheet(); if (TREINO.tipo === 'partida') { if (G.phase === 'handEnd') treinoResultado(); else proceed(); } });
+  $('#tmLicoes').addEventListener('click', () => { sairTreino(); show('home'); abrirAprender(); });
+  $('#tmRegras').addEventListener('click', () => {
+    openSheet('treinomenu', RULES_HTML + '<button type="button" class="primary" id="tmRegrasOk" style="width:100%;margin-top:8px">Voltar à mesa</button>');
+    $('#tmRegrasOk').addEventListener('click', () => { closeSheet(); if (TREINO.tipo === 'partida' && G) { if (G.phase === 'handEnd') treinoResultado(); else proceed(); } });
+  });
+  $('#tmSair').addEventListener('click', () => sairTreino(true));
+}, true);
+
+// ---------- boas-vindas (3 telas) ----------
+const BV_MESA = `<svg class="bv-ilu" viewBox="0 0 220 150" aria-hidden="true"><rect x="40" y="22" width="140" height="106" rx="14" fill="#5a3a22" stroke="#c9a24a" stroke-width="2"/>
+  <g fill="#f6ead6" stroke="#2a1a0c" stroke-width="1.4"><rect x="86" y="62" width="48" height="24" rx="5"/><line x1="110" y1="64" x2="110" y2="84"/></g>
+  <g fill="#2a1a0c"><circle cx="98" cy="70" r="2.6"/><circle cx="98" cy="78" r="2.6"/><circle cx="122" cy="74" r="2.6"/></g>
+  <g font-family="Figtree, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">
+    <circle cx="110" cy="14" r="11" fill="#e5a650"/><text x="110" y="40" fill="#f3c063">PARCEIRO</text>
+    <circle cx="110" cy="138" r="11" fill="#e5a650"/><text x="110" y="120" fill="#f3c063">VOCÊ</text>
+    <circle cx="26" cy="75" r="11" fill="#8fbcc2"/><text x="26" y="98" fill="#8fbcc2">ELES</text>
+    <circle cx="194" cy="75" r="11" fill="#8fbcc2"/><text x="194" y="98" fill="#8fbcc2">ELES</text></g></svg>`;
+const BV_TELAS = [
+  { k: 'Bem-vindo à calçada', t: 'Dominó em duplas, do jeito de Manaus', html: `${BV_MESA}<p>Você joga com o <b>parceiro da sua frente</b> contra a dupla dos lados. Cada um recebe 7 pedras e a vez gira pela esquerda.</p><p>Na sua vez, encaixe uma pedra numa ponta da mesa: os números precisam ser iguais.</p>` },
+  { k: 'Como se marca ponto', t: 'Some as pontas', html: `<ul class="bv-lista">
+      <li><b>Pontas:</b> se a soma das pontas der 5, 10, 15, 20..., quem jogou marca a soma.</li>
+      <li><b>Passe:</b> 20 para a dupla de quem jogou por último. <b>Galo</b> (os três passam): 50.</li>
+      <li><b>Batida:</b> quem joga a última pedra leva a garagem, os pontos que sobraram na mão dos adversários. Batida de carroça: +20.</li>
+      <li><b>Partida</b> até 200 pontos. O jogo é em melhor de 3 partidas.</li></ul>` },
+  { k: 'Onde jogar', t: 'Três jeitos de jogar', html: `<ul class="bv-lista">
+      <li><b>Contra a turma do bairro:</b> a qualquer hora, até sem internet.</li>
+      <li><b>Mesa rápida:</b> online, com gente de Manaus e de todo lugar.</li>
+      <li><b>Mesa com os amigos:</b> crie a mesa e mande o número no WhatsApp para a turma.</li></ul>
+      <p>Quer aprender jogando? São 5 lições curtas e uma partida treino com dicas.</p>` }
+];
+function boasVindasTalvez() {
+  if (store.get(TUTO_KEY) || !profile || sheetKind || (typeof souAdmin === 'function' && souAdmin())) return;
+  let t = null; try { t = loadHist(); } catch (e) {}
+  if (t && (t.maos > 0 || t.partidas > 0)) { store.set(TUTO_KEY, 'jogador'); return; }   // já jogava antes: não mostra sozinho
+  setTimeout(() => { if (screen === 'home' && !sheetKind && !store.get(TUTO_KEY)) abrirBoasVindas(0); }, 700);
+}
+function abrirBoasVindas(i) {
+  store.set(TUTO_KEY, String(Date.now()));
+  const T = BV_TELAS[i], ultima = i === BV_TELAS.length - 1;
+  openSheet('boasvindas', `<div class="bv-pontos" aria-hidden="true">${BV_TELAS.map((_, k) => `<span class="${k === i ? 'on' : ''}"></span>`).join('')}</div>
+    <p class="eyebrow">${esc(T.k)}</p><h2 id="sheetTitle">${esc(T.t)}</h2>${T.html}
+    ${ultima ? `<button type="button" class="primary" id="bvAprender" style="width:100%">Aprender jogando</button><button type="button" class="secondary" id="bvJa" style="width:100%;margin-top:8px">Já sei jogar</button>`
+      : `<button type="button" class="primary" id="bvProx" style="width:100%">Continuar</button><button type="button" class="linkbtn" id="bvPular" style="width:100%;margin-top:4px">Pular</button>`}`);
+  track('boasvindas-' + (i + 1));
+  if ($('#bvProx')) $('#bvProx').addEventListener('click', () => abrirBoasVindas(i + 1));
+  if ($('#bvPular')) $('#bvPular').addEventListener('click', () => { track('boasvindas-pulou'); closeSheet(); });
+  if ($('#bvAprender')) $('#bvAprender').addEventListener('click', () => comecarLicao(0));
+  if ($('#bvJa')) $('#bvJa').addEventListener('click', closeSheet);
+}
+
+// ---------- Mais › Aprender a jogar ----------
+function abrirAprender() {
+  const feitas = licoesFeitas();
+  openSheet('aprender', `<p class="eyebrow">Aprender a jogar</p><h2 id="sheetTitle">Do zero à calçada</h2>
+    <p>Lições curtas, com mãos montadas para mostrar cada regra, e uma partida treino com dicas. Nada aqui conta no seu histórico.</p>
+    <ol class="apr-lista">${LICOES.map((L, k) => `<li><button type="button" class="apr-it${feitas.includes(L.id) ? ' feita' : ''}" data-li="${k}"><span class="apr-n" aria-hidden="true">${feitas.includes(L.id) ? '✓' : k + 1}</span><span class="apr-tx"><b>${esc(L.titulo)}</b><small>${feitas.includes(L.id) ? 'Feita · jogar de novo' : 'Lição ' + (k + 1)}</small></span><span class="apr-go" aria-hidden="true">›</span></button></li>`).join('')}</ol>
+    <button type="button" class="primary" id="aprPartida" style="width:100%">Partida treino com dicas</button>
+    <div class="apr-mais"><button type="button" class="linkbtn" id="aprBv">Ver as boas-vindas</button><button type="button" class="linkbtn" id="aprRegras">Regras completas</button></div>
+    <button type="button" class="secondary" id="aprFechar" style="width:100%;margin-top:6px">Fechar</button>`);
+  $('#aprFechar').addEventListener('click', closeSheet);
+  $$('#sheet .apr-it').forEach(b => b.addEventListener('click', () => comecarLicao(Number(b.dataset.li))));
+  $('#aprPartida').addEventListener('click', comecarPartidaTreino);
+  $('#aprBv').addEventListener('click', () => abrirBoasVindas(0));
+  $('#aprRegras').addEventListener('click', () => { openSheet('aprender', RULES_HTML + '<button type="button" class="primary" id="aprRegrasOk" style="width:100%;margin-top:8px">Voltar</button>'); $('#aprRegrasOk').addEventListener('click', abrirAprender); });
+}
+MAIS_IC.aprender = '<svg viewBox="0 0 24 24"><path d="M2.8 9.2 12 5l9.2 4.2L12 13.4z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M6.5 11v4.6c1.4 1.5 3.3 2.3 5.5 2.3s4.1-.8 5.5-2.3V11M21.2 9.2v5.3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 </script>
 </body>
 </html>
