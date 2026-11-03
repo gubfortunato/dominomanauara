@@ -125,7 +125,7 @@ export class Mesa {
     const agora = Date.now();
     this.m = { codigo: limpa(b.codigo, 5), criada: agora, ultimo: agora, fase: 'espera', seq: 0, dono: quem.id,
       cad: [quem, null, null, null], G: null, proximo: null, turnoDesde: agora, porRobo: null,
-      publica: !!b.publica, iniciaEm: b.publica ? agora + this.T.espera : null, tema: sortearTema(null, !b.publica && limitesValem(this.env) && !b.apoiador ? TEMAS_GRATIS : null), temaSorteado: true };   // 28/10
+      publica: !!b.publica, daSocio: !b.publica && !!b.apoiador, iniciaEm: b.publica ? agora + this.T.espera : null, tema: sortearTema(null, !b.publica && limitesValem(this.env) && !b.apoiador ? TEMAS_GRATIS : null), temaSorteado: true };   // 28/10
     if (this.m.publica) this.m.chegadas = this.sortearChegadas(this.m.iniciaEm);
     if (this.m.publica) this.agendar();
     this.papo = []; this.denunciadas = new Set(); await this.ctx.storage.delete('papo');   // 3.42: mesa nova, papo novo
@@ -413,13 +413,13 @@ export class Mesa {
     const jaEstava = m.cad.some(c => c && c.id === quem.id) || (m.fila || []).some(c => c.id === quem.id);
     if (!jaEstava && exigeApp(this.env) && !(await appAberto(this.env, quem.id))) { await anotarRitmo(this.env, quem.id, { semApp: 1 }); return this.recusar(ws, 'app'); }
     Object.assign(quem, await this.apoiador(quem.id));
-    // planos (28/10): sem plano, 1 partida por dia nas mesas com os amigos (mesmo convidado) e 5 na mesa rápida
+    // planos (28/10; 03/11): sem plano, 1 partida por dia nas mesas com os amigos (mesmo convidado; até 3 na mesa de um sócio) e 3 na mesa rápida
     if (limitesValem(this.env) && !quem.apoiador) {
       quem.uso = await usoDoDia(this.env, quem.id);
       const antes = m.cad.concat(m.fila || []).find(c => c && c.id === quem.id);
       if (antes && antes.uso && antes.uso.dia === quem.uso.dia)
         quem.uso = { dia: quem.uso.dia, partidas: Math.max(quem.uso.partidas || 0, antes.uso.partidas || 0), publicas: Math.max(quem.uso.publicas || 0, antes.uso.publicas || 0) };
-      if (!jaEstava && !podeJogar(quem, this.env, !!m.publica)) return this.recusar(ws, m.publica ? 'limite-rapida' : 'limite');
+      if (!jaEstava && !podeJogar(quem, this.env, !!m.publica, this.mesaDeSocio())) return this.recusar(ws, m.publica ? 'limite-rapida' : 'limite');
       // aparelho novo na mesma rede de quem acabou de bater o limite (apagou os dados do app ou trocou de navegador)
       const tipo = m.publica ? 'publicas' : 'partidas';
       if (!jaEstava && !(quem.uso[tipo] || 0) && await limiteDaRede(this.env, att.rede, tipo, quem.id, quem.nome)) return this.recusar(ws, m.publica ? 'limite-rapida' : 'limite');
@@ -549,12 +549,14 @@ export class Mesa {
     return true;
   }
   // ---------- Planos (28/10) ----------
+  // 03/11: mesa com os amigos criada por um sócio (ou que tem um sócio como dono agora): quem não tem plano joga até 3 por dia nela
+  mesaDeSocio() { const m = this.m; return !!m && !m.publica && (!!m.daSocio || m.cad.some(c => c && !c.bot && c.id === m.dono && c.apoiador)); }
   // Conta 1 partida (mesa com os amigos) para quem não é Apoiador: na cadeira (na hora) e no banco (sem esperar)
   contarPartida(c) {
     if (!c || c.bot || !c.id || c.apoiador || !limitesValem(this.env)) return;
     const dia = diaBR();
     c.uso = c.uso && c.uso.dia === dia ? Object.assign({}, c.uso, { partidas: (c.uso.partidas || 0) + 1 }) : { dia, partidas: 1, publicas: 0 };
-    const pr = somarUso(this.env, c.id, 'partidas', dia).then(() => c.uso.partidas >= LIMITE.partidas ? anotarLimite(this.env, c.rede, 'partidas', c.id, c.nome) : null);
+    const pr = somarUso(this.env, c.id, 'partidas', dia).then(() => c.uso.partidas >= (this.mesaDeSocio() ? LIMITE.partidasSocio : LIMITE.partidas) ? anotarLimite(this.env, c.rede, 'partidas', c.id, c.nome) : null);
     try { this.ctx.waitUntil(pr); } catch (e) {}
   }
   contarPartidas() { for (const c of this.m.cad) this.contarPartida(c); }
@@ -576,8 +578,9 @@ export class Mesa {
   tirarSemPartida(comFila) {
     const m = this.m, pub = !!m.publica; if (!limitesValem(this.env)) return false;
     const fora = [];
-    m.cad.forEach((c, p) => { if (c && !c.bot && !podeJogar(c, this.env, pub)) { fora.push(c.id); m.cad[p] = null; } });
-    if (comFila && m.fila) m.fila = m.fila.filter(c => { if (podeJogar(c, this.env, pub)) return true; fora.push(c.id); return false; });
+    const socio = this.mesaDeSocio();
+    m.cad.forEach((c, p) => { if (c && !c.bot && !podeJogar(c, this.env, pub, socio)) { fora.push(c.id); m.cad[p] = null; } });
+    if (comFila && m.fila) m.fila = m.fila.filter(c => { if (podeJogar(c, this.env, pub, socio)) return true; fora.push(c.id); return false; });
     if (!fora.length) return false;
     for (const ws of this.ctx.getWebSockets()) {
       const a = ws.deserializeAttachment() || {};
@@ -591,7 +594,7 @@ export class Mesa {
     const m = this.m, fila = m.fila || [];
     for (let p = 0; p < 4; p++) {
       const c = m.cad[p]; if (!c || !c.bot || c.lugarDe) continue;
-      const i = fila.findIndex(x => this.conectadoId(x.id) && podeJogar(x, this.env, false)); if (i < 0) break;
+      const i = fila.findIndex(x => this.conectadoId(x.id) && podeJogar(x, this.env, false, this.mesaDeSocio())); if (i < 0) break;
       const novo = fila.splice(i, 1)[0];
       m.cad[p] = null; novo.nome = this.nomeUnico(novo.nome, p); m.cad[p] = novo;
       if (m.G) m.G.names[p] = novo.nome;
@@ -1234,7 +1237,7 @@ export class Mesa {
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
       leituraMs: G && G.phase === 'handEnd' ? Math.max(0, Math.round(m.turnoDesde + this.T.leitura - Date.now())) : 0, proximaPedida: !!(G && G.phase === 'handEnd' && m.proximaPedida === m.seq),   // 28/10
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
-      tema: m.tema || null, temaSorteado: !!m.temaSorteado, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id) }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
+      tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id) }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
       cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || !id ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
       tempos: minha >= 0 && m.tempos ? m.tempos[minha] || 0 : 0, tolerado: TEMPO_TOLERADO,   // 03/11

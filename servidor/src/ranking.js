@@ -118,12 +118,30 @@ async function lista(env, per, fim, eu, reiAp) {
   return { top, eu: meu, fim, pontos: pts };
 }
 // Rei da Calçada: o 1º da semana passada (guardado 10 min para a mesa não perguntar ao banco toda hora)
-const REI = { sem: null, em: 0, dados: null };
+// 03/11 (regras do dono): depois do começo dos limites, a coroa é só de sócio: o Rei é o sócio mais bem colocado da
+// semana passada. Quem não é sócio continua pontuando; se ficou em 1º, o app avisa que seria o Rei (quase).
+const REI = { sem: null, em: 0, dados: null, quase: null };
+async function socios(env, aparelhos) {
+  const tem = new Set();
+  for (let i = 0; i < aparelhos.length; i += 90) {
+    const parte = aparelhos.slice(i, i + 90);
+    try {
+      const { results } = await env.DB.prepare(`SELECT aparelho FROM planos WHERE ate > ? AND aparelho IN (${parte.map(() => '?').join(',')})`).bind(Date.now(), ...parte).all();
+      (results || []).forEach(r => tem.add(r.aparelho));
+    } catch (e) {}
+  }
+  return tem;
+}
 export async function reiDaSemana(env) {
   const agora = agoraDe(env), sem = periodos(agora - 7 * DIA).sem;
   if (!env.RANKING_AGORA && REI.sem === sem && agora - REI.em < 10 * 60000) return REI.dados;
-  const x = (await ordenados(env, sem))[0];
-  REI.sem = sem; REI.em = agora; REI.dados = x ? { aparelho: x.aparelho, nome: x.nome, av: x.av, nv: x.nv } : null;
+  const lista = await ordenados(env, sem);
+  let x = lista[0] || null, quase = null;
+  if (x && limitesValem(env, inicio(sem) + 7 * DIA - 1)) {   // semanas que terminam depois do começo dos limites (a de 2/11 em diante)
+    const s = await socios(env, lista.map(y => y.aparelho));
+    if (!s.has(x.aparelho)) { quase = x.aparelho; x = lista.find(y => s.has(y.aparelho)) || null; }
+  }
+  REI.sem = sem; REI.em = agora; REI.quase = quase; REI.dados = x ? { aparelho: x.aparelho, nome: x.nome, av: x.av, nv: x.nv } : null;
   return REI.dados;
 }
 // GET /ranking?aparelho= -> { semana, mes, fora, rei, regras, completo }
@@ -141,7 +159,7 @@ export async function ranking(req, env, origin, h, url) {
   const mes = completo ? await lista(env, p.mes, p.fimMes, eu, reiAp) : { top: [], eu: null, fim: p.fimMes, pontos: usaPontos(env, p.mes), trancado: true };
   if (!completo) { semana.top = semana.top.slice(0, TOP_GRATIS); semana.eu = null; semana.trancado = true; }
   return h.json({ semana, mes, fora, completo, topGratis: TOP_GRATIS,
-    rei: rei ? { nome: rei.nome, av: rei.av, nv: rei.nv, eu: !!ap && ap === reiAp } : null,
+    rei: rei ? { nome: rei.nome, av: rei.av, nv: rei.nv, eu: !!ap && ap === reiAp } : null, quaseRei: !!ap && REI.quase === ap,
     regras: { pontosDesde: pontosDesde(env), ...PTS, roboPorDia: ROBO_POR_DIA, parPorDia: PAR_POR_DIA } }, 200, origin);
 }
 // POST /ranking/fora {aparelho, fora: true|false} — não aparecer (ou voltar a aparecer) no ranking
