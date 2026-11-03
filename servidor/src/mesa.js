@@ -619,7 +619,7 @@ export class Mesa {
     const d = m.cad.concat(m.fila || []).find(c => c && !c.bot && c.id === m.dono);
     return d && d.apoiador ? null : TEMAS_GRATIS;
   }
-  temaPermitido(t) { const so = this.temasDoDono(); return !so || so.includes(t) || t === 'manaus357'; }   // a Manaus 357 é prêmio da Copa
+  temaPermitido(t) { const so = this.temasDoDono(); return t !== 'manaus357' && (!so || so.includes(t)); }   // 03/11 (pedido do dono): a Manaus 357 saiu do jogo
   async trocarTema(id) {
     const m = this.m, t = temaOk(id);
     if (!t || t === m.tema) return;
