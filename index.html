@@ -2362,7 +2362,7 @@ body.papo-aberto{overflow:hidden}
 /* 03/11 (pedido do dono: o topo do papo mais suave): sem barra nem caixa. O título, quem está na mesa e o número dela no
    mesmo tom do painel; silenciar e fechar sem fundo; a conversa some num degradê suave antes de chegar no topo. */
 .papo-topo{margin:0 0 4px;gap:4px;padding-right:0}
-.papo-topo h2{font-size:19px;line-height:1.15}
+.papo-topo h2{font-size:25px;line-height:1.1;letter-spacing:-.01em}   /* 03/11 (dono): título maior */
 .papo-tit small{display:flex;align-items:center;gap:7px;margin-top:3px;font-size:12.5px}
 .papo-gente{display:inline-flex;padding-left:4px}
 .papo-gente img,.papo-gente b{width:20px;height:20px;border-radius:50%;margin-left:-5px;box-shadow:0 0 0 2px color-mix(in srgb, var(--bg-2) 80%, transparent);background:color-mix(in srgb, var(--glow) 25%, var(--bg));display:grid;place-items:center;font-size:10.5px;font-weight:800;color:var(--fg)}
@@ -12295,7 +12295,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.44.1-aaf654a8';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.44.1-7ac293fa';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
