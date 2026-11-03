@@ -2372,7 +2372,8 @@ body.papo-aberto{overflow:hidden}
 .papo-x{width:40px;height:40px;font-size:24px;background:none;color:var(--muted);display:grid;place-items:center;padding:0;margin-right:-6px}
 .papo-lista{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 28px);mask-image:linear-gradient(to bottom,transparent 0,#000 28px);padding-top:14px}
 /* 03/11: treino (lições e partida com dicas) */
-.coach{margin:6px 12px 2px;padding:12px 14px;border-radius:16px;background:color-mix(in srgb, var(--glow) 14%, var(--bg-2));border:1.5px solid color-mix(in srgb, var(--glow) 45%, transparent);display:grid;gap:6px;flex:none}
+.coach{margin:6px 12px 2px;padding:12px 14px;border-radius:16px;background:color-mix(in srgb, var(--glow) 14%, var(--bg-2));border:1.5px solid color-mix(in srgb, var(--glow) 45%, transparent);display:grid;gap:6px;flex:none;color:var(--fg);box-shadow:0 8px 20px -10px rgba(0,0,0,.5)}
+.coach .secondary{color:var(--fg);border-color:color-mix(in srgb, var(--fg) 30%, transparent);background:transparent}   /* 03/11: no tema claro o texto herdava a cor clara da mesa */
 .coach[hidden]{display:none}
 .coach-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .coach-k{font-size:12.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--nos)}
@@ -2380,7 +2381,11 @@ body.papo-aberto{overflow:hidden}
 .coach-tx{margin:0;font-size:15.5px;line-height:1.4}
 .coach-acoes{display:flex;gap:8px;flex-wrap:wrap}
 .coach-acoes[hidden]{display:none}
-.coach-acoes button{flex:1 1 auto;width:auto;margin:0;padding:11px 14px}
+.coach-acoes button{flex:1 1 0;min-width:0;width:auto;margin:0;padding:11px 12px;min-height:48px;font-size:16px}
+/* 03/11 (pedido do dono): nas janelas do treino, das boas-vindas e do som, todos os botões do mesmo tamanho */
+.tr-bts{display:grid;gap:8px;margin-top:12px}
+.tr-bts > button,.sheet .tr-bts > button{width:100%;margin:0;min-height:54px;padding:12px 14px;font-size:17px;font-weight:700;border-radius:14px;box-sizing:border-box}
+.tr-bts > .secondary{color:var(--fg);border:1.5px solid var(--line)}
 #hand .ht.dica{outline:3px solid var(--glow);outline-offset:2px;border-radius:8px;animation:dicaPula 1.4s ease-in-out infinite}
 @keyframes dicaPula{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @media (prefers-reduced-motion: reduce){#hand .ht.dica{animation:none}}
@@ -3528,6 +3533,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.45.1', data: '03/11/2026', itens: ['Treino: a caixa das lições fica legível no tema claro, e os botões das janelas do treino, das boas-vindas e do som ficaram todos do mesmo tamanho.'] },
   { v: '3.45', data: '03/11/2026', itens: ['Som na mesa: a pedra batendo na madeira, ponto, passe, embaralhar, estalo de chibata nos lances de 20 ou mais, o galo cantando, batida e batida de carroça, fanfarra na vitória e aviso de sua vez na mesa online.', 'Vibração nos lances grandes também no iPhone (iOS 18 ou mais novo). Som e vibração ligam e desligam em Mais › Som e vibração, onde dá para ouvir cada som.'] },
   { v: '3.44.2', data: '03/11/2026', itens: ['Mesa com os amigos: aparece "robô" embaixo do nome sempre que o robô está jogando por alguém (quem ficou sem internet, e na jogada que o robô fez por quem passou do tempo). O "Última pedra!" não apaga mais essa etiqueta.'] },
   { v: '3.44.1', data: '03/11/2026', itens: ['Aprender a jogar (em Mais): boas-vindas para quem chega, 5 lições curtas com mãos montadas (encaixar a pedra, pontos na mesa, bucho, passe e galo, batida e garagem) e partida treino com dicas na sua vez. O treino não conta no seu histórico.', 'Papo de mesa de cara nova: as mensagens seguidas da mesma pessoa ficam juntas, com o avatar e o nome só na primeira, a hora dentro do balão, emoji sozinho aparece grande, aviso de quantas mensagens novas chegaram, botão de enviar redondo e contagem de letras perto do limite.'] },
@@ -12311,7 +12317,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.45-9694e6e2';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.45.1-a3dc5a84';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -12683,9 +12689,9 @@ function treinoResultado() {
   openSheet('treino', `<p class="eyebrow">Partida treino · não conta no histórico</p><h2 id="sheetTitle">${esc(titulo)}</h2><p>${esc(tx)}</p>
     <div class="tally"><div class="L"><span>${esc(teamName(L))}</span><b>${r.score[L]}</b></div><div class="R"><span>${esc(teamName(R))}</span><b>${r.score[R]}</b></div></div>
     <p class="note">A partida de verdade vai a 200 pontos, mão a mão. O jogo é em melhor de 3 partidas.</p>
-    <button type="button" class="primary" id="trMais" style="width:100%">Mais uma mão de treino</button>
-    <button type="button" class="secondary" id="trJogar" style="width:100%;margin-top:8px">Jogar de verdade</button>
-    <button type="button" class="linkbtn" id="trSair" style="width:100%;margin-top:4px">Sair do treino</button>`);
+    <div class="tr-bts"><button type="button" class="primary" id="trMais">Mais uma mão de treino</button>
+    <button type="button" class="secondary" id="trJogar">Jogar de verdade</button>
+    <button type="button" class="secondary" id="trSair">Sair do treino</button></div>`);
   const maisUma = () => { closeSheet(); nextHand(G); TREINO.alvos = null; coach('Partida treino', 'Nova mão. Na sua vez, a dica mostra uma boa jogada e o porquê.'); prepDeal(); render(); runDeal(() => { announce(); proceed(); }); };
   coach('Fim da mão', titulo + '.', [{ t: 'Mais uma mão', f: maisUma }, { t: 'Sair do treino', sec: true, f: () => sairTreino(true) }]);
   $('#trMais').addEventListener('click', maisUma);
@@ -12741,14 +12747,14 @@ $('#menuBtn').addEventListener('click', e => {
   if (!TREINO.on) return;
   e.stopImmediatePropagation(); e.preventDefault(); clearTimeout(timer);
   openSheet('treinomenu', `<p class="eyebrow">Treino</p><h2 id="sheetTitle">${TREINO.tipo === 'licao' ? 'Lição ' + (TREINO.li + 1) + ' de ' + LICOES.length : 'Partida treino'}</h2>
-    <button type="button" class="primary" id="tmVolta" style="width:100%">Voltar à mesa</button>
-    <button type="button" class="secondary" id="tmLicoes" style="width:100%;margin-top:8px">Ver as lições</button>
-    <button type="button" class="secondary" id="tmRegras" style="width:100%;margin-top:8px">Ver as regras</button>
-    <button type="button" class="linkbtn" id="tmSair" style="width:100%;margin-top:4px">Sair do treino</button>`);
+    <div class="tr-bts"><button type="button" class="primary" id="tmVolta">Voltar à mesa</button>
+    <button type="button" class="secondary" id="tmLicoes">Ver as lições</button>
+    <button type="button" class="secondary" id="tmRegras">Ver as regras</button>
+    <button type="button" class="secondary" id="tmSair">Sair do treino</button></div>`);
   $('#tmVolta').addEventListener('click', () => { closeSheet(); if (TREINO.tipo === 'partida') { if (G.phase === 'handEnd') treinoResultado(); else proceed(); } });
   $('#tmLicoes').addEventListener('click', () => { sairTreino(); show('home'); abrirAprender(); });
   $('#tmRegras').addEventListener('click', () => {
-    openSheet('treinomenu', RULES_HTML + '<button type="button" class="primary" id="tmRegrasOk" style="width:100%;margin-top:8px">Voltar à mesa</button>');
+    openSheet('treinomenu', RULES_HTML + '<div class="tr-bts"><button type="button" class="primary" id="tmRegrasOk">Voltar à mesa</button></div>');
     $('#tmRegrasOk').addEventListener('click', () => { closeSheet(); if (TREINO.tipo === 'partida' && G) { if (G.phase === 'handEnd') treinoResultado(); else proceed(); } });
   });
   $('#tmSair').addEventListener('click', () => sairTreino(true));
@@ -12787,8 +12793,8 @@ function abrirBoasVindas(i) {
   const T = BV_TELAS[i], ultima = i === BV_TELAS.length - 1;
   openSheet('boasvindas', `<div class="bv-pontos" aria-hidden="true">${BV_TELAS.map((_, k) => `<span class="${k === i ? 'on' : ''}"></span>`).join('')}</div>
     <p class="eyebrow">${esc(T.k)}</p><h2 id="sheetTitle">${esc(T.t)}</h2>${T.html}
-    ${ultima ? `<button type="button" class="primary" id="bvAprender" style="width:100%">Aprender jogando</button><button type="button" class="secondary" id="bvJa" style="width:100%;margin-top:8px">Já sei jogar</button>`
-      : `<button type="button" class="primary" id="bvProx" style="width:100%">Continuar</button><button type="button" class="linkbtn" id="bvPular" style="width:100%;margin-top:4px">Pular</button>`}`);
+    <div class="tr-bts">${ultima ? `<button type="button" class="primary" id="bvAprender">Aprender jogando</button><button type="button" class="secondary" id="bvJa">Já sei jogar</button>`
+      : `<button type="button" class="primary" id="bvProx">Continuar</button><button type="button" class="secondary" id="bvPular">Pular</button>`}</div>`);
   track('boasvindas-' + (i + 1));
   if ($('#bvProx')) $('#bvProx').addEventListener('click', () => abrirBoasVindas(i + 1));
   if ($('#bvPular')) $('#bvPular').addEventListener('click', () => { track('boasvindas-pulou'); closeSheet(); });
@@ -12802,14 +12808,15 @@ function abrirAprender() {
   openSheet('aprender', `<p class="eyebrow">Aprender a jogar</p><h2 id="sheetTitle">Do zero à calçada</h2>
     <p>Lições curtas, com mãos montadas para mostrar cada regra, e uma partida treino com dicas. Nada aqui conta no seu histórico.</p>
     <ol class="apr-lista">${LICOES.map((L, k) => `<li><button type="button" class="apr-it${feitas.includes(L.id) ? ' feita' : ''}" data-li="${k}"><span class="apr-n" aria-hidden="true">${feitas.includes(L.id) ? '✓' : k + 1}</span><span class="apr-tx"><b>${esc(L.titulo)}</b><small>${feitas.includes(L.id) ? 'Feita · jogar de novo' : 'Lição ' + (k + 1)}</small></span><span class="apr-go" aria-hidden="true">›</span></button></li>`).join('')}</ol>
-    <button type="button" class="primary" id="aprPartida" style="width:100%">Partida treino com dicas</button>
-    <div class="apr-mais"><button type="button" class="linkbtn" id="aprBv">Ver as boas-vindas</button><button type="button" class="linkbtn" id="aprRegras">Regras completas</button></div>
-    <button type="button" class="secondary" id="aprFechar" style="width:100%;margin-top:6px">Fechar</button>`);
+    <div class="tr-bts"><button type="button" class="primary" id="aprPartida">Partida treino com dicas</button>
+    <button type="button" class="secondary" id="aprBv">Ver as boas-vindas</button>
+    <button type="button" class="secondary" id="aprRegras">Regras completas</button>
+    <button type="button" class="secondary" id="aprFechar">Fechar</button></div>`);
   $('#aprFechar').addEventListener('click', closeSheet);
   $$('#sheet .apr-it').forEach(b => b.addEventListener('click', () => comecarLicao(Number(b.dataset.li))));
   $('#aprPartida').addEventListener('click', comecarPartidaTreino);
   $('#aprBv').addEventListener('click', () => abrirBoasVindas(0));
-  $('#aprRegras').addEventListener('click', () => { openSheet('aprender', RULES_HTML + '<button type="button" class="primary" id="aprRegrasOk" style="width:100%;margin-top:8px">Voltar</button>'); $('#aprRegrasOk').addEventListener('click', abrirAprender); });
+  $('#aprRegras').addEventListener('click', () => { openSheet('aprender', RULES_HTML + '<div class="tr-bts"><button type="button" class="primary" id="aprRegrasOk">Voltar</button></div>'); $('#aprRegrasOk').addEventListener('click', abrirAprender); });
 }
 MAIS_IC.aprender = '<svg viewBox="0 0 24 24"><path d="M2.8 9.2 12 5l9.2 4.2L12 13.4z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M6.5 11v4.6c1.4 1.5 3.3 2.3 5.5 2.3s4.1-.8 5.5-2.3V11M21.2 9.2v5.3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
@@ -13010,7 +13017,7 @@ function abrirSom() {
     <p class="note">No iPhone, o som segue a chave de silencioso e não corta a sua música. A vibração no iPhone precisa do iOS 18 ou mais novo.</p>
     <p class="eyebrow" style="margin-top:14px">Ouvir</p>
     <div class="som-ouvir">${[['pedra', 'Pedra na mesa'], ['ponto', 'Ponto'], ['chibata', 'Chibata!'], ['galo', 'Galo'], ['carroca', 'Batida de carroça'], ['vitoria', 'Vitória']].map(([k, t]) => `<button type="button" class="secondary" data-som="${k}">${t}</button>`).join('')}</div>
-    <button type="button" class="primary" id="somOk" style="width:100%;margin-top:12px">Pronto</button>`);
+    <div class="tr-bts"><button type="button" class="primary" id="somOk">Pronto</button></div>`);
   const tg = (id, k) => $('#' + id).addEventListener('click', e => { SOM[k] = !SOM[k]; salvarSom(); e.currentTarget.setAttribute('aria-pressed', String(SOM[k])); if (k === 'vib' && SOM.vib) haptico([20]); if (k === 'on' && SOM.on) tocar('pedra', 0); try { renderMais(); } catch (er) {} });
   tg('somTgSom', 'on'); tg('somTgVib', 'vib');
   $$('#sheet [data-som]').forEach(b => b.addEventListener('click', () => {
