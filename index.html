@@ -3533,7 +3533,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.45.2', data: '03/11/2026', itens: ['Pedras maiores no fim da mão com o celular em pé: as fileiras de cada ponta ficam mais curtas e a mesa usa melhor a altura da tela.', 'Quem assiste uma mesa: as pedras viradas de quem está embaixo saíram (a contagem vai junto do nome) e a mesa ficou mais alta.'] },
+  { v: '3.45.2', data: '03/11/2026', itens: ['Pedras maiores no fim da mão com o celular em pé: as fileiras de cada ponta ficam mais curtas e a mesa usa melhor a altura da tela.', 'Em qualquer tamanho de celular as pedras ficam dentro da mesa, e o "Mesa oferecida por" fica livre sempre que isso não diminui as pedras.', 'Quem assiste uma mesa: as pedras viradas de quem está embaixo saíram (a contagem vai junto do nome) e a mesa ficou mais alta.'] },
   { v: '3.45.1', data: '03/11/2026', itens: ['Treino: a caixa das lições fica legível no tema claro, e os botões das janelas do treino, das boas-vindas e do som ficaram todos do mesmo tamanho.'] },
   { v: '3.45', data: '03/11/2026', itens: ['Som na mesa: a pedra batendo na madeira, ponto, passe, embaralhar, estalo de chibata nos lances de 20 ou mais, o galo cantando, batida e batida de carroça, fanfarra na vitória e aviso de sua vez na mesa online.', 'Vibração nos lances grandes também no iPhone (iOS 18 ou mais novo). Som e vibração ligam e desligam em Mais › Som e vibração, onde dá para ouvir cada som.'] },
   { v: '3.44.2', data: '03/11/2026', itens: ['Mesa com os amigos: aparece "robô" embaixo do nome sempre que o robô está jogando por alguém (quem ficou sem internet, e na jogada que o robô fez por quem passou do tempo). O "Última pedra!" não apaga mais essa etiqueta.'] },
@@ -5512,6 +5512,8 @@ function cameraMesa(minX, maxX, minY, maxY, Xmax, a, arrastando) {
 // 3.25: a largura é a mesma a mão inteira (antes ela mudava no meio da mão para deixar as pedras maiores, e a mesa
 // se rearrumava e embolava). Só muda se a mesa mudar bastante de formato (celular girado).
 let xmAtual = null;
+// 03/11: a mesa deixa o "Mesa oferecida por" livre nesta mão? (veja renderBoard)
+let patroReserva = false, PATRO_PERDA = 1.06;
 function xmaxMelhor(W, H, a, Xpadrao) {
   const n = G && G.chain ? G.chain.length : 0;
   if (!n || xmAtual == null || Math.abs(Xpadrao - xmAtual) / xmAtual > 0.15) xmAtual = Xpadrao;
@@ -11902,7 +11904,33 @@ function renderBoard() {
   const grow = p => { const w = p.o === 'h' ? 1 : .5, h = p.o === 'h' ? .5 : 1; minX = Math.min(minX, p.x - w); maxX = Math.max(maxX, p.x + w); minY = Math.min(minY, p.y - h); maxY = Math.max(maxY, p.y + h); };
   pos.forEach(grow); bTiles.forEach(b => grow(b.pos)); if (showZones) zones.forEach(z => grow(z.pos));
   if (!isFinite(minX)) { minX = -1; maxX = 1; minY = -1; maxY = 1; }
-  const vb = cameraMesa(minX, maxX, minY, maxY, Xmax, a, showZones);
+  // 03/11: "Mesa oferecida por" livre embaixo. Se as pedras iam passar por cima dele, a câmera enquadra a mesa na
+  // altura que sobra acima, mas só quando isso custa pouco no tamanho das pedras (até PATRO_PERDA); se custar mais, as
+  // pedras ficam grandes (elas têm a preferência). Ligou, fica ligado até o fim da mão (a mesa não fica pulando).
+  const pt = wrap.querySelector('.mesa-patro'), pq = pt && pt.offsetHeight ? pt.getBoundingClientRect() : null;
+  const wq = pq && wrap.getBoundingClientRect();
+  const pr = pq && { l: pq.left - wq.left - 4, r: pq.right - wq.left + 4, t: pq.top - wq.top - 4, b: pq.bottom - wq.top };
+  const aUtil = pr && pr.t > 80 ? W / pr.t : a;
+  if (G.chain.length <= 1) patroReserva = false;
+  const estica = v => ({ x: v.x, y: v.y, w: v.w, h: v.w / a, a, Xmax });
+  const cobre = v => {
+    const k = W / v.w;
+    return pos.concat(bTiles.map(b => b.pos), showZones ? zones.map(z => z.pos) : []).some(p => {
+      const hw = p.o === 'h' ? 1 : .5, hh = p.o === 'h' ? .5 : 1;
+      return (p.x - hw - v.x) * k < pr.r && (p.x + hw - v.x) * k > pr.l && (p.y - hh - v.y) * k < pr.b && (p.y + hh - v.y) * k > pr.t;
+    });
+  };
+  let vb;
+  if (patroReserva && aUtil !== a) vb = estica(cameraMesa(minX, maxX, minY, maxY, Xmax, aUtil, showZones));
+  else {
+    const salvo = camMesa && Object.assign({}, camMesa);
+    vb = cameraMesa(minX, maxX, minY, maxY, Xmax, a, showZones);
+    if (aUtil !== a && !showZones && cobre(vb)) {
+      const cheio = camMesa; camMesa = salvo;
+      const vr = estica(cameraMesa(minX, maxX, minY, maxY, Xmax, aUtil, false));
+      if (vr.w <= vb.w * PATRO_PERDA) { patroReserva = true; vb = vr; } else camMesa = cheio;
+    }
+  }
   porVistaMesa(svg, vb);
   let html = '';
   if (!G.chain.length && !showZones && !dealing) {
@@ -12323,7 +12351,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.45.2-c3ba1b74';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.45.2-efa9e5ea';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
