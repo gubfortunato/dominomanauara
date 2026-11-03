@@ -2064,7 +2064,7 @@ body.assistindo #menuBtn,body.assistindo #passBtn{visibility:hidden}
 /* A pedra de costas na mão de quem assiste (classe "costas", 3.29.1): menor (é só para saber quantas faltam) e
    a mesa sobe para a faixa "Assistindo" não cobrir as pedras */
 #hand .ht.costas{cursor:default;width:calc(var(--tw)*.62)}
-body.assistindo #scrGame .hand{height:calc(var(--tw)*1.24 + 10px);min-height:0}
+body.assistindo #scrGame .hand{display:none}   /* 03/11: quem assiste não vê as pedras de baixo: a mesa ganha a altura (a contagem vai na linha do nome) */
 body.assistindo #scrGame.game{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 76px)}
 /* 3.29: conquistas à vista — cartão no Perfil, linha no cartão do nível e "falta pouco" no fim da mão */
 .cq-card{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:14px;width:100%;padding:14px 16px 14px 14px;border-radius:16px;border:1.5px solid var(--nos);background:color-mix(in srgb,var(--nos) 8%,var(--bg-2));color:var(--fg);font:inherit;text-align:left;cursor:pointer}
@@ -3533,6 +3533,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.45.2', data: '03/11/2026', itens: ['Pedras maiores no fim da mão com o celular em pé: as fileiras de cada ponta ficam mais curtas e a mesa usa melhor a altura da tela.', 'Quem assiste uma mesa: as pedras viradas de quem está embaixo saíram (a contagem vai junto do nome) e a mesa ficou mais alta.'] },
   { v: '3.45.1', data: '03/11/2026', itens: ['Treino: a caixa das lições fica legível no tema claro, e os botões das janelas do treino, das boas-vindas e do som ficaram todos do mesmo tamanho.'] },
   { v: '3.45', data: '03/11/2026', itens: ['Som na mesa: a pedra batendo na madeira, ponto, passe, embaralhar, estalo de chibata nos lances de 20 ou mais, o galo cantando, batida e batida de carroça, fanfarra na vitória e aviso de sua vez na mesa online.', 'Vibração nos lances grandes também no iPhone (iOS 18 ou mais novo). Som e vibração ligam e desligam em Mais › Som e vibração, onde dá para ouvir cada som.'] },
   { v: '3.44.2', data: '03/11/2026', itens: ['Mesa com os amigos: aparece "robô" embaixo do nome sempre que o robô está jogando por alguém (quem ficou sem internet, e na jogada que o robô fez por quem passou do tempo). O "Última pedra!" não apaga mais essa etiqueta.'] },
@@ -10622,7 +10623,8 @@ render = function () {
         const a = !c0.bot && typeof avatarDe === 'function' ? avatarDe(c0.av) : null, src = c0.bot ? botFaceURI(c0.nome) : a ? avatarURI(a) : '';
         // 3.39.2: o selo (★ Apoiador, ♥ doador) de quem está embaixo também aparece para quem assiste
         const selo0 = c0.bot ? '' : seloSVG(c0.apoiador, c0.doador);
-        me.innerHTML = `${src ? `<img class="fotoimg" src="${src}" alt="">` : ''}${esc(c0.nome)}${selo0 ? ` <span class="me-selo">${selo0}</span>` : ''} <small>· parceiro de ${esc((cadDe(2) || {}).nome || '')}</small>`;
+        const nb = G.hands && G.hands[0] ? G.hands[0].length : 0;   // 03/11: as pedras de baixo não aparecem para quem assiste: a contagem vai na linha do nome
+        me.innerHTML = `${src ? `<img class="fotoimg" src="${src}" alt="">` : ''}${esc(c0.nome)}${selo0 ? ` <span class="me-selo">${selo0}</span>` : ''} <small>· ${nb === 1 ? '1 pedra' : nb + ' pedras'} · parceiro de ${esc((cadDe(2) || {}).nome || '')}</small>`;
       }
       $('#prompt').textContent = G.phase === 'play' ? `Vez de ${G.names[G.turn] || ''}` : 'Fim da mão';
     } else if (ON.vista && ON.vista.assistindo > 0) {
@@ -11881,7 +11883,11 @@ function renderBoard() {
   const W = wrap.clientWidth || 320, H = wrap.clientHeight || 300, a = W / H;
   const base = Math.sqrt(112 * a) / 2;
   const pin = G.chain.length && G.chain[G.center].a === G.chain[G.center].b;
-  Xmax = pin ? Math.max(5.5, Math.min(12, base * 1.25)) : Math.max(5.5, Math.min(10, base * 1.1));   // 3.25: fileiras longas e retas, viram só perto da borda (3.40.1: no celular em pé, 2 pedras de cada lado antes de virar, em vez de 3: a mesa fica mais estreita e as pedras maiores)
+  // 03/11 (o dono: "as pedras continuam ficando pequenas quando o jogo aumenta"): na mesa em pé (celular), as fileiras
+  // de cada braço ficam mais curtas e a mesa cresce para baixo e para cima, onde sobra espaço. Simulação de 500 mãos:
+  // pedras ~10% maiores no fim da mão e ~14% no meio dela; na mesa quadrada ou deitada fica como estava.
+  const xPin = Math.max(5.5, Math.min(12, base * 1.25)), aMesa = W / H;
+  Xmax = pin ? (aMesa < 0.8 ? 4.5 : aMesa < 0.9 ? 4.5 + (xPin - 4.5) * (aMesa - 0.8) / 0.1 : xPin) : Math.max(5.5, Math.min(10, base * 1.1));   // 3.25: fileiras longas e retas, viram só perto da borda (3.40.1: no celular em pé, 2 pedras de cada lado antes de virar, em vez de 3: a mesa fica mais estreita e as pedras maiores)
   mesaA = a; Xmax = xmaxMelhor(W, H, a, Xmax);   // a mesma largura a mão inteira (a mesa não se rearruma no meio)
   const lay = layoutTable(G, Xmax), pos = lay.main;
   const bTiles = [];
@@ -12317,7 +12323,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.45.1-a3dc5a84';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.45.2-c3ba1b74';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
