@@ -121,7 +121,7 @@ async function mesaRapida(req, env, origin) {
   const marca = await marcaDoDia(req, env);
   const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM mesas_criadas WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();
   if (r && r.n >= MESAS_POR_HORA) return json({ erro: 'muitas' }, 429, origin);
-  // planos (28/10): sem plano, 5 partidas completas por dia na mesa rápida (o limite é do aparelho: trocar de apelido
+  // planos (28/10; 03/11: 1 em vez de 5): sem plano, 1 partida completa por dia na mesa rápida (o limite é do aparelho: trocar de apelido
   // não muda nada; aparelho novo na mesma rede de quem acabou de bater o limite fica com o limite também)
   const rede = await marcaRede(req.headers.get('cf-connecting-ip'), env);
   if (limitesValem(env) && !(await temPlano(env, b && b.id))) {

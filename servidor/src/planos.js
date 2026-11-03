@@ -1,11 +1,11 @@
-// Planos (28/10, regras do dono). Sem plano (Grátis): 5 partidas completas por dia na mesa rápida (mesas públicas
+// Planos (28/10, regras do dono; 03/11: mesa rápida de 5 para 1). Sem plano (Grátis): 1 partida completa por dia na mesa rápida (mesas públicas
 // online); nas mesas com os amigos, cria 1 mesa por dia e joga 1 partida por dia (mesmo convidado), com o papo de mesa
 // liberado nessa partida; o ranking mostra só o Rei da Calçada e os 3 primeiros da semana. O Sócio da Calçada (mensal,
 // trimestral ou anual) não tem limite e vê tudo. Jogo offline: sem limite para todos. Os limites zeram à meia-noite de
 // Brasília e só valem a partir do lançamento (avisado 7 dias antes). O servidor guarda, por aparelho e dia, só quantas
 // mesas criou e quantas partidas jogou (com os amigos e na mesa rápida), por 7 dias.
 export const PLANOS_DESDE = Date.UTC(2026, 10, 5, 3, 0, 0);   // 05/11/2026, 00:00 de Brasília
-export const LIMITE = { mesas: 1, partidas: 1, publicas: 5 };
+export const LIMITE = { mesas: 1, partidas: 1, publicas: 1 };   // 03/11 (dono): sem plano, 1 partida (até 200) por dia na mesa rápida (antes 5)
 const DIA = 86400000;
 
 export function planosDesde(env) {

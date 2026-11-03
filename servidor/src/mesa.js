@@ -571,7 +571,7 @@ export class Mesa {
       try { await somarUso(this.env, c.id, 'publicas', dia); if (c.uso.publicas >= LIMITE.publicas) await anotarLimite(this.env, c.rede, 'publicas', c.id, c.nome); } catch (e) {}
     }
   }
-  // Tira da mesa (e da fila, no fim da partida) quem já jogou a partida de hoje (mesa rápida: as 5 de hoje): recebe o
+  // Tira da mesa (e da fila, no fim da partida) quem já jogou a partida de hoje (mesa rápida: a de hoje): recebe o
   // aviso e o convite para o plano
   tirarSemPartida(comFila) {
     const m = this.m, pub = !!m.publica; if (!limitesValem(this.env)) return false;
@@ -738,7 +738,7 @@ export class Mesa {
     // 3.38.2: sem esperar nada aqui (dois 'proxima' ao mesmo tempo não podem passar juntos); só apaga se não sobrou ninguém
     if (r && r.matchWinner != null && this.tirarApelidosRuins() === 'vazia') { await this.apagar(); return; }
     if (r && r.matchWinner != null && !m.temaDono) { m.tema = sortearTema(m.tema, this.temasDoDono()); m.temaSorteado = true; }   // 28/10: partida nova, mesa sorteada
-    // planos (28/10): na mesa rápida, quem fechou as 5 partidas de hoje sai; a cadeira fica com a turma do bairro
+    // planos (28/10): na mesa rápida, quem fechou a partida de hoje sai (03/11: era 5); a cadeira fica com a turma do bairro
     if (r && r.matchWinner != null && m.publica && this.tirarSemPartida(false)) {
       if (!m.cad.some(c => c && !c.bot)) { await this.apagar(); return; }
       this.sentarRobos(); m.cad.forEach((c, p) => { G.names[p] = c.nome; });
