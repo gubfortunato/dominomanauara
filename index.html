@@ -3520,6 +3520,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.44.2', data: '03/11/2026', itens: ['Mesa com os amigos: aparece "robô" embaixo do nome sempre que o robô está jogando por alguém (quem ficou sem internet, e na jogada que o robô fez por quem passou do tempo). O "Última pedra!" não apaga mais essa etiqueta.'] },
   { v: '3.44.1', data: '03/11/2026', itens: ['Aprender a jogar (em Mais): boas-vindas para quem chega, 5 lições curtas com mãos montadas (encaixar a pedra, pontos na mesa, bucho, passe e galo, batida e garagem) e partida treino com dicas na sua vez. O treino não conta no seu histórico.', 'Papo de mesa de cara nova: as mensagens seguidas da mesma pessoa ficam juntas, com o avatar e o nome só na primeira, a hora dentro do balão, emoji sozinho aparece grande, aviso de quantas mensagens novas chegaram, botão de enviar redondo e contagem de letras perto do limite.'] },
   { v: '3.44', data: '03/11/2026', itens: ['Carteira de sócio do clube Dominó Manauara: quem é Sócio da Calçada ganha a carteira com o apelido, a foto ou o avatar, o número de sócio, desde quando é sócio e até quando vale. Fica na tela do Sócio da Calçada e dá para compartilhar como imagem.', 'Administrador: números do jogo do nosso servidor, com quantos já jogaram desde o início, quem jogou hoje, em 7 e em 30 dias, novos, quantos voltaram, média de partidas por jogador, partidas por dia, horário de acesso, picos de gente ao mesmo tempo, sócios e mesas criadas.'] },
   { v: '3.43.2', data: '03/11/2026', itens: ['Mesa online: quem está conectado e passa dos 20 segundos não perde mais a partida inteira. A turma joga aquela pedra por você e a partida continua valendo (ranking e bônus de vitória) até 3 vezes por partida. Na 4ª, ela deixa de contar. Quem cai da internet continua como antes.'] },
@@ -6135,7 +6136,11 @@ render = function () {
     const sc = el.querySelector('.sc');
     if (sc) { const v = sc.querySelector('.sc-selo'); if (v) v.remove(); if (selo) sc.insertAdjacentHTML('afterbegin', `<span class="sc-selo" aria-label="${c.apoiador ? 'Sócio da Calçada' : 'Já apoiou o jogo'}">${selo}</span> `); }
     // 28/10 (pedido do dono): o robô da turma que entrou no lugar de quem saiu leva a etiqueta "robô" (os outros robôs, não)
-    if (sc) { const r = sc.querySelector('.sc-robo'); if (r) r.remove(); if (c.bot && c.sub) sc.insertAdjacentHTML('afterbegin', '<span class="sc-robo">robô</span> '); }
+    // 03/11 (pedido do dono): na mesa com os amigos, a etiqueta "robô" aparece sempre que o robô está jogando por alguém:
+    // quem ficou sem conexão (o robô joga a vez dele) e quem passou do tempo (na jogada que o robô fez por ele)
+    const amigos = !!ON.vista && !ON.vista.publica, cadeira = (pos + ON.vista.minha + 4) % 4;
+    const porRobo = c.bot ? !!c.sub : amigos && (c.on === false || ON.vista.porRobo === cadeira);
+    if (sc) { const r = sc.querySelector('.sc-robo'); if (r) r.remove(); if (porRobo) sc.insertAdjacentHTML('afterbegin', '<span class="sc-robo">robô</span> '); }
     if (c.rei) el.dataset.rei = '1'; else delete el.dataset.rei;   // 3.37: coroa do Rei da Calçada em cima do avatar
   }
 };
@@ -9162,7 +9167,7 @@ render = function () {
       const p = (base() + pos) % 4, el = $(`.seat[data-pos="${pos}"]`); if (!el) continue;
       const ultima = !dealing && G.phase === 'play' && G.hands[p] && G.hands[p].length === 1;
       el.classList.toggle('ultima', ultima);
-      if (ultima && !(G.turn === p)) el.querySelector('.sc').textContent = 'Última pedra!';
+      if (ultima && !(G.turn === p)) { const sc = el.querySelector('.sc'), tags = [...sc.querySelectorAll('.sc-robo, .sc-selo')]; sc.textContent = 'Última pedra!'; tags.reverse().forEach(t => sc.prepend(t, ' ')); }   // 03/11: sem apagar "robô" e o selo
     }
     const minha = !dealing && G.phase === 'play' && seatMe != null && G.hands[seatMe] && G.hands[seatMe].length === 1;
     const h = $('#hand'); if (h) h.classList.toggle('ultima', minha);
@@ -12295,7 +12300,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.44.1-7ac293fa';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.44.2-9524754c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
