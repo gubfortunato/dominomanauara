@@ -2359,25 +2359,18 @@ body.papo-aberto{overflow:hidden}
 .cart svg{display:block;width:100%;height:auto;border-radius:4.2%/6.6%;box-shadow:0 18px 34px -16px rgba(0,0,0,.7)}
 .cart-share{width:100%}
 .cart-img{display:block;width:100%;height:auto;border-radius:14px;margin:6px 0 4px}
-/* 03/11 (pedido do dono): o topo do papo é uma barra fosca por cima da conversa (as mensagens passam por baixo, borradas),
-   com o ícone do papo, o título, quem está na mesa e o número dela; a linha e a sombra aparecem quando a conversa rola. */
-.papo-caixa{position:relative;padding-top:0}
-.papo-pega{position:absolute;top:8px;left:50%;transform:translateX(-50%);margin:0;z-index:3}
-.papo-topo{position:absolute;top:0;left:0;right:0;z-index:2;margin:0;padding:22px 12px 11px 16px;gap:10px;border-radius:22px 22px 0 0;
-  background:color-mix(in srgb, var(--bg-2) 88%, transparent);-webkit-backdrop-filter:blur(24px) saturate(1.6);backdrop-filter:blur(24px) saturate(1.6);
-  border-bottom:1px solid transparent;transition:border-color .2s, box-shadow .2s}
-.papo-caixa.rolou .papo-topo{border-bottom-color:color-mix(in srgb, var(--fg) 12%, transparent);box-shadow:0 8px 20px -12px rgba(0,0,0,.5)}
-.papo-ic{flex:none;width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg, #f7d48a, #d79a3c);color:#2a1a0c;box-shadow:inset 0 1px 0 rgba(255,255,255,.45), 0 4px 10px -4px rgba(0,0,0,.45)}
-.papo-ic svg{width:24px;height:24px}
-.papo-topo h2{line-height:1.1}
-.papo-tit small{display:flex;align-items:center;gap:8px;margin-top:3px}
+/* 03/11 (pedido do dono: o topo do papo mais suave): sem barra nem caixa. O título, quem está na mesa e o número dela no
+   mesmo tom do painel; silenciar e fechar sem fundo; a conversa some num degradê suave antes de chegar no topo. */
+.papo-topo{margin:0 0 4px;gap:4px;padding-right:0}
+.papo-topo h2{font-size:19px;line-height:1.15}
+.papo-tit small{display:flex;align-items:center;gap:7px;margin-top:3px;font-size:12.5px}
 .papo-gente{display:inline-flex;padding-left:4px}
-.papo-gente img,.papo-gente b{width:22px;height:22px;border-radius:50%;margin-left:-6px;box-shadow:0 0 0 2px var(--bg-2);background:color-mix(in srgb, var(--glow) 30%, var(--bg));display:grid;place-items:center;font-size:11px;font-weight:800;color:var(--fg)}
-.papo-mudo{background:color-mix(in srgb, var(--fg) 9%, transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-.papo-x{width:38px;height:38px;font-size:24px;background:color-mix(in srgb, var(--fg) 9%, transparent);display:grid;place-items:center;padding:0}
-.papo-lista{padding-top:98px;-webkit-mask-image:none;mask-image:none}
-.papo-vez{margin-top:96px}
-.papo-vez:not([hidden]) + .papo-lista{padding-top:6px}
+.papo-gente img,.papo-gente b{width:20px;height:20px;border-radius:50%;margin-left:-5px;box-shadow:0 0 0 2px color-mix(in srgb, var(--bg-2) 80%, transparent);background:color-mix(in srgb, var(--glow) 25%, var(--bg));display:grid;place-items:center;font-size:10.5px;font-weight:800;color:var(--fg)}
+.papo-mudo{background:none;border:0;padding:8px 10px;color:var(--muted);font-size:14px;font-weight:700;gap:5px}
+.papo-mudo svg{width:17px;height:17px}
+.papo-mudo[aria-pressed="true"]{background:none;color:var(--glow)}
+.papo-x{width:40px;height:40px;font-size:24px;background:none;color:var(--muted);display:grid;place-items:center;padding:0;margin-right:-6px}
+.papo-lista{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 28px);mask-image:linear-gradient(to bottom,transparent 0,#000 28px);padding-top:14px}
 </style>
 </head>
 <body>
@@ -10662,7 +10655,6 @@ const papoBotao = id => `<button type="button" class="reagir papo-bt" id="${id}"
     <div class="papo-caixa" role="dialog" aria-modal="true" aria-labelledby="papoTitulo">
       <div class="papo-pega" aria-hidden="true"></div>
       <div class="papo-topo">
-        <span class="papo-ic" aria-hidden="true">${PAPO_IC}</span>
         <div class="papo-tit"><h2 id="papoTitulo">Papo de mesa</h2><small id="papoSub"></small></div>
         <button type="button" class="papo-mudo" id="papoMudo" aria-pressed="false"></button>
         <button type="button" class="papo-x" id="papoFechar" aria-label="Fechar o papo">×</button>
