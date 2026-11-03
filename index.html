@@ -2399,6 +2399,14 @@ body.papo-aberto{overflow:hidden}
 .apr-tx small{font-size:13.5px;color:var(--muted)}
 .apr-go{font-size:22px;color:var(--muted)}
 .apr-mais{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:6px}
+/* 03/11: som e vibração */
+.som-tg{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;font:inherit;font-size:17px;font-weight:700;color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;margin-top:8px;cursor:pointer;text-align:left}
+.som-tg i{flex:none;width:48px;height:28px;border-radius:999px;background:var(--line);position:relative;transition:background .2s}
+.som-tg i::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transition:transform .2s}
+.som-tg[aria-pressed="true"] i{background:var(--ok)}
+.som-tg[aria-pressed="true"] i::after{transform:translateX(20px)}
+.som-ouvir{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.som-ouvir button{width:100%;margin:0;padding:11px 8px;font-size:15px}
 </style>
 </head>
 <body>
@@ -3520,6 +3528,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.45', data: '03/11/2026', itens: ['Som na mesa: a pedra batendo na madeira, ponto, passe, embaralhar, estalo de chibata nos lances de 20 ou mais, o galo cantando, batida e batida de carroça, fanfarra na vitória e aviso de sua vez na mesa online.', 'Vibração nos lances grandes também no iPhone (iOS 18 ou mais novo). Som e vibração ligam e desligam em Mais › Som e vibração, onde dá para ouvir cada som.'] },
   { v: '3.44.2', data: '03/11/2026', itens: ['Mesa com os amigos: aparece "robô" embaixo do nome sempre que o robô está jogando por alguém (quem ficou sem internet, e na jogada que o robô fez por quem passou do tempo). O "Última pedra!" não apaga mais essa etiqueta.'] },
   { v: '3.44.1', data: '03/11/2026', itens: ['Aprender a jogar (em Mais): boas-vindas para quem chega, 5 lições curtas com mãos montadas (encaixar a pedra, pontos na mesa, bucho, passe e galo, batida e garagem) e partida treino com dicas na sua vez. O treino não conta no seu histórico.', 'Papo de mesa de cara nova: as mensagens seguidas da mesma pessoa ficam juntas, com o avatar e o nome só na primeira, a hora dentro do balão, emoji sozinho aparece grande, aviso de quantas mensagens novas chegaram, botão de enviar redondo e contagem de letras perto do limite.'] },
   { v: '3.44', data: '03/11/2026', itens: ['Carteira de sócio do clube Dominó Manauara: quem é Sócio da Calçada ganha a carteira com o apelido, a foto ou o avatar, o número de sócio, desde quando é sócio e até quando vale. Fica na tela do Sócio da Calçada e dá para compartilhar como imagem.', 'Administrador: números do jogo do nosso servidor, com quantos já jogaram desde o início, quem jogou hoje, em 7 e em 30 dias, novos, quantos voltaram, média de partidas por jogador, partidas por dia, horário de acesso, picos de gente ao mesmo tempo, sócios e mesas criadas.'] },
@@ -10183,6 +10192,7 @@ function renderMais() {
     souAdmin() && vis('donoCard') && { k: 'dono', ic: 'dono', t: 'Área do administrador', s: (el('donoCardTx') || {}).textContent || 'Os números do jogo', destaque: true },
     { k: 'aprender', ic: 'aprender', t: 'Aprender a jogar', s: 'Lições curtas e partida treino com dicas' },   // 03/11
     { k: 'regras', ic: 'regras', t: 'Regras', s: 'Bucho, garagem, passe e galo, explicados' },
+    { k: 'som', ic: 'som', t: 'Som e vibração', s: typeof somRotulo === 'function' ? somRotulo() : '' },   // 03/11
     vis('footApoio') && { k: 'apoio', ic: 'apoio', t: 'Sócio da Calçada', s: 'Mesas com os amigos sem limite e mais' },
     vis('fbCard') && { k: 'fale', ic: 'fale', t: 'Fale com a gente', s: 'Achou um erro ou tem uma ideia?' },
     { k: 'chamar', ic: 'chamar', t: 'Chamar os amigos', s: 'Mande o jogo no WhatsApp para a turma' },
@@ -10202,6 +10212,7 @@ function abasMaisClique(k) {
   if (k === 'dono') clica('donoCard');
   else if (k === 'regras') clica('howBtn');
   else if (k === 'aprender') abrirAprender();
+  else if (k === 'som') abrirSom();
   else if (k === 'apoio') clica('footApoio');
   else if (k === 'fale') clica('fbCard');
   else if (k === 'chamar') clica('shareApp');
@@ -12300,7 +12311,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.44.2-9524754c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.45-9694e6e2';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -12801,6 +12812,220 @@ function abrirAprender() {
   $('#aprRegras').addEventListener('click', () => { openSheet('aprender', RULES_HTML + '<button type="button" class="primary" id="aprRegrasOk" style="width:100%;margin-top:8px">Voltar</button>'); $('#aprRegrasOk').addEventListener('click', abrirAprender); });
 }
 MAIS_IC.aprender = '<svg viewBox="0 0 24 24"><path d="M2.8 9.2 12 5l9.2 4.2L12 13.4z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M6.5 11v4.6c1.4 1.5 3.3 2.3 5.5 2.3s4.1-.8 5.5-2.3V11M21.2 9.2v5.3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+// ===== 03/11 (pedido do dono): sons e vibração mais ricos =====
+// Todos os sons são feitos na hora pelo próprio celular (Web Audio), sem arquivo de som: a pedra batendo na mesa, ponto,
+// passe, "chibata" (estalo de chicote nos lances de 20 ou mais e na fala "Chibata!"), galo, batida e batida de carroça,
+// embaralhar, sua vez (online), vitória e derrota. No iPhone o som segue a chave de silencioso e não corta a música
+// que estiver tocando. Vibração: no Android pela vibração do sistema; no iPhone (iOS 18 ou mais novo), pelo toque do
+// interruptor do Safari, que dá uma batidinha a cada vez. Os dois dá para desligar em Mais › Som e vibração.
+const SOM = { ctx: null, saida: null, ruido: null, on: store.get('dmz-som') !== '0', vib: store.get('dmz-vibra') !== '0', pts: new Map(), vistos: new WeakSet(), vez: null };
+function somCtx() {
+  if (!SOM.on) return null;
+  try {
+    if (!SOM.ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+      try { if (navigator.audioSession) navigator.audioSession.type = 'ambient'; } catch (e) {}
+      SOM.ctx = new AC();
+      const comp = SOM.ctx.createDynamicsCompressor(); comp.threshold.value = -12; comp.ratio.value = 6;
+      SOM.saida = SOM.ctx.createGain(); SOM.saida.gain.value = 0.7;
+      SOM.saida.connect(comp); comp.connect(SOM.ctx.destination);
+    }
+    if (SOM.ctx.state === 'suspended') SOM.ctx.resume().catch(() => {});
+    return SOM.ctx;
+  } catch (e) { return null; }
+}
+// o iPhone só libera o som depois de um toque: no primeiro toque, um som mudo destrava
+['pointerdown', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, () => {
+  const c = somCtx(); if (!c || SOM.destravado) return;
+  try { const b = c.createBuffer(1, 1, 22050), s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(0); SOM.destravado = true; } catch (e) {}
+}, { capture: true, passive: true }));
+function somRuido(c) {
+  if (!SOM.ruido) { const n = c.sampleRate, b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; SOM.ruido = b; }
+  return SOM.ruido;
+}
+function somEnv(g, t, a, pico, d) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(Math.max(0.0002, pico), t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + d); }
+function somTom(c, o) {
+  const t = o.t, a = o.a || 0.005, d = o.d || 0.3, os = c.createOscillator(), g = c.createGain();
+  os.type = o.tipo || 'sine'; os.frequency.setValueAtTime(o.f, t); if (o.f2) os.frequency.exponentialRampToValueAtTime(o.f2, t + a + d);
+  if (o.vib) { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = o.vib; lg.gain.value = o.vibF || 8; l.connect(lg); lg.connect(os.frequency); l.start(t); l.stop(t + a + d + .05); }
+  somEnv(g, t, a, o.vol || 0.2, d);
+  let fim = g;
+  if (o.lp) { const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(o.lp, t); if (o.lp2) f.frequency.exponentialRampToValueAtTime(o.lp2, t + a + d * .6); g.connect(f); fim = f; }
+  os.connect(g); fim.connect(o.dest || SOM.saida); os.start(t); os.stop(t + a + d + 0.06);
+}
+function somChiado(c, o) {
+  const t = o.t, a = o.a || 0.002, d = o.d || 0.05, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+  s.buffer = somRuido(c); f.type = o.tipo || 'bandpass'; f.frequency.setValueAtTime(o.f || 2000, t); if (o.f2) f.frequency.exponentialRampToValueAtTime(o.f2, t + a + d); f.Q.value = o.q || 1;
+  somEnv(g, t, a, o.vol || 0.3, d); s.connect(f); f.connect(g); g.connect(SOM.saida); s.start(t, Math.random() * 0.5); s.stop(t + a + d + 0.06);
+}
+const SONS = {
+  // a pedra batendo na madeira: o estalo, o corpo da mesa e um "toc" grave
+  pedra(c, t, forca) {
+    const k = forca || 1, r = Math.random();
+    somChiado(c, { t, f: 2300 + r * 700, q: 1.3, d: 0.045, vol: 0.55 * k });
+    somChiado(c, { t, tipo: 'lowpass', f: 900, d: 0.09, vol: 0.32 * k });
+    somTom(c, { t, f: 165 + r * 35, f2: 115, d: 0.1, vol: 0.32 * k });
+  },
+  ponto(c, t, nosso) {
+    somTom(c, { t, f: nosso ? 1318.5 : 987.8, tipo: 'triangle', d: 0.32, vol: nosso ? 0.17 : 0.11 });
+    somTom(c, { t: t + 0.09, f: nosso ? 1975.5 : 1318.5, tipo: 'triangle', d: 0.45, vol: nosso ? 0.14 : 0.09 });
+  },
+  passe(c, t) { somTom(c, { t, f: 330, f2: 250, d: 0.14, vol: 0.12 }); },
+  // estalo de chicote: o vento subindo e o estalo seco
+  chibata(c, t) {
+    somChiado(c, { t, f: 500, f2: 4200, q: 0.8, a: 0.15, d: 0.03, vol: 0.22 });
+    const s = t + 0.17;
+    somChiado(c, { t: s, tipo: 'highpass', f: 2600, a: 0.001, d: 0.04, vol: 0.95 });
+    somTom(c, { t: s, f: 2800, tipo: 'square', a: 0.001, d: 0.018, vol: 0.12 });
+    somTom(c, { t: s, f: 190, f2: 90, a: 0.001, d: 0.07, vol: 0.22 });
+  },
+  // o galo cantando (um "có-co-ri-cóóó" feito de onda com dois filtros de voz)
+  galo(c, t) {
+    const os = c.createOscillator(), g = c.createGain(), f1 = c.createBiquadFilter(), f2 = c.createBiquadFilter(), m = c.createGain();
+    os.type = 'sawtooth'; f1.type = 'bandpass'; f1.frequency.value = 950; f1.Q.value = 2.5; f2.type = 'bandpass'; f2.frequency.value = 2300; f2.Q.value = 3.5;
+    const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = 8.5; lg.gain.value = 0; l.connect(lg); lg.connect(os.frequency);
+    os.connect(f1); os.connect(f2); f1.connect(g); f2.connect(g); g.connect(m); m.connect(SOM.saida); m.gain.value = 0.55;
+    g.gain.setValueAtTime(0.0001, t);
+    const silaba = (ini, dur, fa, fb, vol) => {
+      os.frequency.setValueAtTime(fa, t + ini); os.frequency.linearRampToValueAtTime(fb, t + ini + dur);
+      g.gain.setValueAtTime(0.0001, t + ini); g.gain.exponentialRampToValueAtTime(vol, t + ini + 0.02);
+      g.gain.setValueAtTime(vol, t + ini + dur - 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + ini + dur);
+    };
+    silaba(0, 0.12, 540, 620, 0.5); silaba(0.16, 0.1, 600, 580, 0.45); silaba(0.3, 0.11, 780, 860, 0.5);
+    silaba(0.46, 0.7, 960, 640, 0.55); lg.gain.setValueAtTime(0, t); lg.gain.setValueAtTime(28, t + 0.62);
+    os.start(t); l.start(t); os.stop(t + 1.25); l.stop(t + 1.25);
+  },
+  batida(c, t, carroca) {
+    SONS.pedra(c, t, 1.6); somTom(c, { t, f: 95, f2: 48, d: 0.28, vol: 0.5 });
+    if (carroca) {
+      SONS.pedra(c, t + 0.14, 1.7); somTom(c, { t: t + 0.14, f: 90, f2: 45, d: 0.3, vol: 0.5 });
+      [523.3, 659.3, 784, 1046.5].forEach((f, i) => somTom(c, { t: t + 0.3 + i * 0.035, f, tipo: 'triangle', d: 1.0, vol: 0.075 }));
+    }
+  },
+  embaralhar(c, t) { for (let i = 0; i < 9; i++) somChiado(c, { t: t + i * 0.075 + Math.random() * 0.03, f: 2600 + Math.random() * 900, q: 1.5, d: 0.025, vol: 0.18 + Math.random() * 0.1 }); },
+  suaVez(c, t) { somTom(c, { t, f: 880, d: 0.08, vol: 0.07 }); somTom(c, { t: t + 0.09, f: 1318.5, d: 0.14, vol: 0.07 }); },
+  fala(c, t) { somTom(c, { t, f: 700, f2: 1050, d: 0.07, vol: 0.05 }); },
+  // vitória: fanfarra de metais (onda serrote com filtro abrindo) subindo até o dó agudo
+  vitoria(c, t, jogo) {
+    const metal = (ti, f, d, vol) => somTom(c, { t: ti, f, tipo: 'sawtooth', a: 0.02, d, vol, lp: 700, lp2: 3200 });
+    [[0, 392], [0.12, 523.3], [0.24, 659.3], [0.36, 784]].forEach(([ti, f]) => metal(t + ti, f, 0.14, 0.11));
+    metal(t + 0.5, 1046.5, jogo ? 1.4 : 1.0, 0.13);
+    [523.3, 659.3, 784].forEach(f => somTom(c, { t: t + 0.5, f, tipo: 'triangle', d: jogo ? 1.5 : 1.1, vol: 0.05 }));
+    for (let i = 0; i < (jogo ? 6 : 3); i++) somChiado(c, { t: t + 0.6 + i * 0.16 + Math.random() * 0.08, tipo: 'highpass', f: 3000, d: 0.03, vol: 0.25 });
+  },
+  derrota(c, t) { somTom(c, { t, f: 329.6, tipo: 'triangle', d: 0.3, vol: 0.12 }); somTom(c, { t: t + 0.28, f: 261.6, f2: 246.9, tipo: 'triangle', d: 0.65, vol: 0.11 }); }
+};
+// volume de cada som (a pedra e o ponto mais presentes, o estalo da chibata mais contido)
+const SOM_VOL = { pedra: 3.2, ponto: 3, passe: 3.5, chibata: 0.75, galo: 2.0, batida: 1.7, embaralhar: 2.5, suaVez: 3.2, fala: 3, vitoria: 2.4, derrota: 3 };
+function tocarEm(c, saida, nome, t, args) {
+  const g = c.createGain(); g.gain.value = SOM_VOL[nome] || 1; g.connect(saida);
+  const s0 = SOM.saida; SOM.saida = g;
+  try { SONS[nome](c, t, ...args); } finally { SOM.saida = s0; }
+}
+function tocar(nome, atraso, ...args) {
+  const c = somCtx(); if (!c || !SONS[nome]) return;
+  try { tocarEm(c, SOM.saida, nome, c.currentTime + Math.max(0, atraso || 0) / 1000 + 0.01, args); } catch (e) {}
+}
+// ---------- vibração ----------
+(function () {
+  // iPhone: cada troca do interruptor (input switch) dá uma batidinha
+  document.body.insertAdjacentHTML('beforeend', '<label id="hapLbl" aria-hidden="true" style="position:fixed;left:-9999px;top:0;opacity:0;pointer-events:none"><input type="checkbox" switch id="hapSw" tabindex="-1"></label>');
+})();
+function haptico(padrao) {
+  if (!SOM.vib) return;
+  const p = Array.isArray(padrao) ? padrao : [padrao || 20];
+  try { if (navigator.vibrate) { navigator.vibrate(p); return; } } catch (e) {}
+  const lbl = document.getElementById('hapLbl'); if (!lbl) return;
+  let t = 0;
+  for (let i = 0; i < p.length; i += 2) { setTimeout(() => { try { lbl.click(); } catch (e) {} }, t); t += (p[i] || 0) + (p[i + 1] || 0); }
+}
+vibrar = haptico;   // os avisos que já vibravam (galo, batida) passam pela mesma vibração, com o liga/desliga
+
+// ---------- no jogo ----------
+const announceSom = announce;
+announce = function () {
+  const r = announceSom.apply(this, arguments);
+  try {
+    const evs = (G && G.events) || [];
+    if (G && evs.length && !SOM.vistos.has(evs) && screen === 'game') {
+      SOM.vistos.add(evs);
+      const nos = TEAM(base());
+      for (const ev of evs) {
+        if (ev.type === 'play') {
+          SOM.pts.set(tkey(ev.t), { pts: ev.pts && !ev.pedir ? ev.pts : 0, nosso: ev.team === nos, p: ev.p });
+          if (ev.pts >= 20 && !ev.pedir) { tocar('chibata', 350); if (ev.team === nos) haptico([25, 40, 70]); }
+        }
+        if (ev.type === 'ponto') tocar('ponto', 0, ev.team === nos);
+        if (ev.type === 'pass' && !ev.voided) tocar('passe', 150);
+        if (ev.type === 'galo') { tocar('galo', 250); if (ev.team !== nos) haptico([30]); }
+        if (ev.type === 'batida') tocar('batida', 900, !!ev.carroca);
+        if (ev.type === 'fechado') tocar('passe', 600);
+      }
+    }
+    // sua vez na mesa online: um "tim-tim" leve
+    if (G && mode === 'on' && G.phase === 'play' && seatMe != null && G.turn === seatMe && !dealing) {
+      const k = `${G.handNo}:${G.chain.length}:${(G.passStreak || []).length}`;
+      if (SOM.vez !== k) { SOM.vez = k; tocar('suaVez', 300); haptico([18]); }
+    }
+  } catch (e) {}
+  return r;
+};
+// a pedra pousando na mesa: o som sai na hora em que ela encosta
+const flyInSom = flyIn;
+flyIn = function (pf) {
+  const info = SOM.pts.get(pf.key); SOM.pts.delete(pf.key);
+  const minha = pf.p === seatMe, reduz = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const dur = minha && lastDrop && Date.now() - lastDrop.t < 4000 ? 260 : (batidaLenta ? 1150 : 560);
+  const pousa = () => { tocar('pedra', 0, minha ? 1.1 : 0.9); if (info && info.pts) tocar('ponto', 60, info.nosso); if (minha) haptico(info && info.pts ? [15, 50, 25] : [12]); };
+  setTimeout(pousa, reduz ? 0 : dur - 10);
+  return flyInSom.apply(this, arguments);
+};
+const runDealSom = runDeal;
+runDeal = function () { try { if (screen === 'game') tocar('embaralhar', 50); } catch (e) {} return runDealSom.apply(this, arguments); };
+const mostrarReacaoSom = mostrarReacao;
+mostrarReacao = function (pos, txt) {
+  const r = mostrarReacaoSom.apply(this, arguments);
+  try { if (screen === 'game') { if (/chibata/i.test(String(txt))) { tocar('chibata', 0); if (pos === 0) haptico([25, 40, 70]); } else tocar('fala', 0); } } catch (e) {}
+  return r;
+};
+const festaSom = festa;
+festa = function (r) {
+  const ret = festaSom.apply(this, arguments);
+  try {
+    const nos = r && r.matchWinner === TEAM(base()), jogo = r && r.gameWinner != null;
+    if (nos) tocar('vitoria', 150, jogo); else tocar('derrota', 150);
+    if (!navigator.vibrate) haptico(nos ? [90, 60, 90, 60, 160] : [60]);   // no Android a festa já vibra
+  } catch (e) {}
+  return ret;
+};
+
+// ---------- Mais › Som e vibração ----------
+function salvarSom() { store.set('dmz-som', SOM.on ? '1' : '0'); store.set('dmz-vibra', SOM.vib ? '1' : '0'); }
+const somRotulo = () => SOM.on && SOM.vib ? 'Som e vibração ligados' : SOM.on ? 'Som ligado · vibração desligada' : SOM.vib ? 'Som desligado · vibração ligada' : 'Som e vibração desligados';
+function abrirSom() {
+  const linha = (id, on, txt) => `<button type="button" class="som-tg" id="${id}" aria-pressed="${on}"><span>${txt}</span><i aria-hidden="true"></i></button>`;
+  openSheet('som', `<p class="eyebrow">Mais</p><h2 id="sheetTitle">Som e vibração</h2>
+    ${linha('somTgSom', SOM.on, 'Sons do jogo')}${linha('somTgVib', SOM.vib, 'Vibração')}
+    <p class="note">No iPhone, o som segue a chave de silencioso e não corta a sua música. A vibração no iPhone precisa do iOS 18 ou mais novo.</p>
+    <p class="eyebrow" style="margin-top:14px">Ouvir</p>
+    <div class="som-ouvir">${[['pedra', 'Pedra na mesa'], ['ponto', 'Ponto'], ['chibata', 'Chibata!'], ['galo', 'Galo'], ['carroca', 'Batida de carroça'], ['vitoria', 'Vitória']].map(([k, t]) => `<button type="button" class="secondary" data-som="${k}">${t}</button>`).join('')}</div>
+    <button type="button" class="primary" id="somOk" style="width:100%;margin-top:12px">Pronto</button>`);
+  const tg = (id, k) => $('#' + id).addEventListener('click', e => { SOM[k] = !SOM[k]; salvarSom(); e.currentTarget.setAttribute('aria-pressed', String(SOM[k])); if (k === 'vib' && SOM.vib) haptico([20]); if (k === 'on' && SOM.on) tocar('pedra', 0); try { renderMais(); } catch (er) {} });
+  tg('somTgSom', 'on'); tg('somTgVib', 'vib');
+  $$('#sheet [data-som]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.som;
+    if (!SOM.on) { toast('Ligue os sons do jogo para ouvir.'); return; }
+    if (k === 'carroca') { tocar('batida', 0, true); haptico([60, 50, 60, 50, 120]); }
+    else if (k === 'vitoria') { tocar('vitoria', 0, true); haptico([90, 60, 90, 60, 160]); }
+    else if (k === 'galo') { tocar('galo', 0); haptico([40, 60, 40]); }
+    else if (k === 'chibata') { tocar('chibata', 0); haptico([25, 40, 70]); }
+    else if (k === 'ponto') { tocar('pedra', 0); tocar('ponto', 60, true); haptico([15, 50, 25]); }
+    else { tocar('pedra', 0); haptico([12]); }
+  }));
+  $('#somOk').addEventListener('click', closeSheet);
+}
+MAIS_IC.som = '<svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>';
 </script>
 </body>
 </html>
