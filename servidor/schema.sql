@@ -211,3 +211,11 @@ INSERT OR IGNORE INTO jogadores (aparelho, primeiro, ultimo, jogou, semente)
 INSERT OR IGNORE INTO jogadores (aparelho, primeiro, ultimo, jogou, semente)
   SELECT aparelho, CASE WHEN visto_em > 0 THEN visto_em ELSE CAST(strftime('%s', 'now') AS INTEGER) * 1000 END,
     CASE WHEN visto_em > 0 THEN visto_em ELSE CAST(strftime('%s', 'now') AS INTEGER) * 1000 END, 0, 1 FROM presenca WHERE aparelho NOT LIKE 'teste-%';
+
+-- 03/11 (pedido do dono): os aparelhos com cortesia (o dono e a Erika) são sócios como um jogador de verdade: plano de
+-- sócio por 10 anos (o mesmo que o /dono/cortesia dá desde a 3.36; os aparelhos de antes da 3.36 ficaram sem plano).
+INSERT OR IGNORE INTO planos (aparelho, ate, desde, codigo)
+  SELECT c.aparelho, CAST(strftime('%s', 'now') AS INTEGER) * 1000 + 3650 * 86400000, c.desde, upper(hex(randomblob(4))) FROM cortesias c
+  WHERE NOT EXISTS (SELECT 1 FROM planos p WHERE p.aparelho = c.aparelho);
+UPDATE planos SET ate = CAST(strftime('%s', 'now') AS INTEGER) * 1000 + 3650 * 86400000
+  WHERE aparelho IN (SELECT aparelho FROM cortesias) AND ate < CAST(strftime('%s', 'now') AS INTEGER) * 1000 + 365 * 86400000;

@@ -79,7 +79,7 @@ export async function donoNumeros(req, env, origin, h) {
       FROM jogadores WHERE semente = 0 AND primeiro >= ? AND primeiro < ?`, inicio(d30[0]), inicio(diaDe(agora - DIA)));
   const part7 = await um('SELECT SUM(n) AS n, COUNT(DISTINCT aparelho) AS jogadores FROM partidas_dia WHERE dia >= ?', d7[0]);
   const ativosDias7 = await um('SELECT COUNT(*) AS n FROM (SELECT DISTINCT dia, aparelho FROM acessos_hora WHERE dia >= ?)', d7[0]);
-  const socios = await um('SELECT COUNT(DISTINCT codigo) AS n, COUNT(*) AS aparelhos FROM planos WHERE ate > ?', agora);
+  const socios = await um('SELECT COUNT(DISTINCT codigo) AS n, COUNT(*) AS aparelhos FROM planos WHERE ate > ? AND aparelho NOT IN (SELECT aparelho FROM cortesias)', agora);   // sem o dono e a Erika
   const mesas = await um('SELECT SUM(criado_em >= ?) AS hoje, SUM(criado_em >= ?) AS d7 FROM mesas_criadas', inicio(hoje), inicio(d7[0]));
   // "Hoje no Dominó Manauara" (desde a 3.24): partidas terminadas por dia, offline e online (cada partida uma vez só)
   const vivo = await todos('SELECT dia, partidas, galos, carrocas FROM vivo_dia WHERE dia >= ?', d30[0]);
