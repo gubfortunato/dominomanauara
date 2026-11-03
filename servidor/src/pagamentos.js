@@ -146,6 +146,18 @@ async function contaDe(env, aparelho) {
   const conta = { ate: p && p.ate ? p.ate : null, codigo: p ? p.codigo : null, doador: await doadorDe(env, aparelho), renova: await renovaDe(env, aparelho) };
   // 28/10: presente de quem já tinha pago antes do Sócio da Calçada (o app mostra o agradecimento uma vez)
   try { const g = await env.DB.prepare("SELECT dias, ate FROM presentes WHERE aparelho = ? AND tipo = 'fundador'").bind(aparelho).first(); if (g) conta.presente = { tipo: 'fundador', dias: g.dias, ate: g.ate }; } catch (e) {}
+  // 03/11 (pedido do dono): carteira de sócio. O número é a ordem de chegada de cada conta de sócio (o código, que vale
+  // para todos os aparelhos dela), pela primeira vez que virou sócio; "desde" é essa data. Nunca muda.
+  if (p && p.ate && p.codigo) {
+    try {
+      const eu = await env.DB.prepare('SELECT MIN(desde) AS d FROM planos WHERE codigo = ? AND ate > 0').bind(p.codigo).first();
+      if (eu && eu.d) {
+        const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM (SELECT codigo, MIN(desde) AS d FROM planos WHERE ate > 0 GROUP BY codigo) WHERE d < ? OR (d = ? AND codigo < ?)')
+          .bind(eu.d, eu.d, p.codigo).first();
+        conta.socio = { numero: ((r && r.n) || 0) + 1, desde: eu.d };
+      }
+    } catch (e) {}
+  }
   return conta;
 }
 

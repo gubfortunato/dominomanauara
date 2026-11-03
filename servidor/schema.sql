@@ -180,3 +180,34 @@ UPDATE planos SET ate = MAX(ate, 1793847600000) + 365 * 86400000   -- LANCAMENTO
 UPDATE presentes SET ate = (SELECT ate FROM planos WHERE planos.aparelho = presentes.aparelho)
   WHERE tipo = 'fundador' AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'presente-fundador');
 INSERT OR IGNORE INTO marcos (chave, em) VALUES ('presente-fundador', CAST(strftime('%s', 'now') AS INTEGER) * 1000);
+
+-- 03/11 (pedido do dono): números da área do administrador. "jogadores": um aparelho por linha (quando apareceu pela
+-- primeira vez, a última vez no dia, partidas e mãos que o app dele já contou). "semente" = 1: veio das tabelas que já
+-- existiam (quem jogou online, salvou o progresso, é sócio ou abriu o app nas últimas 24 h) antes de a contagem começar.
+CREATE TABLE IF NOT EXISTS jogadores (aparelho TEXT PRIMARY KEY, primeiro INTEGER NOT NULL, ultimo INTEGER NOT NULL,
+  partidas INTEGER NOT NULL DEFAULT 0, maos INTEGER NOT NULL DEFAULT 0, jogou INTEGER NOT NULL DEFAULT 0,
+  informou INTEGER NOT NULL DEFAULT 0, semente INTEGER NOT NULL DEFAULT 0);
+CREATE INDEX IF NOT EXISTS jogadores_primeiro ON jogadores (primeiro);
+CREATE INDEX IF NOT EXISTS jogadores_ultimo ON jogadores (ultimo);
+-- quem abriu o app em cada hora (horário de Manaus); fica 60 dias
+CREATE TABLE IF NOT EXISTS acessos_hora (dia TEXT NOT NULL, hora INTEGER NOT NULL, aparelho TEXT NOT NULL, PRIMARY KEY (dia, hora, aparelho));
+-- o maior número de pessoas com o app aberto ao mesmo tempo em cada hora
+CREATE TABLE IF NOT EXISTS pico_hora (dia TEXT NOT NULL, hora INTEGER NOT NULL, maximo INTEGER NOT NULL, em INTEGER, PRIMARY KEY (dia, hora));
+-- partidas (200 pontos) terminadas por dia e aparelho, offline e online
+CREATE TABLE IF NOT EXISTS partidas_dia (dia TEXT NOT NULL, aparelho TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (dia, aparelho));
+-- quem já existia antes da contagem (uma tabela por vez: o D1 recusa um SELECT composto grande)
+INSERT OR IGNORE INTO jogadores (aparelho, primeiro, ultimo, jogou, semente)
+  SELECT aparelho, desde, desde, 1, 1 FROM aparelhos WHERE aparelho NOT LIKE 'teste-%';
+INSERT OR IGNORE INTO jogadores (aparelho, primeiro, ultimo, jogou, semente)
+  SELECT aparelho, visto_em, visto_em, 1, 1 FROM jogadores_vistos WHERE aparelho NOT LIKE 'teste-%';
+INSERT OR IGNORE INTO jogadores (aparelho, primeiro, ultimo, jogou, semente)
+  SELECT aparelho, MIN(atualizado), MAX(atualizado), 1, 1 FROM calcada WHERE aparelho NOT LIKE 'teste-%' GROUP BY aparelho;
+INSERT OR IGNORE INTO jogadores (aparelho, primeiro, ultimo, jogou, semente)
+  SELECT aparelho, MIN(atualizado), MAX(atualizado), 1, 1 FROM ranking WHERE aparelho NOT LIKE 'teste-%' GROUP BY aparelho;
+INSERT OR IGNORE INTO jogadores (aparelho, primeiro, ultimo, jogou, semente)
+  SELECT aparelho, atualizado, atualizado, 1, 1 FROM progresso WHERE aparelho NOT LIKE 'teste-%';
+INSERT OR IGNORE INTO jogadores (aparelho, primeiro, ultimo, jogou, semente)
+  SELECT aparelho, desde, desde, 1, 1 FROM planos WHERE aparelho NOT LIKE 'teste-%';
+INSERT OR IGNORE INTO jogadores (aparelho, primeiro, ultimo, jogou, semente)
+  SELECT aparelho, CASE WHEN visto_em > 0 THEN visto_em ELSE CAST(strftime('%s', 'now') AS INTEGER) * 1000 END,
+    CASE WHEN visto_em > 0 THEN visto_em ELSE CAST(strftime('%s', 'now') AS INTEGER) * 1000 END, 0, 1 FROM presenca WHERE aparelho NOT LIKE 'teste-%';

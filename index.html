@@ -2303,6 +2303,34 @@ body.papo-aberto{overflow:hidden}
 .carta-lista{margin:2px 0 4px;padding-left:20px;display:grid;gap:5px;font-size:16.5px;line-height:1.35}
 .carta-lista li::marker{color:var(--nos)}
 #board .zone.nao{opacity:0;pointer-events:none}   /* 03/11: ponta onde a pedra arrastada não encaixa (só para a conta de onde soltou) */
+/* 03/11: números do administrador (do nosso servidor) */
+.dn-num{display:flex;flex-direction:column;gap:18px}
+.dn-hero{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.dn-hero b{font-family:var(--font-display);font-weight:400;font-size:52px;line-height:1}
+.dn-hero small{font-size:16px;font-weight:600}
+.dn-nota{font-size:12.5px;line-height:1.4;color:var(--wood-muted)}
+.dn-graf{margin:4px 0 0;display:grid;gap:4px}
+.dn-graf figcaption{font-size:13.5px;font-weight:600;color:var(--wood-ink)}
+.dn-tip{margin:0;min-height:1.35em;font-size:13px;color:var(--wood-muted);font-variant-numeric:tabular-nums}
+.dn-graf svg{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y}
+.dn-graf .g-bar{fill:#c07f2a}
+.dn-graf .g-bar.on{fill:#f3c063}
+.dn-graf .g-hit{fill:transparent;cursor:pointer}
+.dn-graf .g-grid{stroke:rgba(239,226,204,.14);stroke-width:1;shape-rendering:crispEdges}
+.dn-graf .g-tx{fill:var(--wood-muted);font-size:10.5px;font-variant-numeric:tabular-nums}
+.dn-graf .g-val{fill:var(--wood-ink);font-size:11px;font-weight:700}
+.dn-graf details{font-size:13px;color:var(--wood-muted)}
+.dn-graf summary{cursor:pointer;padding:4px 0}
+.dn-graf table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.dn-graf td,.dn-graf th{padding:3px 4px;text-align:right;border-bottom:1px solid rgba(239,226,204,.1)}
+.dn-graf td:first-child,.dn-graf th:first-child{text-align:left}
+.dn-picos{margin:2px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:14.5px}
+.dn-picos b{font-variant-numeric:tabular-nums}
+/* 03/11: carteira de sócio */
+.cart-box{display:grid;gap:10px;margin-bottom:6px}
+.cart svg{display:block;width:100%;height:auto;border-radius:4.2%/6.6%;box-shadow:0 18px 34px -16px rgba(0,0,0,.7)}
+.cart-share{width:100%}
+.cart-img{display:block;width:100%;height:auto;border-radius:14px;margin:6px 0 4px}
 </style>
 </head>
 <body>
@@ -2561,6 +2589,10 @@ body.papo-aberto{overflow:hidden}
     <button type="button" class="backbtn" id="apoioBack">← Voltar</button>
     <div><p class="kicker">Sócio da Calçada</p><h2 class="brand" style="font-size:30px">Puxe a cadeira: a calçada é sua</h2></div>
     <div class="ap-ativo wood" id="apAtivo" hidden>
+      <div class="cart-box" id="cartBox" hidden>
+        <div class="cart" id="cartSVG"></div>
+        <button type="button" class="secondary cart-share" id="cartShare">Compartilhar a carteira</button>
+      </div>
       <span class="ck">Você é Sócio da Calçada ★</span>
       <p class="ap-ate" id="apAte"></p>
       <p class="ap-cod">Código do seu plano: <b id="apCod"></b><small>Guarde. No celular novo, ele leva o plano junto.</small></p>
@@ -2720,6 +2752,31 @@ body.papo-aberto{overflow:hidden}
       <span class="dn-dot" aria-hidden="true"></span>
       <div class="dn-now"><b id="dnOnline">–</b><span id="dnOnlineTx">no app agora</span></div>
       <small id="dnUpd"></small>
+    </div>
+    <div class="dn-num" id="dnNum" hidden>
+      <p class="dn-err" id="dnNumErr" hidden></p>
+      <div class="mytreino wood">
+        <span class="ck">Jogadores</span>
+        <div class="dn-hero"><b id="dnnJogaram">–</b><small>já jogaram desde o início</small></div>
+        <div class="mt-nums dn-3"><div><b id="dnnAtHoje">–</b><small>jogaram hoje</small></div><div><b id="dnnAt7">–</b><small>em 7 dias</small></div><div><b id="dnnAt30">–</b><small>em 30 dias</small></div></div>
+        <div class="mt-nums dn-3"><div><b id="dnnNovosHoje">–</b><small>novos hoje</small></div><div><b id="dnnNovos7">–</b><small>novos em 7 dias</small></div><div><b id="dnnVoltaram">–</b><small>dos novos voltaram</small></div></div>
+        <small class="dn-nota" id="dnnNota"></small>
+      </div>
+      <div class="mytreino wood">
+        <span class="ck">Partidas</span>
+        <div class="mt-nums dn-3"><div><b id="dnnMedia">–</b><small>por jogador, desde o início</small></div><div><b id="dnnPorDia">–</b><small>por jogador por dia</small></div><div><b id="dnnPartHoje">–</b><small>terminadas hoje</small></div></div>
+        <figure class="dn-graf"><figcaption>Partidas terminadas por dia, offline e online · 30 dias</figcaption><p class="dn-tip" id="dnnTipPartidas" aria-live="polite"></p><div id="dnnGPartidas"></div></figure>
+      </div>
+      <div class="mytreino wood">
+        <span class="ck">Horário de acesso</span>
+        <figure class="dn-graf"><figcaption id="dnnHorasTit">Pessoas por hora · média dos últimos 7 dias</figcaption><p class="dn-tip" id="dnnTipHoras" aria-live="polite"></p><div id="dnnGHoras"></div></figure>
+        <ul class="dn-picos" id="dnnPicos"></ul>
+      </div>
+      <div class="mytreino wood">
+        <span class="ck">Pessoas por dia</span>
+        <figure class="dn-graf"><figcaption>Pessoas diferentes que abriram o app · 30 dias</figcaption><p class="dn-tip" id="dnnTipDias" aria-live="polite"></p><div id="dnnGDias"></div></figure>
+      </div>
+      <div class="dn-list wood"><span class="ck">Acompanhamento</span><ul id="dnnMais"></ul></div>
     </div>
     <div class="dn-seg" id="dnRange" role="group" aria-label="Período">
       <button type="button" data-r="hoje" aria-pressed="true">Hoje</button><button type="button" data-r="7" aria-pressed="false">7 dias</button><button type="button" data-r="30" aria-pressed="false">30 dias</button>
@@ -3394,6 +3451,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.44', data: '03/11/2026', itens: ['Carteira de sócio do clube Dominó Manauara: quem é Sócio da Calçada ganha a carteira com o apelido, a foto ou o avatar, o número de sócio, desde quando é sócio e até quando vale. Fica na tela do Sócio da Calçada e dá para compartilhar como imagem.', 'Administrador: números do jogo do nosso servidor, com quantos já jogaram desde o início, quem jogou hoje, em 7 e em 30 dias, novos, quantos voltaram, média de partidas por jogador, partidas por dia, horário de acesso, picos de gente ao mesmo tempo, sócios e mesas criadas.'] },
   { v: '3.43.2', data: '03/11/2026', itens: ['Mesa online: quem está conectado e passa dos 20 segundos não perde mais a partida inteira. A turma joga aquela pedra por você e a partida continua valendo (ranking e bônus de vitória) até 3 vezes por partida. Na 4ª, ela deixa de contar. Quem cai da internet continua como antes.'] },
   { v: '3.43.1', data: '03/11/2026', itens: ['Corrigido: arrastando a pedra para uma ponta onde ela não encaixa, ela podia ir sozinha para a outra ponta. Agora ela volta para a mão, e a jogada só vai para a ponta onde você soltou.', 'Nova carta de boas-vindas de quem vira Sócio da Calçada, com tudo o que o sócio tem.'] },
   { v: '3.43', data: '28/10/2026', itens: ['Chegou o Sócio da Calçada: partidas sem limite na mesa rápida e com os amigos, papo de mesa, ranking completo, suas estatísticas, todas as mesas, foto na mesa, selo e avatares exclusivos. Mensal, trimestral ou anual, renovando sozinho no cartão (cancela quando quiser, na tela do sócio), ou 1 mês avulso no Pix.', 'Promoção de lançamento para quem assinar até 4/11: mensal a R$ 9,90 nos 3 primeiros meses (depois R$ 14,90), trimestral a R$ 24,90 no 1º trimestre (depois R$ 37,90) e anual a R$ 74,90 no 1º ano (depois R$ 99,90).', 'Até 4/11, tudo liberado para todos. A partir de 5/11, sem plano: 5 partidas por dia na mesa rápida, 1 partida por dia nas mesas com os amigos (com papo de mesa), o ranking com o Rei da Calçada e os 3 primeiros da semana, e as mesas Madeira, Vermelha e Azul. Os limites zeram à meia-noite (horário de Brasília). O jogo offline continua sem limite.', 'Suas estatísticas detalhadas (quanto ganha, batidas e galos por partida), no Perfil.', 'Mesa nova: Manaus Skyline, a cidade acesa de noite.', 'Papo de mesa: cada jogador com a sua cor, como nos grupos do WhatsApp, e o fundo de vidro um pouco mais transparente.', 'Corrigido: depois de uma fala comprida no papo, a tela do jogo podia ficar mais larga que o celular (o papo e os avisos saíam deslocados para o lado).'] },
@@ -4627,6 +4685,100 @@ async function dnAoVivo() {
   }
 }
 
+// ---- 03/11 (pedido do dono): números do jogo do nosso servidor: jogadores, partidas, horários e picos ----
+const dnDM = d => d.slice(8, 10) + '/' + d.slice(5, 7);
+const dnDec = v => v == null ? '–' : Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+// Colunas de uma série só: finas, ponta de cima arredondada e base reta, 2 a 4 linhas de grade discretas, só o maior
+// valor escrito na ponta. Tocar (ou passar o dedo) numa coluna mostra o número na linha de cima. Tabela embaixo.
+function dnGrafico(box, tip, itens, o) {
+  o = o || {};
+  const W = Math.max(240, Math.round(box.clientWidth || 300)), H = 136, topo = 18, base = H - 20, esq = 28, dir = 4;
+  const n = itens.length, max = Math.max(0, ...itens.map(x => x.v));
+  const passos = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 50000];
+  const passo = passos.find(p => Math.ceil(Math.max(max, 1) / p) <= 4) || 100000, alto = Math.max(1, Math.ceil(Math.max(max, 1) / passo)) * passo;
+  const y = v => base - (v / alto) * (base - topo), banda = (W - esq - dir) / n, bw = Math.min(24, Math.max(3, banda - 2));
+  let g = '';
+  for (let v = passo; v <= alto; v += passo) g += `<line class="g-grid" x1="${esq}" x2="${W - dir}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/><text class="g-tx" x="${esq - 5}" y="${(y(v) + 3.5).toFixed(1)}" text-anchor="end">${fmtN(v)}</text>`;
+  g += `<line class="g-grid" x1="${esq}" x2="${W - dir}" y1="${base}" y2="${base}"/><text class="g-tx" x="${esq - 5}" y="${base + 3.5}" text-anchor="end">0</text>`;
+  const iMax = max > 0 ? itens.findIndex(x => x.v === max) : -1;
+  itens.forEach((it, i) => {
+    const x = esq + i * banda + (banda - bw) / 2, h = base - y(it.v);
+    if (h > 0.5) {
+      const r = Math.min(4, h, bw / 2), yt = base - h;
+      g += `<path class="g-bar" data-i="${i}" d="M${x.toFixed(1)},${base} V${(yt + r).toFixed(1)} Q${x.toFixed(1)},${yt.toFixed(1)} ${(x + r).toFixed(1)},${yt.toFixed(1)} H${(x + bw - r).toFixed(1)} Q${(x + bw).toFixed(1)},${yt.toFixed(1)} ${(x + bw).toFixed(1)},${(yt + r).toFixed(1)} V${base} Z"/>`;
+    }
+    if (i === iMax) g += `<text class="g-val" x="${(x + bw / 2).toFixed(1)}" y="${(base - h - 5).toFixed(1)}" text-anchor="middle">${fmtN(it.v)}</text>`;
+    if (o.rotulo(i, n)) g += `<text class="g-tx" x="${(x + bw / 2).toFixed(1)}" y="${H - 4}" text-anchor="middle">${esc(it.curto)}</text>`;
+    g += `<rect class="g-hit" data-i="${i}" x="${(esq + i * banda).toFixed(1)}" y="0" width="${banda.toFixed(1)}" height="${H}"><title>${esc(it.dica)}</title></rect>`;
+  });
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(o.nome || '')}">${g}</svg>
+    <details><summary>Ver em tabela</summary><table><thead><tr><th>${esc(o.col1 || '')}</th><th>${esc(o.col2 || '')}</th></tr></thead><tbody>${itens.map(x => `<tr><td>${esc(x.rot)}</td><td>${dnDec(x.v)}</td></tr>`).join('')}</tbody></table></details>`;
+  const padrao = o.padrao || 'Toque numa coluna para ver o número.';
+  tip.textContent = padrao;
+  const marca = i => {
+    box.querySelectorAll('.g-bar.on').forEach(b => b.classList.remove('on'));
+    if (i == null) { tip.textContent = padrao; return; }
+    const b = box.querySelector(`.g-bar[data-i="${i}"]`); if (b) b.classList.add('on');
+    tip.textContent = itens[i].dica;
+  };
+  const svg = box.querySelector('svg');
+  const alvo = e => { const r = e.target.closest && e.target.closest('.g-hit'); return r ? Number(r.dataset.i) : null; };
+  svg.addEventListener('pointerover', e => { const i = alvo(e); if (i != null) marca(i); });
+  svg.addEventListener('pointerdown', e => { const i = alvo(e); if (i != null) marca(i); });
+  svg.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') marca(null); });
+}
+async function dnNumeros() {
+  if (!dono || !dono.admin || !CONFIG.api) return;
+  const err = $('#dnNumErr');
+  let j;
+  try { j = await dnMsgPedir('/dono/numeros'); }
+  catch (e) {
+    if (e.message !== 'sem-chave') { err.textContent = navigator.onLine === false ? 'Sem internet agora. Os números aparecem quando a conexão voltar.' : 'Não deu para carregar os números do jogo agora. Tente de novo daqui a pouco.'; err.hidden = false; }
+    return;
+  }
+  err.hidden = true;
+  const pct = (a, b) => b ? Math.round(100 * a / b) + '%' : '–';
+  $('#dnnJogaram').textContent = fmtN(j.total.jogaram);
+  $('#dnnAtHoje').textContent = fmtN(j.ativos.hoje); $('#dnnAt7').textContent = fmtN(j.ativos.d7); $('#dnnAt30').textContent = fmtN(j.ativos.d30);
+  $('#dnnNovosHoje').textContent = fmtN(j.novos.hoje); $('#dnnNovos7').textContent = fmtN(j.novos.d7);
+  $('#dnnVoltaram').textContent = pct(j.voltaram.voltaram, j.voltaram.n);
+  $('#dnnNota').textContent = `Contados pelo código de cada aparelho. Quem jogou antes de 03/11 entra quando abre o app de novo (ou se já jogou online, é sócio ou guardou o progresso). "Voltaram": dos novos dos últimos 30 dias, quantos abriram o app em outro dia. ${fmtN(j.total.abriram)} aparelhos abriram o app.`;
+  const P = j.partidas;
+  $('#dnnMedia').textContent = dnDec(P.media);
+  $('#dnnMedia').nextElementSibling.textContent = P.jogadores ? `por jogador, desde o início (${fmtN(P.jogadores)} jogadores)` : 'por jogador, desde o início';
+  $('#dnnPorDia').textContent = dnDec(P.porAtivoDia);
+  $('#dnnPartHoje').textContent = fmtN(P.hoje);
+  dnGrafico($('#dnnGPartidas'), $('#dnnTipPartidas'), j.dias.map(x => ({ rot: dnDM(x.d), curto: dnDM(x.d), v: x.partidas, dica: `${dnDM(x.d)}: ${plural(x.partidas, 'partida terminada', 'partidas terminadas')}` })),
+    { nome: 'Partidas terminadas por dia nos últimos 30 dias', col1: 'Dia', col2: 'Partidas', rotulo: (i, n) => (n - 1 - i) % 7 === 0 });
+  // horários: a média dos dias que já têm contagem (até 7); sem nenhum dia completo ainda, o de hoje
+  const media = j.diasComDado > 0, campo = media ? 'media' : 'hoje';
+  $('#dnnHorasTit').textContent = media ? `Pessoas por hora · média ${j.diasComDado >= 7 ? 'dos últimos 7 dias' : j.diasComDado === 1 ? 'de ontem' : `dos últimos ${j.diasComDado} dias`}` : 'Pessoas por hora · hoje (a média dos dias começa amanhã)';
+  dnGrafico($('#dnnGHoras'), $('#dnnTipHoras'), j.horas.map(x => ({ rot: x.h + 'h', curto: String(x.h), v: x[campo],
+    dica: `${x.h}h às ${x.h + 1}h: ${media ? `média de ${dnDec(x.media)} ${x.media === 1 ? 'pessoa' : 'pessoas'} · hoje ${x.hoje}` : plural(x.hoje, 'pessoa', 'pessoas')}${x.pico ? ` · até ${x.pico} ao mesmo tempo` : ''}` })),
+    { nome: 'Pessoas por hora do dia', col1: 'Hora', col2: media ? 'Média' : 'Hoje', rotulo: i => i % 3 === 0 });
+  const topo = j.horas.reduce((b, x) => x[campo] > (b ? b[campo] : 0) ? x : b, null);
+  const hm = t => { const d = new Date(t); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+  const picos = [];
+  if (topo) picos.push(`<li>Horário de mais gente: <b>${topo.h}h às ${topo.h + 1}h</b> (${media ? `média de ${dnDec(topo.media)}` : topo.hoje} ${topo[campo] === 1 ? 'pessoa' : 'pessoas'})</li>`);
+  if (j.pico.hoje) picos.push(`<li>Hoje, ao mesmo tempo: até <b>${fmtN(j.pico.hoje.maximo)}</b> ${j.pico.hoje.maximo === 1 ? 'pessoa' : 'pessoas'}, às ${hm(j.pico.hoje.em)}</li>`);
+  if (j.pico.recorde) picos.push(`<li>Recorde em 30 dias: <b>${fmtN(j.pico.recorde.maximo)}</b> ao mesmo tempo, em ${dnDM(j.pico.recorde.dia)} às ${hm(j.pico.recorde.em)}</li>`);
+  $('#dnnPicos').innerHTML = picos.join('') || '<li>Os picos começam a ser medidos agora: aparecem aqui ao longo do dia.</li>';
+  dnGrafico($('#dnnGDias'), $('#dnnTipDias'), j.dias.map(x => ({ rot: dnDM(x.d), curto: dnDM(x.d), v: x.pessoas,
+    dica: `${dnDM(x.d)}: ${plural(x.pessoas, 'pessoa', 'pessoas')}${x.novos ? ` · ${plural(x.novos, 'nova', 'novas')}` : ''}` })),
+    { nome: 'Pessoas diferentes por dia nos últimos 30 dias', col1: 'Dia', col2: 'Pessoas', rotulo: (i, n) => (n - 1 - i) % 7 === 0, padrao: 'A contagem por dia começou em 03/11. Toque numa coluna para ver o número.' });
+  const li = (a, b) => `<li><span>${a}</span><b>${b}</b></li>`;
+  $('#dnnMais').innerHTML = [
+    li('Sócios da Calçada ativos', `${fmtN(j.socios.n)}${j.socios.aparelhos > j.socios.n ? ` (${fmtN(j.socios.aparelhos)} aparelhos)` : ''}`),
+    li('Sócios entre quem jogou em 30 dias', pct(j.socios.n, j.ativos.d30)),
+    li('Partidas terminadas em 7 dias', fmtN(P.semana)),
+    li('Galos em 7 dias', fmtN(P.galos7)),
+    li('Batidas de carroça em 7 dias', fmtN(P.carrocas7)),
+    li('Mesas com os amigos criadas hoje', fmtN(j.mesasAmigos.hoje)),
+    li('Mesas com os amigos criadas em 7 dias', fmtN(j.mesasAmigos.d7)),
+    li('Lembretes de jogar ligados', fmtN(j.lembretes))
+  ].join('');
+}
+
 const EV_NOMES = {
   abertura: 'Vezes que abriram o jogo', 'jogo-novo': 'Jogos começados', vitoria: 'Jogos que o jogador ganhou',
   derrota: 'Jogos que o jogador perdeu', convite: 'Convites mandados no WhatsApp', instalou: 'Instalaram o app',
@@ -4690,13 +4842,14 @@ function renderDono() {
   $('#dnFull').href = $('#dnOpen').href = dono.share; dnTela(); dnMsgCarregar(); dnAvisosCarregar();
   $('#dnOpen').hidden = temChave; $('#dnFull').hidden = !temChave;
   $('#dnLive').hidden = $('#dnBody').hidden = $('#dnRange').hidden = !temChave;
+  $('#dnNum').hidden = !dono.admin;   // 03/11: os números do jogo vêm do nosso servidor (não dependem do Umami)
   $('#dnKey').hidden = true; $('#dnErr').hidden = true;
   $('#dnKeyTrocar').textContent = temChave ? 'Trocar a chave do Umami' : 'Tenho o plano Pro do Umami: colar a chave';
   $('#dnSemContar').checked = !!dono.semContar;
   $('#dnTestePag').checked = !!dono.testePagamentos;
   $('#dnTestePag').closest('label').hidden = !!CONFIG.pagamentos;   // com os pagamentos ligados para todos, o teste não muda nada
   $$('#dnRange button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.r === dnRange)));
-  dnAoVivo(); dnCarregar();
+  dnAoVivo(); dnCarregar(); dnNumeros();
   clearInterval(dnTimer);
   dnTimer = setInterval(() => {
     if (screen !== 'dono') { clearInterval(dnTimer); return; }
@@ -6465,7 +6618,8 @@ function condicaoDe(k, curta) {
 const dataBR = ms => new Date(ms).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Manaus' });
 const codigoBonito = c => c ? c.slice(0, 4) + '-' + c.slice(4) : '';
 function guardarPlano(j) {
-  if (j && j.ate) store.set(PLKEY, JSON.stringify({ ate: j.ate, codigo: j.codigo || null, visto: Date.now(), renova: j.renova && typeof j.renova === 'object' ? j.renova : !!j.renova }));
+  if (j && j.ate) store.set(PLKEY, JSON.stringify({ ate: j.ate, codigo: j.codigo || null, visto: Date.now(), renova: j.renova && typeof j.renova === 'object' ? j.renova : !!j.renova,
+    socio: j.socio && j.socio.numero ? { numero: j.socio.numero, desde: j.socio.desde } : ((planoLocal() || {}).socio || null) }));   // 03/11: carteira de sócio
   else store.del(PLKEY);
   aplicarPlano();
 }
@@ -6663,6 +6817,7 @@ function renderApoioTela() {
     $('#apCod').closest('.ap-cod').hidden = !p.codigo;
   }
   $('#apCancelar').hidden = !(on && p && p.renova);
+  try { renderCarteira(); } catch (e) {}   // 03/11
   const d = doadorLocal(), dn = nivelDoador();
   $('#apDoador').hidden = !dn;
   if (dn) {
@@ -6684,6 +6839,110 @@ function renderApoioTela() {
     `<button type="button" class="ap-av${avLivre ? '' : ' trancado'}" data-av="${a.id}" aria-pressed="${!!(profile && profile.av === a.id)}" aria-label="Avatar exclusivo"><img src="${avatarURI(a)}" alt="">${avLivre ? '' : '<i aria-hidden="true">★</i>'}</button>`).join('');
   $('#apTrazerBox').hidden = on;
 }
+
+// ===== 03/11 (pedido do dono): carteira de sócio do clube Dominó Manauara =====
+// Um desenho só (SVG), mostrado na tela do sócio e transformado em imagem para compartilhar. Mostra o apelido, a foto
+// (ou o avatar), o número de sócio (ordem de chegada, vem do servidor), desde quando e até quando vale. O código do
+// plano NUNCA entra na carteira: ele leva o plano para outro celular e a carteira é feita para ser mostrada.
+function carteiraDados() {
+  const p = planoLocal(); if (!p || !temPlano()) return null;
+  const s = p.socio || {};
+  let img = null;
+  try { img = profile && profile.av === 'foto' && photo ? photo : avatarURI(avatarDe(avBaseDe(profile)) || AVATARS[0]); } catch (e) {}
+  return { nome: (profile && profile.name) || 'Sócio', img, numero: s.numero || null, desde: s.desde || null, ate: p.ate };
+}
+function carteiraSVG(d, fontes) {
+  const nome = String(d.nome || 'Sócio'), n = [...nome].length;
+  const tam = Math.round(Math.max(40, Math.min(84, 780 / (n * 0.72))));
+  const num = d.numero ? String(d.numero).padStart(4, '0') : '–';
+  const desde = d.desde ? mesAno(d.desde) : '–', ate = d.ate ? dataBR(d.ate) : '–';
+  const estrela = 'M12 1.3L14.88 8.94 23.03 9.32 16.66 14.41 18.82 22.28 12 17.8 5.18 22.28 7.34 14.41 0.97 9.32 9.12 8.94Z';
+  const pip = (cx, cy) => `<circle cx="${cx}" cy="${cy}" r="17"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 756" width="1200" height="756" role="img" aria-label="Carteira de sócio de ${esc(nome)}${d.numero ? ', sócio número ' + d.numero : ''}, válida até ${ate}">
+  <defs>
+    ${fontes ? `<style>${fontes}</style>` : ''}
+    <radialGradient id="cfFundo" cx="28%" cy="18%" r="95%"><stop offset="0" stop-color="#5c3a21"/><stop offset=".55" stop-color="#2c1b0f"/><stop offset="1" stop-color="#160d06"/></radialGradient>
+    <linearGradient id="cfOuro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f9dc98"/><stop offset=".45" stop-color="#d79a3c"/><stop offset=".7" stop-color="#f3c063"/><stop offset="1" stop-color="#b9802c"/></linearGradient>
+    <pattern id="cfVeio" width="14" height="756" patternUnits="userSpaceOnUse" patternTransform="rotate(2)"><rect width="2" height="756" fill="rgba(255,235,205,.035)"/></pattern>
+    <clipPath id="cfRecorte"><rect x="12" y="12" width="1176" height="732" rx="40"/></clipPath>
+    <clipPath id="cfFoto"><rect x="70" y="236" width="236" height="236" rx="34"/></clipPath>
+  </defs>
+  <g clip-path="url(#cfRecorte)">
+    <rect width="1200" height="756" fill="url(#cfFundo)"/>
+    <rect width="1200" height="756" fill="url(#cfVeio)"/>
+    <g transform="translate(905 120) rotate(14)" opacity=".055" fill="#f6e3c0">
+      <rect x="0" y="0" width="230" height="460" rx="34"/>
+      <g fill="#160d06"><rect x="18" y="226" width="194" height="8" rx="4"/>${pip(60, 60)}${pip(170, 170)}${pip(115, 115)}${pip(60, 290)}${pip(170, 290)}${pip(60, 400)}${pip(170, 400)}${pip(60, 345)}${pip(170, 345)}</g>
+    </g>
+    <path d="M760 12 L1188 12 L1188 70 Z" fill="url(#cfOuro)" opacity=".18"/>
+  </g>
+  <rect x="12" y="12" width="1176" height="732" rx="40" fill="none" stroke="url(#cfOuro)" stroke-width="5"/>
+  <rect x="30" y="30" width="1140" height="696" rx="26" fill="none" stroke="rgba(243,192,99,.32)" stroke-width="1.5"/>
+  <text x="70" y="122" font-family="Alfa Slab One, Georgia, serif" font-size="54" fill="url(#cfOuro)">Dominó Manauara</text>
+  <text x="72" y="176" font-family="Figtree, system-ui, sans-serif" font-weight="700" font-size="24" letter-spacing="6" fill="#e9cf9c">CARTEIRA DE SÓCIO</text>
+  <path d="${estrela}" transform="translate(1046 66) scale(3.3)" fill="url(#cfOuro)"/>
+  <rect x="64" y="230" width="248" height="248" rx="40" fill="url(#cfOuro)"/>
+  <rect x="70" y="236" width="236" height="236" rx="34" fill="#2c1b0f"/>
+  ${d.img ? `<image x="70" y="236" width="236" height="236" preserveAspectRatio="xMidYMid slice" clip-path="url(#cfFoto)" href="${d.img}" xlink:href="${d.img}"/>` : ''}
+  <text x="350" y="${Math.round(330 + (84 - tam) * 0.25)}" font-family="Alfa Slab One, Georgia, serif" font-size="${tam}" fill="#fbf1e0">${esc(nome)}</text>
+  <text x="352" y="392" font-family="Figtree, system-ui, sans-serif" font-weight="700" font-size="36" fill="#f3c063">Sócio da Calçada</text>
+  <text x="352" y="436" font-family="Figtree, system-ui, sans-serif" font-weight="500" font-size="26" fill="#cbb08a">Clube Dominó Manauara</text>
+  <line x1="70" y1="540" x2="1130" y2="540" stroke="rgba(243,192,99,.35)" stroke-width="2"/>
+  <g font-family="Figtree, system-ui, sans-serif">
+    <text x="70" y="592" font-weight="700" font-size="21" letter-spacing="4" fill="#cbb08a">SÓCIO Nº</text>
+    <text x="70" y="648" font-weight="800" font-size="48" fill="#fbf1e0">${num}</text>
+    <text x="440" y="592" font-weight="700" font-size="21" letter-spacing="4" fill="#cbb08a">SÓCIO DESDE</text>
+    <text x="440" y="648" font-weight="800" font-size="48" fill="#fbf1e0">${esc(desde)}</text>
+    <text x="800" y="592" font-weight="700" font-size="21" letter-spacing="4" fill="#cbb08a">VÁLIDA ATÉ</text>
+    <text x="800" y="648" font-weight="800" font-size="48" fill="#fbf1e0">${esc(ate)}</text>
+    <text x="70" y="704" font-weight="500" font-size="22" fill="#a98f70">O dominó da calçada, em qualquer lugar.</text>
+    <text x="1130" y="704" font-weight="700" font-size="22" fill="#cbb08a" text-anchor="end">dominomanauara.com.br</text>
+  </g>
+</svg>`;
+}
+function renderCarteira() {
+  const box = $('#cartBox'); if (!box) return;
+  const d = carteiraDados();
+  box.hidden = !d;
+  if (d) $('#cartSVG').innerHTML = carteiraSVG(d);
+}
+// as fontes do jogo dentro do desenho (a imagem não enxerga as fontes da página)
+async function fontesEmbutidas() {
+  const b64 = async u => { const r = await fetch(u); const buf = new Uint8Array(await r.arrayBuffer()); let s = ''; for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000)); return btoa(s); };
+  try {
+    const [a, f] = await Promise.all([b64('fonts/alfa-slab-one.woff'), b64('fonts/figtree.woff')]);
+    return `@font-face{font-family:"Alfa Slab One";src:url(data:font/woff;base64,${a}) format("woff")}@font-face{font-family:"Figtree";font-weight:300 900;src:url(data:font/woff;base64,${f}) format("woff")}`;
+  } catch (e) { return ''; }
+}
+async function carteiraImagem() {
+  const d = carteiraDados(); if (!d) return null;
+  const svg = carteiraSVG(d, await fontesEmbutidas());
+  const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+  try {
+    const img = new Image(); img.decoding = 'async';
+    await new Promise((ok, erro) => { img.onload = ok; img.onerror = erro; img.src = url; });
+    await new Promise(r => setTimeout(r, 120));   // o Safari às vezes ainda está aplicando as fontes
+    const c = document.createElement('canvas'); c.width = 2400; c.height = 1512;
+    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, 2400, 1512);
+    return await new Promise(ok => c.toBlob(ok, 'image/png'));
+  } finally { URL.revokeObjectURL(url); }
+}
+$('#cartShare').addEventListener('click', async e => {
+  const b = e.currentTarget, rot = b.textContent; b.disabled = true; b.textContent = 'Preparando a imagem…';
+  track('carteira-compartilhar');
+  try {
+    const blob = await carteiraImagem(); if (!blob) throw new Error('sem-imagem');
+    const file = new File([blob], 'carteira-socio-domino-manauara.png', { type: 'image/png' });
+    const texto = `Sou Sócio da Calçada do Dominó Manauara! Bora pra mesa: ${SITE_URL}`;
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], text: texto }); } catch (er) {} }
+    else {
+      // sem o compartilhar do celular: mostra a imagem para salvar (tocar e segurar)
+      const u = URL.createObjectURL(blob);
+      openSheet('carteira', `<p class="eyebrow">Sócio da Calçada</p><h2 id="sheetTitle">Sua carteira</h2><img class="cart-img" src="${u}" alt="Carteira de sócio"><p class="note">Toque e segure na imagem para salvar.</p><a class="primary" href="${u}" download="carteira-socio-domino-manauara.png" style="display:block;text-align:center">Baixar a imagem</a>`);
+    }
+  } catch (er) { toast('Não deu para preparar a imagem agora. Tente de novo.'); }
+  finally { b.disabled = false; b.textContent = rot; }
+});
 // 28/10: o que a tela do sócio mostra de quem renova sozinho: o plano, a próxima cobrança e até quando vale
 function textoRenova(p) {
   const r = p.renova && typeof p.renova === 'object' ? p.renova : { ciclo: 'MONTHLY' };
@@ -9701,6 +9960,8 @@ function presAvisar(forcar) {
   const menor = !!profile && profile.idade === 'menor', anonimo = menor || !profile;
   const corpo = { aparelho: meuId(), tela: screen, modo: screen === 'game' ? mode : null, menor, nv: typeof meuNivel === 'function' ? meuNivel() : 1,
     nome: anonimo ? null : me, av: anonimo ? null : (typeof meuAv === 'function' ? meuAv() : null), detalhe: anonimo ? null : presDetalhe() };
+  // 03/11: números do administrador: só as contagens deste aparelho (partidas e mãos jogadas desde sempre)
+  try { const t = loadHist(); corpo.hist = { partidas: t.partidas || 0, maos: t.maos || 0 }; } catch (e) {}
   return fetch(CONFIG.api + '/presenca', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo), keepalive: true })
     .then(r => { if (r.ok) presOk = Date.now(); return r.ok ? r.json() : null; })
     // 3.41: o administrador pediu outro apelido: aviso e troca na hora (uma vez; depois a guarda do início segura)
@@ -10947,6 +11208,7 @@ async function rkFora(fora) {
 const DN_GRUPOS = [
   ['Precisa de você', ['dnMsgs', 'dnPapo', 'dnFotos', 'dnRobo'], true],
   ['Jogadores', ['dnNoApp', 'dnFilas', 'dnJog'], true],
+  ['Números do jogo', ['dnNum'], true],   // 03/11: jogadores desde o início, partidas, horários e picos
   ['Dinheiro', ['dnPag', 'dnApoiadores', 'dnPatroCard', 'dnAnuncieLink'], false],
   ['Falar com os jogadores', ['dnAvisos'], false],
   ['Números do Umami', ['dnOpen', 'dnLive', 'dnRange', 'dnBody', 'dnErr', 'dnKey', 'dnFull'], false],
@@ -11924,7 +12186,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.43.2-7f0de089';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.44-d63d9507';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

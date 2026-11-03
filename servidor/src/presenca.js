@@ -3,6 +3,7 @@
 // Guarda o código aleatório do aparelho, o apelido, o avatar, o nível e a tela, por no máximo 1 dia. Menor de 18 entra
 // só na contagem (sem apelido nem avatar).
 import { apelidoBarrado } from './bloqueio.js';
+import { anotarAcesso } from './numeros.js';
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 // 27/10 (limite de escritas do plano grátis): o app avisa a cada 20 s, mas o banco só é escrito quando algo muda
@@ -24,6 +25,7 @@ export async function avisar(req, env, origin, h) {
   const vals = [b.aparelho, menor ? null : limpa(b.nome, 16) || null, menor ? null : (/^[a-z0-9_-]{1,16}$/i.test(String(b.av || '')) ? String(b.av) : null),
       Math.max(1, Math.min(50, Math.floor(Number(b.nv) || 1))), tela, modo, menor ? null : limpa(b.detalhe, 60) || null, menor ? 1 : 0, Date.now()];
   const chave = JSON.stringify(vals.slice(0, -1)), u = ULT.get(b.aparelho), agora = Date.now();
+  await anotarAcesso(env, b, agora, JANELA_MS);   // 03/11: números do administrador (acessos por hora, partidas, pico)
   // 3.41: o administrador pediu outro apelido: o app mostra o aviso e leva para a troca (com o app aberto, em até 1 minuto).
   // Vem antes do 'aviso repetido' (que não grava de novo), para não pular o aviso.
   const barrado = !menor && b.nome && await apelidoBarrado(env, b.aparelho, limpa(b.nome, 16));

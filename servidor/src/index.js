@@ -8,6 +8,7 @@ import * as fotos from './fotos.js';
 import * as turmas from './turmas.js';
 import * as vivo from './vivo.js';
 import * as presenca from './presenca.js';
+import { donoNumeros, limparNumeros } from './numeros.js';
 import * as rk from './ranking.js';
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
@@ -463,6 +464,7 @@ export default {
       if (url.pathname === '/ranking' && req.method === 'GET') return await rk.ranking(req, env, origin, H, url);
       if (url.pathname === '/ranking/fora' && req.method === 'POST') return await rk.sairDoRanking(req, env, origin, H);
       if (url.pathname === '/dono/presenca' && req.method === 'GET') return await presenca.donoPresenca(req, env, origin, H);
+      if (url.pathname === '/dono/numeros' && req.method === 'GET') return await donoNumeros(req, env, origin, H);   // 03/11
       if (url.pathname === '/vivo/hoje' && req.method === 'GET') return await vivo.hoje(env, origin, H);
       if (url.pathname === '/dono/mesas' && req.method === 'GET') {
         if (!(await ehDono(req, env))) return json({ erro: 'nao-autorizado' }, 401, origin);
@@ -491,6 +493,7 @@ export default {
   // 3.37.2: de manhã (9h às 11h em Manaus) só os avisos de evento (data especial, Desafio, Rei da Calçada).
   async scheduled(evento, env, ctx) {
     const hora = new Date((evento && evento.scheduledTime) || Date.now()).getUTCHours();
+    ctx.waitUntil(limparNumeros(env));   // 03/11: acessos por hora guardados por 60 dias
     if (hora >= 12 && hora < 18) { ctx.waitUntil((async () => { try { await lembreteDaData(env, EVENTO_POR_RODADA.manha); } catch (e) {} try { await reajustesPendentes(env); } catch (e) {} })()); return; }
     ctx.waitUntil((async () => { try { await reajustesPendentes(env); } catch (e) {} try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env, EVENTO_POR_RODADA.tarde); } catch (e) {} try { await fotos.moderarPendentes(env); } catch (e) {} try { await turmas.fecharDesafio(env); } catch (e) {} try { await manterChaveAsaas(env); } catch (e) {} try { await vivo.limparVivo(env); } catch (e) {} try { await limparVistos(env); } catch (e) {} try { await presenca.limparPresenca(env); } catch (e) {} await lembretesDoDia(env);  try { await rk.limparRanking(env); } catch (e) {} })());
   }
