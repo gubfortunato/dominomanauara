@@ -6,6 +6,7 @@ import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolve
 import { atuais, imagem, contar, donoLista, donoImagem, donoSalvar, donoApagar } from './patrocinadores.js';
 import * as fotos from './fotos.js';
 import * as turmas from './turmas.js';
+import * as offline from './offline.js';
 import * as vivo from './vivo.js';
 import * as presenca from './presenca.js';
 import { donoNumeros, limparNumeros } from './numeros.js';
@@ -420,6 +421,7 @@ export default {
       if (url.pathname === '/saude/ia' && req.method === 'GET') return await fotos.saudeIA(env, origin, H);
       if ((url.pathname === '/turma' || url.pathname === '/desafio') && req.method === 'GET') return await turmas.ver(env, origin, H, url);
       if (url.pathname === '/turma/nova' && req.method === 'POST') return await turmas.nova(req, env, origin, H);
+      if (url.pathname === '/offline' && req.method === 'POST') return await offline.conferir(req, env, origin, H);   // 04/11: trava do jogo offline
       if (url.pathname === '/turma/entrar' && req.method === 'POST') return await turmas.entrar(req, env, origin, H);
       if (url.pathname === '/turma/sair' && req.method === 'POST') return await turmas.sair(req, env, origin, H);
       if (url.pathname === '/pagar' && req.method === 'POST') return await pagar(req, env, origin, H);
