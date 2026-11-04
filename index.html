@@ -1347,6 +1347,10 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .tm-cod small{color:var(--muted);font-size:14px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
 .tm-cod b{font-family:var(--font-display);font-weight:400;font-size:38px;letter-spacing:.14em;line-height:1.1}
 a.tm-zap{display:block;text-align:center;text-decoration:none}
+a.tm-zap.secondary{color:var(--ink)}
+.tm-desafiar{width:100%}
+.tm-desafiar-n{margin:6px 0 12px;text-align:center}
+.sala-desafio{margin:4px 0 10px;padding:10px 12px;border-radius:14px;border:1.5px solid #c98a3a;background:color-mix(in srgb,#c98a3a 12%,transparent);text-align:center;color:var(--ink)}
 .tm-k{margin:16px 0 6px;font-size:13.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .tm-membros{margin:0;font-size:17px;line-height:1.45}
 .tm-rank,.tm-camp{list-style:none;margin:0;padding:0;display:grid;gap:4px}
@@ -3636,6 +3640,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.50', data: '04/11/2026', itens: ['Desafio das Confrarias: botão Desafiar outra Turma, na folha da sua Turma. Ele cria a mesa online e o convite do WhatsApp já vai como desafio ("A Turma X desafia a sua Turma"). Quem ganhar leva o ponto.'] },
   { v: '3.49.1', data: '04/11/2026', itens: ['Mesa nova: Tucano, com o bico de arco-íris.'] },
   { v: '3.49', data: '04/11/2026', itens: ['Mesa nova: Arara-Azul, pousada no galho.', 'Mesa Igreja de São Sebastião: a calçada agora é a mesma do Largo, com as ondas de pedra portuguesa preta e branca em perspectiva.', 'Ícone da aba Calçada redesenhado: três pessoas separadas e nítidas, também com a aba marcada.'] },
   { v: '3.48.1', data: '04/11/2026', itens: ['Barra de abas com fundo totalmente sólido (o texto da tela não aparece mais por trás dela).'] },
@@ -9354,12 +9359,14 @@ function desenharTurma() {
     box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">${esc(nomeTurma(t.nome))}${estrelas(t.titulos)}</h2>
       <p class="tm-status">${status}${t.taca ? ' · Grande Taça!' : t.titulos ? ` · ${t.titulos} ${t.titulos === 1 ? 'título' : 'títulos'}` : ''}</p>
       <div class="tm-cod"><small>Código da Turma</small><b>${esc(t.codigo)}</b></div>
-      <a class="primary tm-zap" id="tmZap" href="${esc(zap)}" target="_blank" rel="noopener">Chamar a turma no WhatsApp</a>
+      ${d.aberto ? '<button type="button" class="primary tm-desafiar" id="tmDesafiar">Desafiar outra Turma</button><p class="note tm-desafiar-n">Cria uma mesa online e manda o convite para a outra Turma. Quem ganhar leva o ponto.</p>' : ''}
+      <a class="${d.aberto ? 'secondary' : 'primary'} tm-zap" id="tmZap" href="${esc(zap)}" target="_blank" rel="noopener">Chamar a turma no WhatsApp</a>
       <p class="tm-k">Na Turma (${t.membros.length})</p><p class="tm-membros">${t.membros.map(n => esc(n)).join(', ')}</p>
       ${rankingHTML(d, t)}${regra}${campeas}
       <button type="button" class="secondary tm-fechar" id="tmFechar">Fechar</button>
       <button type="button" class="linkbtn tm-sair" id="tmSair">Sair da Turma</button>`;
     $('#tmZap').addEventListener('click', () => track('turma-convite'));
+    const bd = $('#tmDesafiar'); if (bd) bd.addEventListener('click', desafiarTurma);
     $('#tmSair').addEventListener('click', () => {
       const b = $('#tmSair');
       if (b.dataset.certeza !== '1') { b.dataset.certeza = '1'; b.textContent = 'Toque de novo para sair da Turma'; return; }
@@ -9379,6 +9386,35 @@ async function turmaAcao(path, extra, ev) {
   } catch (e) { toast('Sem internet agora. Tente de novo.'); }
   desenharTurma(); if (screen === 'home') desenharCartaoTurma();
 }
+// 04/11 (pedido do dono): Desafiar outra Turma. Cria a mesa online (ou usa a que já está aberta) e o convite do
+// WhatsApp já vai como desafio: "A Turma X desafia a sua Turma". O resto é a mesa com os amigos de sempre.
+TM.vs = null;   // { nome, cod }
+function desafiarTurma() {
+  const t = TM.info; if (!t) return;
+  if (!onlineAtivo()) { toast('A mesa online precisa de internet.'); return; }
+  closeSheet(); track('turma-desafio');
+  TM.vs = { nome: t.nome, cod: null };
+  if (ON.ativo && ON.cod) { TM.vs.cod = ON.cod; show('sala'); renderSala(); return; }
+  if (mesaGuardada()) { TM.vs.cod = mesaGuardada(); voltarMesa(); return; }
+  show('sala');
+  Promise.resolve(criarMesa()).then(() => { if (TM.vs && !TM.vs.cod && ON.cod) { TM.vs.cod = ON.cod; renderSala(); } });
+}
+const conviteTextoTurma = conviteTexto;
+conviteTexto = function (cod) {
+  if (!(TM.vs && TM.vs.cod === cod)) return conviteTextoTurma(cod);
+  return `⚔️ Desafio das Confrarias! A ${nomeTurma(TM.vs.nome)} desafia a sua Turma no Dominó Manauara. Quem ganhar a partida leva 1 ponto para a sua Turma.\nEntra na mesa:\n${SITE_URL}#mesa=${cod}\n\nOu abra o app e digite o número da mesa: *${cod}*`;
+};
+const renderSalaTurma = renderSala;
+renderSala = function () {
+  renderSalaTurma();
+  if (screen !== 'sala') return;
+  const v = ON.vista, vs = !!(TM.vs && v && TM.vs.cod === v.codigo && v.fase === 'espera');
+  let av = $('#salaDesafio');
+  if (!av) { av = document.createElement('p'); av.id = 'salaDesafio'; av.className = 'note sala-desafio'; $('#salaConvite').before(av); }
+  av.hidden = !vs;
+  if (vs) av.innerHTML = `<b>Mesa de desafio da ${esc(nomeTurma(TM.vs.nome))}</b><br>Mande o convite para a outra Turma e chame o seu parceiro. Vale ponto quando quem perder for de outra Turma.`;
+  const cv = $('#salaConvite'); if (cv) { const tx = [...cv.childNodes].find(n => n.nodeType === 3 && n.textContent.trim()); if (tx) tx.textContent = vs ? 'Mandar o desafio no WhatsApp' : 'Chamar os amigos no WhatsApp'; }
+};
 // Na sala: a Turma de cada um aparece embaixo do nome
 const salaSubTurma = salaSub;
 salaSub = function (c, pos) { return c && c.turma && (pos === 0 || c.on) ? nomeTurma(c.turma) : salaSubTurma(c, pos); };
@@ -12780,7 +12816,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.49.1-a48fac6f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.50-45f3a38e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
