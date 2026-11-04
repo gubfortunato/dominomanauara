@@ -1871,22 +1871,27 @@ html[data-mesa="skylinenoite"] .table.wood{--wood-1:#0b0e2c;--wood-2:#0b0e2c;--w
 .ap-promo{margin:4px 0 8px;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,var(--nos) 12%,var(--bg));border:1.5px solid color-mix(in srgb,var(--nos) 45%,var(--line));display:grid;gap:3px;font-size:14.5px;line-height:1.4}
 .ap-promo[hidden]{display:none}
 .ap-promo b{font-size:15.5px;color:var(--nos)}
+.pl-ap{display:grid;gap:8px}.pl-ap p{margin:0}
+.pl-preco{display:grid;gap:2px;font-size:16px}.pl-preco b{font-size:19px;color:var(--fg)}.pl-preco small{font-size:13.5px;color:var(--muted)}
+.res-cota{margin:8px 0 0;font-size:14.5px;line-height:1.35;color:var(--muted);text-align:center}
+.res-cota b{color:var(--fg)}.res-cota button{display:inline;margin-left:4px;padding:0;border:0;background:none;color:var(--nos);font:inherit;font-weight:800;text-decoration:underline;cursor:pointer}
+.nome-selo.rk-socio{margin:0 4px 0 0;padding:0;cursor:default}.rk-socio .selo-ic{width:15px;height:15px}
 .rk-quase{display:grid;gap:6px;margin:10px 0 0;padding:12px 14px;border-radius:16px;border:1.5px solid color-mix(in srgb,#f2c14e 60%,transparent);background:color-mix(in srgb,#f2c14e 12%,var(--bg-2))}
 .rk-quase b{font-size:16.5px}.rk-quase span{font-size:15px;line-height:1.4;color:var(--fg)}.rk-quase .primary{margin-top:4px}
-/* 03/11 (pedido do dono): grátis × sócio lado a lado, sem os símbolos no começo das linhas */
+/* 03/11 (pedido do dono): grátis × sócio lado a lado, sem os símbolos no começo das linhas. A coluna do sócio fica
+   dourada de cima a baixo; cada linha tem um traço dos dois lados. O nome da linha fica só na metade da esquerda (quebra
+   a linha se for comprido), para não entrar na coluna do sócio. */
 .ap-cmp-tab{display:grid;border-radius:18px;overflow:hidden;border:1.5px solid var(--line);background:var(--bg-2)}
-.ap-cmp-cab,.ap-cmp-l{display:grid;grid-template-columns:1fr 1fr;column-gap:0}
-.ap-cmp-cab{border-bottom:1.5px solid var(--line)}
+.ap-cmp-cab,.ap-cmp-l{display:grid;grid-template-columns:1fr 1fr;column-gap:0;background:linear-gradient(90deg,transparent 50%,color-mix(in srgb,#f2c14e 13%,transparent) 50%)}
 .ap-cmp-cab span{padding:10px 12px;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .ap-cmp-cab span:first-child{display:none}
 .ap-cmp-cab .ap-cmp-s{color:var(--nos)}
-.ap-cmp-l{border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
-.ap-cmp-l:nth-child(2){border-top:0}
-.ap-cmp-l b{grid-column:1/-1;padding:11px 12px 2px;font-size:16.5px;line-height:1.3}
-.ap-cmp-l span{padding:2px 12px 11px;font-size:15px;line-height:1.35;color:var(--muted);display:flex;align-items:flex-start}
-.ap-cmp-l .ap-cmp-s{color:var(--fg);font-weight:700}
-/* a coluna do sócio fica dourada de cima a baixo (no celular, o nome da linha ocupa a largura toda) */
-.ap-cmp-cab,.ap-cmp-l{background:linear-gradient(90deg,transparent 50%,color-mix(in srgb,#f2c14e 13%,transparent) 50%)}
+.ap-cmp-l{border-top:1.5px solid color-mix(in srgb,var(--fg) 14%,transparent)}
+.ap-cmp-l b{grid-column:1;grid-row:1;padding:11px 12px 2px;font-size:16.5px;line-height:1.3}
+.ap-cmp-l > span{padding:2px 12px 11px;font-size:15px;line-height:1.35;color:var(--muted);display:flex;align-items:flex-start}
+.ap-cmp-l > .ap-cmp-g{grid-column:1;grid-row:2}
+.ap-cmp-l > .ap-cmp-s{grid-column:2;grid-row:2;color:var(--fg);font-weight:700}
+.ap-cmp-l .selo-ic{width:22px;height:22px;fill:#e0a92e;flex:none}
 .ap-ok{width:22px;height:22px;color:var(--nos)}
 .ap-nao{color:var(--muted);font-weight:700}
 .ap-cmp-nota{margin:2px 2px 0;font-size:14px;line-height:1.35;color:var(--muted)}
@@ -1894,10 +1899,10 @@ html[data-mesa="skylinenoite"] .table.wood{--wood-1:#0b0e2c;--wood-2:#0b0e2c;--w
 #apPlano > .ap-antes[hidden]{display:none}
 @media (min-width:560px){
   .ap-cmp-cab,.ap-cmp-l{grid-template-columns:1.15fr 1fr 1fr;background:none}
-  .ap-cmp-s{background:color-mix(in srgb,#f2c14e 13%,transparent)}
   .ap-cmp-cab span:first-child{display:block}
-  .ap-cmp-l b{grid-column:auto;padding:12px}
-  .ap-cmp-l span{padding:12px}
+  .ap-cmp-l b,.ap-cmp-l > .ap-cmp-g,.ap-cmp-l > .ap-cmp-s{grid-row:1;padding:12px}
+  .ap-cmp-l > .ap-cmp-g{grid-column:2}.ap-cmp-l > .ap-cmp-s{grid-column:3}
+  .ap-cmp-s{background:color-mix(in srgb,#f2c14e 13%,transparent)}
 }
 .ap-gratis{margin-top:14px;padding:12px 14px;border-radius:16px;border:1.5px dashed var(--line);background:var(--bg-2)}
 .ap-gratis .ap-k{margin-top:0!important}
@@ -2722,12 +2727,12 @@ body.papo-aberto{overflow:hidden}
         <div class="ap-cmp-l" role="row"><b role="rowheader">Mesa rápida online</b><span role="cell" class="ap-cmp-g">3 partidas por dia</span><span role="cell" class="ap-cmp-s">Sem limite</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Mesas com os amigos</b><span role="cell" class="ap-cmp-g">1 partida por dia, ou 3 na mesa de um sócio</span><span role="cell" class="ap-cmp-s">Sem limite, e crie quantas mesas quiser</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Jogo offline</b><span role="cell" class="ap-cmp-g">5 partidas por dia</span><span role="cell" class="ap-cmp-s">Sem limite</span></div>
-        <div class="ap-cmp-l" role="row"><b role="rowheader">Papo de mesa</b><span role="cell" class="ap-cmp-g">Na partida do dia</span><span role="cell" class="ap-cmp-s">Em todas as partidas</span></div>
+        <div class="ap-cmp-l" role="row"><b role="rowheader">Papo de mesa (com os amigos)</b><span role="cell" class="ap-cmp-g">Na partida do dia</span><span role="cell" class="ap-cmp-s">Em todas as partidas</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Ranking</b><span role="cell" class="ap-cmp-g">Pontua e vê o Rei e os 3 primeiros da semana</span><span role="cell" class="ap-cmp-s">Completo, da semana e do mês, com a sua posição</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Coroa de Rei da Calçada</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s">Pode ser sua</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Estatísticas detalhadas</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s"><svg class="ap-ok" viewBox="0 0 24 24" aria-label="sim"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Sua foto na mesa online</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s"><svg class="ap-ok" viewBox="0 0 24 24" aria-label="sim"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-        <div class="ap-cmp-l" role="row"><b role="rowheader">Selo de sócio ao lado do nome</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s">★</span></div>
+        <div class="ap-cmp-l" role="row"><b role="rowheader">Selo de sócio ao lado do nome</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s"><svg class="selo-ic selo-estrela" viewBox="-0.3 0 24.6 24" aria-label="sim"><path d="M12 1.3L14.88 8.94 23.03 9.32 16.66 14.41 18.82 22.28 12 17.8 5.18 22.28 7.34 14.41 0.97 9.32 9.12 8.94Z"/></svg></span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Mesas</b><span role="cell" class="ap-cmp-g">Madeira, Vermelha e Azul</span><span role="cell" class="ap-cmp-s">Todas</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Avatar</b><span role="cell" class="ap-cmp-g">Os avatares prontos</span><span role="cell" class="ap-cmp-s">Monte o seu, mais os exclusivos</span></div>
       </div>
@@ -2747,7 +2752,7 @@ body.papo-aberto{overflow:hidden}
         <div class="ap-outro-l"><label class="ap-outro-in"><span aria-hidden="true">R$</span><input type="text" id="apOutroValor" inputmode="decimal" autocomplete="off" placeholder="30" maxlength="6" aria-label="Valor, a partir de 30 reais" aria-describedby="apOutroDica"></label><button type="button" class="primary ap-outro-b" id="apOutroDoar" disabled>Ser sócio</button></div>
         <p class="ap-outro-h" id="apOutroDica" aria-live="polite">Valor mínimo: R$ 30.</p>
       </div>
-      <p class="note ap-nota">Pagamento na página segura do Asaas. Mensal, trimestral e anual renovam sozinhos no cartão, e você cancela quando quiser aqui no app (o tempo pago vale até o fim). Quem prefere o Pix paga 1 mês avulso, sem renovar. Os preços promocionais valem para quem assinar até 4/11; depois, R$ 14,90 por mês, R$ 37,90 a cada 3 meses ou R$ 99,90 por ano. O tempo novo soma ao que você já tiver.</p>
+      <p class="note ap-nota">Pagamento na página segura do Asaas. Mensal, trimestral e anual renovam sozinhos no cartão, e você cancela quando quiser aqui no app (o tempo pago vale até o fim). Quem prefere o Pix paga 1 mês avulso, sem renovar. Os preços promocionais valem para quem assinar até 30/11; depois, R$ 14,90 por mês, R$ 37,90 a cada 3 meses ou R$ 99,90 por ano. O tempo novo soma ao que você já tiver.</p>
     </div>
     <div class="ap-perso">
       <button type="button" class="secondary" id="apEstilo" style="width:100%">Escolher mesa e montar avatar</button>
@@ -3556,6 +3561,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.46.1', data: '03/11/2026', itens: ['Promoção de lançamento até 30/11: mensal a R$ 9,90 nos 3 primeiros meses (depois R$ 14,90).', 'Sem plano, o fim de cada partida mostra quantas você já jogou hoje naquele tipo de mesa, e a tela do limite mostra o que muda sendo sócio, com o preço.', 'No ranking, os sócios aparecem com a ★; quem ficou em 1º sem ser sócio vê o convite "Quero a coroa".', 'Tela do sócio: a tabela grátis × sócio ganhou linhas dos dois lados e a estrela dourada de sócio; papo de mesa é nas mesas com os amigos (a mesa rápida não tem).'] },
   { v: '3.46', data: '03/11/2026', itens: ['Avatares com a cara da galera: degradê, topete, black power, tranças, cachos, franja, rabo de cavalo e boné pra trás; cabelo nevou, loiro, ruivo, azul, rosa e roxo; moletom, regata, camisa de time e jaqueta; fone, argolas, corrente e faixa; e expressões novas (sorrisão, piscadinha e sorriso de lado). Tudo em Montar avatar.', '16 avatares prontos novos, que aparecem primeiro na escolha, e 4 exclusivos de sócio. Fundos em degradê.', 'Plano grátis a partir de 5/11: por dia, 3 partidas (até 200 pontos) na mesa rápida, 1 nas mesas com os amigos (até 3 na mesa de um sócio) e 5 no jogo offline; mesas Madeira, Vermelha e Azul; e os avatares prontos. Montar avatar passa a ser dos sócios (o avatar montado que você estiver usando continua seu). No ranking, todo mundo pontua, mas a coroa de Rei da Calçada é só de sócio.', 'A turma do bairro ficou mais nova: Kauã, Yasmin, Ryan, Tainá, Davi, Duda e mais 20. O Mané da taberna e a Lucinha do tacacá continuam na calçada.', 'Agora é tudo "sócio": o antigo "apoio" virou Sócio da Calçada no app inteiro, nos Termos e na Privacidade. O coração ♥ de quem já teve plano é o selo de sócio de coração.'] },
   { v: '3.45.2', data: '03/11/2026', itens: ['Pedras maiores no fim da mão com o celular em pé: as fileiras de cada ponta ficam mais curtas e a mesa usa melhor a altura da tela.', 'Em qualquer tamanho de celular as pedras ficam dentro da mesa, e o "Mesa oferecida por" fica livre sempre que isso não diminui as pedras.', 'Quem assiste uma mesa: as pedras viradas de quem está embaixo saíram (a contagem vai junto do nome) e a mesa ficou mais alta.'] },
   { v: '3.45.1', data: '03/11/2026', itens: ['Treino: a caixa das lições fica legível no tema claro, e os botões das janelas do treino, das boas-vindas e do som ficaram todos do mesmo tamanho.'] },
@@ -5035,7 +5041,8 @@ async function dnNumeros() {
 const EV_NOMES = {
   abertura: 'Vezes que abriram o jogo', 'jogo-novo': 'Jogos começados', vitoria: 'Jogos que o jogador ganhou',
   derrota: 'Jogos que o jogador perdeu', convite: 'Convites mandados no WhatsApp', instalou: 'Instalaram o app',
-  'patrocinio-clique': 'Cliques no patrocinador', 'apoio-pago': 'Planos pagos'
+  'patrocinio-clique': 'Cliques no patrocinador', 'plano-limite': 'Viram a tela de limite do dia', 'plano-quero': 'Tocaram em "Quero ser sócio" no limite',
+  'plano-cota': 'Tocaram em "Ser sócio" no fim da partida', 'apoio-pago': 'Planos pagos'
 };
 const EV_SEMPRE = ['abertura', 'jogo-novo', 'convite', 'instalou', 'patrocinio-clique'];
 function dnEventos(rows) {
@@ -5044,6 +5051,9 @@ function dnEventos(rows) {
     let k = String(r.x || ''); const y = Number(r.y || 0);
     if (!k || k === 'online') return;
     if (/^apoio-\d+$/.test(k)) k = 'apoio-toque';
+    else if (/^plano-limite-/.test(k)) k = 'plano-limite';   // 03/11: funil do plano grátis
+    else if (/^plano-quero-/.test(k)) k = 'plano-quero';
+    else if (/^plano-cota-/.test(k)) k = 'plano-cota';
     else if (/^opiniao-/.test(k)) k = 'opiniao';
     tot[k] = (tot[k] || 0) + y;
   });
@@ -6848,8 +6858,8 @@ function renovaSozinho() { const p = planoLocal(); return !!(p && p.renova); }
 // internet, usa estes. Quem cobra é o servidor: o valor da página do Asaas é sempre o certo.
 const PRECOS_BASE = { apm: { normal: 14.9, promo: 9.9, vezes: 3 }, ap3: { normal: 37.9, promo: 24.9, vezes: 1 }, ap12: { normal: 99.9, promo: 74.9, vezes: 1 }, ap1: { normal: 14.9, promo: 9.9, vezes: 1 } };
 const PLANOS_LANC = Date.UTC(2026, 10, 5, 3, 0, 0);   // 05/11/2026, 00:00 de Brasília
-const PROMO_FIM = PLANOS_LANC;   // a promoção vale até 4/11, 23:59 (o começo dos limites)
-const PROMO_DIA = '4/11';
+const PROMO_FIM = Date.UTC(2026, 11, 1, 3, 0, 0);   // 03/11 (dono): a promoção vale até 30/11 (antes, até 4/11), para pegar o 1º mês de limites
+const PROMO_DIA = '30/11';
 let precosServidor = null;
 function precoDe(k) {
   const s = precosServidor && precosServidor.itens && precosServidor.itens[k], b = PRECOS_BASE[k];
@@ -6934,7 +6944,7 @@ function mostrarPresente(g) {
   store.set('dmz-presente', g.tipo);
   const nome = profile && profile.name ? ', ' + esc(profile.name) : '';
   openSheet('presente', `<p class="eyebrow">Sócio da Calçada</p><h2 id="sheetTitle">Um presente pra você${nome}!</h2>
-    <p>Você já estava com a gente antes do Sócio da Calçada existir. Para agradecer, ganhou <b>1 ano de sócio de presente</b>, somado ao tempo que você já tinha: partidas e mesas com os amigos sem limite, todas as mesas, ranking completo, estatísticas, foto, selo e avatares exclusivos.</p>
+    <p>Você já estava com a gente antes do Sócio da Calçada existir. Para agradecer, ganhou <b>1 ano de sócio de presente</b>: partidas e mesas com os amigos sem limite, todas as mesas, ranking completo, estatísticas, foto, selo e avatares exclusivos.</p>
     ${g.ate ? `<p>Seu tempo de sócio vale até <b>${dataBR(g.ate)}</b>.</p>` : ''}
     <p class="carta-ass">Boa diversão.<br>Time Dominó Manauara</p>
     <button type="button" class="primary" id="prOk" style="width:100%">Valeu! Bora pra mesa</button>`);
@@ -11238,11 +11248,11 @@ const PLANOS_DESDE = Date.UTC(2026, 10, 5, 3, 0, 0);   // 05/11/2026, 00:00 de B
 const PLANOS_DIA = '5/11';
 const planosValem = () => Date.now() >= PLANOS_DESDE;
 const PLANO_TXT = {
-  limite: ['Sua partida de hoje acabou', 'Sem plano, dá para jogar 1 partida por dia nas mesas com os amigos, ou até 3 na mesa de um sócio. À meia-noite tem mais.'],
-  'limite-partida': ['Sua partida de hoje já foi', 'Sem plano, dá para jogar 1 partida por dia nas mesas com os amigos, ou até 3 na mesa de um sócio. À meia-noite tem mais.'],
+  limite: ['Você já jogou a sua partida grátis de hoje', 'Sem plano, é 1 partida por dia nas mesas com os amigos, ou até 3 na mesa de um sócio. À meia-noite tem mais.'],
+  'limite-partida': ['Você já jogou a sua partida grátis de hoje', 'Sem plano, é 1 partida por dia nas mesas com os amigos, ou até 3 na mesa de um sócio. À meia-noite tem mais.'],
   'limite-mesa': ['Você já criou a mesa de hoje', 'Sem plano, dá para criar 1 mesa com os amigos por dia. À meia-noite tem mais. Para jogar agora, entre pelo número da mesa de um amigo.'],
-  'limite-rapida': ['Suas 3 partidas de hoje acabaram', 'Sem plano, dá para jogar 3 partidas por dia na mesa rápida. À meia-noite tem mais.'],
-  'limite-offline': ['Suas 5 partidas offline de hoje acabaram', 'Sem plano, dá para jogar 5 partidas por dia no jogo offline (cada uma até 200 pontos). À meia-noite tem mais.'],
+  'limite-rapida': ['Você já jogou as suas partidas grátis de hoje', 'Sem plano, são 3 partidas por dia na mesa rápida. À meia-noite tem mais.'],
+  'limite-offline': ['Você já jogou as suas partidas grátis de hoje', 'Sem plano, são 5 partidas por dia no jogo offline. À meia-noite tem mais.'],
   papo: ['Escrever no papo é dos sócios', 'Sem plano, você lê o papo e usa as frases prontas.']
 };
 // Convite para o plano quando bate o limite, sempre com uma saída (o que ainda dá para jogar hoje)
@@ -11250,18 +11260,18 @@ function convitePlano(motivo) {
   const [tit, tx] = PLANO_TXT[motivo] || PLANO_TXT.limite, rapida = motivo === 'limite-rapida', off = motivo === 'limite-offline';
   const pode = typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !(profile && profile.idade === 'menor');
   const preco = typeof precoDe === 'function' ? precoDe('apm') : null;
-  const a = preco ? (preco.promo ? ` Promoção até ${PROMO_DIA}: ${brl(preco.valor)} por mês nos 3 primeiros meses.` : ` A partir de ${brl(preco.valor)} por mês.`) : '';
+  const a = preco ? (preco.promo ? `<span class="pl-preco"><b>${brl(preco.valor)} por mês</b> nos 3 primeiros meses<small>Promoção até ${PROMO_DIA}. Depois, ${brl(preco.normal)} por mês.</small></span>` : `<span class="pl-preco"><b>${brl(preco.valor)} por mês</b><small>Cancela quando quiser.</small></span>`) : '';
   const podeRapida = !rapida && !(profile && profile.idade === 'menor'), podeOff = !off && typeof offlineLivreHoje === 'function' && offlineLivreHoje();
   const resta = [podeRapida ? 'na mesa rápida' : '', podeOff ? 'no jogo offline' : '', off || rapida ? 'com os amigos' : ''].filter(Boolean);
   openSheet('plano', `<p class="eyebrow">${rapida ? 'Mesa rápida' : off ? 'Jogo offline' : 'Mesas com os amigos'}</p><h2 id="sheetTitle">${tit}</h2>
     <p>${tx}</p>
-    ${pode ? `<p class="pl-ap"><b>Sendo Sócio da Calçada</b>, você joga sem limite na mesa rápida, com os amigos e no offline, vê o ranking completo e as suas estatísticas e ainda tem foto na mesa, selo e avatares exclusivos.${a}</p>` : ''}
+    ${pode ? `<div class="pl-ap"><p><b>Quer continuar agora?</b> Sócio da Calçada joga sem limite, tem papo de mesa em todas as partidas com os amigos, ranking completo, foto na mesa e selo ★.</p>${a}</div>` : ''}
     ${resta.length ? `<p class="note">Hoje ainda dá para jogar ${juntaE(resta)}, se você não usou as partidas de lá.</p>` : ''}
-    ${pode ? '<button type="button" class="primary" id="plVer" style="width:100%">Ser Sócio da Calçada</button>' : ''}
+    ${pode ? '<button type="button" class="primary" id="plVer" style="width:100%">Quero ser sócio</button>' : ''}
     ${podeRapida ? '<button type="button" class="secondary" id="plRapida" style="width:100%;margin-top:10px">Jogar na mesa rápida</button>' : podeOff ? '<button type="button" class="secondary" id="plOffline" style="width:100%;margin-top:10px">Jogar offline</button>' : ''}
     <button type="button" class="linkbtn" id="plFechar" style="width:100%;margin-top:6px">Agora não</button>`);
   track('plano-limite-' + motivo);
-  if ($('#plVer')) $('#plVer').addEventListener('click', () => { closeSheet(); abrirApoio(screen === 'game' || screen === 'sala' ? 'home' : (screen || 'home'), 'plano'); });
+  if ($('#plVer')) $('#plVer').addEventListener('click', () => { track('plano-quero-' + motivo); closeSheet(); abrirApoio(screen === 'game' || screen === 'sala' ? 'home' : (screen || 'home'), 'plano'); });
   if ($('#plRapida')) $('#plRapida').addEventListener('click', () => { closeSheet(); const b = $('#goRapida'); if (b && !b.hidden) b.click(); else show('home'); });
   if ($('#plOffline')) $('#plOffline').addEventListener('click', () => { closeSheet(); if (screen !== 'home') show('home'); const b = $('#goOffline'); if (b) b.click(); });
   $('#plFechar').addEventListener('click', closeSheet);
@@ -11452,7 +11462,7 @@ function rkDesenhar() {
   qr.hidden = !d.quaseRei;
   if (d.quaseRei) {
     const podeSer = typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !(typeof menorDeIdade === 'function' && menorDeIdade());
-    qr.innerHTML = `<b>👑 Você foi o 1º da semana passada!</b><span>A coroa de Rei da Calçada é dos sócios.${podeSer ? ' Sendo sócio, na próxima vez ela é sua.' : ''}</span>${podeSer ? '<button type="button" class="primary" id="rkQuaseSer">Ser Sócio da Calçada</button>' : ''}`;
+    qr.innerHTML = `<b>👑 Você foi o 1º da semana passada!</b><span>A coroa de Rei da Calçada é dos sócios.${podeSer ? ' Seja sócio e, na próxima vez, ela é sua.' : ''}</span>${podeSer ? '<button type="button" class="primary" id="rkQuaseSer">Quero a coroa</button>' : ''}`;
     const qb = $('#rkQuaseSer'); if (qb) qb.addEventListener('click', () => { track('ranking-quase-rei'); abrirApoio('calcada', 'plano'); });
   }
   // 28/10 planos: sem plano, o servidor manda só os 3 primeiros da semana (o mês e a sua posição são dos sócios)
@@ -11464,7 +11474,7 @@ function rkDesenhar() {
     : `<p class="rk-vazio"><b>Ninguém ganhou partida online ${periodo} ainda.</b><span>Ganhe uma e apareça aqui primeiro!</span></p>`) + trava;
   else box.innerHTML = `<ol class="rk-ol">${p.top.map(x => `<li class="${x.eu ? 'eu' : ''}${x.pos <= 3 ? ' podio' : ''}">
       <span class="rk-pos">${x.pos <= 3 ? RK_MEDALHA[x.pos - 1] : x.pos + 'º'}</span><span class="rk-face">${rkRosto(x.av, x.nome)}</span>
-      <span class="rk-nome"><b>${x.rei ? '<span class="rk-coroa" title="Rei da Calçada">👑</span> ' : ''}${esc(x.nome)}${x.eu ? ' <small class="rk-voce">você</small>' : ''}</b><small>Nível ${x.nv || 1}</small></span>
+      <span class="rk-nome"><b>${x.rei ? '<span class="rk-coroa" title="Rei da Calçada">👑</span> ' : ''}${x.socio ? `<span class="nome-selo rk-socio" title="Sócio da Calçada">${seloEstrela()}</span>` : ''}${esc(x.nome)}${x.eu ? ' <small class="rk-voce">você</small>' : ''}</b><small>Nível ${x.nv || 1}</small></span>
       ${p.pontos ? `<span class="rk-pts"><b>${rkPts(x.pontos)}</b><small>${rkVit(x.ganhas)} em ${rkPart(x.jogadas)}</small></span>`
         : `<span class="rk-pts"><b>${rkVit(x.ganhas)}</b><small>em ${rkPart(x.jogadas)}</small></span>`}</li>`).join('')}</ol>` + trava;
   const sb = $('#rkSocio'); if (sb) sb.addEventListener('click', () => { track('ranking-socio'); abrirApoio('calcada', 'plano'); });
@@ -12541,7 +12551,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.46-86ffd7fe';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.46.1-e6072799';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -13342,6 +13352,35 @@ renderEstilo = function () {
 document.addEventListener('click', e => {
   if (e.target.closest && e.target.closest('#esSerSocio')) abrirApoio('home', 'plano');
 });
+
+// 03/11 (análise do dono: mostrar o valor antes de bloquear): no fim de cada partida, quem não tem plano vê quantas já
+// jogou hoje naquele tipo de mesa, numa linha discreta (sem janela que salta). Offline: a conta do celular; online: a do
+// servidor (meuUso). Não aparece para sócio, administrador, menor de 18 nem na partida treino.
+function cotaDoDia() {
+  if (!planosValem() || temPlano() || souAdmin() || menorDeIdade() || TREINO.on) return null;
+  if (!(typeof pagamentosAtivos === 'function' && pagamentosAtivos())) return null;
+  if (mode === 'off') return { n: offlineUsoHoje(), de: OFF_POR_DIA, onde: 'no jogo offline' };
+  const u = mode === 'on' && ON && ON.vista && ON.vista.meuUso;
+  if (u && u.de) return { n: u.n, de: u.de, onde: ON.vista.publica ? 'na mesa rápida' : 'nas mesas com os amigos' };
+  return null;
+}
+const showResultCota = showResult;
+showResult = function () {
+  const r = showResultCota.apply(this, arguments);
+  try {
+    const R = G && G.result, nb = $('#sheet #nextBtn');
+    if (R && R.matchWinner != null && sheetKind === 'result' && nb && !$('#sheet .res-cota')) {
+      const c = cotaDoDia();
+      if (c && c.n > 0) {
+        const n = Math.min(c.n, c.de), ultima = n >= c.de;
+        nb.insertAdjacentHTML('beforebegin', `<p class="res-cota">${ultima ? `Essa foi a sua última partida grátis de hoje ${c.onde}.` : `Partida <b>${n} de ${c.de}</b> de hoje ${c.onde}.`} Sócio joga sem limite.${mode === 'off' ? '<button type="button" id="resCotaSocio">Ser sócio</button>' : ''}</p>`);
+        // na mesa online não tira ninguém da mesa no meio da sessão: o botão fica só no offline (o jogo fica guardado)
+        const bs = $('#resCotaSocio'); if (bs) bs.addEventListener('click', () => { track('plano-cota-offline'); closeSheet(); leaveGame(); abrirApoio('home', 'plano'); });
+      }
+    }
+  } catch (e) {}
+  return r;
+};
 </script>
 </body>
 </html>
