@@ -1,6 +1,6 @@
 // Dominó Manauara: guarda o jogo no celular para abrir rápido e funcionar sem internet.
 // Ao publicar uma versão nova, troque o número abaixo para os celulares baixarem tudo de novo.
-const CACHE = 'dominomanauara-3.47-5d02fec6';
+const CACHE = 'dominomanauara-3.47.1-ad2f12a7';
 const FILES = [
   './',
   './index.html',
@@ -50,7 +50,9 @@ self.addEventListener('fetch', e => {
       const net = fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }).then(res => putInCache(req, res));
       if (!cached) return net;
       net.catch(() => {});
-      const slow = new Promise(r => setTimeout(() => r(cached), 3500));
+      // 3.47.1: quando o app pede a versão nova (?v=), espera a internet bem mais antes de usar a cópia guardada (velha)
+      const espera = new URL(req.url).searchParams.has('v') ? 15000 : 3500;
+      const slow = new Promise(r => setTimeout(() => r(cached), espera));
       try { return await Promise.race([net, slow]); } catch (err) { return cached; }
     })());
     return;

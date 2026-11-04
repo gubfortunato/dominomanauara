@@ -3611,6 +3611,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.47.1', data: '04/11/2026', itens: ['Atualização automática mais confiável: ao voltar para o app, a versão nova entra na hora, sem precisar fechar e abrir. E o app só troca de versão depois de baixar a nova por inteiro (com internet lenta, antes podia abrir a velha de novo).'] },
   { v: '3.47', data: '04/11/2026', itens: ['Três mesas novas para os sócios: Sol de setembro, Cor de Açaí e Floresta.', 'Mesa Teatro Amazonas: agora com o título de Patrimônio Mundial da UNESCO.', 'Missões do dia mais dinâmicas: muito mais missões no sorteio, cada missão cumprida já dá experiência (fácil +15, média +25, difícil +40), dá para trocar uma missão por dia, e todo dia tem um Desafio do dia (+60).', 'Durante a partida, um aviso pequeno no alto da tela mostra o progresso das missões e quando você cumpre uma.', 'Sem plano, cumprir as três missões do dia dá +1 partida no jogo offline naquele dia.', 'O resultado conta a história: "Que virada!", "Lavada!", "No detalhe!" no fim da partida, e as batidas seguidas da sua dupla.', 'A turma do bairro mistura a galera nova com os da calçada de sempre: Raimundo, Socorro, Nonato, Tião, Conceição, Bené e Rosinha voltaram, com o rosto de antes. Na entrada, a mesa aparece misturada.'] },
   { v: '3.46.2', data: '03/11/2026', itens: ['Correção: em algumas mãos, com o celular em pé, as pedras de uma ponta ficavam por cima das de outra. A mesa volta a abrir as fileiras um pouco mais largas, e se alguma pedra for cair por cima de outra, a fileira alarga sozinha.'] },
   { v: '3.46.1', data: '03/11/2026', itens: ['Promoção de lançamento até 30/11: mensal a R$ 9,90 nos 3 primeiros meses (depois R$ 14,90).', 'Sem plano, o fim de cada partida mostra quantas você já jogou hoje naquele tipo de mesa, e a tela do limite mostra o que muda sendo sócio, com o preço.', 'No ranking, os sócios aparecem com a ★; quem ficou em 1º sem ser sócio vê o convite "Quero a coroa".', 'Tela do sócio: a tabela grátis × sócio ganhou linhas dos dois lados e a estrela dourada de sócio; papo de mesa é nas mesas com os amigos (a mesa rápida não tem).'] },
@@ -12738,13 +12739,14 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.47-5d02fec6';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.47.1-ad2f12a7';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   // Procura versão nova ao abrir, ao voltar para o app e a cada 30 minutos com ele aberto.
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+      swReg = reg;
       let lastCheck = Date.now();
       const check = () => { lastCheck = Date.now(); if (navigator.onLine !== false) { reg.update().catch(() => {}); conferirVersao(); } };
       // 3.22.1: ao voltar para o app confere de novo depois de 15 s (antes era 1 min) e, com ele aberto, a cada 10 min
@@ -12778,9 +12780,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 // "Versão nova pronta · Atualizar" (um toque) e, se não tocar, ela entra sozinha quando você parar no início ou sair do app.
 // 3.26.1: e sem precisar fechar o app — com ele aberto, a versão nova entra sozinha no primeiro momento parado no
 // início (20 s sem tocar em nada, fora da partida, da sala, do perfil e sem janela aberta).
-let novaVersao = null, recarregando = false, mexeu = false, ultimoToque = Date.now();
+let novaVersao = null, recarregando = false, mexeu = false, ultimoToque = Date.now(), swReg = null;
 const abriuEm = Date.now();
 addEventListener('pointerdown', () => { mexeu = true; }, { capture: true, once: true });
+// 3.47.1: o iPhone deixa o app aberto em segundo plano por horas. Voltar para ele conta como "acabou de abrir": se tem
+// versão nova e a pessoa ainda não tocou em nada, ela entra na hora (antes só entrava fechando e abrindo o app).
+let voltouEm = 0, mexeuDesdeVolta = true;
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { voltouEm = Date.now(); mexeuDesdeVolta = false; } });
+addEventListener('pointerdown', () => { mexeuDesdeVolta = true; }, { capture: true });
 ['pointerdown', 'keydown', 'wheel', 'touchmove'].forEach(ev => addEventListener(ev, () => { ultimoToque = Date.now(); }, { capture: true, passive: true }));
 // 3.26.3: sem nenhum toque — sem o botão "Atualizar". Parado 8 s no início (ou na entrada, ou em Apoie o jogo), a
 // versão nova entra sozinha; na partida, na sala, no perfil ou com janela aberta, espera; e ao sair do app, entra também.
@@ -12806,6 +12813,7 @@ async function conferirVersao() {
     if (!r.ok) return;
     const v = (await r.text()).trim();
     if (!/^[\w.-]{3,40}$/.test(v) || v === APP_BUILD) return;
+    if (novaVersao !== v) { try { swReg && swReg.update(); } catch (e) {} }   // já começa a baixar a versão nova
     novaVersao = v;
     atualizarQuandoLivre();
   } catch (e) {}
@@ -12819,18 +12827,41 @@ function tentativasVersao(v, somar) {
 function atualizarQuandoLivre() {
   if (!novaVersao || tentativasVersao(novaVersao) >= 2) return;
   window.__reloadWhenFree = true;   // entra sozinha quando sair do app
-  const logoAoAbrir = !mexeu && Date.now() - abriuEm < 15000;
+  const logoAoAbrir = (!mexeu && Date.now() - abriuEm < 15000) || (!mexeuDesdeVolta && Date.now() - voltouEm < 15000);
   if (logoAoAbrir && livreParaAtualizar() && document.visibilityState === 'visible') {
     toast(textoAtualizando());
-    setTimeout(() => { if (!mexeu && livreParaAtualizar()) recarregarNovo(); else avisoVersaoNova(); }, 900);
+    setTimeout(() => { if ((!mexeu || !mexeuDesdeVolta) && livreParaAtualizar()) recarregarNovo(); else avisoVersaoNova(); }, 900);
     return;
   }
   avisoVersaoNova();
 }
-function recarregarNovo(destino) {
+// 3.47.1: só recarrega quando o service worker novo já guardou a página nova inteira e assumiu (as cópias velhas
+// somem quando ele assume). Antes, com internet lenta, a recarga abria a página velha guardada e contava uma tentativa.
+async function swNovoPronto(v) {
+  if (!('caches' in window) || !('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return true;
+  try {
+    const nome = 'dominomanauara-' + v, ks = await caches.keys();
+    if (!ks.includes(nome) || ks.some(k => k.startsWith('dominomanauara-') && k !== nome)) return false;
+    return !!(await caches.match('./index.html', { cacheName: nome }));
+  } catch (e) { return true; }
+}
+async function esperarSwNovo(v, ms) {
+  if (await swNovoPronto(v)) return true;
+  try { swReg && swReg.update(); } catch (e) {}
+  const ate = Date.now() + ms;
+  while (Date.now() < ate) {
+    await new Promise(r => setTimeout(r, 400));
+    if (await swNovoPronto(v)) return true;
+  }
+  return false;
+}
+async function recarregarNovo(destino) {
   if (recarregando) return;
   if (!novaVersao || tentativasVersao(novaVersao) >= 2) { recarregando = true; recarregarBase(destino); return; }
   recarregando = true;
+  await esperarSwNovo(novaVersao, 15000);   // sem resposta em 15 s, recarrega mesmo assim (como antes)
+  // enquanto baixava, a pessoa foi jogar ou abriu uma janela: espera o próximo momento livre
+  if (document.visibilityState === 'visible' && !livreParaAtualizar()) { recarregando = false; return; }
   tentativasVersao(novaVersao, true);
   saveGame();
   const ir = destino || (screen === 'game' ? 'home' : screen);
