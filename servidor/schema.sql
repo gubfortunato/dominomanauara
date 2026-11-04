@@ -244,3 +244,6 @@ INSERT OR IGNORE INTO planos (aparelho, ate, desde, codigo)
   WHERE NOT EXISTS (SELECT 1 FROM planos p WHERE p.aparelho = c.aparelho);
 UPDATE planos SET ate = CAST(strftime('%s', 'now') AS INTEGER) * 1000 + 3650 * 86400000
   WHERE aparelho IN (SELECT aparelho FROM cortesias) AND ate < CAST(strftime('%s', 'now') AS INTEGER) * 1000 + 365 * 86400000;
+
+-- 04/11 (dono): Turma com nome de baixo calão ("Pombona") renomeada; os pontos ficam
+UPDATE turmas SET nome = 'Turma sem nome' WHERE lower(nome) LIKE '%pombon%' OR lower(nome) LIKE '%pombao%' OR lower(nome) LIKE '%pombão%';

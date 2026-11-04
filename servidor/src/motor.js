@@ -529,13 +529,15 @@ const NOME_RUIM_PARTE = ['porra', 'caralh', 'buceta', 'boceta', 'xoxota', 'xerec
   // 3.38.2: o "Boyceta" passou (y no lugar do o; s no lugar do c)
   'boicet', 'buicet', 'buset', 'boset', 'bucit', 'bocit', 'xoxot', 'xerek', 'piruc', 'pirok',
   'onlyfans', 'pepek', 'xaninh', 'grelinh', 'bundinh', 'bundud', 'rabud', 'peitud', 'gozad', 'enrab', 'rapariga', 'desgrac', 'imbecil',
-  'idiota', 'mongoloid', 'aleijad', 'vagab', 'arromb', 'fuck', 'shit', 'pussy', 'bitch', 'whore', 'nigg', 'slut', 'boobs'];
+  'idiota', 'mongoloid', 'aleijad', 'vagab', 'arromb', 'fuck', 'shit', 'pussy', 'bitch', 'whore', 'nigg', 'slut', 'boobs',
+  // 04/11 (dono): "Pombona" passou no nome de Turma (gíria de baixo calão)
+  'pombon', 'pombao', 'pombud', 'pirocud'];
 // Curtas: só barram como palavra separada (para não pegar "Cunha" ou "Disputa").
 const NOME_RUIM_PALAVRA = ['cu', 'puta', 'putas', 'puto', 'foda', 'fode', 'rola', 'xota', 'viado', 'veado', 'bicha', 'sapatao',
   'crioulo', 'corno', 'otario', 'babaca', 'anus', 'penis', 'vagina', 'kct', 'vsf', 'tnc', 'fdps', 'teba', 'cui', 'tobo',
   'pica', 'pau', 'piru', 'xana', 'ppk', 'grelo', 'bunda', 'bundao', 'rabo', 'peitos', 'peitao', 'teta', 'tetas', 'chupa', 'chupar', 'mamar',
   'mamada', 'gozar', 'gozo', 'gostosa', 'gostoso', 'gostosao', 'gostosinha', 'sexy', 'sex', 'anal', 'nude', 'nudes', 'broxa', 'cachorra',
-  'vaca', 'cagao', 'cagar', 'dick', 'cock', 'tits'];
+  'vaca', 'cagao', 'cagar', 'dick', 'cock', 'tits', 'pomba', 'pombas', 'pombinha'];
 // 3.38.2 (o "Sokomo Kazada" passou): frases de duplo sentido, escritas do jeito que se fala ("só como casada") e
 // também trocando letras de mesmo som (k = c, z = s, y = i, w = u, ph = f). Conferidas no nome todo grudado.
 const NOME_RUIM_FRASE = [
