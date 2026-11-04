@@ -1082,7 +1082,28 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 /* Missões do dia */
 #misCard.card{--wood-1:#3f5a1c;--wood-2:#18240a;--wood-edge:#8fb05a}
 .mis-lista{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px}
-.mis-lista li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:16.5px;line-height:1.3}
+.mis-lista li{display:grid;grid-template-columns:22px minmax(0,1fr) auto auto;gap:8px;align-items:center;font-size:16.5px;line-height:1.3}
+/* 03/11: missões mais dinâmicas (barrinha de progresso, experiência de cada uma, desafio do dia, trocar uma por dia) */
+.mis-tx{display:grid;gap:3px;min-width:0}
+.mis-tx small{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#f3c25a}
+.mis-bar{display:block;height:4px;border-radius:4px;background:rgba(239,226,204,.18);overflow:hidden}
+.mis-bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#b7d97a,#f3c25a)}
+.mis-n{display:grid;justify-items:end;line-height:1.15}
+.mis-n small{font-size:12px;font-weight:800;color:#f3c25a;opacity:.9}
+.mis-lista li.bonus{margin-top:4px;padding-top:8px;border-top:1px dashed rgba(239,226,204,.25)}
+.mis-lista li.bonus .mis-ic{border-color:#f3c25a;font-size:11px}
+.mis-trocar{padding:4px 10px;border-radius:999px;border:1.5px solid var(--line);background:none;color:var(--fg);font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.mis-folha .mis-bar{background:color-mix(in srgb,var(--fg) 12%,transparent)}
+.mis-folha .mis-tx small,.mis-folha .mis-n small{color:var(--nos)}
+.mis-folha li.bonus{border-top-color:var(--line)}
+.mis-chip{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:31;width:max-content;max-width:min(92vw,460px);transform:translate(-50%,-14px);opacity:0;transition:transform .28s cubic-bezier(.2,.9,.3,1.2),opacity .22s;pointer-events:none;
+  padding:10px 16px;border-radius:999px;background:#2a1d12;color:#f6ead2;font-size:15px;line-height:1.3;font-weight:600;box-shadow:0 10px 28px rgba(0,0,0,.35);border:1.5px solid rgba(243,194,90,.35);text-align:center}
+.mis-chip.go{transform:translate(-50%,0);opacity:1}
+.res-emo{margin:8px 0 0;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,#f3c25a 16%,transparent);font-weight:800;font-size:16.5px;line-height:1.3;text-align:center;color:var(--fg)}
+.mis-chip b{color:#f3c25a}
+.mis-chip.ok{background:linear-gradient(135deg,#f3c25a,#e0952e);color:#2a1606;border-color:#fff3}
+.mis-chip.ok b{color:#2a1606}
+@media (prefers-reduced-motion:reduce){.mis-chip{transition:opacity .2s;transform:translate(-50%,0)}}
 .mis-ic{width:20px;height:20px;border-radius:50%;border:2px solid rgba(239,226,204,.55);display:grid;place-items:center;font-size:14px;font-weight:900;color:#1d2a0c}
 .mis-lista li.ok .mis-ic{background:#b7d97a;border-color:#b7d97a}
 .mis-lista li.ok .mis-tx{opacity:.75;text-decoration:line-through;text-decoration-thickness:1.5px}
@@ -3561,6 +3582,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.47', data: '03/11/2026', itens: ['Missões do dia mais dinâmicas: muito mais missões no sorteio, cada missão cumprida já dá experiência (fácil +15, média +25, difícil +40), dá para trocar uma missão por dia, e todo dia tem um Desafio do dia (+60).', 'Durante a partida, um aviso pequeno no alto da tela mostra o progresso das missões e quando você cumpre uma.', 'Sem plano, cumprir as três missões do dia dá +1 partida no jogo offline naquele dia.', 'O resultado conta a história: "Que virada!", "Lavada!", "No detalhe!" no fim da partida, e as batidas seguidas da sua dupla.'] },
   { v: '3.46.2', data: '03/11/2026', itens: ['Correção: em algumas mãos, com o celular em pé, as pedras de uma ponta ficavam por cima das de outra. A mesa volta a abrir as fileiras um pouco mais largas, e se alguma pedra for cair por cima de outra, a fileira alarga sozinha.'] },
   { v: '3.46.1', data: '03/11/2026', itens: ['Promoção de lançamento até 30/11: mensal a R$ 9,90 nos 3 primeiros meses (depois R$ 14,90).', 'Sem plano, o fim de cada partida mostra quantas você já jogou hoje naquele tipo de mesa, e a tela do limite mostra o que muda sendo sócio, com o preço.', 'No ranking, os sócios aparecem com a ★; quem ficou em 1º sem ser sócio vê o convite "Quero a coroa".', 'Tela do sócio: a tabela grátis × sócio ganhou linhas dos dois lados e a estrela dourada de sócio; papo de mesa é nas mesas com os amigos (a mesa rápida não tem).'] },
   { v: '3.46', data: '03/11/2026', itens: ['Avatares com a cara da galera: degradê, topete, black power, tranças, cachos, franja, rabo de cavalo e boné pra trás; cabelo nevou, loiro, ruivo, azul, rosa e roxo; moletom, regata, camisa de time e jaqueta; fone, argolas, corrente e faixa; e expressões novas (sorrisão, piscadinha e sorriso de lado). Tudo em Montar avatar.', '16 avatares prontos novos, que aparecem primeiro na escolha, e 4 exclusivos de sócio. Fundos em degradê.', 'Plano grátis a partir de 5/11: por dia, 3 partidas (até 200 pontos) na mesa rápida, 1 nas mesas com os amigos (até 3 na mesa de um sócio) e 5 no jogo offline; mesas Madeira, Vermelha e Azul; e os avatares prontos. Montar avatar passa a ser dos sócios (o avatar montado que você estiver usando continua seu). No ranking, todo mundo pontua, mas a coroa de Rei da Calçada é só de sócio.', 'A turma do bairro ficou mais nova: Kauã, Yasmin, Ryan, Tainá, Davi, Duda e mais 20. O Mané da taberna e a Lucinha do tacacá continuam na calçada.', 'Agora é tudo "sócio": o antigo "apoio" virou Sócio da Calçada no app inteiro, nos Termos e na Privacidade. O coração ♥ de quem já teve plano é o selo de sócio de coração.'] },
@@ -9380,79 +9402,143 @@ render = function () {
 };
 
 // ===== Missões do dia =====
-// Três missões por dia (uma fácil, uma média e uma difícil), iguais para todo mundo no mesmo dia, que valem no jogo
-// offline e no online. Cumprir as três conta um "dia completo": a sequência de dias seguidos aparece com o foguinho,
-// cumprir as três vale +50 de experiência (para o nível) e, com 3, 7 e 15 dias completos, vêm comidas novas para o avatar
-// (pelas conquistas). Desde a 3.20 o título é o do nível (as missões não têm mais título próprio). Tudo fica neste celular.
+// Três missões por dia (uma fácil, uma média e uma difícil) e, desde 03/11, um Desafio do dia (opcional, mais difícil),
+// iguais para todo mundo no mesmo dia, que valem no jogo offline e no online. 03/11 (dono: "missões do dia mais
+// dinâmicas"): muito mais missões no sorteio, cada missão cumprida dá experiência na hora (fácil 15, média 25, difícil 40,
+// desafio 60), dá para trocar uma missão por dia, o progresso aparece durante a partida (um aviso pequeno no alto da
+// tela) e, sem plano, cumprir as três dá +1 partida no jogo offline naquele dia. Cumprir as três conta um "dia
+// completo": o foguinho dos dias seguidos, +50 de experiência e, com 3, 7 e 15 dias completos, comidas para o avatar.
+// Tudo fica neste celular. Os ids antigos continuam (o progresso de quem já estava jogando no dia não se perde).
 const MIS_KEY = 'dmz-missoes';
 const MISSOES = {
-  facil: [{ id: 'maos3', tx: 'Jogue 3 mãos', meta: 3 }, { id: 'pts5', tx: 'Marque ponto 5 vezes', meta: 5 }, { id: 'bucho2', tx: 'Jogue 2 pedras no bucho', meta: 2 }],
-  media: [{ id: 'galo1', tx: 'Aplique 1 galo', meta: 1 }, { id: 'bat2', tx: 'Bata 2 vezes', meta: 2 }, { id: 'pts20', tx: 'Marque 20 ou mais numa jogada só', meta: 1 }, { id: 'parc', tx: 'Seu parceiro bate 1 vez', meta: 1 }],
-  dificil: [{ id: 'carroca', tx: 'Bata com uma carroça', meta: 1 }, { id: 'partida', tx: 'Ganhe 1 partida', meta: 1 }, { id: 'garagem', tx: 'Leve 15 ou mais de garagem', meta: 1 }]
+  facil: [{ id: 'maos3', tx: 'Jogue 3 mãos', meta: 3 }, { id: 'pts5', tx: 'Marque ponto 5 vezes', meta: 5 }, { id: 'bucho2', tx: 'Jogue 2 pedras no bucho', meta: 2 },
+    { id: 'carr3', tx: 'Jogue 3 carroças', meta: 3 }, { id: 'pts60', tx: 'Some 60 pontos na mesa', meta: 60, soma: true }, { id: 'maos6', tx: 'Jogue 6 mãos', meta: 6 }],
+  media: [{ id: 'galo1', tx: 'Aplique 1 galo', meta: 1 }, { id: 'bat2', tx: 'Bata 2 vezes', meta: 2 }, { id: 'pts20', tx: 'Marque 20 ou mais numa jogada só', meta: 1 },
+    { id: 'parc', tx: 'Seu parceiro bate 1 vez', meta: 1 }, { id: 'pts15x3', tx: 'Marque 15 ou mais em 3 jogadas', meta: 3 }, { id: 'dupla3', tx: 'Sua dupla bate 3 mãos', meta: 3 },
+    { id: 'bucho4', tx: 'Jogue 4 pedras no bucho', meta: 4 }, { id: 'pts120', tx: 'Some 120 pontos na mesa', meta: 120, soma: true }],
+  dificil: [{ id: 'carroca', tx: 'Bata com uma carroça', meta: 1 }, { id: 'partida', tx: 'Ganhe 1 partida', meta: 1 }, { id: 'garagem', tx: 'Leve 15 ou mais de garagem', meta: 1 },
+    { id: 'galo2', tx: 'Aplique 2 galos', meta: 2 }, { id: 'pts30', tx: 'Marque 30 ou mais numa jogada só', meta: 1 }, { id: 'bat4', tx: 'Bata 4 vezes', meta: 4 },
+    { id: 'pts200', tx: 'Some 200 pontos na mesa', meta: 200, soma: true }],
+  bonus: [{ id: 'partida2', tx: 'Ganhe 2 partidas', meta: 2 }, { id: 'lavada', tx: 'Ganhe uma partida com os adversários abaixo de 100', meta: 1 },
+    { id: 'galo3', tx: 'Aplique 3 galos', meta: 3 }, { id: 'carroca2', tx: 'Bata com carroça 2 vezes', meta: 2 }, { id: 'garagem25', tx: 'Leve 25 ou mais de garagem', meta: 1 },
+    { id: 'gente', tx: 'Ganhe 1 partida contra pessoas na mesa online', meta: 1 }, { id: 'pts40', tx: 'Marque 40 ou mais numa jogada só', meta: 1 }]
 };
+const MIS_NIVEIS = ['facil', 'media', 'dificil'];
+const MIS_XP = { facil: 15, media: 25, dificil: 40, bonus: 60 };
+const MIS_NOME = { facil: 'Fácil', media: 'Média', dificil: 'Difícil', bonus: 'Desafio do dia' };
 const diaAntes = d => new Date(Date.parse(d + 'T12:00:00Z') - 86400000).toISOString().slice(0, 10);
-function missoesDoDia(dia) {
-  let h = 0; for (const ch of dia) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  const de = (l, k) => l[(h >>> k) % l.length];
-  return [de(MISSOES.facil, 0), de(MISSOES.media, 5), de(MISSOES.dificil, 11)];
+// as missões do dia: sorteadas pelo dia (iguais para todos); a troca do dia (uma só) pega a próxima da mesma lista
+// sorteio do dia (o mesmo número para todo mundo): FNV-1a com mistura, para dias seguidos darem missões bem diferentes
+function misSorteio(dia, sal) {
+  let h = 2166136261;
+  for (const ch of dia + '|' + sal) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+  h ^= h >>> 15; h = Math.imul(h, 0x2c1b3c6d); h ^= h >>> 12; h = Math.imul(h, 0x297a2d39); h ^= h >>> 15;
+  return h >>> 0;
 }
+function missoesDoDia(dia, s) {
+  const tr = (s && s.dia === dia && s.troca) || null;
+  const de = nivel => { const l = MISSOES[nivel], i = (misSorteio(dia, nivel) + (tr && tr.nivel === nivel ? tr.n : 0)) % l.length; return Object.assign({ nivel }, l[i]); };
+  return MIS_NIVEIS.map(de);
+}
+function desafioDoDia(dia) { return Object.assign({ nivel: 'bonus' }, MISSOES.bonus[misSorteio(dia, 'bonus') % MISSOES.bonus.length]); }
 function misEstado() {
   const hoje = diaManaus();
   let s; try { s = JSON.parse(store.get(MIS_KEY) || 'null'); } catch (e) {}
   if (!s || typeof s !== 'object') s = {};
-  if (s.dia !== hoje) { s.dia = hoje; s.prog = {}; s.completo = false; }
-  s.seguidos = s.seguidos || 0;
+  if (s.dia !== hoje) { s.dia = hoje; s.prog = {}; s.completo = false; s.troca = null; s.desafio = false; s.avisadas = []; }
+  s.seguidos = s.seguidos || 0; s.avisadas = s.avisadas || [];
   // sequência: vale se o último dia completo foi hoje ou ontem
   if (s.ultimo !== hoje && s.ultimo !== diaAntes(hoje)) s.seguidos = 0;
   return s;
 }
 function misGuardar(s) { store.set(MIS_KEY, JSON.stringify(s)); }
 const misPremios = () => [['mis3', 3], ['mis7', 7], ['mis15', 15]].map(([id, n]) => ({ n, nome: (premiosDe(id)[0] || {}).nome || '' }));
-// Conta as jogadas do dia (você é sempre a cadeira 0 aqui, offline e online)
+// partida extra no offline de quem não tem plano: cumpriu as três hoje
+const misPartidaExtra = () => { try { return misEstado().completo ? 1 : 0; } catch (e) { return 0; } };
+// O que cada jogada vale para as missões (você é sempre a cadeira 0, offline e online). G.events traz o que aconteceu
+// na última jogada; no fim da mão, G.result.
+function misSoma(evs, R, rb) {
+  const soma = {}, mais = (id, n) => { soma[id] = (soma[id] || 0) + (n || 1); };
+  const marcou = pts => { mais('pts5'); if (pts >= 15) mais('pts15x3'); if (pts >= 20) mais('pts20'); if (pts >= 30) mais('pts30'); if (pts >= 40) mais('pts40'); ['pts60', 'pts120', 'pts200'].forEach(k => mais(k, pts)); };
+  for (const ev of evs) {
+    if (ev.type === 'play' && ev.p === 0) {
+      if (ev.pts && !ev.pedir) marcou(ev.pts);
+      if (ev.side === 'U' || ev.side === 'D') { mais('bucho2'); mais('bucho4'); }
+      if (ev.t && ev.t[0] === ev.t[1]) mais('carr3');
+    }
+    if (ev.type === 'ponto' && ev.p === 0) marcou(ev.pts);
+    if (ev.type === 'galo' && ev.p === 0) { mais('galo1'); mais('galo2'); mais('galo3'); }
+    if (ev.type === 'batida' && ev.p === 0) { mais('bat2'); mais('bat4'); if (ev.carroca) { mais('carroca'); mais('carroca2'); } }
+    if (ev.type === 'batida' && ev.p === 2) mais('parc');
+    if (ev.type === 'batida' && ev.team === 0) mais('dupla3');
+    if (ev.type === 'garagem' && ev.team === 0) { if (ev.pts >= 15) mais('garagem'); if (ev.pts >= 25) mais('garagem25'); }
+    if (ev.type === 'batida' || ev.type === 'fechado') {
+      mais('maos3'); mais('maos6');
+      if (R && R.matchWinner === 0 && !rb.partida) {
+        mais('partida'); mais('partida2');
+        if (R.score && R.score[1] < 100) mais('lavada');
+        if (mode === 'on' && typeof contraGente === 'function' && contraGente()) mais('gente');
+      }
+    }
+  }
+  return soma;
+}
+// Conta as jogadas do dia
 const misVistos = new WeakSet();
 function contarMissoes() {
   const evs = G && G.events;
   if (!evs || !evs.length || misVistos.has(evs)) return;
   misVistos.add(evs);
+  if (typeof ON !== 'undefined' && ON.assistindo) return;   // quem só está assistindo não cumpre missão
   const rb = typeof roboAjudou === 'function' ? roboAjudou() : { mao: false, partida: false };   // 3.25: robô jogou por você: não conta
   if (rb.mao) return;
-  const s = misEstado(), lista = missoesDoDia(s.dia), soma = {};
-  const mais = (id, n) => { soma[id] = (soma[id] || 0) + (n || 1); };
-  for (const ev of evs) {
-    if (ev.type === 'play' && ev.p === 0) {
-      if (ev.pts && !ev.pedir) { mais('pts5'); if (ev.pts >= 20) mais('pts20'); }
-      if (ev.side === 'U' || ev.side === 'D') mais('bucho2');
-    }
-    if (ev.type === 'ponto' && ev.p === 0) { mais('pts5'); if (ev.pts >= 20) mais('pts20'); }
-    if (ev.type === 'galo' && ev.p === 0) mais('galo1');
-    if (ev.type === 'batida' && ev.p === 0) { mais('bat2'); if (ev.carroca) mais('carroca'); }
-    if (ev.type === 'batida' && ev.p === 2) mais('parc');
-    if (ev.type === 'garagem' && ev.team === 0 && ev.pts >= 15) mais('garagem');
-    if (ev.type === 'batida' || ev.type === 'fechado') {
-      mais('maos3');
-      if (G.result && G.result.matchWinner === 0 && !rb.partida) mais('partida');
-    }
-  }
-  const novas = [];
-  for (const m of lista) {
+  const s = misEstado(), lista = missoesDoDia(s.dia, s), desafio = desafioDoDia(s.dia), soma = misSoma(evs, G.result, rb);
+  const novas = [], andou = [];
+  for (const m of lista.concat(desafio)) {
     if (!soma[m.id]) continue;
     const antes = s.prog[m.id] || 0;
+    if (antes >= m.meta) continue;
     s.prog[m.id] = Math.min(m.meta, antes + soma[m.id]);
-    if (antes < m.meta && s.prog[m.id] >= m.meta) novas.push(m);
+    if (s.prog[m.id] >= m.meta) novas.push(m); else andou.push({ m, antes });
   }
-  if (!novas.length) { misGuardar(s); return; }
   let tudo = false;
   if (!s.completo && lista.every(m => (s.prog[m.id] || 0) >= m.meta)) {
     tudo = true; s.completo = true;
     s.seguidos = s.ultimo === diaAntes(s.dia) ? s.seguidos + 1 : 1;
     s.ultimo = s.dia;
     bumpHist(t => { t.missoesDias = (t.missoesDias || 0) + 1; });
-    try { ganharXP(50); } catch (e) {}
   }
+  if (novas.some(m => m.nivel === 'bonus')) s.desafio = true;
   misGuardar(s);
-  track(tudo ? 'missoes-completas' : 'missao-cumprida');
-  setTimeout(() => toast(tudo ? `Missões do dia completas! 🔥 ${s.seguidos} ${s.seguidos === 1 ? 'dia' : 'dias seguidos'}`
-    : `🎯 Missão cumprida: ${novas.map(m => m.tx).join(' e ')}`), 1400);
+  // experiência na hora: cada missão cumprida, e mais 50 pelas três
+  let xp = 0;
+  novas.forEach(m => { xp += MIS_XP[m.nivel] || 0; });
+  if (tudo) xp += 50;
+  try { if (xp) ganharXP(xp); } catch (e) {}
+  if (novas.length) track(tudo ? 'missoes-completas' : novas.some(m => m.nivel === 'bonus') ? 'desafio-cumprido' : 'missao-cumprida');
+  // o aviso no alto da tela: missão cumprida (com som), ou o progresso de uma missão em andamento
+  try {
+    if (tudo) misChip(`🔥 Missões do dia completas! <b>+${xp} de experiência</b>${offlineLimitado() ? ' · +1 partida offline hoje' : ''}`, 'ok', 3200);
+    else if (novas.length) { const m = novas[novas.length - 1]; misChip(`${m.nivel === 'bonus' ? '⭐ Desafio do dia cumprido' : '✓ Missão cumprida'}: ${esc(m.tx)} <b>+${MIS_XP[m.nivel]}</b>`, 'ok', 2800); }
+    else if (andou.length) {
+      // missão de somar pontos: avisa só ao passar de 1/4, 1/2 e 3/4 (para não aparecer a cada jogada)
+      const v = andou.find(({ m, antes }) => !m.soma || Math.floor(antes * 4 / m.meta) < Math.floor(s.prog[m.id] * 4 / m.meta));
+      if (v) misChip(`🎯 ${esc(v.m.tx)} · <b>${s.prog[v.m.id]}/${v.m.meta}</b>`, '', 2000);
+    }
+  } catch (e) {}
+}
+// aviso pequeno no alto da tela (não atrapalha a jogada nem a mesa)
+let misChipT = null;
+function misChip(html, tipo, ms) {
+  let el = $('#misChip');
+  if (!el) { document.body.insertAdjacentHTML('beforeend', '<div class="mis-chip" id="misChip" role="status" aria-live="polite" hidden></div>'); el = $('#misChip'); }
+  el.innerHTML = html; el.className = 'mis-chip' + (tipo ? ' ' + tipo : '');
+  // se o aviso comum (toast) estiver na tela, o da missão aparece logo abaixo dele, sem ficar um por cima do outro
+  const t = $('#toast'), tr = t && !t.hidden ? t.getBoundingClientRect() : null;
+  el.style.top = tr && tr.height ? Math.round(tr.bottom + 8) + 'px' : '';
+  el.hidden = false; void el.offsetWidth; el.classList.add('go');
+  if (tipo === 'ok') { try { tocar('ponto', 0); } catch (e) {} try { haptico([16, 50, 16]); } catch (e) {} }
+  clearTimeout(misChipT); misChipT = setTimeout(() => { el.classList.remove('go'); setTimeout(() => { if (!el.classList.contains('go')) el.hidden = true; }, 320); }, ms || 2200);
 }
 const trackOfflineMis = trackOffline;
 trackOffline = function () { try { contarMissoes(); } catch (e) {} return trackOfflineMis.apply(this, arguments); };
@@ -9463,31 +9549,46 @@ trackOffline = function () { try { contarMissoes(); } catch (e) {} return trackO
     <span class="ck" id="misK">Missões do dia</span><span class="ct" id="misT"></span><ul class="mis-lista" id="misLista"></ul></button>`);
   $('#misCard').addEventListener('click', abrirMissoes);
 })();
-function misLinhas(s) {
-  return missoesDoDia(s.dia).map(m => {
-    const n = s.prog[m.id] || 0, ok = n >= m.meta;
-    return `<li class="${ok ? 'ok' : ''}"><span class="mis-ic" aria-hidden="true">${ok ? '✓' : ''}</span><span class="mis-tx">${esc(m.tx)}</span><span class="mis-n">${ok ? 'feito' : `${n}/${m.meta}`}</span></li>`;
-  }).join('');
+function misLinha(s, m, troca) {
+  const n = s.prog[m.id] || 0, ok = n >= m.meta, pct = Math.round(100 * Math.min(n, m.meta) / m.meta);
+  return `<li class="${ok ? 'ok' : ''}${m.nivel === 'bonus' ? ' bonus' : ''}"><span class="mis-ic" aria-hidden="true">${ok ? '✓' : m.nivel === 'bonus' ? '⭐' : ''}</span>`
+    + `<span class="mis-tx">${m.nivel === 'bonus' ? '<small>Desafio do dia</small>' : ''}${esc(m.tx)}${ok ? '' : `<i class="mis-bar" aria-hidden="true"><i style="width:${pct}%"></i></i>`}</span>`
+    + `<span class="mis-n">${ok ? 'feito' : `${n}/${m.meta}`}<small>+${MIS_XP[m.nivel]}</small></span>`
+    + (troca && !ok ? `<button type="button" class="mis-trocar" data-troca="${m.nivel}">Trocar</button>` : '') + '</li>';
+}
+function misLinhas(s, troca) {
+  return missoesDoDia(s.dia, s).map(m => misLinha(s, m, troca && !s.troca)).join('') + misLinha(s, desafioDoDia(s.dia), false);
 }
 function desenharMissoes() {
   const card = $('#misCard'); if (!card) return;
   card.hidden = !profile;
   if (card.hidden) return;
-  const s = misEstado(), feitas = missoesDoDia(s.dia).filter(m => (s.prog[m.id] || 0) >= m.meta).length;
+  const s = misEstado(), feitas = missoesDoDia(s.dia, s).filter(m => (s.prog[m.id] || 0) >= m.meta).length;
   $('#misK').textContent = 'Missões do dia' + (s.seguidos ? ` · 🔥 ${s.seguidos} ${s.seguidos === 1 ? 'dia' : 'dias'}` : '');
-  $('#misT').textContent = feitas === 3 ? 'Missões cumpridas! Volte amanhã' : `${feitas} de 3 cumpridas`;
-  $('#misLista').innerHTML = misLinhas(s);
+  $('#misT').textContent = feitas === 3 ? (s.desafio ? 'Tudo cumprido, até o desafio! Volte amanhã' : 'Missões cumpridas! Falta o desafio do dia') : `${feitas} de 3 cumpridas`;
+  $('#misLista').innerHTML = misLinhas(s, false);
 }
 function abrirMissoes() {
   const s = misEstado(), total = loadHist().missoesDias || 0;
-  const prox = misPremios().find(p => total < p.n);
-  openSheet('info', `<p class="eyebrow">Missões do dia</p><h2 id="sheetTitle">${s.completo ? 'Cumpridas hoje!' : 'Bora cumprir?'}</h2>
-    <ul class="mis-lista mis-folha">${misLinhas(s)}</ul>
+  const prox = misPremios().find(p => total < p.n), extra = offlineLimitado();
+  openSheet('info', `<p class="eyebrow">Missões do dia</p><h2 id="sheetTitle">${s.completo ? (s.desafio ? 'Tudo cumprido hoje!' : 'Cumpridas! Bora o desafio?') : 'Bora cumprir?'}</h2>
+    <ul class="mis-lista mis-folha" id="misFolha">${misLinhas(s, true)}</ul>
     <div class="mis-resumo"><div><b>🔥 ${s.seguidos}</b><small>${s.seguidos === 1 ? 'dia seguido' : 'dias seguidos'}</small></div><div><b>${total}</b><small>${total === 1 ? 'dia completo' : 'dias completos'}</small></div></div>
-    <p class="note">Cumprir as três vale <b>+50 de experiência</b> para o seu nível. ${prox ? `Com ${prox.n} dias completos você ganha uma comida nova para o avatar: ${esc(prox.nome)} (faltam ${prox.n - total}).` : 'Você já ganhou todas as comidas das missões.'}</p>
+    <p class="note">Cada missão cumprida dá experiência na hora. Cumprir as três vale <b>+50</b>${extra ? ' e <b>+1 partida no jogo offline hoje</b>' : ''}, e o desafio do dia vale <b>+60</b>. ${s.troca ? '' : 'Não gostou de uma? Dá para trocar uma por dia. '}${prox ? `Com ${prox.n} dias completos você ganha uma comida nova para o avatar: ${esc(prox.nome)} (faltam ${prox.n - total}).` : 'Você já ganhou todas as comidas das missões.'}</p>
     <p class="note">As missões mudam à meia-noite e valem no jogo offline e no online. Cumpra as três no mesmo dia para contar um dia completo; dias seguidos aumentam o foguinho.</p>
     <button type="button" class="primary" id="misJogar" style="width:100%">Jogar agora</button>
     <button type="button" class="secondary" id="misFechar" style="width:100%;margin-top:8px">Fechar</button>`);
+  $('#misFolha').addEventListener('click', e => {
+    const b = e.target.closest('[data-troca]'); if (!b) return;
+    const st = misEstado(); if (st.troca) return;
+    const nivel = b.dataset.troca, velha = missoesDoDia(st.dia, st).find(m => m.nivel === nivel);
+    st.troca = { nivel, n: 1 };
+    const nova = missoesDoDia(st.dia, st).find(m => m.nivel === nivel);
+    if (velha && nova && velha.id !== nova.id) delete st.prog[velha.id];
+    misGuardar(st); track('missao-trocada');
+    toast(`Missão trocada: ${nova.tx}`);
+    abrirMissoes(); try { desenharMissoes(); } catch (er) {}
+  });
   $('#misJogar').addEventListener('click', () => { closeSheet(); $('#goOffline').click(); });
   $('#misFechar').addEventListener('click', closeSheet);
   track('missoes-abertas');
@@ -9507,7 +9608,7 @@ const NV_MAX = 50;
 const XP_DO_NIVEL = n => 100 + 30 * (n - 1) + 5 * (n - 1) * (n - 1);
 const XP_DO_NIVEL_V1 = n => 100 + 20 * (n - 1);
 const XP_REGRAS = [['Mão jogada', 2], ['Mão ganha pela sua dupla', 3], ['Galo seu', 10], ['Batida sua', 10], ['Batida de carroça', 15],
-  ['Partida ganha', 30], ['3 partidas ganhas seguidas', 20], ['Missões do dia completas', 50]];
+  ['Partida ganha', 30], ['3 partidas ganhas seguidas', 20], ['Missão do dia: fácil, média e difícil', '15, 25 e 40'], ['Missões do dia completas', 50], ['Desafio do dia', 60]];
 // 3.37 (o dono achou que o nível subia rápido demais): contra robôs — jogo offline, ou mesa online sem nenhuma pessoa do
 // outro lado — as jogadas valem metade da experiência. Contra pessoas, vale cheia. As missões do dia continuam +50.
 function contraGente() {
@@ -11253,7 +11354,7 @@ const PLANO_TXT = {
   'limite-partida': ['Você já jogou a sua partida grátis de hoje', 'Sem plano, é 1 partida por dia nas mesas com os amigos, ou até 3 na mesa de um sócio. À meia-noite tem mais.'],
   'limite-mesa': ['Você já criou a mesa de hoje', 'Sem plano, dá para criar 1 mesa com os amigos por dia. À meia-noite tem mais. Para jogar agora, entre pelo número da mesa de um amigo.'],
   'limite-rapida': ['Você já jogou as suas partidas grátis de hoje', 'Sem plano, são 3 partidas por dia na mesa rápida. À meia-noite tem mais.'],
-  'limite-offline': ['Você já jogou as suas partidas grátis de hoje', 'Sem plano, são 5 partidas por dia no jogo offline. À meia-noite tem mais.'],
+  'limite-offline': ['Você já jogou as suas partidas grátis de hoje', 'Sem plano, são 5 partidas por dia no jogo offline, e mais 1 cumprindo as três missões do dia. À meia-noite tem mais.'],
   papo: ['Escrever no papo é dos sócios', 'Sem plano, você lê o papo e usa as frases prontas.']
 };
 // Convite para o plano quando bate o limite, sempre com uma saída (o que ainda dá para jogar hoje)
@@ -12567,7 +12668,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.46.2-9b4789d8';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.47-ddc5e280';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -13293,7 +13394,8 @@ const OFFKEY = 'dmz-offline-dia', OFF_POR_DIA = 5, RAPIDA_POR_DIA = 3, AMIGOS_SO
 const diaBRLocal = () => new Date(Date.now() - 3 * 3600000).toISOString().slice(0, 10);
 const offlineLimitado = () => planosValem() && !temPlano() && !souAdmin() && !(typeof TREINO !== 'undefined' && TREINO.on);
 function offlineUsoHoje() { try { const u = JSON.parse(store.get(OFFKEY) || 'null'); return u && u.dia === diaBRLocal() ? u.n | 0 : 0; } catch (e) { return 0; } }
-function offlineLivreHoje() { return !offlineLimitado() || offlineUsoHoje() < OFF_POR_DIA; }
+const offPorDia = () => OFF_POR_DIA + (typeof misPartidaExtra === 'function' ? misPartidaExtra() : 0);   // 03/11: +1 por cumprir as missões do dia
+function offlineLivreHoje() { return !offlineLimitado() || offlineUsoHoje() < offPorDia(); }
 function offlineContar() { if (!offlineLimitado()) return; store.set(OFFKEY, JSON.stringify({ dia: diaBRLocal(), n: offlineUsoHoje() + 1 })); }
 // antes de cada começo de partida offline: barra (e convida para o plano) ou conta
 document.addEventListener('click', e => {
@@ -13316,8 +13418,8 @@ function avisoPlanoOffline() {
   if (!el) { b.insertAdjacentHTML('beforeend', '<span class="cd cd-plano" id="offlinePlano" hidden></span>'); el = $('#offlinePlano'); }
   const mostra = !temPlano() && !souAdmin() && typeof pagamentosAtivos === 'function' && pagamentosAtivos();
   el.hidden = !mostra;
-  const f = OFF_POR_DIA - offlineUsoHoje();
-  if (mostra) el.textContent = planosValem() ? (f <= 0 ? 'As 5 partidas de hoje já foram. À meia-noite tem mais.' : f < OFF_POR_DIA ? `Sem plano: hoje ${f === 1 ? 'falta 1 partida' : `faltam ${f} partidas`}. Sócio joga sem limite.` : 'Sem plano: 5 partidas por dia. Sócio joga sem limite.')
+  const f = offPorDia() - offlineUsoHoje();
+  if (mostra) el.textContent = planosValem() ? (f <= 0 ? 'As partidas de hoje já foram. À meia-noite tem mais.' : f < offPorDia() ? `Sem plano: hoje ${f === 1 ? 'falta 1 partida' : `faltam ${f} partidas`}. Sócio joga sem limite.` : `Sem plano: ${offPorDia()} partidas por dia. Sócio joga sem limite.`)
     : `Até 4/11, sem limite para todos. A partir de ${PLANOS_DIA}, sem plano: 5 partidas por dia.`;
 }
 // cartão "Jogar com os amigos": a regra para quem não tem plano
@@ -13375,7 +13477,7 @@ document.addEventListener('click', e => {
 function cotaDoDia() {
   if (!planosValem() || temPlano() || souAdmin() || menorDeIdade() || TREINO.on) return null;
   if (!(typeof pagamentosAtivos === 'function' && pagamentosAtivos())) return null;
-  if (mode === 'off') return { n: offlineUsoHoje(), de: OFF_POR_DIA, onde: 'no jogo offline' };
+  if (mode === 'off') return { n: offlineUsoHoje(), de: offPorDia(), onde: 'no jogo offline' };
   const u = mode === 'on' && ON && ON.vista && ON.vista.meuUso;
   if (u && u.de) return { n: u.n, de: u.de, onde: ON.vista.publica ? 'na mesa rápida' : 'nas mesas com os amigos' };
   return null;
@@ -13393,6 +13495,50 @@ showResult = function () {
         // na mesa online não tira ninguém da mesa no meio da sessão: o botão fica só no offline (o jogo fica guardado)
         const bs = $('#resCotaSocio'); if (bs) bs.addEventListener('click', () => { track('plano-cota-offline'); closeSheet(); leaveGame(); abrirApoio('home', 'plano'); });
       }
+    }
+  } catch (e) {}
+  return r;
+};
+
+// ===== 03/11 (dono: "tornar o jogo mais emocionante"): o resultado conta a história =====
+// (a mesa já tem os carimbos de galo, batida, +20, virada no placar e o aviso de reta final, desde a 3.25)
+// No resultado da mão: a sequência de batidas da dupla. No fim da partida: "Que virada!" (ganhou depois de estar 50 ou
+// mais atrás), "Lavada!" (o outro lado nem chegou aos 100) ou "No detalhe!" (por 15 ou menos). Fica só na memória.
+const EMOF = { partida: '', contada: '', atras: [0, 0], seq: { team: -1, n: 0 } };
+function emofNos() { try { return TEAM(base()); } catch (e) { return 0; } }
+function emofAcompanhar() {
+  if (!G || !G.score || (typeof TREINO !== 'undefined' && TREINO.on)) return;
+  const kp = [mode, G.partida || 0, (G.series || []).join('-'), (G.names || []).join(',')].join('|');
+  if (kp !== EMOF.partida) { EMOF.partida = kp; EMOF.atras = [0, 0]; }
+  for (const t of [0, 1]) EMOF.atras[t] = Math.max(EMOF.atras[t], (G.score[1 - t] || 0) - (G.score[t] || 0));
+  const km = kp + '|' + (G.handNo || 0), R = G.result;
+  if (G.phase === 'handEnd' && R && EMOF.contada !== km) {
+    EMOF.contada = km;
+    if (R.kind === 'batida') { const t = TEAM(R.p); EMOF.seq = EMOF.seq.team === t ? { team: t, n: EMOF.seq.n + 1 } : { team: t, n: 1 }; }
+    else EMOF.seq = { team: -1, n: 0 };
+  }
+}
+const announceEmof = announce;
+announce = function () { const r = announceEmof.apply(this, arguments); try { emofAcompanhar(); } catch (e) {} return r; };
+function emofTextos() {
+  const R = G && G.result; if (!R) return [];
+  const nos = emofNos(), l = [];
+  if (R.matchWinner != null) {
+    const w = R.matchWinner, perd = 1 - w, sc = R.score || G.score || [0, 0], dif = (sc[w] || 0) - (sc[perd] || 0), nosso = w === nos;
+    if (EMOF.atras[w] >= 50) l.push(nosso ? `🔥 Que virada! Vocês estavam ${EMOF.atras[w]} pontos atrás.` : `O outro lado virou: estava ${EMOF.atras[w]} pontos atrás.`);
+    else if ((sc[perd] || 0) < 100) l.push(nosso ? '🧹 Lavada! O outro lado nem chegou aos 100.' : 'Essa doeu: vocês ficaram abaixo dos 100.');
+    else if (dif <= 15) l.push(nosso ? `😮‍💨 No detalhe! Ganharam por ${dif}.` : `Perderam no detalhe, por ${dif}.`);
+  } else if (EMOF.seq.n >= 2 && EMOF.seq.team === nos) l.push(EMOF.seq.n >= 3 ? `🔥 Tá pegando fogo: ${EMOF.seq.n} batidas seguidas da sua dupla!` : '🔥 Duas batidas seguidas da sua dupla!');
+  else if (EMOF.seq.n >= 3) l.push(`O outro lado bateu ${EMOF.seq.n} seguidas. Hora de virar o jogo!`);
+  return l;
+}
+const showResultEmof = showResult;
+showResult = function () {
+  const r = showResultEmof.apply(this, arguments);
+  try {
+    if (sheetKind === 'result' && !$('#sheet .res-emo')) {
+      const l = emofTextos(), alvo = $('#sheet .win') || $('#sheet .tally');
+      if (l.length && alvo) alvo.insertAdjacentHTML('afterend', l.map(t => `<p class="res-emo">${esc(t)}</p>`).join(''));
     }
   } catch (e) {}
   return r;
