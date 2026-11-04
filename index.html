@@ -3582,7 +3582,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.47', data: '03/11/2026', itens: ['Missões do dia mais dinâmicas: muito mais missões no sorteio, cada missão cumprida já dá experiência (fácil +15, média +25, difícil +40), dá para trocar uma missão por dia, e todo dia tem um Desafio do dia (+60).', 'Durante a partida, um aviso pequeno no alto da tela mostra o progresso das missões e quando você cumpre uma.', 'Sem plano, cumprir as três missões do dia dá +1 partida no jogo offline naquele dia.', 'O resultado conta a história: "Que virada!", "Lavada!", "No detalhe!" no fim da partida, e as batidas seguidas da sua dupla.'] },
+  { v: '3.47', data: '03/11/2026', itens: ['Missões do dia mais dinâmicas: muito mais missões no sorteio, cada missão cumprida já dá experiência (fácil +15, média +25, difícil +40), dá para trocar uma missão por dia, e todo dia tem um Desafio do dia (+60).', 'Durante a partida, um aviso pequeno no alto da tela mostra o progresso das missões e quando você cumpre uma.', 'Sem plano, cumprir as três missões do dia dá +1 partida no jogo offline naquele dia.', 'O resultado conta a história: "Que virada!", "Lavada!", "No detalhe!" no fim da partida, e as batidas seguidas da sua dupla.', 'A turma do bairro mistura a galera nova com os da calçada de sempre: Raimundo, Socorro, Nonato, Tião, Conceição, Bené e Rosinha voltaram, com o rosto de antes. Na entrada, a mesa aparece misturada.'] },
   { v: '3.46.2', data: '03/11/2026', itens: ['Correção: em algumas mãos, com o celular em pé, as pedras de uma ponta ficavam por cima das de outra. A mesa volta a abrir as fileiras um pouco mais largas, e se alguma pedra for cair por cima de outra, a fileira alarga sozinha.'] },
   { v: '3.46.1', data: '03/11/2026', itens: ['Promoção de lançamento até 30/11: mensal a R$ 9,90 nos 3 primeiros meses (depois R$ 14,90).', 'Sem plano, o fim de cada partida mostra quantas você já jogou hoje naquele tipo de mesa, e a tela do limite mostra o que muda sendo sócio, com o preço.', 'No ranking, os sócios aparecem com a ★; quem ficou em 1º sem ser sócio vê o convite "Quero a coroa".', 'Tela do sócio: a tabela grátis × sócio ganhou linhas dos dois lados e a estrela dourada de sócio; papo de mesa é nas mesas com os amigos (a mesa rápida não tem).'] },
   { v: '3.46', data: '03/11/2026', itens: ['Avatares com a cara da galera: degradê, topete, black power, tranças, cachos, franja, rabo de cavalo e boné pra trás; cabelo nevou, loiro, ruivo, azul, rosa e roxo; moletom, regata, camisa de time e jaqueta; fone, argolas, corrente e faixa; e expressões novas (sorrisão, piscadinha e sorriso de lado). Tudo em Montar avatar.', '16 avatares prontos novos, que aparecem primeiro na escolha, e 4 exclusivos de sócio. Fundos em degradê.', 'Plano grátis a partir de 5/11: por dia, 3 partidas (até 200 pontos) na mesa rápida, 1 nas mesas com os amigos (até 3 na mesa de um sócio) e 5 no jogo offline; mesas Madeira, Vermelha e Azul; e os avatares prontos. Montar avatar passa a ser dos sócios (o avatar montado que você estiver usando continua seu). No ranking, todo mundo pontua, mas a coroa de Rei da Calçada é só de sócio.', 'A turma do bairro ficou mais nova: Kauã, Yasmin, Ryan, Tainá, Davi, Duda e mais 20. O Mané da taberna e a Lucinha do tacacá continuam na calçada.', 'Agora é tudo "sócio": o antigo "apoio" virou Sócio da Calçada no app inteiro, nos Termos e na Privacidade. O coração ♥ de quem já teve plano é o selo de sócio de coração.'] },
@@ -4202,8 +4202,17 @@ const BOTS = [
   { name: 'Piaba', av: { bg: AVF[1], skin: SKIN.medio, style: 'bone', cap: '#c8102e', hc: HAIR.preto, boca: 'piscada', shirt: 'time:#12a3a0:#f4efe4' } },
   { name: 'Curica', av: { bg: AVF[0], skin: SKIN.jambo, style: 'franja', hc: HAIR.preto, quadrados: true, boca: 'dentes', shirt: 'moletom:#e8505b' } },
   { name: 'Lucinha', av: { bg: '#f0c46a', skin: SKIN.moreno, style: 'coque', hc: HAIR.preto, shirt: '#f2e7d5', mao: 'tacaca' } },   // a tacacazeira
-  { name: 'Mané', av: { bg: '#c9b28a', skin: SKIN.medio, style: 'careca', hc: HAIR.grisalho, bigode: HAIR.grisalho, shirt: '#f6eedf' } }   // o dono da taberna
+  { name: 'Mané', av: { bg: '#c9b28a', skin: SKIN.medio, style: 'careca', hc: HAIR.grisalho, bigode: HAIR.grisalho, shirt: '#f6eedf' } },   // o dono da taberna
+  // 03/11 (dono: "mesclar os mais modernos com os mais antigos"): voltam os da calçada de sempre, com o rosto de antes
+  { name: 'Raimundo', av: { bg: '#5f8f78', skin: SKIN.moreno, style: 'chapeu', hc: HAIR.grisalho, bigode: HAIR.grisalho, shirt: '#e8dcc4' }, antigo: true },
+  { name: 'Socorro', av: { bg: '#b98bc4', skin: SKIN.moreno, style: 'coque', hc: HAIR.grisalho, oculos: true, shirt: '#2e7d6b' }, antigo: true },
+  { name: 'Nonato', av: { bg: '#d9a05b', skin: SKIN.jambo, style: 'bone', cap: '#c0392b', hc: HAIR.preto, shirt: '#2f4f6f' }, antigo: true },
+  { name: 'Tião', av: { bg: '#9cc5a1', skin: SKIN.jambo, style: 'chapeu', hc: HAIR.preto, bigode: HAIR.preto, shirt: '#c0392b' }, antigo: true },
+  { name: 'Conceição', av: { bg: '#e7b7c8', skin: SKIN.moreno, style: 'coque', hc: HAIR.preto, shirt: '#1f4e79' }, antigo: true },
+  { name: 'Bené', av: { bg: '#c9a46b', skin: SKIN.escuro, style: 'raspado', hc: HAIR.grisalho, bigode: HAIR.grisalho, oculos: true, shirt: '#e8dcc4' }, antigo: true },
+  { name: 'Rosinha', av: { bg: '#f2a7a0', skin: SKIN.claro, style: 'longo', hc: HAIR.grisalho, oculos: true, shirt: '#7d4e7a' }, antigo: true }
 ];
+BOTS.filter(b => b.name === 'Lucinha' || b.name === 'Mané').forEach(b => { b.antigo = true; });
 const BOT_NAMES = BOTS.map(b => b.name);
 
 // ---- Bairros de Manaus (os 63 oficiais) + quem é de fora ----
@@ -4240,8 +4249,7 @@ function myFaceURI() {
   return avatarURI(avatarLivre(a) ? a : AVATARS[0]);   // plano acabou: volta para o avatar comum
 }
 // Jogo guardado ou mesa de antes da troca de nomes ("Seu Raimundo", "Dona Socorro", "Mundico"): acha o mesmo rosto
-const BOT_ANTIGO = { 'Mundico': 'Kadu', 'Raimundo': 'Kauã', 'Nonato': 'Ryan', 'Socorro': 'Yasmin', 'Chiquinho': 'Davi', 'Graça': 'Tainá', 'Tião': 'Kadu',
-  'Conceição': 'Duda', 'Bené': 'Juninho', 'Rosinha': 'Ketlen', 'Zeca': 'Vitinho', 'Arlindo': 'Igor', 'Cleide': 'Bia', 'Juca': 'Biel', 'Dico': 'Léo',
+const BOT_ANTIGO = { 'Mundico': 'Tião', 'Chiquinho': 'Davi', 'Graça': 'Tainá', 'Zeca': 'Vitinho', 'Arlindo': 'Igor', 'Cleide': 'Bia', 'Juca': 'Biel', 'Dico': 'Léo',
   'Nazaré': 'Gabi', 'Dita': 'Maju', 'Chica': 'Rayssa', 'Dorinha': 'Lari', 'Valdir': 'Caio', 'Zuleide': 'Nanda', 'Deco': 'Kaique', 'Tetê': 'Iara',
   'Dodó': 'Thaís', 'Ciça': 'Iara' };
 function botFaceURI(name) {
@@ -4372,7 +4380,17 @@ function topple(first) {
 }
 $('#train').addEventListener('click', () => topple(false));
 $('#train').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); topple(false); } });
-const ENTRY_SEATS = [{ ang: -90, bot: 'Ryan' }, { ang: 0, bot: 'Kauã' }, { ang: 90, you: true }, { ang: 180, bot: 'Yasmin' }];
+// 03/11 (dono): a entrada mistura a galera nova com os da calçada de sempre (sorteados a cada vez que abre)
+const ENTRY_SEATS = [{ ang: -90, bot: 'Ryan' }, { ang: 0, bot: 'Raimundo' }, { ang: 90, you: true }, { ang: 180, bot: 'Yasmin' }];
+(function () {
+  try {
+    const sorteia = l => l[Math.floor(Math.random() * l.length)];
+    const novos = BOTS.filter(b => !b.antigo && !['Tonhão', 'Piaba', 'Curica'].includes(b.name)).map(b => b.name), antigos = BOTS.filter(b => b.antigo && b.name !== 'Lucinha').map(b => b.name);
+    const n1 = sorteia(novos), a1 = sorteia(antigos), n2 = sorteia(novos.filter(x => x !== n1)), a2 = sorteia(antigos.filter(x => x !== a1));
+    const tres = Math.random() < 0.5 ? [n1, a1, n2] : [a1, n1, a2];   // 2 novos e 1 antigo, ou 2 antigos e 1 novo
+    ENTRY_SEATS[0].bot = tres[0]; ENTRY_SEATS[1].bot = tres[1]; ENTRY_SEATS[3].bot = tres[2];
+  } catch (e) {}
+})();
 function renderEntry() {
   const html = ENTRY_SEATS.map((s, i) => {
     const a = s.ang * Math.PI / 180, style = `left:${f2(50 + 50 * Math.cos(a))}%;top:${f2(50 + 50 * Math.sin(a))}%;--i:${i}`;
@@ -12668,7 +12686,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.47-ddc5e280';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.47-a6ecf406';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
