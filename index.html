@@ -2482,6 +2482,27 @@ body.papo-aberto{overflow:hidden}
 .som-tg[aria-pressed="true"] i::after{transform:translateX(20px)}
 .som-ouvir{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .som-ouvir button{width:100%;margin:0;padding:11px 8px;font-size:15px}
+/* 3.48: fluidez. O brilho da vez e da última jogada pulsa só na opacidade de uma camada por cima do lugar,
+   e cada lugar fica na sua própria camada: a mesa (desenho grande) não é repintada a cada quadro durante a partida. */
+.table .seat{will-change:transform}
+.seat.ultima{animation:none;box-shadow:0 0 0 2px #ff8a5c,0 0 10px -4px rgba(255,138,92,.5)}
+.table .seat.turn.nos{animation:none;box-shadow:0 0 0 3px var(--glow),0 0 12px rgba(243,192,99,.3)}
+.table .seat.turn:not(.nos){animation:none;box-shadow:0 0 0 3px #8fc7cf,0 0 12px rgba(143,199,207,.35)}
+.seat.ultima::after,.table .seat.turn::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;will-change:opacity;animation:brilhaLugar 1.4s ease-in-out infinite}
+.seat.ultima::after{box-shadow:0 0 0 2px #ffb08a,0 0 22px 0 rgba(255,138,92,.85);animation-duration:1.1s}
+.table .seat.turn.nos::after{box-shadow:0 0 0 3px #ffd98a,0 0 24px rgba(243,192,99,.6);animation-duration:1.4s}
+.table .seat.turn:not(.nos)::after{box-shadow:0 0 0 3px #b9e2e8,0 0 24px rgba(143,199,207,.65);animation-duration:1.4s}
+@keyframes brilhaLugar{50%{opacity:1}}
+/* "Sua vez": o brilho também vira opacidade (antes era filtro, que repinta a cada quadro) */
+.prompt.you{animation:none;position:relative;isolation:isolate}
+.prompt.you::after{content:'';position:absolute;inset:0;border-radius:inherit;background:#fff;opacity:0;pointer-events:none;will-change:opacity;animation:brilhaVez 1.4s ease-in-out infinite alternate;z-index:-1;mix-blend-mode:normal}
+@keyframes brilhaVez{to{opacity:.16}}
+@media (prefers-reduced-motion:reduce){.seat.ultima::after,.table .seat.turn::after,.prompt.you::after{animation:none}}
+/* barra de abas: fundo quase opaco, sem desfoque (o desfoque custava a cada quadro de rolagem e quase não aparecia) */
+.abas{background:color-mix(in srgb,var(--bg-2) 97%,transparent);-webkit-backdrop-filter:none;backdrop-filter:none}
+/* troca de telas um pouco mais rápida */
+.screen.fade-in{animation-duration:.26s}
+.screen.fade-out{animation-duration:.1s}
 </style>
 </head>
 <body>
@@ -3611,6 +3632,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.48', data: '04/11/2026', itens: ['Mais fluidez: durante a partida, o brilho de quem está na vez não faz mais o celular redesenhar a mesa inteira a cada quadro (a partida fica mais leve, principalmente nas mesas com desenho).', 'A troca de telas ficou mais rápida, e a barra de abas ficou mais leve na rolagem.'] },
   { v: '3.47.6', data: '04/11/2026', itens: ['Mesa Largo de São Sebastião: a cúpula do Teatro ao fundo ficou menor, mais proporcional ao prédio.'] },
   { v: '3.47.5', data: '04/11/2026', itens: ['Mesa Arara-Vermelha: nova arte, com a arara pousada de perfil (bico branco curvo, rosto branco, asa vermelha, amarela e azul).'] },
   { v: '3.47.4', data: '04/11/2026', itens: ['Mesa Teatro Amazonas: a cúpula ficou um pouco menor, mais proporcional ao prédio.', 'Mesa Boto-rosa: agora ele sai de dentro da água (a base fica coberta pela água, com espuma e respingos em volta).'] },
@@ -4395,7 +4417,7 @@ function show(name) {
   };
   if (!cur || reduce) { finish(); return; }
   cur.classList.add('fade-out');
-  showTimer = setTimeout(finish, 150);
+  showTimer = setTimeout(finish, 100);
 }
 
 // ---- Tela de entrada: você e a turma do bairro em volta da mesa ----
@@ -8673,7 +8695,7 @@ function opcaoHTML(k, p, i) {
     : avatarURI(avatarDe(codigoAvatar(Object.assign({}, esDraft, { [k]: i }))));
   const nome = p.n || '', rot = ROTULO_CURTO[nome] || nome;
   return `<button type="button" class="es-op${livre ? '' : ' trancado'}" role="radio" aria-checked="${sel}" data-k="${k}" data-i="${i}" aria-label="${esc(nome || TITULO[k] + ' ' + (i + 1))}${livre ? '' : ', ainda não liberado'}">`
-    + `<span class="es-th">${livre ? '' : `<i class="av-lock" aria-hidden="true">${LOCK_SVG}</i>`}<img src="${img}" alt=""></span>`
+    + `<span class="es-th">${livre ? '' : `<i class="av-lock" aria-hidden="true">${LOCK_SVG}</i>`}<img src="${img}" alt="" loading="lazy" decoding="async"></span>`
     + (COM_ROTULO.has(k) && rot ? `<span class="es-n">${esc(rot)}</span>` : '')
     + (livre ? '' : `<small>${p.plano ? 'Plano' : esc(conquistaDe(p.req).curto)}</small>`) + '</button>';
 }
@@ -12744,7 +12766,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.47.6-2aee015f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.48-a72f5f21';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
