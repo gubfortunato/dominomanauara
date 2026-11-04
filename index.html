@@ -2498,8 +2498,8 @@ body.papo-aberto{overflow:hidden}
 .prompt.you::after{content:'';position:absolute;inset:0;border-radius:inherit;background:#fff;opacity:0;pointer-events:none;will-change:opacity;animation:brilhaVez 1.4s ease-in-out infinite alternate;z-index:-1;mix-blend-mode:normal}
 @keyframes brilhaVez{to{opacity:.16}}
 @media (prefers-reduced-motion:reduce){.seat.ultima::after,.table .seat.turn::after,.prompt.you::after{animation:none}}
-/* barra de abas: fundo quase opaco, sem desfoque (o desfoque custava a cada quadro de rolagem e quase não aparecia) */
-.abas{background:color-mix(in srgb,var(--bg-2) 97%,transparent);-webkit-backdrop-filter:none;backdrop-filter:none}
+/* barra de abas: fundo opaco, sem desfoque (o desfoque custava a cada quadro de rolagem e quase não aparecia) */
+.abas{background:var(--bg-2);-webkit-backdrop-filter:none;backdrop-filter:none}
 /* troca de telas um pouco mais rápida */
 .screen.fade-in{animation-duration:.26s}
 .screen.fade-out{animation-duration:.1s}
@@ -3632,6 +3632,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.48.1', data: '04/11/2026', itens: ['Barra de abas com fundo totalmente sólido (o texto da tela não aparece mais por trás dela).'] },
   { v: '3.48', data: '04/11/2026', itens: ['Mais fluidez: durante a partida, o brilho de quem está na vez não faz mais o celular redesenhar a mesa inteira a cada quadro (a partida fica mais leve, principalmente nas mesas com desenho).', 'A troca de telas ficou mais rápida, e a barra de abas ficou mais leve na rolagem.'] },
   { v: '3.47.6', data: '04/11/2026', itens: ['Mesa Largo de São Sebastião: a cúpula do Teatro ao fundo ficou menor, mais proporcional ao prédio.'] },
   { v: '3.47.5', data: '04/11/2026', itens: ['Mesa Arara-Vermelha: nova arte, com a arara pousada de perfil (bico branco curvo, rosto branco, asa vermelha, amarela e azul).'] },
@@ -12766,7 +12767,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.48-a72f5f21';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.48.1-fe254f77';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
