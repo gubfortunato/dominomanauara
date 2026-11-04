@@ -7,7 +7,8 @@
 export const PLANOS_DESDE = Date.UTC(2026, 10, 5, 3, 0, 0);   // 05/11/2026, 00:00 de Brasília
 // 03/11 (regras do dono): sem plano, 3 partidas por dia na mesa rápida (antes 5); nas mesas com os amigos, 1 por dia, ou até 3
 // quando a mesa é de um sócio (partidasSocio); 1 mesa criada por dia
-export const LIMITE = { mesas: 1, partidas: 1, partidasSocio: 3, publicas: 3 };
+// 04/11 (dono): desafios = partidas de desafio entre Turmas por dia, fora da partida grátis (mesa criada pelo botão Desafiar)
+export const LIMITE = { mesas: 1, partidas: 1, partidasSocio: 3, publicas: 3, desafios: 2 };
 const DIA = 86400000;
 
 export function planosDesde(env) {
@@ -37,11 +38,17 @@ export async function usoDoDia(env, aparelho) {
   if (!aparelho) return { dia, mesas: 0, partidas: 0, publicas: 0 };
   try {
     const r = await env.DB.prepare('SELECT mesas, partidas, publicas FROM limites WHERE dia = ? AND aparelho = ?').bind(dia, aparelho).first();
-    return { dia, mesas: (r && r.mesas) || 0, partidas: (r && r.partidas) || 0, publicas: (r && r.publicas) || 0 };
-  } catch (e) { return { dia, mesas: 0, partidas: 0, publicas: 0, falhou: true }; }
+    let desafios = 0;
+    try { const d = await env.DB.prepare('SELECT n FROM desafio_uso WHERE dia = ? AND aparelho = ?').bind(dia, aparelho).first(); desafios = (d && d.n) || 0; } catch (e) {}
+    return { dia, mesas: (r && r.mesas) || 0, partidas: (r && r.partidas) || 0, publicas: (r && r.publicas) || 0, desafios };
+  } catch (e) { return { dia, mesas: 0, partidas: 0, publicas: 0, desafios: 0, falhou: true }; }
 }
 const CAMPOS = ['mesas', 'partidas', 'publicas'];
 export async function somarUso(env, aparelho, campo, dia) {
+  if (aparelho && campo === 'desafios') {
+    try { await env.DB.prepare('INSERT INTO desafio_uso (dia, aparelho, n) VALUES (?, ?, 1) ON CONFLICT (dia, aparelho) DO UPDATE SET n = n + 1').bind(dia || diaBR(), aparelho).run(); } catch (e) {}
+    return;
+  }
   if (!aparelho || !CAMPOS.includes(campo)) return;
   const d = dia || diaBR();
   try {
@@ -52,8 +59,10 @@ export async function somarUso(env, aparelho, campo, dia) {
 }
 // quem ainda pode jogar uma partida hoje (uso guardado na cadeira: { dia, partidas, publicas }): na mesa com os amigos
 // (publica = false) ou na mesa rápida (publica = true). 03/11: na mesa de um sócio (daSocio), até LIMITE.partidasSocio.
-export const podeJogar = (c, env, publica, daSocio) => !c || c.bot || c.apoiador || !limitesValem(env) || !c.uso || c.uso.dia !== diaBR()
-  || (publica ? (c.uso.publicas || 0) < LIMITE.publicas : (c.uso.partidas || 0) < (daSocio ? LIMITE.partidasSocio : LIMITE.partidas));
+// 04/11: na mesa de desafio (criada pelo botão Desafiar), também pode quem ainda tem desafio do dia
+export const podeJogar = (c, env, publica, daSocio, desafio) => !c || c.bot || c.apoiador || !limitesValem(env) || !c.uso || c.uso.dia !== diaBR()
+  || (publica ? (c.uso.publicas || 0) < LIMITE.publicas : (c.uso.partidas || 0) < (daSocio ? LIMITE.partidasSocio : LIMITE.partidas))
+  || (!publica && !!desafio && (c.uso.desafios || 0) < LIMITE.desafios);
 
 // ---- 28/10 (pedido do dono): ninguém ganha partidas de graça a mais trocando de apelido ou apagando os dados do app ----
 // O limite é do código do aparelho: trocar de apelido não muda nada. Quem apaga os dados do app (ou abre em outro

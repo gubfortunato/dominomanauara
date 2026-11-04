@@ -6,6 +6,7 @@ import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolve
 import { atuais, imagem, contar, donoLista, donoImagem, donoSalvar, donoApagar } from './patrocinadores.js';
 import * as fotos from './fotos.js';
 import * as turmas from './turmas.js';
+import * as offline from './offline.js';
 import * as vivo from './vivo.js';
 import * as presenca from './presenca.js';
 import { donoNumeros, limparNumeros } from './numeros.js';
@@ -86,9 +87,16 @@ async function novaMesa(req, env, origin) {
   // planos (28/10): quem não é sócio cria 1 mesa com os amigos por dia (e precisa ter a partida do dia para jogar)
   let uso = null, apoia = false;
   const rede = await marcaRede(req.headers.get('cf-connecting-ip'), env);
+  // 04/11 (dono): mesa de desafio entre Turmas (botão Desafiar): só vale com o Desafio aberto e quem cria numa Turma.
+  // Sem plano, não gasta a mesa nem a partida grátis do dia: até LIMITE.desafios partidas de desafio por dia.
+  let vs = null;
+  if (b && b.desafio && turmas.edicao(env).aberto) { try { vs = await turmas.nomeDaTurma(env, b.id); } catch (e) {} }
   if (limitesValem(env)) {
     apoia = await temPlano(env, b && b.id);
-    if (!apoia) {
+    if (!apoia && vs) {
+      uso = await usoDoDia(env, b && b.id);
+      if ((uso.desafios || 0) >= LIMITE.desafios) return json({ erro: 'limite-desafio' }, 403, origin);
+    } else if (!apoia) {
       uso = await usoDoDia(env, b && b.id);
       if (uso.mesas >= LIMITE.mesas) return json({ erro: 'limite-mesa' }, 403, origin);
       if (uso.partidas >= LIMITE.partidas) return json({ erro: 'limite-partida' }, 403, origin);
@@ -100,10 +108,10 @@ async function novaMesa(req, env, origin) {
   for (let k = 0; k < 8; k++) {
     const codigo = String(10000 + Math.floor(Math.random() * 90000));
     const stub = env.MESA.get(env.MESA.idFromName(codigo));
-    const res = await stub.fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, nv: b.nv, codigo, uso, apoiador: apoia }) });
+    const res = await stub.fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, nv: b.nv, codigo, uso, apoiador: apoia, desafio: vs }) });
     if (res.status === 201) {
       try { await env.DB.prepare('INSERT INTO mesas_criadas (marca, criado_em) VALUES (?, ?)').bind(marca, Date.now()).run(); } catch (e) {}   // limite do banco: a mesa vale assim mesmo
-      if (uso) await somarUso(env, b.id, 'mesas');
+      if (uso && !vs) await somarUso(env, b.id, 'mesas');
       return json({ codigo }, 201, origin);
     }
     if (res.status === 400) return json({ erro: 'dados' }, 400, origin);
@@ -413,6 +421,7 @@ export default {
       if (url.pathname === '/saude/ia' && req.method === 'GET') return await fotos.saudeIA(env, origin, H);
       if ((url.pathname === '/turma' || url.pathname === '/desafio') && req.method === 'GET') return await turmas.ver(env, origin, H, url);
       if (url.pathname === '/turma/nova' && req.method === 'POST') return await turmas.nova(req, env, origin, H);
+      if (url.pathname === '/offline' && req.method === 'POST') return await offline.conferir(req, env, origin, H);   // 04/11: trava do jogo offline
       if (url.pathname === '/turma/entrar' && req.method === 'POST') return await turmas.entrar(req, env, origin, H);
       if (url.pathname === '/turma/sair' && req.method === 'POST') return await turmas.sair(req, env, origin, H);
       if (url.pathname === '/pagar' && req.method === 'POST') return await pagar(req, env, origin, H);

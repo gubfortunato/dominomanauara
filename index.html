@@ -1335,6 +1335,30 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .nota-fila{text-align:center}
 /* Turmas e Desafio das Confrarias */
 #turmaCard.card{--wood-1:#8a5a14;--wood-2:#3a2206;--wood-edge:#d9a93a}
+#turmaCard.destaque{gap:12px;padding:18px 16px 16px}
+#turmaCard.destaque .tc-cab{display:flex;align-items:center;gap:8px}
+#turmaCard.destaque .tc-ic{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(243,192,99,.18);color:#f3c063;flex:none}
+#turmaCard.destaque .tc-ic svg{width:17px;height:17px}
+#turmaCard.destaque .ck{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.07em;font-size:11.5px}
+#turmaCard.destaque .tc-ate{flex:none;padding:3px 9px;border-radius:999px;border:1px solid rgba(243,192,99,.55);color:#f3d9a6;font-size:12.5px;font-weight:700}
+#turmaCard.destaque .ct{font-size:25px;color:#fff6e6}
+#turmaCard.destaque .tc-pts{margin-top:-6px;font-size:16px;color:#f0dcb6}
+#turmaCard.destaque .tc-pts b{font-size:18px;color:#ffd98a}
+.tc-passos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tc-passos span{display:grid;justify-items:center;align-content:start;gap:6px;padding:10px 6px;border-radius:14px;background:rgba(255,240,215,.08);border:1px solid rgba(255,220,160,.16);font-size:13.5px;font-weight:700;line-height:1.25;text-align:center;color:#f6e6c8}
+.tc-passos b{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#f3c063;color:#2a1804;font-size:14.5px}
+.tc-rank{display:grid;gap:6px}
+.tc-lin{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:8px 12px;border-radius:12px;background:rgba(255,240,215,.08);border:1px solid rgba(255,220,160,.14);color:#f6e6c8;font-size:15.5px}
+.tc-lin span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+.tc-lin b{color:#ffd98a;font-size:16px}
+.tc-lin.eu{border-color:#f3c063;background:rgba(243,192,99,.16)}
+.tc-lin i{font-style:normal;display:grid;place-items:center;width:30px;height:24px;border-radius:999px;font-size:12.5px;font-weight:800;color:#2a1804;background:#c98a3a}
+.tc-lin i.m1{background:#f3c063}.tc-lin i.m2{background:#d9dde3}.tc-lin i.m3{background:#d9965a}
+.tc-vazio{padding:10px 12px;border-radius:12px;border:1px dashed rgba(255,220,160,.3);color:#efdcb8;font-size:14.5px;line-height:1.35}
+.tc-go{display:block;text-align:center;padding:13px 16px;border-radius:14px;background:linear-gradient(#f7d27d,#eaae45);color:#2a1804;font-weight:800;font-size:17px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.tm-passos{margin:6px 0 10px;padding-left:22px;display:grid;gap:8px;font-size:17px;line-height:1.35}
+.tm-passos li::marker{font-weight:800;color:var(--nos)}
+#dcCard .dc-ate{color:var(--muted);font-weight:700}
 .tm-regra{margin:8px 0 12px}
 .tm-box{display:grid;gap:8px;margin:12px 0;padding:14px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2)}
 .tm-box b{font-size:18px}
@@ -1347,6 +1371,10 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .tm-cod small{color:var(--muted);font-size:14px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
 .tm-cod b{font-family:var(--font-display);font-weight:400;font-size:38px;letter-spacing:.14em;line-height:1.1}
 a.tm-zap{display:block;text-align:center;text-decoration:none}
+a.tm-zap.secondary{color:var(--ink)}
+.tm-desafiar{width:100%}
+.tm-desafiar-n{margin:6px 0 12px;text-align:center}
+.sala-desafio{margin:4px 0 10px;padding:10px 12px;border-radius:14px;border:1.5px solid #c98a3a;background:color-mix(in srgb,#c98a3a 12%,transparent);text-align:center;color:var(--ink)}
 .tm-k{margin:16px 0 6px;font-size:13.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .tm-membros{margin:0;font-size:17px;line-height:1.45}
 .tm-rank,.tm-camp{list-style:none;margin:0;padding:0;display:grid;gap:4px}
@@ -3636,6 +3664,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.50', data: '04/11/2026', itens: ['Desafio das Confrarias: cartão novo no início, com a sua Turma, o ranking das 3 primeiras e o botão Desafiar outra Turma. Quem ainda não tem Turma vê o passo a passo. O ranking das Turmas também aparece na aba Calçada.', 'Botão Desafiar outra Turma: cria a mesa online e o convite do WhatsApp já vai como desafio. Na sala, todo mundo vê que é mesa de desafio.', 'Sem plano: até 2 partidas de desafio por dia, além da partida grátis (o desafio não gasta a partida do dia).', 'Jogo offline: o app confere com o servidor pelo menos uma vez a cada 2 dias para manter as partidas grátis do dia (sócio não precisa).'] },
   { v: '3.49.1', data: '04/11/2026', itens: ['Mesa nova: Tucano, com o bico de arco-íris.'] },
   { v: '3.49', data: '04/11/2026', itens: ['Mesa nova: Arara-Azul, pousada no galho.', 'Mesa Igreja de São Sebastião: a calçada agora é a mesma do Largo, com as ondas de pedra portuguesa preta e branca em perspectiva.', 'Ícone da aba Calçada redesenhado: três pessoas separadas e nítidas, também com a aba marcada.'] },
   { v: '3.48.1', data: '04/11/2026', itens: ['Barra de abas com fundo totalmente sólido (o texto da tela não aparece mais por trás dela).'] },
@@ -6213,7 +6242,8 @@ const ERROS_MESA = {
   'apelido': 'Seu apelido fere as regras do jogo. Escolha outro para voltar a jogar.',   // 3.38.2: sai no fim da partida, sem bloqueio
   'app': 'Não deu para entrar na mesa agora. Tente de novo.',
   'limite': 'Sua partida de hoje nas mesas com os amigos acabou.',   // 28/10: planos
-  'limite-rapida': 'Suas 5 partidas de hoje na mesa rápida acabaram.',   // 28/10: planos   // 3.41: o servidor não viu o app aberto (quase nunca acontece)
+  'limite-rapida': 'Suas 5 partidas de hoje na mesa rápida acabaram.',
+  'limite-desafio': 'Seus 2 desafios grátis de hoje acabaram.',   // 04/11   // 28/10: planos   // 3.41: o servidor não viu o app aberto (quase nunca acontece)
   'bloqueado': 'Seu acesso à mesa online foi bloqueado por desrespeitar as regras (apelido ou foto). Se achar que foi engano, use o "Fale com a gente".'
 };
 // Reações rápidas: a ordem nunca muda (o servidor manda só o número). Para acrescentar, ponha no fim.
@@ -6279,7 +6309,7 @@ function receberOnline(m) {
       sairDaMesa();
       // 3.41: trocar o apelido: no lugar do aviso rápido, a janela que leva ao perfil (ao voltar para o início)
       if (m.cod === 'apelido' && profile && profile.name) store.set(APKEY, profile.name); else toast(ERROS_MESA[m.cod]);
-      const acabou = m.cod === 'nao-existe' || m.cod === 'encerrada' || m.cod === 'bloqueado' || m.cod === 'apelido' || m.cod === 'limite' || m.cod === 'limite-rapida';   // 3.25: mesa encerrada (ou bloqueio) volta para o início
+      const acabou = m.cod === 'nao-existe' || m.cod === 'encerrada' || m.cod === 'bloqueado' || m.cod === 'apelido' || m.cod === 'limite' || m.cod === 'limite-rapida' || m.cod === 'limite-desafio';   // 3.25: mesa encerrada (ou bloqueio) volta para o início
       if (screen === 'game') { leaveGameBase(); show(acabou ? 'home' : 'sala'); } else if (screen === 'sala') { if (acabou) show('home'); else renderSala(); }
       else if (screen === 'home') renderHome();
       if (m.cod === 'apelido' && screen !== 'profile') avisoApelido();
@@ -6532,7 +6562,7 @@ async function criarMesa() {
   try {
     if (typeof presGarantir === 'function') await presGarantir();
     const pede = () => fetch(CONFIG.api + '/mesa/nova', { method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel() }) });
+      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), desafio: ON.desafioPedido ? 1 : 0 }) });
     let r = await pede(), j = await r.json().catch(() => ({}));
     // 3.41: o servidor não viu o app aberto (o aviso não tinha chegado): avisa de novo e tenta mais uma vez
     if (r.status === 403 && j.erro === 'app' && typeof presAvisar === 'function') {
@@ -9265,7 +9295,7 @@ async function turmaCarregar(forcar) {
   if (!CONFIG.api || !profile || (!forcar && Date.now() - TM.em < 60000)) return;
   TM.em = Date.now();
   try { const r = await turmaApi('/turma?aparelho=' + encodeURIComponent(meuId())); if (r.ok) turmaGuardar(r.j); } catch (e) { return; }
-  if (screen === 'home') desenharCartaoTurma();
+  if (screen === 'home') desenharCartaoTurma(); else { try { desenharDesafioCalcada(); } catch (e) {} }
   if ($('#turmaFolha')) desenharTurma();
 }
 // Período do Desafio (o servidor manda as datas; antes de carregar, calcula aqui pelo horário de Manaus)
@@ -9288,7 +9318,24 @@ function desenharCartaoTurma() {
   const card = $('#turmaCard'); if (!card) return;
   const t = TM.info, d = desafioAgora(), mes = +diaManaus().slice(5, 7);
   card.hidden = !onlineAtivo() || !profile || !(t || mes >= 10);
+  try { desenharDesafioCalcada(); } catch (e) {}
   if (card.hidden) return;
+  // 04/11 (dono): com o Desafio valendo, o cartão mostra a Turma, o ranking das 3 primeiras e a chamada (no lugar de sempre)
+  const destaque = !!d.aberto;
+  card.classList.toggle('destaque', destaque);
+  if (destaque) {
+    const top = (d.ranking || []).slice(0, 3);
+    card.setAttribute('aria-label', t ? `Desafio das Confrarias: ${nomeTurma(t.nome)}. Desafiar outra Turma` : 'Desafio das Confrarias: montar a sua Turma');
+    card.innerHTML = `<span class="tc-cab"><span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3.5h10v5.2a5 5 0 0 1-10 0z" fill="currentColor"/><path d="M7 5H4.2v1.4A3.2 3.2 0 0 0 7.4 9.6M17 5h2.8v1.4a3.2 3.2 0 0 1-3.2 3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 13.7v3.6M8.4 20.5h7.2M9.6 17.3h4.8v3.2H9.6z" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="ck">Desafio das Confrarias</span><span class="tc-ate">até 20/12</span></span>
+      <span class="ct">${t ? esc(nomeTurma(t.nome)) + esc(estrelas(t.titulos)) : 'Monte a sua Turma'}</span>
+      ${t ? `<span class="tc-pts"><b>${t.pontos}</b> ${t.pontos === 1 ? 'ponto' : 'pontos'}${t.pos ? ` · ${t.pos}º lugar` : ''}</span>`
+          : `<span class="tc-passos"><span><b>1</b>Junte os amigos numa Turma</span><span><b>2</b>Desafie outra Turma</span><span><b>3</b>Ganhou: +1 ponto</span></span>`}
+      ${top.length ? `<span class="tc-rank">${top.map(r => `<span class="tc-lin${t && r.nome === t.nome ? ' eu' : ''}"><i class="m${r.pos}">${r.pos}º</i><span>${esc(nomeTurma(r.nome))}</span><b>${r.pontos}</b></span>`).join('')}</span>`
+          : '<span class="tc-vazio">Nenhuma Turma pontuou ainda. A primeira vitória já vale o topo do ranking.</span>'}
+      <span class="tc-go">${t ? 'Desafiar outra Turma' : 'Montar a minha Turma'}</span>`;
+    return;
+  }
+  if (!$('#turmaCardT')) card.innerHTML = '<span class="ck">Desafio das Confrarias · 1º/11 a 20/12</span><span class="ct" id="turmaCardT"></span><span class="cd" id="turmaCardD"></span>';
   $('#turmaCardT').textContent = t ? `${nomeTurma(t.nome)}${estrelas(t.titulos)}` : 'Monte a sua Turma';
   const camp = d.campeas && d.campeas[0] && d.campeas[0].ano === d.ano ? d.campeas[0] : null;
   $('#turmaCardD').textContent = d.depois ? (camp ? `Campeã de ${d.ano}: ${camp.nome}, com ${pts(camp.pontos)}.` : 'O Desafio deste ano acabou.') + (t ? ` A sua fez ${pts(t.pontos)}.` : '')
@@ -9328,10 +9375,11 @@ function rankingHTML(d, minha) {
 function desenharTurma() {
   const box = $('#turmaFolha'); if (!box) return;
   const t = TM.info, d = desafioAgora();
-  const regra = `<p class="note tm-regra">De 1º/11 a 20/12. Cada vitória numa partida online contra alguém de outra Turma vale 1 ponto para a sua (até 5 por dia contra a mesma Turma). A Turma com mais pontos leva o título do ano; com 3 títulos, a <b>Grande Taça</b>.</p>`;
+  const regra = `<ol class="tm-passos"><li><b>Monte a sua Turma</b> e mande o código para os amigos.</li><li><b>Desafie outra Turma:</b> o app cria a mesa e manda o convite pelo WhatsApp.</li><li><b>Ganhou, +1 ponto.</b> Em 20/12, a Turma com mais pontos é a campeã do ano; com 3 títulos, a <b>Grande Taça</b>.</li></ol>
+    <p class="note tm-regra">Vale de 1º/11 a 20/12, em partida online contra alguém de outra Turma (na mesa rápida também conta, se cair gente de outra Turma do outro lado). Até 5 pontos por dia contra a mesma Turma.${planosValem() && !temPlano() ? ' Sem plano: até 2 desafios por dia, além da partida grátis.' : ''}</p>`;
   const campeas = d.campeas && d.campeas.length ? `<p class="tm-k">Campeãs</p><ul class="tm-camp">${d.campeas.map(c => `<li><span>${c.ano}</span><b>${esc(c.nome)}</b></li>`).join('')}</ul>` : '';
   if (!t) {
-    box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">Sua Turma</h2>${regra}
+    box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">Como funciona</h2>${regra}
       <div class="tm-box"><b>Entrar numa Turma</b><small>Peça o código para quem criou.</small>
         <input id="tmCod" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="Código: 6 letras e números" value="${esc(TM.convite || '')}">
         <button type="button" class="primary" id="tmEntrar">Entrar na Turma</button></div>
@@ -9354,12 +9402,14 @@ function desenharTurma() {
     box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">${esc(nomeTurma(t.nome))}${estrelas(t.titulos)}</h2>
       <p class="tm-status">${status}${t.taca ? ' · Grande Taça!' : t.titulos ? ` · ${t.titulos} ${t.titulos === 1 ? 'título' : 'títulos'}` : ''}</p>
       <div class="tm-cod"><small>Código da Turma</small><b>${esc(t.codigo)}</b></div>
-      <a class="primary tm-zap" id="tmZap" href="${esc(zap)}" target="_blank" rel="noopener">Chamar a turma no WhatsApp</a>
+      ${d.aberto ? '<button type="button" class="primary tm-desafiar" id="tmDesafiar">Desafiar outra Turma</button><p class="note tm-desafiar-n">Cria uma mesa online e manda o convite para a outra Turma. Quem ganhar leva o ponto.</p>' : ''}
+      <a class="${d.aberto ? 'secondary' : 'primary'} tm-zap" id="tmZap" href="${esc(zap)}" target="_blank" rel="noopener">Chamar a turma no WhatsApp</a>
       <p class="tm-k">Na Turma (${t.membros.length})</p><p class="tm-membros">${t.membros.map(n => esc(n)).join(', ')}</p>
       ${rankingHTML(d, t)}${regra}${campeas}
       <button type="button" class="secondary tm-fechar" id="tmFechar">Fechar</button>
       <button type="button" class="linkbtn tm-sair" id="tmSair">Sair da Turma</button>`;
     $('#tmZap').addEventListener('click', () => track('turma-convite'));
+    const bd = $('#tmDesafiar'); if (bd) bd.addEventListener('click', desafiarTurma);
     $('#tmSair').addEventListener('click', () => {
       const b = $('#tmSair');
       if (b.dataset.certeza !== '1') { b.dataset.certeza = '1'; b.textContent = 'Toque de novo para sair da Turma'; return; }
@@ -9379,6 +9429,34 @@ async function turmaAcao(path, extra, ev) {
   } catch (e) { toast('Sem internet agora. Tente de novo.'); }
   desenharTurma(); if (screen === 'home') desenharCartaoTurma();
 }
+// 04/11 (pedido do dono): Desafiar outra Turma. Cria a mesa de desafio no servidor (sem plano: não gasta a mesa nem a
+// partida grátis do dia; até 2 desafios por dia) e o convite do WhatsApp já vai como desafio. Na sala, todo mundo vê o aviso.
+function desafiarTurma() {
+  const t = TM.info; if (!t) { abrirTurma(); return; }
+  if (!onlineAtivo()) { toast('A mesa online precisa de internet.'); return; }
+  closeSheet(); track('turma-desafio');
+  if (ON.ativo && ON.cod) { show('sala'); renderSala(); if (!(ON.vista && ON.vista.vs)) toast('Você já está numa mesa. Saia dela para criar a mesa de desafio.'); return; }
+  if (mesaGuardada()) { voltarMesa(); toast('Você já está numa mesa. Saia dela para criar a mesa de desafio.'); return; }
+  show('sala');
+  ON.desafioPedido = true;
+  Promise.resolve(criarMesa()).finally(() => { ON.desafioPedido = false; });
+}
+const conviteTextoTurma = conviteTexto;
+conviteTexto = function (cod) {
+  const v = ON.vista; if (!(v && v.vs && v.codigo === cod)) return conviteTextoTurma(cod);
+  return `⚔️ Desafio das Confrarias! A ${nomeTurma(v.vs)} desafia a sua Turma no Dominó Manauara. Quem ganhar a partida leva 1 ponto para a sua Turma.\nEntra na mesa:\n${SITE_URL}#mesa=${cod}\n\nOu abra o app e digite o número da mesa: *${cod}*`;
+};
+const renderSalaTurma = renderSala;
+renderSala = function () {
+  renderSalaTurma();
+  if (screen !== 'sala') return;
+  const v = ON.vista, vs = !!(v && v.vs && v.fase === 'espera');
+  let av = $('#salaDesafio');
+  if (!av) { av = document.createElement('p'); av.id = 'salaDesafio'; av.className = 'note sala-desafio'; $('#salaConvite').before(av); }
+  av.hidden = !vs;
+  if (vs) av.innerHTML = `<b>⚔️ Mesa de desafio da ${esc(nomeTurma(v.vs))}</b><br>Mande o convite para a outra Turma e chame o seu parceiro. Vale ponto quando a dupla de lá for de outra Turma.${planosValem() && !temPlano() ? '<br><small>Sem plano: até 2 desafios por dia, além da partida grátis.</small>' : ''}`;
+  const cv = $('#salaConvite'); if (cv) { const tx = [...cv.childNodes].find(n => n.nodeType === 3 && n.textContent.trim()); if (tx) tx.textContent = vs ? 'Mandar o desafio no WhatsApp' : 'Chamar os amigos no WhatsApp'; }
+};
 // Na sala: a Turma de cada um aparece embaixo do nome
 const salaSubTurma = salaSub;
 salaSub = function (c, pos) { return c && c.turma && (pos === 0 || c.on) ? nomeTurma(c.turma) : salaSubTurma(c, pos); };
@@ -10545,6 +10623,7 @@ function abasMontar() {
 }
 function irAba(id) {
   track('aba-' + id);
+  if (id === 'calcada' && typeof turmaCarregar === 'function') { try { desenharDesafioCalcada(); turmaCarregar(); } catch (e) {} }
   abaVolta = null;
   const atual = abaDe(screen);
   if (id === atual && ['home', 'calcada', 'mais', 'profile'].includes(screen)) {   // tocou na aba em que já está: volta para o alto
@@ -11460,13 +11539,14 @@ renderDono = function () { const r = renderDonoPapo.apply(this, arguments); try 
 // o ranking completo e as estatísticas. Até 4/11 tudo liberado para todos; os limites começam 5/11 (o servidor confere).
 const PLANOS_DESDE = Date.UTC(2026, 10, 5, 3, 0, 0);   // 05/11/2026, 00:00 de Brasília
 const PLANOS_DIA = '5/11';
-const planosValem = () => Date.now() >= PLANOS_DESDE;
+const planosValem = () => Math.max(Date.now(), +(store.get('dmz-hora-max') || 0)) >= PLANOS_DESDE;   // 04/11: voltar a data do celular não desliga os limites
 const PLANO_TXT = {
   limite: ['Você já jogou a sua partida grátis de hoje', 'Sem plano, é 1 partida por dia nas mesas com os amigos, ou até 3 na mesa de um sócio. À meia-noite tem mais.'],
   'limite-partida': ['Você já jogou a sua partida grátis de hoje', 'Sem plano, é 1 partida por dia nas mesas com os amigos, ou até 3 na mesa de um sócio. À meia-noite tem mais.'],
   'limite-mesa': ['Você já criou a mesa de hoje', 'Sem plano, dá para criar 1 mesa com os amigos por dia. À meia-noite tem mais. Para jogar agora, entre pelo número da mesa de um amigo.'],
   'limite-rapida': ['Você já jogou as suas partidas grátis de hoje', 'Sem plano, são 3 partidas por dia na mesa rápida. À meia-noite tem mais.'],
   'limite-offline': ['Você já jogou as suas partidas grátis de hoje', 'Sem plano, são 5 partidas por dia no jogo offline, e mais 1 cumprindo as três missões do dia. À meia-noite tem mais.'],
+  'limite-desafio': ['Você já fez os seus 2 desafios grátis de hoje', 'Sem plano, são 2 partidas de desafio entre Turmas por dia, além da partida grátis. À meia-noite tem mais.'],   // 04/11
   papo: ['Escrever no papo é dos sócios', 'Sem plano, você lê o papo e usa as frases prontas.']
 };
 // Convite para o plano quando bate o limite, sempre com uma saída (o que ainda dá para jogar hoje)
@@ -11477,7 +11557,7 @@ function convitePlano(motivo) {
   const a = preco ? (preco.promo ? `<span class="pl-preco"><b>${brl(preco.valor)} por mês</b> nos 3 primeiros meses<small>Promoção até ${PROMO_DIA}. Depois, ${brl(preco.normal)} por mês.</small></span>` : `<span class="pl-preco"><b>${brl(preco.valor)} por mês</b><small>Cancela quando quiser.</small></span>`) : '';
   const podeRapida = !rapida && !(profile && profile.idade === 'menor'), podeOff = !off && typeof offlineLivreHoje === 'function' && offlineLivreHoje();
   const resta = [podeRapida ? 'na mesa rápida' : '', podeOff ? 'no jogo offline' : '', off || rapida ? 'com os amigos' : ''].filter(Boolean);
-  openSheet('plano', `<p class="eyebrow">${rapida ? 'Mesa rápida' : off ? 'Jogo offline' : 'Mesas com os amigos'}</p><h2 id="sheetTitle">${tit}</h2>
+  openSheet('plano', `<p class="eyebrow">${rapida ? 'Mesa rápida' : off ? 'Jogo offline' : motivo === 'limite-desafio' ? 'Desafio das Confrarias' : 'Mesas com os amigos'}</p><h2 id="sheetTitle">${tit}</h2>
     <p>${tx}</p>
     ${pode ? `<div class="pl-ap"><p><b>Quer continuar agora?</b> Sócio da Calçada joga sem limite, tem papo de mesa em todas as partidas com os amigos, ranking completo, foto na mesa e selo ★.</p>${a}</div>` : ''}
     ${resta.length ? `<p class="note">Hoje ainda dá para jogar ${juntaE(resta)}, se você não usou as partidas de lá.</p>` : ''}
@@ -11494,7 +11574,7 @@ function convitePlano(motivo) {
 const receberOnlinePlano = receberOnline;
 receberOnline = function (m) {
   const r = receberOnlinePlano.apply(this, arguments);
-  if (m && m.t === 'erro' && (m.cod === 'limite' || m.cod === 'limite-rapida')) setTimeout(() => convitePlano(m.cod), 450);
+  if (m && m.t === 'erro' && (m.cod === 'limite' || m.cod === 'limite-rapida' || m.cod === 'limite-desafio')) setTimeout(() => convitePlano(m.cod), 450);
   if (m && m.t === 'erro' && m.cod === 'mesa-socio') { toast('Essa mesa é dos sócios da Calçada. Sem plano: Madeira, Vermelha e Azul.'); try { aplicarMesa(); } catch (e) {} }
   return r;
 };
@@ -11715,6 +11795,20 @@ async function rkFora(fora) {
     toast(fora ? 'Pronto: você não aparece mais no ranking.' : 'Pronto: você volta a aparecer no ranking.');
     rkBuscar(true);
   } catch (e) { toast('Sem internet agora. Tente de novo.'); }
+}
+// 04/11 (dono): o Desafio das Confrarias também na aba Calçada (as 5 primeiras Turmas e o botão)
+function desenharDesafioCalcada() {
+  let box = $('#dcCard'); const ref = $('#calcNota'); if (!ref) return;
+  const d = desafioAgora(), t = TM.info;
+  if (!box) { ref.insertAdjacentHTML('afterend', '<section class="rk dc" id="dcCard" hidden></section>'); box = $('#dcCard'); box.addEventListener('click', e => { if (e.target.closest('#dcDesafiar')) desafiarTurma(); else if (e.target.closest('#dcTurma')) abrirTurma(); }); }
+  box.hidden = !d.aberto || !profile;
+  if (box.hidden) return;
+  const top = (d.ranking || []).slice(0, 5);
+  box.innerHTML = `<div class="rk-cab"><h3>⚔️ Desafio das Confrarias</h3><small class="dc-ate">até 20/12</small></div>
+    ${top.length ? `<ol class="rk-ol">${top.map(r => `<li class="${t && r.nome === t.nome ? 'eu' : ''}${r.pos <= 3 ? ' podio' : ''}"><span class="rk-pos">${r.pos}º</span><span class="rk-nome">${esc(nomeTurma(r.nome))}${esc(estrelas(r.titulos))}</span><span class="rk-pts">${pts(r.pontos)}</span></li>`).join('')}</ol>`
+      : '<p class="rk-vazio"><b>Nenhuma Turma pontuou ainda.</b><span>A primeira vitória contra outra Turma já põe a sua no topo.</span></p>'}
+    <button type="button" class="primary" id="${t ? 'dcDesafiar' : 'dcTurma'}" style="width:100%">${t ? 'Desafiar outra Turma' : 'Montar a minha Turma'}</button>
+    ${t ? '<button type="button" class="linkbtn" id="dcTurma" style="width:100%">Ver a minha Turma</button>' : ''}`;
 }
 (function () {
   const ref = $('#calcNota'); if (!ref) return;
@@ -12780,7 +12874,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.49.1-a48fac6f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.50-45f3a38e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -13534,12 +13628,107 @@ MAIS_IC.som = '<svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"
 // celular (o offline funciona sem internet). A partida treino das lições não conta. Vale a partir de 5/11, como os outros
 // limites; sócio e administrador jogam sem limite.
 const OFFKEY = 'dmz-offline-dia', OFF_POR_DIA = 5, RAPIDA_POR_DIA = 3, AMIGOS_SOCIO = 3;
-const diaBRLocal = () => new Date(Date.now() - 3 * 3600000).toISOString().slice(0, 10);
+// 04/11 (dono): travas do offline. (1) Relógio: o app guarda a maior hora que já viu e a hora do servidor da última
+// conferência; voltar a data do celular não devolve partidas. (2) Conferência: com internet, o app manda ao servidor
+// quantas partidas offline jogou hoje e recebe o número guardado lá (quem apaga os dados do app e volta pela mesma rede
+// logo depois de bater o limite continua com o limite). (3) Passe de 48 h: sem plano, o offline só libera as partidas se
+// o app conferiu com o servidor nas últimas 48 h. Quem já usava o app ganha 48 h a partir desta versão para conferir.
+const OFFPASSE = 'dmz-offline-passe', HORAMAX = 'dmz-hora-max', PASSE_INI = 'dmz-offline-passe-ini', PASSE_MS = 48 * 3600000;
+function offPasse() { try { const p = JSON.parse(store.get(OFFPASSE) || 'null'); return p && p.agora && p.em ? p : null; } catch (e) { return null; } }
+function horaRef() {
+  let max = 0; try { max = +store.get(HORAMAX) || 0; } catch (e) {}
+  const p = offPasse(), t = Math.max(Date.now(), max, p ? p.agora + Math.max(0, Date.now() - p.em) : 0);
+  if (t > max) { try { store.set(HORAMAX, String(t)); } catch (e) {} }
+  return t;
+}
+const diaBRLocal = () => new Date(horaRef() - 3 * 3600000).toISOString().slice(0, 10);
 const offlineLimitado = () => planosValem() && !temPlano() && !souAdmin() && !(typeof TREINO !== 'undefined' && TREINO.on);
-function offlineUsoHoje() { try { const u = JSON.parse(store.get(OFFKEY) || 'null'); return u && u.dia === diaBRLocal() ? u.n | 0 : 0; } catch (e) { return 0; } }
+function offlineUsoLocal() { try { const u = JSON.parse(store.get(OFFKEY) || 'null'); return u && u.dia === diaBRLocal() ? u.n | 0 : 0; } catch (e) { return 0; } }
+function offlineUsoHoje() {
+  const n = offlineUsoLocal(), p = offPasse(), dia = diaBRLocal();
+  if (p && p.dia === dia && p.herdou) return Math.max(n, offPorDia());
+  return p && p.dia === dia ? Math.max(n, p.n | 0) : n;
+}
 const offPorDia = () => OFF_POR_DIA + (typeof misPartidaExtra === 'function' ? misPartidaExtra() : 0);   // 03/11: +1 por cumprir as missões do dia
 function offlineLivreHoje() { return !offlineLimitado() || offlineUsoHoje() < offPorDia(); }
-function offlineContar() { if (!offlineLimitado()) return; store.set(OFFKEY, JSON.stringify({ dia: diaBRLocal(), n: offlineUsoHoje() + 1 })); }
+function offlineContar() { if (!offlineLimitado()) return; store.set(OFFKEY, JSON.stringify({ dia: diaBRLocal(), n: offlineUsoHoje() + 1 })); offConferir(true); }
+// passe válido: conferiu com o servidor nas últimas 48 h (ou, para quem já jogava antes desta versão, 48 h a partir dela)
+function offPasseOk() {
+  if (!offlineLimitado()) return true;
+  const p = offPasse(), agora = horaRef();
+  if (p && agora - p.agora < PASSE_MS && (!p.graca || agora - p.agora < 6 * 3600000)) return true;
+  let ini = 0; try { ini = +store.get(PASSE_INI) || 0; } catch (e) {}
+  return !!ini && agora - ini < PASSE_MS;
+}
+(function () {   // quem já usava o app (tem histórico) ganha 48 h para a primeira conferência; quem apagou os dados, não
+  try { if (!store.get(PASSE_INI) && !offPasse() && profile && (store.get(OFFKEY) || store.get(HKEY))) store.set(PASSE_INI, String(Date.now())); } catch (e) {}
+})();
+// confere com o servidor: 'ok', 'sem-net' (sem internet) ou 'falhou' (o servidor não respondeu: não castiga ninguém)
+let offConfEm = 0;
+async function offConferir(forcar) {
+  if (!CONFIG.api || !profile || !planosValem() || temPlano() || souAdmin()) return 'ok';
+  if (!forcar && Date.now() - offConfEm < 10 * 60000 && offPasse()) return 'ok';
+  offConfEm = Date.now();
+  try {
+    const r = await fetch(CONFIG.api + '/offline', { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ aparelho: meuId(), dia: diaBRLocal(), n: offlineUsoLocal(), nome: profile.name || '' }) });
+    if (!r.ok) return 'falhou';
+    const j = await r.json();
+    if (!j || !j.agora || !j.dia) return 'falhou';
+    store.set(OFFPASSE, JSON.stringify({ dia: j.dia, agora: j.agora, n: j.n | 0, herdou: !!j.herdou, em: Date.now() }));
+    store.set(HORAMAX, String(j.agora));   // a hora certa é a do servidor (desfaz o relógio adiantado)
+    if ((j.n | 0) > offlineUsoLocal()) store.set(OFFKEY, JSON.stringify({ dia: j.dia, n: j.n | 0 }));
+    try { offEspelhar(); } catch (e) {}
+    if (screen === 'home') { try { avisoPlanoOffline(); } catch (e) {} }
+    return 'ok';
+  } catch (e) { return navigator.onLine === false ? 'sem-net' : 'falhou'; }
+}
+// 04/11 (dono, trava A): a conta do offline, o passe e a maior hora vista ficam também no IndexedDB e no Cache Storage.
+// Se só o armazenamento comum for apagado, o app recupera dos outros dois (no iPhone, apagar os dados do site apaga os três).
+const OFF_ESPELHO = [OFFKEY, OFFPASSE, HORAMAX, PASSE_INI];
+function offIDB() { return new Promise((ok, erro) => { try { const r = indexedDB.open('dmz-travas', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => ok(r.result); r.onerror = () => erro(r.error); } catch (e) { erro(e); } }); }
+async function offEspelhar() {
+  const dados = {}; OFF_ESPELHO.forEach(k => { const v = store.get(k); if (v != null) dados[k] = v; });
+  try { const db = await offIDB(); const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(dados, 'travas'); } catch (e) {}
+  try { const c = await caches.open('dmz-travas'); await c.put('/__travas', new Response(JSON.stringify(dados))); } catch (e) {}
+}
+async function offRecuperar() {
+  if (OFF_ESPELHO.every(k => store.get(k) != null)) return;
+  let a = {}, b = {};
+  try { const db = await offIDB(); a = await new Promise(ok => { const r = db.transaction('kv').objectStore('kv').get('travas'); r.onsuccess = () => ok(r.result || {}); r.onerror = () => ok({}); }); } catch (e) {}
+  try { const c = await caches.open('dmz-travas'); const r = await c.match('/__travas'); if (r) b = await r.json(); } catch (e) {}
+  const num = v => { try { const j = JSON.parse(v); return typeof j === 'number' ? j : j && (j.n != null ? j.n : j.agora) || 0; } catch (e) { return +v || 0; } };
+  OFF_ESPELHO.forEach(k => {
+    if (store.get(k) != null) return;   // só recupera o que sumiu
+    const cand = [a[k], b[k]].filter(v => v != null);
+    if (!cand.length) return;
+    store.set(k, cand.sort((x, y) => num(y) - num(x))[0]);   // fica o maior (mais partidas, hora mais adiantada)
+  });
+}
+offRecuperar().then(() => offEspelhar());
+const offContarEspelho = offlineContar;
+offlineContar = function () { offContarEspelho(); offEspelhar(); };
+addEventListener('online', () => { offConferir(true); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') offConferir(false); });
+setTimeout(() => offConferir(false), 2500);
+// sem o passe: pede para ligar a internet uma vez (com "Tentar de novo")
+function offPedirInternet(alvo) {
+  openSheet('info', `<p class="eyebrow">Jogo offline</p><h2 id="sheetTitle">Ligue a internet um instante</h2>
+    <p>Para liberar as partidas grátis do jogo offline, o app confere com o servidor pelo menos uma vez a cada 2 dias. É rapidinho: ligue o Wi-Fi ou os dados e toque em <b>Tentar de novo</b>.</p>
+    <p class="note">Sócio da Calçada joga offline sem limite e sem precisar conferir.</p>
+    <button type="button" class="primary" id="offTentar" style="width:100%">Tentar de novo</button>
+    <button type="button" class="linkbtn" id="offFechar" style="width:100%;margin-top:6px">Agora não</button>`);
+  track('offline-sem-passe');
+  $('#offFechar').addEventListener('click', closeSheet);
+  $('#offTentar').addEventListener('click', async () => {
+    const b = $('#offTentar'); b.disabled = true; b.textContent = 'Conferindo…';
+    const r = await offConferir(true);
+    if (r === 'ok' || r === 'falhou') { if (r === 'falhou') offGraca(); closeSheet(); setTimeout(() => { if (alvo && alvo.isConnected) alvo.click(); else { const g = $('#startOffline'); if (g && screen === 'setup') g.click(); } }, 250); }
+    else { b.disabled = false; b.textContent = 'Tentar de novo'; toast('Ainda sem internet.'); }
+  });
+}
+// o servidor não respondeu (com internet): libera por 6 h, para ninguém ficar preso por falha nossa
+function offGraca() { try { const p = offPasse(); if (!(p && horaRef() - p.agora < PASSE_MS)) store.set(OFFPASSE, JSON.stringify({ dia: diaBRLocal(), agora: horaRef(), n: offlineUsoLocal(), herdou: false, em: Date.now(), graca: true })); } catch (e) {} }
 // antes de cada começo de partida offline: barra (e convida para o plano) ou conta
 document.addEventListener('click', e => {
   const t = e.target.closest && e.target.closest('#startOffline, #sheet #resetBtn, #sheet #nextBtn');
@@ -13549,6 +13738,15 @@ document.addEventListener('click', e => {
   else if (t.id === 'resetBtn') comeca = mode === 'off' && armedReset;
   else comeca = mode === 'off' && G && G.result && G.result.matchWinner != null;
   if (!comeca) return;
+  if (!offPasseOk()) {   // 04/11: sem conferir há mais de 48 h: tenta agora; sem internet, pede para ligar
+    e.preventDefault(); e.stopImmediatePropagation();
+    offConferir(true).then(r => {
+      if (r === 'falhou') offGraca();
+      if (r === 'ok' || r === 'falhou') { if (t.isConnected) t.click(); }
+      else { if (t.id !== 'startOffline') { closeSheet(); leaveGame(); show('home'); } setTimeout(() => offPedirInternet(t.id === 'startOffline' ? t : null), 300); }
+    });
+    return;
+  }
   if (offlineLivreHoje()) { offlineContar(); return; }
   e.preventDefault(); e.stopImmediatePropagation();
   if (t.id !== 'startOffline') { closeSheet(); leaveGame(); show('home'); }
@@ -13622,7 +13820,7 @@ function cotaDoDia() {
   if (!(typeof pagamentosAtivos === 'function' && pagamentosAtivos())) return null;
   if (mode === 'off') return { n: offlineUsoHoje(), de: offPorDia(), onde: 'no jogo offline' };
   const u = mode === 'on' && ON && ON.vista && ON.vista.meuUso;
-  if (u && u.de) return { n: u.n, de: u.de, onde: ON.vista.publica ? 'na mesa rápida' : 'nas mesas com os amigos' };
+  if (u && u.de) return { n: u.n, de: u.de, onde: u.desafio ? 'nos desafios entre Turmas' : ON.vista.publica ? 'na mesa rápida' : 'nas mesas com os amigos' };
   return null;
 }
 const showResultCota = showResult;
