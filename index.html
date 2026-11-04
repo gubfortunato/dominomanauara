@@ -2713,7 +2713,7 @@ body.papo-aberto{overflow:hidden}
   <section class="screen panel" id="scrPatro" hidden>
     <button type="button" class="backbtn" id="ptBack">← Voltar</button>
     <div><p class="kicker">Área do administrador</p><h2 class="brand" style="font-size:30px">Patrocinadores</h2></div>
-    <p class="note pt-ajuda">Quem está no ar aparece nos espaços escolhidos. Se mais de um dividir o mesmo espaço, eles se revezam. Espaço sem patrocinador mostra o alug+.</p>
+    <p class="note pt-ajuda">Quem está no ar aparece nos espaços escolhidos. Se mais de um dividir o mesmo espaço, eles se revezam. Espaço sem patrocinador mostra os anúncios da casa (alug+ e L3 Travel), um de cada.</p>
     <div class="dn-seg" id="ptDias" role="group" aria-label="Período dos números"><button type="button" data-d="7" aria-pressed="false">7 dias</button><button type="button" data-d="30" aria-pressed="true">30 dias</button><button type="button" data-d="90" aria-pressed="false">90 dias</button></div>
     <button type="button" class="primary" id="ptNovo">+ Novo patrocinador</button>
     <div class="pt-lista" id="ptLista"></div>
@@ -3583,6 +3583,19 @@ const CONFIG = {
       { src: 'patrocinio/alugmais-banner.jpg', ms: 5200 }
     ]
   },
+  // 03/11 (pedido do dono): outros anunciantes da casa. Revezam com o alug+, um de cada: no banner (as imagens de um,
+  // depois as do outro, cada uma com o link do seu anunciante) e no "Mesa oferecida por" (a cada mão).
+  // Patrocinador cadastrado no painel continua tendo preferência no espaço dele.
+  casa: [
+    { nome: 'L3 Travel', texto: 'Quer viajar barato? Aqui, sonhos se realizam',
+      alt: 'L3 Travel: quer viajar barato? Aqui, sonhos se realizam.',
+      link: 'https://br.onertravel.com/l3travel/home',
+      logo: 'patrocinio/l3travel-logo.png', banner: 'patrocinio/l3travel-banner.jpg',
+      banners: [
+        { src: 'patrocinio/l3travel-banner-1.jpg', ms: 3800, alt: 'L3 Travel: quer viajar barato?' },
+        { src: 'patrocinio/l3travel-banner.jpg', ms: 5200, alt: 'L3 Travel: aqui, sonhos se realizam' }
+      ] }
+  ],
   // Apoio voluntário (links de pagamento do Asaas, Pix ou cartão). Link vazio: o valor não aparece.
   // No Asaas, configure o retorno depois do pagamento para: https://dominomanauara.com.br/?apoio=ok
   apoio: [
@@ -4808,12 +4821,12 @@ function sponsorResult() {
   const m = sponsorMark(); if (!m) return;
   $('#boardWrap').insertAdjacentHTML('afterbegin', `<div class="mesa-patro" aria-hidden="true">${m}</div>`);
 })();
-document.addEventListener('click', e => { if (e.target.closest('.sponsor, .res-patro')) track('patrocinio-clique'); });
+document.addEventListener('click', e => { const a = e.target.closest('.sponsor, .res-patro'); if (a) track('patrocinio-clique' + (/onertravel\.com/.test(a.getAttribute('href') || '') ? '-l3travel' : '')); });
 
 // ---- Banner animado: as imagens se alternam com fade ----
 function bannerSlides(p) {
   const list = (p.banners && p.banners.length ? p.banners : [{ src: p.banner }]).filter(b => b && b.src);
-  return `<div class="sp-slides loading">${list.map((b, i) => `<img src="${esc(b.src)}" data-ms="${+b.ms || 4500}" alt="${esc(b.alt || p.alt || p.nome)}" decoding="async"${i ? ' aria-hidden="true"' : ' class="on"'}>`).join('')}</div>`;
+  return `<div class="sp-slides loading">${list.map((b, i) => `<img src="${esc(b.src)}" data-ms="${+b.ms || 4500}"${b.link ? ` data-href="${esc(b.link)}"` : ''} alt="${esc(b.alt || p.alt || p.nome)}" decoding="async"${i ? ' aria-hidden="true"' : ' class="on"'}>`).join('')}</div>`;
 }
 // Mostra o banner só quando todas as imagens já chegaram inteiras (nada de imagem cortada pela metade).
 function readySlides() {
@@ -4839,6 +4852,8 @@ setInterval(() => {
     const j = reduceMotion() ? imgs.length - 1 : (i + 1) % imgs.length;
     imgs.forEach((im, k) => { im.classList.toggle('on', k === j); im.setAttribute('aria-hidden', String(k !== j)); });
     box._next = now + (+imgs[j].dataset.ms || 4500);
+    // banner com mais de um anunciante: o toque leva para o da imagem que está na tela
+    const a = box.closest('a'); if (a && imgs[j].dataset.href) a.href = imgs[j].dataset.href;
   });
 }, 200);
 
@@ -7700,10 +7715,23 @@ async function buscarPatros(agora) {
 const rodizio = {};
 function patroPara(espaco) {
   const lista = PATROS.lista.filter(p => (p.espacos || []).includes(espaco));
-  if (!lista.length) return CONFIG.patrocinio && CONFIG.patrocinio.nome ? Object.assign({ casa: true }, CONFIG.patrocinio) : null;
+  if (!lista.length) return patroCasa(espaco);
   rodizio[espaco] = rodizio[espaco] == null ? Math.floor(Math.random() * lista.length) : (rodizio[espaco] + 1) % lista.length;
   const p = lista[rodizio[espaco]];
   return Object.assign({}, p, { banner: p.banners && p.banners[0] ? p.banners[0].src : null });
+}
+// Anúncios da casa (alug+ e os de CONFIG.casa): revezam um de cada
+const casaLista = () => [CONFIG.patrocinio].concat(CONFIG.casa || []).filter(p => p && p.nome);
+function patroCasa(espaco) {
+  const l = casaLista(); if (!l.length) return null;
+  rodizio[espaco] = rodizio[espaco] == null ? Math.floor(Math.random() * l.length) : (rodizio[espaco] + 1) % l.length;
+  const i = rodizio[espaco], p = l[i];
+  if (espaco === 'mesa' || l.length < 2) return Object.assign({ casa: true }, p);
+  // banner: começa pelo da vez e passa pelos outros; cada imagem leva o link do seu anunciante
+  const ordem = l.slice(i).concat(l.slice(0, i));
+  const banners = [].concat(...ordem.map(q => (q.banners && q.banners.length ? q.banners : q.banner ? [{ src: q.banner }] : [])
+    .map(b => Object.assign({ link: q.link, alt: q.alt || q.nome }, b))));
+  return Object.assign({ casa: true }, p, { banners, banner: banners[0] ? banners[0].src : null });
 }
 const temBanner = p => !!(p && ((p.banners && p.banners.length) || p.banner));
 const atrPatro = (p, espaco) => p && p.id && !p.casa ? ` data-patro="${p.id}" data-espaco="${espaco}"` : '';
@@ -7845,7 +7873,7 @@ async function ptCarregar() {
         <ul class="pt-nums">${p.espacos.map(e => `<li><span>${ESPACO_NOME[e]}</span><b>${linhaNumeros(e, p.numeros[e])}</b></li>`).join('')}</ul>
         <div class="pt-acoes"><button type="button" data-a="editar">Editar</button><button type="button" data-a="pausar">${p.ativo ? 'Pausar' : 'Pôr no ar'}</button><button type="button" data-a="relatorio">Copiar relatório</button></div>
       </article>`;
-    }).join('') : '<p class="note pt-vazio">Nenhum patrocinador ainda. Enquanto isso, os espaços mostram o alug+.</p>';
+    }).join('') : '<p class="note pt-vazio">Nenhum patrocinador ainda. Enquanto isso, os espaços mostram o alug+ e a L3 Travel, um de cada.</p>';
     const noar = ptLista.filter(p => situacao(p)[1] === 'noar').length;
     $('#dnPatroTx').textContent = noar ? `${noar} no ar · ver números e cadastrar` : 'Cadastrar e ver os números';
   } catch (e) {
@@ -12710,7 +12738,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.47-6a5d3a62';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.47-5835f24e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
