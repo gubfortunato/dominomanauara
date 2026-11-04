@@ -1335,6 +1335,18 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .nota-fila{text-align:center}
 /* Turmas e Desafio das Confrarias */
 #turmaCard.card{--wood-1:#8a5a14;--wood-2:#3a2206;--wood-edge:#d9a93a}
+#turmaCard.destaque{gap:10px;padding:18px 18px 16px;margin:4px 0 2px;box-shadow:0 0 0 2px #d9a93a,0 10px 26px rgba(90,50,10,.28)}
+#turmaCard.destaque .ct{font-size:24px}
+.tc-passos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tc-passos span{display:grid;justify-items:center;gap:4px;padding:8px 4px;border-radius:12px;background:rgba(255,235,200,.1);font-size:13.5px;font-weight:700;line-height:1.2;text-align:center;color:#f6e6c8}
+.tc-passos b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#d9a93a;color:#2a1804;font-size:14px}
+.tc-rank{display:flex;flex-wrap:wrap;gap:6px}
+.tc-rank span{padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.25);font-size:13.5px;color:#f6e6c8}
+.tc-rank b{color:#ffd98a}
+.tc-go{justify-self:start;padding:9px 16px;border-radius:999px;background:#f3c063;color:#2a1804;font-weight:800;font-size:16px}
+.tm-passos{margin:6px 0 10px;padding-left:22px;display:grid;gap:8px;font-size:17px;line-height:1.35}
+.tm-passos li::marker{font-weight:800;color:var(--nos)}
+#dcCard .dc-ate{color:var(--muted);font-weight:700}
 .tm-regra{margin:8px 0 12px}
 .tm-box{display:grid;gap:8px;margin:12px 0;padding:14px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2)}
 .tm-box b{font-size:18px}
@@ -3640,7 +3652,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.50', data: '04/11/2026', itens: ['Desafio das Confrarias: botão Desafiar outra Turma, na folha da sua Turma. Ele cria a mesa online e o convite do WhatsApp já vai como desafio ("A Turma X desafia a sua Turma"). Quem ganhar leva o ponto.'] },
+  { v: '3.50', data: '04/11/2026', itens: ['Desafio das Confrarias em destaque: o cartão foi para o topo do início, com o ranking das Turmas e o passo a passo (monte a Turma, desafie outra, ganhou: +1 ponto). Também aparece na aba Calçada.', 'Botão Desafiar outra Turma: cria a mesa online e o convite do WhatsApp já vai como desafio. Na sala, todo mundo vê que é mesa de desafio.', 'Sem plano: até 2 partidas de desafio por dia, além da partida grátis (o desafio não gasta a partida do dia).'] },
   { v: '3.49.1', data: '04/11/2026', itens: ['Mesa nova: Tucano, com o bico de arco-íris.'] },
   { v: '3.49', data: '04/11/2026', itens: ['Mesa nova: Arara-Azul, pousada no galho.', 'Mesa Igreja de São Sebastião: a calçada agora é a mesma do Largo, com as ondas de pedra portuguesa preta e branca em perspectiva.', 'Ícone da aba Calçada redesenhado: três pessoas separadas e nítidas, também com a aba marcada.'] },
   { v: '3.48.1', data: '04/11/2026', itens: ['Barra de abas com fundo totalmente sólido (o texto da tela não aparece mais por trás dela).'] },
@@ -6218,7 +6230,8 @@ const ERROS_MESA = {
   'apelido': 'Seu apelido fere as regras do jogo. Escolha outro para voltar a jogar.',   // 3.38.2: sai no fim da partida, sem bloqueio
   'app': 'Não deu para entrar na mesa agora. Tente de novo.',
   'limite': 'Sua partida de hoje nas mesas com os amigos acabou.',   // 28/10: planos
-  'limite-rapida': 'Suas 5 partidas de hoje na mesa rápida acabaram.',   // 28/10: planos   // 3.41: o servidor não viu o app aberto (quase nunca acontece)
+  'limite-rapida': 'Suas 5 partidas de hoje na mesa rápida acabaram.',
+  'limite-desafio': 'Seus 2 desafios grátis de hoje acabaram.',   // 04/11   // 28/10: planos   // 3.41: o servidor não viu o app aberto (quase nunca acontece)
   'bloqueado': 'Seu acesso à mesa online foi bloqueado por desrespeitar as regras (apelido ou foto). Se achar que foi engano, use o "Fale com a gente".'
 };
 // Reações rápidas: a ordem nunca muda (o servidor manda só o número). Para acrescentar, ponha no fim.
@@ -6284,7 +6297,7 @@ function receberOnline(m) {
       sairDaMesa();
       // 3.41: trocar o apelido: no lugar do aviso rápido, a janela que leva ao perfil (ao voltar para o início)
       if (m.cod === 'apelido' && profile && profile.name) store.set(APKEY, profile.name); else toast(ERROS_MESA[m.cod]);
-      const acabou = m.cod === 'nao-existe' || m.cod === 'encerrada' || m.cod === 'bloqueado' || m.cod === 'apelido' || m.cod === 'limite' || m.cod === 'limite-rapida';   // 3.25: mesa encerrada (ou bloqueio) volta para o início
+      const acabou = m.cod === 'nao-existe' || m.cod === 'encerrada' || m.cod === 'bloqueado' || m.cod === 'apelido' || m.cod === 'limite' || m.cod === 'limite-rapida' || m.cod === 'limite-desafio';   // 3.25: mesa encerrada (ou bloqueio) volta para o início
       if (screen === 'game') { leaveGameBase(); show(acabou ? 'home' : 'sala'); } else if (screen === 'sala') { if (acabou) show('home'); else renderSala(); }
       else if (screen === 'home') renderHome();
       if (m.cod === 'apelido' && screen !== 'profile') avisoApelido();
@@ -6537,7 +6550,7 @@ async function criarMesa() {
   try {
     if (typeof presGarantir === 'function') await presGarantir();
     const pede = () => fetch(CONFIG.api + '/mesa/nova', { method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel() }) });
+      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), desafio: ON.desafioPedido ? 1 : 0 }) });
     let r = await pede(), j = await r.json().catch(() => ({}));
     // 3.41: o servidor não viu o app aberto (o aviso não tinha chegado): avisa de novo e tenta mais uma vez
     if (r.status === 403 && j.erro === 'app' && typeof presAvisar === 'function') {
@@ -9270,7 +9283,7 @@ async function turmaCarregar(forcar) {
   if (!CONFIG.api || !profile || (!forcar && Date.now() - TM.em < 60000)) return;
   TM.em = Date.now();
   try { const r = await turmaApi('/turma?aparelho=' + encodeURIComponent(meuId())); if (r.ok) turmaGuardar(r.j); } catch (e) { return; }
-  if (screen === 'home') desenharCartaoTurma();
+  if (screen === 'home') desenharCartaoTurma(); else { try { desenharDesafioCalcada(); } catch (e) {} }
   if ($('#turmaFolha')) desenharTurma();
 }
 // Período do Desafio (o servidor manda as datas; antes de carregar, calcula aqui pelo horário de Manaus)
@@ -9293,7 +9306,26 @@ function desenharCartaoTurma() {
   const card = $('#turmaCard'); if (!card) return;
   const t = TM.info, d = desafioAgora(), mes = +diaManaus().slice(5, 7);
   card.hidden = !onlineAtivo() || !profile || !(t || mes >= 10);
+  try { desenharDesafioCalcada(); } catch (e) {}
   if (card.hidden) return;
+  // 04/11 (dono: "não está em destaque e ninguém entendeu"): com o Desafio valendo, o cartão sobe para o topo do início
+  // (logo abaixo do "Fala, fulano"), com o ranking das 3 primeiras e a chamada para desafiar (ou montar a Turma)
+  const destaque = !!d.aberto, lead = $('#scrHome .lead');
+  card.classList.toggle('destaque', destaque);
+  if (destaque && lead && lead.nextElementSibling !== card) lead.after(card);
+  if (!destaque && card.previousElementSibling !== $('#goResume') && $('#goResume')) $('#goResume').after(card);
+  if (destaque) {
+    const top = (d.ranking || []).slice(0, 3);
+    card.setAttribute('aria-label', t ? `Desafio das Confrarias: ${nomeTurma(t.nome)}, desafiar outra Turma` : 'Desafio das Confrarias: montar a sua Turma');
+    card.innerHTML = `<span class="ck">⚔️ Desafio das Confrarias · valendo até 20/12</span>
+      <span class="ct">${t ? esc(nomeTurma(t.nome)) + esc(estrelas(t.titulos)) : 'Junte os amigos e desafie as outras Turmas'}</span>
+      ${t ? `<span class="cd">${pts(t.pontos)}${t.pos ? ` · ${t.pos}º lugar` : ''}. Cada vitória contra outra Turma vale 1 ponto.</span>`
+          : `<span class="tc-passos"><span><b>1</b>Monte a Turma</span><span><b>2</b>Desafie outra</span><span><b>3</b>Ganhou: +1 ponto</span></span>`}
+      <span class="tc-rank">${top.length ? top.map(r => `<span>${r.pos}º ${esc(r.nome)} <b>${r.pontos}</b></span>`).join('') : '<span>Ninguém pontuou ainda: a 1ª vitória já põe a sua Turma no topo.</span>'}</span>
+      <span class="tc-go">${t ? 'Desafiar outra Turma' : 'Montar a minha Turma'} <span aria-hidden="true">›</span></span>`;
+    return;
+  }
+  if (!$('#turmaCardT')) card.innerHTML = '<span class="ck">Desafio das Confrarias · 1º/11 a 20/12</span><span class="ct" id="turmaCardT"></span><span class="cd" id="turmaCardD"></span>';
   $('#turmaCardT').textContent = t ? `${nomeTurma(t.nome)}${estrelas(t.titulos)}` : 'Monte a sua Turma';
   const camp = d.campeas && d.campeas[0] && d.campeas[0].ano === d.ano ? d.campeas[0] : null;
   $('#turmaCardD').textContent = d.depois ? (camp ? `Campeã de ${d.ano}: ${camp.nome}, com ${pts(camp.pontos)}.` : 'O Desafio deste ano acabou.') + (t ? ` A sua fez ${pts(t.pontos)}.` : '')
@@ -9333,10 +9365,11 @@ function rankingHTML(d, minha) {
 function desenharTurma() {
   const box = $('#turmaFolha'); if (!box) return;
   const t = TM.info, d = desafioAgora();
-  const regra = `<p class="note tm-regra">De 1º/11 a 20/12. Cada vitória numa partida online contra alguém de outra Turma vale 1 ponto para a sua (até 5 por dia contra a mesma Turma). A Turma com mais pontos leva o título do ano; com 3 títulos, a <b>Grande Taça</b>.</p>`;
+  const regra = `<ol class="tm-passos"><li><b>Monte a sua Turma</b> e mande o código para os amigos.</li><li><b>Desafie outra Turma:</b> o app cria a mesa e manda o convite pelo WhatsApp.</li><li><b>Ganhou, +1 ponto.</b> Em 20/12, a Turma com mais pontos é a campeã do ano; com 3 títulos, a <b>Grande Taça</b>.</li></ol>
+    <p class="note tm-regra">Vale de 1º/11 a 20/12, em partida online contra alguém de outra Turma (na mesa rápida também conta, se cair gente de outra Turma do outro lado). Até 5 pontos por dia contra a mesma Turma.${planosValem() && !temPlano() ? ' Sem plano: até 2 desafios por dia, além da partida grátis.' : ''}</p>`;
   const campeas = d.campeas && d.campeas.length ? `<p class="tm-k">Campeãs</p><ul class="tm-camp">${d.campeas.map(c => `<li><span>${c.ano}</span><b>${esc(c.nome)}</b></li>`).join('')}</ul>` : '';
   if (!t) {
-    box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">Sua Turma</h2>${regra}
+    box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">Como funciona</h2>${regra}
       <div class="tm-box"><b>Entrar numa Turma</b><small>Peça o código para quem criou.</small>
         <input id="tmCod" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="Código: 6 letras e números" value="${esc(TM.convite || '')}">
         <button type="button" class="primary" id="tmEntrar">Entrar na Turma</button></div>
@@ -9386,33 +9419,32 @@ async function turmaAcao(path, extra, ev) {
   } catch (e) { toast('Sem internet agora. Tente de novo.'); }
   desenharTurma(); if (screen === 'home') desenharCartaoTurma();
 }
-// 04/11 (pedido do dono): Desafiar outra Turma. Cria a mesa online (ou usa a que já está aberta) e o convite do
-// WhatsApp já vai como desafio: "A Turma X desafia a sua Turma". O resto é a mesa com os amigos de sempre.
-TM.vs = null;   // { nome, cod }
+// 04/11 (pedido do dono): Desafiar outra Turma. Cria a mesa de desafio no servidor (sem plano: não gasta a mesa nem a
+// partida grátis do dia; até 2 desafios por dia) e o convite do WhatsApp já vai como desafio. Na sala, todo mundo vê o aviso.
 function desafiarTurma() {
-  const t = TM.info; if (!t) return;
+  const t = TM.info; if (!t) { abrirTurma(); return; }
   if (!onlineAtivo()) { toast('A mesa online precisa de internet.'); return; }
   closeSheet(); track('turma-desafio');
-  TM.vs = { nome: t.nome, cod: null };
-  if (ON.ativo && ON.cod) { TM.vs.cod = ON.cod; show('sala'); renderSala(); return; }
-  if (mesaGuardada()) { TM.vs.cod = mesaGuardada(); voltarMesa(); return; }
+  if (ON.ativo && ON.cod) { show('sala'); renderSala(); if (!(ON.vista && ON.vista.vs)) toast('Você já está numa mesa. Saia dela para criar a mesa de desafio.'); return; }
+  if (mesaGuardada()) { voltarMesa(); toast('Você já está numa mesa. Saia dela para criar a mesa de desafio.'); return; }
   show('sala');
-  Promise.resolve(criarMesa()).then(() => { if (TM.vs && !TM.vs.cod && ON.cod) { TM.vs.cod = ON.cod; renderSala(); } });
+  ON.desafioPedido = true;
+  Promise.resolve(criarMesa()).finally(() => { ON.desafioPedido = false; });
 }
 const conviteTextoTurma = conviteTexto;
 conviteTexto = function (cod) {
-  if (!(TM.vs && TM.vs.cod === cod)) return conviteTextoTurma(cod);
-  return `⚔️ Desafio das Confrarias! A ${nomeTurma(TM.vs.nome)} desafia a sua Turma no Dominó Manauara. Quem ganhar a partida leva 1 ponto para a sua Turma.\nEntra na mesa:\n${SITE_URL}#mesa=${cod}\n\nOu abra o app e digite o número da mesa: *${cod}*`;
+  const v = ON.vista; if (!(v && v.vs && v.codigo === cod)) return conviteTextoTurma(cod);
+  return `⚔️ Desafio das Confrarias! A ${nomeTurma(v.vs)} desafia a sua Turma no Dominó Manauara. Quem ganhar a partida leva 1 ponto para a sua Turma.\nEntra na mesa:\n${SITE_URL}#mesa=${cod}\n\nOu abra o app e digite o número da mesa: *${cod}*`;
 };
 const renderSalaTurma = renderSala;
 renderSala = function () {
   renderSalaTurma();
   if (screen !== 'sala') return;
-  const v = ON.vista, vs = !!(TM.vs && v && TM.vs.cod === v.codigo && v.fase === 'espera');
+  const v = ON.vista, vs = !!(v && v.vs && v.fase === 'espera');
   let av = $('#salaDesafio');
   if (!av) { av = document.createElement('p'); av.id = 'salaDesafio'; av.className = 'note sala-desafio'; $('#salaConvite').before(av); }
   av.hidden = !vs;
-  if (vs) av.innerHTML = `<b>Mesa de desafio da ${esc(nomeTurma(TM.vs.nome))}</b><br>Mande o convite para a outra Turma e chame o seu parceiro. Vale ponto quando quem perder for de outra Turma.`;
+  if (vs) av.innerHTML = `<b>⚔️ Mesa de desafio da ${esc(nomeTurma(v.vs))}</b><br>Mande o convite para a outra Turma e chame o seu parceiro. Vale ponto quando a dupla de lá for de outra Turma.${planosValem() && !temPlano() ? '<br><small>Sem plano: até 2 desafios por dia, além da partida grátis.</small>' : ''}`;
   const cv = $('#salaConvite'); if (cv) { const tx = [...cv.childNodes].find(n => n.nodeType === 3 && n.textContent.trim()); if (tx) tx.textContent = vs ? 'Mandar o desafio no WhatsApp' : 'Chamar os amigos no WhatsApp'; }
 };
 // Na sala: a Turma de cada um aparece embaixo do nome
@@ -9973,7 +10005,8 @@ announce = function () {
 // (Os cartões são criados por vários módulos; aqui só se muda a posição, depois de cada desenho do início.)
 function ordenarInicio() {
   const tu = $('#turmaCard'), mi = $('#misCard');
-  if (tu && mi && tu.nextElementSibling !== mi) tu.after(mi);
+  if (tu && mi && !tu.classList.contains('destaque') && tu.nextElementSibling !== mi) tu.after(mi);
+  else if (tu && mi && tu.classList.contains('destaque') && $('#goResume') && $('#goResume').nextElementSibling !== mi) $('#goResume').after(mi);
   // 3.27: as Regras foram para a aba Mais (menu de baixo)
 }
 const renderHomeOrdem = renderHome;
@@ -10581,6 +10614,7 @@ function abasMontar() {
 }
 function irAba(id) {
   track('aba-' + id);
+  if (id === 'calcada' && typeof turmaCarregar === 'function') { try { desenharDesafioCalcada(); turmaCarregar(); } catch (e) {} }
   abaVolta = null;
   const atual = abaDe(screen);
   if (id === atual && ['home', 'calcada', 'mais', 'profile'].includes(screen)) {   // tocou na aba em que já está: volta para o alto
@@ -11503,6 +11537,7 @@ const PLANO_TXT = {
   'limite-mesa': ['Você já criou a mesa de hoje', 'Sem plano, dá para criar 1 mesa com os amigos por dia. À meia-noite tem mais. Para jogar agora, entre pelo número da mesa de um amigo.'],
   'limite-rapida': ['Você já jogou as suas partidas grátis de hoje', 'Sem plano, são 3 partidas por dia na mesa rápida. À meia-noite tem mais.'],
   'limite-offline': ['Você já jogou as suas partidas grátis de hoje', 'Sem plano, são 5 partidas por dia no jogo offline, e mais 1 cumprindo as três missões do dia. À meia-noite tem mais.'],
+  'limite-desafio': ['Você já fez os seus 2 desafios grátis de hoje', 'Sem plano, são 2 partidas de desafio entre Turmas por dia, além da partida grátis. À meia-noite tem mais.'],   // 04/11
   papo: ['Escrever no papo é dos sócios', 'Sem plano, você lê o papo e usa as frases prontas.']
 };
 // Convite para o plano quando bate o limite, sempre com uma saída (o que ainda dá para jogar hoje)
@@ -11513,7 +11548,7 @@ function convitePlano(motivo) {
   const a = preco ? (preco.promo ? `<span class="pl-preco"><b>${brl(preco.valor)} por mês</b> nos 3 primeiros meses<small>Promoção até ${PROMO_DIA}. Depois, ${brl(preco.normal)} por mês.</small></span>` : `<span class="pl-preco"><b>${brl(preco.valor)} por mês</b><small>Cancela quando quiser.</small></span>`) : '';
   const podeRapida = !rapida && !(profile && profile.idade === 'menor'), podeOff = !off && typeof offlineLivreHoje === 'function' && offlineLivreHoje();
   const resta = [podeRapida ? 'na mesa rápida' : '', podeOff ? 'no jogo offline' : '', off || rapida ? 'com os amigos' : ''].filter(Boolean);
-  openSheet('plano', `<p class="eyebrow">${rapida ? 'Mesa rápida' : off ? 'Jogo offline' : 'Mesas com os amigos'}</p><h2 id="sheetTitle">${tit}</h2>
+  openSheet('plano', `<p class="eyebrow">${rapida ? 'Mesa rápida' : off ? 'Jogo offline' : motivo === 'limite-desafio' ? 'Desafio das Confrarias' : 'Mesas com os amigos'}</p><h2 id="sheetTitle">${tit}</h2>
     <p>${tx}</p>
     ${pode ? `<div class="pl-ap"><p><b>Quer continuar agora?</b> Sócio da Calçada joga sem limite, tem papo de mesa em todas as partidas com os amigos, ranking completo, foto na mesa e selo ★.</p>${a}</div>` : ''}
     ${resta.length ? `<p class="note">Hoje ainda dá para jogar ${juntaE(resta)}, se você não usou as partidas de lá.</p>` : ''}
@@ -11530,7 +11565,7 @@ function convitePlano(motivo) {
 const receberOnlinePlano = receberOnline;
 receberOnline = function (m) {
   const r = receberOnlinePlano.apply(this, arguments);
-  if (m && m.t === 'erro' && (m.cod === 'limite' || m.cod === 'limite-rapida')) setTimeout(() => convitePlano(m.cod), 450);
+  if (m && m.t === 'erro' && (m.cod === 'limite' || m.cod === 'limite-rapida' || m.cod === 'limite-desafio')) setTimeout(() => convitePlano(m.cod), 450);
   if (m && m.t === 'erro' && m.cod === 'mesa-socio') { toast('Essa mesa é dos sócios da Calçada. Sem plano: Madeira, Vermelha e Azul.'); try { aplicarMesa(); } catch (e) {} }
   return r;
 };
@@ -11751,6 +11786,20 @@ async function rkFora(fora) {
     toast(fora ? 'Pronto: você não aparece mais no ranking.' : 'Pronto: você volta a aparecer no ranking.');
     rkBuscar(true);
   } catch (e) { toast('Sem internet agora. Tente de novo.'); }
+}
+// 04/11 (dono): o Desafio das Confrarias também na aba Calçada (as 5 primeiras Turmas e o botão)
+function desenharDesafioCalcada() {
+  let box = $('#dcCard'); const ref = $('#calcNota'); if (!ref) return;
+  const d = desafioAgora(), t = TM.info;
+  if (!box) { ref.insertAdjacentHTML('afterend', '<section class="rk dc" id="dcCard" hidden></section>'); box = $('#dcCard'); box.addEventListener('click', e => { if (e.target.closest('#dcDesafiar')) desafiarTurma(); else if (e.target.closest('#dcTurma')) abrirTurma(); }); }
+  box.hidden = !d.aberto || !profile;
+  if (box.hidden) return;
+  const top = (d.ranking || []).slice(0, 5);
+  box.innerHTML = `<div class="rk-cab"><h3>⚔️ Desafio das Confrarias</h3><small class="dc-ate">até 20/12</small></div>
+    ${top.length ? `<ol class="rk-ol">${top.map(r => `<li class="${t && r.nome === t.nome ? 'eu' : ''}${r.pos <= 3 ? ' podio' : ''}"><span class="rk-pos">${r.pos}º</span><span class="rk-nome">${esc(nomeTurma(r.nome))}${esc(estrelas(r.titulos))}</span><span class="rk-pts">${pts(r.pontos)}</span></li>`).join('')}</ol>`
+      : '<p class="rk-vazio"><b>Nenhuma Turma pontuou ainda.</b><span>A primeira vitória contra outra Turma já põe a sua no topo.</span></p>'}
+    <button type="button" class="primary" id="${t ? 'dcDesafiar' : 'dcTurma'}" style="width:100%">${t ? 'Desafiar outra Turma' : 'Montar a minha Turma'}</button>
+    ${t ? '<button type="button" class="linkbtn" id="dcTurma" style="width:100%">Ver a minha Turma</button>' : ''}`;
 }
 (function () {
   const ref = $('#calcNota'); if (!ref) return;
@@ -13658,7 +13707,7 @@ function cotaDoDia() {
   if (!(typeof pagamentosAtivos === 'function' && pagamentosAtivos())) return null;
   if (mode === 'off') return { n: offlineUsoHoje(), de: offPorDia(), onde: 'no jogo offline' };
   const u = mode === 'on' && ON && ON.vista && ON.vista.meuUso;
-  if (u && u.de) return { n: u.n, de: u.de, onde: ON.vista.publica ? 'na mesa rápida' : 'nas mesas com os amigos' };
+  if (u && u.de) return { n: u.n, de: u.de, onde: u.desafio ? 'nos desafios entre Turmas' : ON.vista.publica ? 'na mesa rápida' : 'nas mesas com os amigos' };
   return null;
 }
 const showResultCota = showResult;

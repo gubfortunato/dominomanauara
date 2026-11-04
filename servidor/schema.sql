@@ -67,6 +67,8 @@ CREATE INDEX IF NOT EXISTS turma_membros_turma ON turma_membros (turma, entrou);
 CREATE TABLE IF NOT EXISTS desafio_pontos (edicao INTEGER NOT NULL, turma TEXT NOT NULL, pontos INTEGER NOT NULL DEFAULT 0, ultimo INTEGER, PRIMARY KEY (edicao, turma));
 CREATE TABLE IF NOT EXISTS desafio_jogos (edicao INTEGER NOT NULL, dia TEXT NOT NULL, vencedora TEXT NOT NULL, perdedora TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (edicao, dia, vencedora, perdedora));
 CREATE TABLE IF NOT EXISTS desafio_campeas (edicao INTEGER PRIMARY KEY, turma TEXT, pontos INTEGER, fechada_em INTEGER);
+-- 04/11 (dono): sem plano, as partidas de desafio entre Turmas não gastam a partida grátis do dia (até 2 por dia, contadas aqui)
+CREATE TABLE IF NOT EXISTS desafio_uso (dia TEXT NOT NULL, aparelho TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (dia, aparelho));
 
 -- "Hoje no Dominó Manauara" (3.24): partidas terminadas, galos e batidas de carroça do dia (dia de Manaus)
 CREATE TABLE IF NOT EXISTS vivo_dia (dia TEXT PRIMARY KEY, partidas INTEGER NOT NULL DEFAULT 0, galos INTEGER NOT NULL DEFAULT 0, carrocas INTEGER NOT NULL DEFAULT 0);
