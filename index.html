@@ -2420,6 +2420,20 @@ body.papo-aberto{overflow:hidden}
 }
 /* 03/11: carta de boas-vindas do sócio */
 .carta-estrela .selo-estrela{width:.95em;height:.95em;margin-left:.25em;vertical-align:-.1em;filter:drop-shadow(0 3px 6px rgba(240,180,94,.45))}
+.pr-lead{font-size:17px;line-height:1.45}
+.pr-preco{display:grid;justify-items:center;gap:4px;margin:12px 0 14px;padding:16px 12px 14px;border-radius:18px;background:linear-gradient(160deg,#3a2206,#7a4c12);color:#fff3dc;text-align:center;box-shadow:0 0 0 2px #d9a93a}
+.pr-preco .pr-tag{padding:4px 12px;border-radius:999px;background:#f3c063;color:#2a1804;font-size:13px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.pr-preco b{font-family:var(--font-display);font-weight:400;font-size:46px;line-height:1.05;color:#ffe2a4}
+.pr-preco b i{font-style:normal;font-size:28px}
+.pr-preco b small{font-family:inherit;font-size:18px;color:#f3d9a6;margin-left:2px}
+.pr-preco span:last-child{font-size:14.5px;color:#f0dcb6}
+.pr-lista{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:10px}
+.pr-lista li{display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:start;font-size:16.5px;line-height:1.35}
+.pr-lista svg{width:26px;height:26px;padding:4px;border-radius:50%;background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);box-sizing:border-box}
+.pr-nota{text-align:center;margin:4px 0 12px}
+#prFechar:disabled{opacity:.55}
+.pr-acoes{position:sticky;bottom:calc(-20px - env(safe-area-inset-bottom,0px));margin:0 -20px;padding:16px 20px calc(16px + env(safe-area-inset-bottom,0px));background:linear-gradient(color-mix(in srgb,var(--bg-2) 0%,transparent),var(--bg-2) 18px);z-index:1}
+.folha-x.pr-travado{opacity:.25;pointer-events:none}
 .carta-lista{margin:2px 0 4px;padding-left:20px;display:grid;gap:5px;font-size:16.5px;line-height:1.35}
 .carta-lista li::marker{color:var(--nos)}
 #board .zone.nao{opacity:0;pointer-events:none}   /* 03/11: ponta onde a pedra arrastada não encaixa (só para a conta de onde soltou) */
@@ -4368,13 +4382,15 @@ const NOME_RUIM_PARTE = ['porra', 'caralh', 'buceta', 'boceta', 'xoxota', 'xerec
   // 3.38.2: o "Boyceta" passou (y no lugar do o; s no lugar do c)
   'boicet', 'buicet', 'buset', 'boset', 'bucit', 'bocit', 'xoxot', 'xerek', 'piruc', 'pirok',
   'onlyfans', 'pepek', 'xaninh', 'grelinh', 'bundinh', 'bundud', 'rabud', 'peitud', 'gozad', 'enrab', 'rapariga', 'desgrac', 'imbecil',
-  'idiota', 'mongoloid', 'aleijad', 'vagab', 'arromb', 'fuck', 'shit', 'pussy', 'bitch', 'whore', 'nigg', 'slut', 'boobs'];
+  'idiota', 'mongoloid', 'aleijad', 'vagab', 'arromb', 'fuck', 'shit', 'pussy', 'bitch', 'whore', 'nigg', 'slut', 'boobs',
+  // 04/11 (dono): "Pombona" passou no nome de Turma (gíria de baixo calão)
+  'pombon', 'pombao', 'pombud', 'pirocud'];
 // Curtas: só barram como palavra separada (para não pegar "Cunha" ou "Disputa").
 const NOME_RUIM_PALAVRA = ['cu', 'puta', 'putas', 'puto', 'foda', 'fode', 'rola', 'xota', 'viado', 'veado', 'bicha', 'sapatao',
   'crioulo', 'corno', 'otario', 'babaca', 'anus', 'penis', 'vagina', 'kct', 'vsf', 'tnc', 'fdps', 'teba', 'cui', 'tobo',
   'pica', 'pau', 'piru', 'xana', 'ppk', 'grelo', 'bunda', 'bundao', 'rabo', 'peitos', 'peitao', 'teta', 'tetas', 'chupa', 'chupar', 'mamar',
   'mamada', 'gozar', 'gozo', 'gostosa', 'gostoso', 'gostosao', 'gostosinha', 'sexy', 'sex', 'anal', 'nude', 'nudes', 'broxa', 'cachorra',
-  'vaca', 'cagao', 'cagar', 'dick', 'cock', 'tits'];
+  'vaca', 'cagao', 'cagar', 'dick', 'cock', 'tits', 'pomba', 'pombas', 'pombinha'];
 // 3.38.2 (o "Sokomo Kazada" passou): frases de duplo sentido, escritas do jeito que se fala ("só como casada") e
 // também trocando letras de mesmo som (k = c, z = s, y = i, w = u, ph = f). Conferidas no nome todo grudado.
 const NOME_RUIM_FRASE = [
@@ -8111,6 +8127,7 @@ openSheet = function (kind, html) {
   sh.addEventListener('touchstart', e => {
     y0 = null;
     if (!sheetKind || sheetKind === 'result' || e.touches.length !== 1) return;
+    if (sheetKind === 'promo' && typeof promoAte !== 'undefined' && Date.now() < promoAte) return;   // 04/11: aviso de sócio travado por 10 s
     if (e.target.closest('.mm-lista')) return;
     if (sh.scrollTop > 0 && !e.target.closest('.folha-alca')) return;
     y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; dy = 0; t0 = Date.now(); puxando = false; decidido = false;
@@ -12232,6 +12249,55 @@ function cartaApoiador(forcar) {
 }
 const renderHomeCarta = renderHome;
 renderHome = function () { renderHomeCarta.apply(this, arguments); setTimeout(cartaApoiador, 1200); };
+
+// ===== 04/11 (pedido do dono): aviso da promoção de Sócio da Calçada =====
+// Uma vez por aparelho, para todo mundo sem plano, na próxima vez que abrir o app (no início). O fechar fica inativo por
+// 10 s, com a contagem; nesse tempo a folha não fecha pelo ×, pelo fundo nem arrastando. "Quero ser sócio" vale na hora.
+const PROMO_AVISO = 'dmz-aviso-promo-socio-1';
+let promoAte = 0;
+const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function avisoPromoSocio(forcar) {
+  if (!forcar && (store.get(PROMO_AVISO) || sheetKind || screen !== 'home' || !profile)) return;
+  if (!forcar && (temPlano() || souAdmin() || menorDeIdade())) return;
+  if (!(typeof pagamentosAtivos === 'function' && pagamentosAtivos())) return;
+  store.set(PROMO_AVISO, String(Date.now()));
+  const p = precoDe('apm'), nome = profile && profile.name ? esc(profile.name) : '';
+  const preco = p.promo
+    ? `<div class="pr-preco"><span class="pr-tag">Promoção até ${PROMO_DIA}</span><b>${brlGrande(p.valor)}<small>/mês</small></b><span>nos ${p.vezes} primeiros meses · depois ${brl(p.normal)} por mês</span></div>`
+    : `<div class="pr-preco"><b>${brlGrande(p.valor)}<small>/mês</small></b></div>`;
+  openSheet('promo', `<p class="eyebrow">Sócio da Calçada</p>
+    <h2 id="sheetTitle">${nome ? `${nome}, ` : ''}garanta a sua cadeira na calçada!</h2>
+    <p class="pr-lead">Sem plano, o jogo tem um limite de partidas por dia. Sendo sócio, a calçada é sua o dia inteiro, e você ainda ajuda o Dominó Manauara a crescer.</p>
+    ${preco}
+    <ul class="pr-lista">
+      <li>${CHECK}<span><b>Partidas sem limite</b> na mesa rápida, com os amigos e no offline (até sem internet)</span></li>
+      <li>${CHECK}<span><b>Desafios sem limite</b> no Desafio das Confrarias</span></li>
+      <li>${CHECK}<span><b>Todas as mesas de Manaus:</b> Teatro Amazonas, Arara-Azul, Tucano, Encontro das Águas e muito mais</span></li>
+      <li>${CHECK}<span><b>Papo de mesa</b> liberado nas partidas com os amigos</span></li>
+      <li>${CHECK}<span><b>Seu avatar do seu jeito</b>, foto na mesa e o selo ★ de sócio</span></li>
+      <li>${CHECK}<span><b>Ranking completo</b> da semana e do mês</span></li>
+    </ul>
+    <p class="note pr-nota">Sem fidelidade: você para a renovação quando quiser.</p>
+    <div class="pr-acoes"><button type="button" class="primary" id="prQuero" style="width:100%">Quero ser sócio</button>
+    <button type="button" class="secondary" id="prFechar" style="width:100%;margin-top:8px" disabled>Agora não (10)</button></div>`);
+  track('promo-socio-aviso');
+  promoAte = Date.now() + 10000;
+  const x = $('#sheet .folha-x'); if (x) { x.disabled = true; x.classList.add('pr-travado'); }
+  const bt = $('#prFechar');
+  const tic = setInterval(() => {
+    const f = Math.ceil((promoAte - Date.now()) / 1000);
+    if (!bt.isConnected) { clearInterval(tic); return; }
+    if (f > 0) { bt.textContent = `Agora não (${f})`; return; }
+    clearInterval(tic); bt.disabled = false; bt.textContent = 'Agora não';
+    if (x) { x.disabled = false; x.classList.remove('pr-travado'); }
+  }, 250);
+  bt.addEventListener('click', () => { if (Date.now() < promoAte) return; track('promo-socio-fechou'); closeSheet(); });
+  $('#prQuero').addEventListener('click', () => { track('promo-socio-quero'); promoAte = 0; closeSheet(); abrirApoio('home', 'plano'); });
+}
+// enquanto trava, o toque no fundo escuro não fecha
+$('#back').addEventListener('click', e => { if (sheetKind === 'promo' && e.target.id === 'back') { e.stopImmediatePropagation(); if (Date.now() >= promoAte) closeSheet(); } }, true);
+const renderHomePromo = renderHome;
+renderHome = function () { renderHomePromo.apply(this, arguments); setTimeout(() => { try { avisoPromoSocio(); } catch (e) {} }, 2200); };
 
 
 // ---- Desenho das peças ----
