@@ -13,6 +13,8 @@ const codOk = v => new RegExp(`^[${LETRAS}]{6}$`).test(String(v || ''));
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 const MANAUS = 4 * 3600000;
 const diaManaus = t => new Date(t - MANAUS).toISOString().slice(0, 10);
+// 04/11 (dono): nome de Turma com termo de baixo calão não aparece em lugar nenhum (fica "Turma sem nome")
+const nomeSeguro = n => n && nomeOfensivo(n) ? 'Turma sem nome' : n;
 function codigoNovo() { const b = crypto.getRandomValues(new Uint8Array(6)); return [...b].map(x => LETRAS[x % LETRAS.length]).join(''); }
 // A edição do ano: começa 1º/11 0h e termina no fim de 20/12 (Manaus = UTC-4)
 export function edicao(env, agora) {
@@ -70,8 +72,8 @@ async function resumo(env, ap) {
   const rk = await ranking(env, e.ano, 50);
   const campeas = (await env.DB.prepare('SELECT c.edicao, c.pontos, t.nome FROM desafio_campeas c LEFT JOIN turmas t ON t.codigo = c.turma ORDER BY c.edicao DESC LIMIT 10').all()).results || [];
   const desafio = { ano: e.ano, inicio: e.inicio, fim: e.fim, aberto: e.aberto, antes: e.antes, depois: e.depois,
-    ranking: rk.slice(0, 10).map((r, i) => ({ pos: i + 1, nome: r.nome, pontos: r.pontos, titulos: r.titulos, membros: r.membros })),
-    campeas: campeas.filter(c => c.nome).map(c => ({ ano: c.edicao, nome: c.nome, pontos: c.pontos })) };
+    ranking: rk.slice(0, 10).map((r, i) => ({ pos: i + 1, nome: nomeSeguro(r.nome), pontos: r.pontos, titulos: r.titulos, membros: r.membros })),
+    campeas: campeas.filter(c => c.nome).map(c => ({ ano: c.edicao, nome: nomeSeguro(c.nome), pontos: c.pontos })) };
   let turma = null;
   if (idOk(ap)) {
     const t = await turmaDoAparelho(env, ap);
@@ -79,7 +81,7 @@ async function resumo(env, ap) {
       const { results } = await env.DB.prepare('SELECT nome FROM turma_membros WHERE turma = ? ORDER BY entrou LIMIT ?').bind(t.codigo, MAX_MEMBROS).all();
       const p = await env.DB.prepare('SELECT pontos FROM desafio_pontos WHERE edicao = ? AND turma = ?').bind(e.ano, t.codigo).first();
       const i = rk.findIndex(r => r.codigo === t.codigo);
-      turma = { codigo: t.codigo, nome: t.nome, titulos: t.titulos, taca: t.titulos >= 3, membros: (results || []).map(r => r.nome), pontos: (p && p.pontos) || 0, pos: i >= 0 ? i + 1 : null };
+      turma = { codigo: t.codigo, nome: nomeSeguro(t.nome), titulos: t.titulos, taca: t.titulos >= 3, membros: (results || []).map(r => r.nome), pontos: (p && p.pontos) || 0, pos: i >= 0 ? i + 1 : null };
     }
   }
   return { desafio, turma };
@@ -141,5 +143,5 @@ export async function apelido(env, ap, nome) {
 // Nome da Turma de cada um, para a mesa mostrar
 export async function nomeDaTurma(env, ap) {
   const t = idOk(ap) ? await turmaDoAparelho(env, ap) : null;
-  return t ? t.nome : null;
+  return t ? nomeSeguro(t.nome) : null;
 }
