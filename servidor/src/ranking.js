@@ -92,8 +92,9 @@ async function ordenados(env, per) {
 }
 async function lista(env, per, fim, eu, reiAp) {
   const pts = usaPontos(env, per), todos = await ordenados(env, per);
+  const soc = await socios(env, todos.slice(0, TOP).map(x => x.aparelho));   // 03/11: a ★ de sócio aparece no ranking
   const top = todos.slice(0, TOP).map((x, i) => Object.assign({ pos: i + 1, nome: x.nome, av: x.av, nv: x.nv, ganhas: x.ganhas, jogadas: x.jogadas },
-    pts ? { pontos: x.pontos } : {}, { eu: !!eu && x.aparelho === eu, rei: !!reiAp && x.aparelho === reiAp }));
+    pts ? { pontos: x.pontos } : {}, { eu: !!eu && x.aparelho === eu, rei: !!reiAp && x.aparelho === reiAp, socio: soc.has(x.aparelho) }));
   let meu = null;
   if (eu && !top.some(x => x.eu)) {
     const me = await env.DB.prepare(`SELECT nome, ${pts ? 'pontos, ' : ''}ganhas, jogadas, atualizado FROM ${pts ? 'calcada' : 'ranking'} WHERE periodo = ? AND aparelho = ?`)

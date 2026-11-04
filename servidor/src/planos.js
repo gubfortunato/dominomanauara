@@ -15,11 +15,13 @@ export function planosDesde(env) {
   return v != null && v !== '' && !isNaN(Number(v)) ? Number(v) : PLANOS_DESDE;
 }
 export const limitesValem = (env, agora) => (agora || Date.now()) >= planosDesde(env);
-// Promoção de lançamento (decisão do dono): vale até o começo dos limites (05/11, 00:00 de Brasília). Quem assina até
-// lá paga o preço promocional nos primeiros ciclos; depois, o normal. PROMO_ATE no ambiente muda a data.
+// Promoção de lançamento (decisão do dono): quem assina até o fim dela paga o preço promocional nos primeiros ciclos;
+// depois, o normal. 03/11 (dono): vai até 30/11 (antes acabava junto do começo dos limites, 05/11), para pegar o
+// primeiro mês de limites. PROMO_ATE no ambiente muda a data.
+export const PROMO_ATE = Date.UTC(2026, 11, 1, 3, 0, 0);   // 01/12/2026, 00:00 de Brasília (vale até 30/11)
 export function promoAte(env) {
   const v = env && env.PROMO_ATE;
-  return v != null && v !== '' && !isNaN(Number(v)) ? Number(v) : planosDesde(env);
+  return v != null && v !== '' && !isNaN(Number(v)) ? Number(v) : Math.max(PROMO_ATE, planosDesde(env));
 }
 export const promoValendo = (env, agora) => (agora || Date.now()) < promoAte(env);
 // dia de Brasília (UTC-3, sem horário de verão)
