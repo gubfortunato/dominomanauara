@@ -55,7 +55,7 @@ const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pont
   'tucuma', 'arena', 'mercado', 'vitoria', 'calcadao', 'centro', 'relogio', 'teatro', 'palacio', 'chamine', 'anavilhanas',
   'arara', 'boto', 'beiradao', 'barco', 'skylinenoite',   // 28/10: Manaus Skyline
   'roxoacai', 'floresta', 'pordosol',   // 03/11: Cor de Açaí, Floresta e Sol de setembro
-  'araraazul'];   // 04/11: Arara-Azul
+  'araraazul', 'tucano'];   // 04/11: Arara-Azul e Tucano
 // 28/10 (regras do dono): a partir de 5/11, a mesa com os amigos de quem não é sócio só usa as mesas grátis (Madeira,
 // Vermelha e Azul): no sorteio e na troca. Na mesa rápida o sorteio continua entre todas.
 export const TEMAS_GRATIS = ['madeira', 'garantido', 'caprichoso'];
