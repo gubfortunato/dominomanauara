@@ -1358,6 +1358,7 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .tc-go{display:block;text-align:center;padding:13px 16px;border-radius:14px;background:linear-gradient(#f7d27d,#eaae45);color:#2a1804;font-weight:800;font-size:17px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
 .tm-passos{margin:6px 0 10px;padding-left:22px;display:grid;gap:8px;font-size:17px;line-height:1.35}
 .tm-passos li::marker{font-weight:800;color:var(--nos)}
+.tm-virtual{margin:-2px 0 10px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,var(--nos) 10%,transparent);font-size:14.5px;line-height:1.35;color:var(--muted)}
 #dcCard .dc-ate{color:var(--muted);font-weight:700}
 .tm-regra{margin:8px 0 12px}
 .tm-box{display:grid;gap:8px;margin:12px 0;padding:14px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2)}
@@ -3680,7 +3681,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.50.1', data: '04/11/2026', itens: ['Mesa nova: Peixe-boi, o peixe-boi-da-amazônia nadando no rio.', 'Aviso da promoção de Sócio da Calçada (aparece uma vez).'] },
+  { v: '3.50.1', data: '04/11/2026', itens: ['Mesa nova: Peixe-boi, o peixe-boi-da-amazônia nadando no rio.', 'Aviso da promoção de Sócio da Calçada (aparece uma vez).', 'Desafio das Confrarias: fica claro que a estrela de campeã e o troféu da Grande Taça são do app (virtuais).'] },
   { v: '3.50', data: '04/11/2026', itens: ['Desafio das Confrarias: cartão novo no início, com a sua Turma, o ranking das 3 primeiras e o botão Desafiar outra Turma. Quem ainda não tem Turma vê o passo a passo. O ranking das Turmas também aparece na aba Calçada.', 'Botão Desafiar outra Turma: cria a mesa online e o convite do WhatsApp já vai como desafio. Na sala, todo mundo vê que é mesa de desafio.', 'Sem plano: até 2 partidas de desafio por dia, além da partida grátis (o desafio não gasta a partida do dia).', 'Jogo offline: o app confere com o servidor pelo menos uma vez a cada 2 dias para manter as partidas grátis do dia (sócio não precisa).'] },
   { v: '3.49.1', data: '04/11/2026', itens: ['Mesa nova: Tucano, com o bico de arco-íris.'] },
   { v: '3.49', data: '04/11/2026', itens: ['Mesa nova: Arara-Azul, pousada no galho.', 'Mesa Igreja de São Sebastião: a calçada agora é a mesma do Largo, com as ondas de pedra portuguesa preta e branca em perspectiva.', 'Ícone da aba Calçada redesenhado: três pessoas separadas e nítidas, também com a aba marcada.'] },
@@ -3792,7 +3793,7 @@ const NOVIDADES = [
     'Quem está com uma pedra só fica piscando: "Última pedra!". E a reta final da partida ganha aviso.', 'Jogando pela Copa 357, a mesa já vem a Manaus 357.', 'Cada jogo novo começa numa mesa diferente (offline, com os amigos e na mesa rápida). Quer outra? É só trocar antes de começar.',
     'A vez de jogar agora tem a cor da dupla: adversário em azul, parceiro em dourado.'] },
   { v: '3.17', data: '14/10/2026', itens: ['Turmas: junte os amigos numa Turma com um código e chame pelo WhatsApp.',
-    'Desafio das Confrarias, de 1º/11 a 20/12: cada vitória numa partida online contra alguém de outra Turma vale ponto. A campeã leva o título do ano; com 3 títulos, a Grande Taça.',
+    'Desafio das Confrarias, de 1º/11 a 20/12: cada vitória numa partida online contra alguém de outra Turma vale ponto. A campeã ganha uma estrela ★ no nome da Turma, aqui no app; com 3 estrelas, o troféu 🏆 da Grande Taça (tudo virtual, no app).',
     'Na sala da mesa online aparece a Turma de cada um.', 'Todas as mesas liberadas para todo mundo, inclusive a Manaus 357 e a Igreja de São Sebastião.',
     'Pedras maiores na mesa quando a mão vai longe, com os pontos mais fáceis de ler.',
     'Início reorganizado: a mesa rápida logo no alto e o jogo offline depois do jogar com os amigos.'] },
@@ -9363,7 +9364,7 @@ function desenharCartaoTurma() {
   const camp = d.campeas && d.campeas[0] && d.campeas[0].ano === d.ano ? d.campeas[0] : null;
   $('#turmaCardD').textContent = d.depois ? (camp ? `Campeã de ${d.ano}: ${camp.nome}, com ${pts(camp.pontos)}.` : 'O Desafio deste ano acabou.') + (t ? ` A sua fez ${pts(t.pontos)}.` : '')
     : d.aberto ? (t ? `${pts(t.pontos)}${t.pos ? ` · ${t.pos}º lugar` : ''}. Cada vitória online contra outra Turma vale ponto.` : 'Está valendo! Junte os amigos numa Turma: cada vitória online contra outra Turma vale ponto.')
-    : (t ? `Começa em 1º/11. Chame a turma com o código ${t.codigo}.` : 'Junte os amigos numa Turma. De 1º/11 a 20/12, cada vitória online contra outra Turma vale ponto; a campeã leva o título.');
+    : (t ? `Começa em 1º/11. Chame a turma com o código ${t.codigo}.` : 'Junte os amigos numa Turma. De 1º/11 a 20/12, cada vitória online contra outra Turma vale ponto; a campeã ganha uma estrela ★ no nome, aqui no app.');
 }
 const renderHomeTurma = renderHome;
 renderHome = function () {
@@ -9398,7 +9399,8 @@ function rankingHTML(d, minha) {
 function desenharTurma() {
   const box = $('#turmaFolha'); if (!box) return;
   const t = TM.info, d = desafioAgora();
-  const regra = `<ol class="tm-passos"><li><b>Monte a sua Turma</b> e mande o código para os amigos.</li><li><b>Desafie outra Turma:</b> o app cria a mesa e manda o convite pelo WhatsApp.</li><li><b>Ganhou, +1 ponto.</b> Em 20/12, a Turma com mais pontos é a campeã do ano; com 3 títulos, a <b>Grande Taça</b>.</li></ol>
+  const regra = `<ol class="tm-passos"><li><b>Monte a sua Turma</b> e mande o código para os amigos.</li><li><b>Desafie outra Turma:</b> o app cria a mesa e manda o convite pelo WhatsApp.</li><li><b>Ganhou, +1 ponto.</b> Em 20/12, a Turma com mais pontos é a campeã do ano e ganha uma estrela ★ ao lado do nome. Com 3 estrelas, ganha o troféu 🏆 da Grande Taça.</li></ol>
+    <p class="tm-virtual">A estrela e o troféu são do app: aparecem no nome da Turma, no ranking e na mesa. Não é prêmio físico.</p>
     <p class="note tm-regra">Vale de 1º/11 a 20/12, em partida online contra alguém de outra Turma (na mesa rápida também conta, se cair gente de outra Turma do outro lado). Até 5 pontos por dia contra a mesma Turma.${planosValem() && !temPlano() ? ' Sem plano: até 2 desafios por dia, além da partida grátis.' : ''}</p>`;
   const campeas = d.campeas && d.campeas.length ? `<p class="tm-k">Campeãs</p><ul class="tm-camp">${d.campeas.map(c => `<li><span>${c.ano}</span><b>${esc(c.nome)}</b></li>`).join('')}</ul>` : '';
   if (!t) {
@@ -9423,7 +9425,7 @@ function desenharTurma() {
     const zap = 'https://wa.me/?text=' + encodeURIComponent(`Entra na minha Turma "${t.nome}" no Dominó Manauara, para o Desafio das Confrarias (1º/11 a 20/12). Código: ${t.codigo}\n${link}`);
     const status = d.aberto ? `<b>${pts(t.pontos)}</b>${t.pos ? ` · ${t.pos}º lugar` : ''}` : d.antes ? 'Começa em 1º de novembro.' : `Este ano a sua Turma fez ${pts(t.pontos)}.`;
     box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">${esc(nomeTurma(t.nome))}${estrelas(t.titulos)}</h2>
-      <p class="tm-status">${status}${t.taca ? ' · Grande Taça!' : t.titulos ? ` · ${t.titulos} ${t.titulos === 1 ? 'título' : 'títulos'}` : ''}</p>
+      <p class="tm-status">${status}${t.taca ? ' · 🏆 Grande Taça' : t.titulos ? ` · ${t.titulos} ${t.titulos === 1 ? 'estrela' : 'estrelas'} de campeã` : ''}</p>
       <div class="tm-cod"><small>Código da Turma</small><b>${esc(t.codigo)}</b></div>
       ${d.aberto ? '<button type="button" class="primary tm-desafiar" id="tmDesafiar">Desafiar outra Turma</button><p class="note tm-desafiar-n">Cria uma mesa online e manda o convite para a outra Turma. Quem ganhar leva o ponto.</p>' : ''}
       <a class="${d.aberto ? 'secondary' : 'primary'} tm-zap" id="tmZap" href="${esc(zap)}" target="_blank" rel="noopener">Chamar a turma no WhatsApp</a>
