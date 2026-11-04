@@ -24,17 +24,17 @@ export const PRODUTOS = {
   ap3: { nome: 'Dominó Manauara - 3 meses', desc: 'Sócio da Calçada trimestral: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 37.90, dias: 92, recorrente: 'QUARTERLY', promo: { valor: 24.90, vezes: 1 } },
   ap12: { nome: 'Dominó Manauara - 1 ano', desc: 'Sócio da Calçada anual: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 99.90, dias: 366, recorrente: 'YEARLY', promo: { valor: 74.90, vezes: 1 } },
   ap1: { nome: 'Dominó Manauara - 1 mês', desc: 'Sócio da Calçada por 1 mês: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 14.90, dias: 31, promo: { valor: 9.90, vezes: 1 } },
-  apoio990: { nome: 'Dominó Manauara - 1 mês', desc: 'Apoiador do Dominó Manauara por 1 mês: foto na mesa online, selo e avatares exclusivos.', valor: 9.90, dias: 31 },
-  apoio1990: { nome: 'Dominó Manauara - 3 meses', desc: 'Apoiador do Dominó Manauara por 3 meses: foto na mesa online, selo e avatares exclusivos.', valor: 19.90, dias: 92 },
-  apoio2990: { nome: 'Dominó Manauara - 6 meses', desc: 'Apoiador do Dominó Manauara por 6 meses: foto na mesa online, selo e avatares exclusivos.', valor: 29.90, dias: 183 },
-  livre: { nome: 'Dominó Manauara - apoio', livre: true },
+  apoio990: { nome: 'Dominó Manauara - 1 mês', desc: 'Sócio da Calçada do Dominó Manauara por 1 mês: foto na mesa online, selo e avatares exclusivos.', valor: 9.90, dias: 31 },
+  apoio1990: { nome: 'Dominó Manauara - 3 meses', desc: 'Sócio da Calçada do Dominó Manauara por 3 meses: foto na mesa online, selo e avatares exclusivos.', valor: 19.90, dias: 92 },
+  apoio2990: { nome: 'Dominó Manauara - 6 meses', desc: 'Sócio da Calçada do Dominó Manauara por 6 meses: foto na mesa online, selo e avatares exclusivos.', valor: 29.90, dias: 183 },
+  livre: { nome: 'Dominó Manauara - sócio', livre: true },
   // até a 3.37.1 (continuam valendo para os pedidos já feitos e para algum celular que ainda não atualizou)
-  apoio5: { nome: 'Dominó Manauara - 1 mês', desc: 'Apoiador do Dominó Manauara por 1 mês: foto na mesa online, selo e avatares exclusivos.', valor: 5, dias: 31 },
-  apoio12: { nome: 'Dominó Manauara - 3 meses', desc: 'Apoiador do Dominó Manauara por 3 meses: foto na mesa online, selo e avatares exclusivos.', valor: 12, dias: 92 },
-  apoio40: { nome: 'Dominó Manauara - 1 ano', desc: 'Apoiador do Dominó Manauara por 1 ano: foto na mesa online, selo e avatares exclusivos.', valor: 40, dias: 366 },
+  apoio5: { nome: 'Dominó Manauara - 1 mês', desc: 'Sócio da Calçada do Dominó Manauara por 1 mês: foto na mesa online, selo e avatares exclusivos.', valor: 5, dias: 31 },
+  apoio12: { nome: 'Dominó Manauara - 3 meses', desc: 'Sócio da Calçada do Dominó Manauara por 3 meses: foto na mesa online, selo e avatares exclusivos.', valor: 12, dias: 92 },
+  apoio40: { nome: 'Dominó Manauara - 1 ano', desc: 'Sócio da Calçada do Dominó Manauara por 1 ano: foto na mesa online, selo e avatares exclusivos.', valor: 40, dias: 366 },
   // antigos (até a 3.21): continuam valendo para os pedidos já feitos e para algum celular que ainda não atualizou
-  mensal: { nome: 'Plano Apoiador · 30 dias', desc: 'Dominó Manauara: sua foto na mesa online, selo de apoiador, avatares exclusivos e tudo do Personalizar liberado na hora, por 30 dias.', valor: 4.90, dias: 31 },
-  anual: { nome: 'Plano Apoiador · 1 ano', desc: 'Dominó Manauara: sua foto na mesa online, selo de apoiador, avatares exclusivos e tudo do Personalizar liberado na hora, por 1 ano.', valor: 39.90, dias: 366 },
+  mensal: { nome: 'Sócio da Calçada · 30 dias', desc: 'Dominó Manauara: sua foto na mesa online, selo de sócio, avatares exclusivos e tudo do Personalizar liberado na hora, por 30 dias.', valor: 4.90, dias: 31 },
+  anual: { nome: 'Sócio da Calçada · 1 ano', desc: 'Dominó Manauara: sua foto na mesa online, selo de sócio, avatares exclusivos e tudo do Personalizar liberado na hora, por 1 ano.', valor: 39.90, dias: 366 },
   doacao5: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter viva a tradição do dominó.', valor: 5 },
   doacao10: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter viva a tradição do dominó.', valor: 10 },
   doacao20: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter viva a tradição do dominó. Quem doa pode mostrar a foto na mesa online. De presente: 30 dias de Plano Apoiador.', valor: 20, brinde: 31 }
@@ -68,7 +68,7 @@ export function produtoDoPedido(produto, valor) {
   if (!p) return null;
   if (!p.livre) return p;
   const meses = mesesDoValor(Number(valor) || 0);
-  return Object.assign({}, p, { valor: Number(valor), dias: diasDosMeses(meses), desc: `Apoiador do Dominó Manauara por ${textoMeses(meses)}: foto na mesa online, selo e avatares exclusivos.` });
+  return Object.assign({}, p, { valor: Number(valor), dias: diasDosMeses(meses), desc: `Sócio da Calçada por ${textoMeses(meses)}: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.` });
 }
 const PEDIDOS_POR_HORA = 12, TROCAS_POR_HORA = 10;
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));

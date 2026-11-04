@@ -1,11 +1,13 @@
-// Planos (28/10, regras do dono). Sem plano (Grátis): 5 partidas completas por dia na mesa rápida (mesas públicas
+// Planos (28/10, regras do dono; 03/11: mesa rápida de 5 para 3, e até 3 com os amigos na mesa de um sócio). Sem plano (Grátis): 3 partidas completas por dia na mesa rápida (mesas públicas
 // online); nas mesas com os amigos, cria 1 mesa por dia e joga 1 partida por dia (mesmo convidado), com o papo de mesa
 // liberado nessa partida; o ranking mostra só o Rei da Calçada e os 3 primeiros da semana. O Sócio da Calçada (mensal,
 // trimestral ou anual) não tem limite e vê tudo. Jogo offline: sem limite para todos. Os limites zeram à meia-noite de
 // Brasília e só valem a partir do lançamento (avisado 7 dias antes). O servidor guarda, por aparelho e dia, só quantas
 // mesas criou e quantas partidas jogou (com os amigos e na mesa rápida), por 7 dias.
 export const PLANOS_DESDE = Date.UTC(2026, 10, 5, 3, 0, 0);   // 05/11/2026, 00:00 de Brasília
-export const LIMITE = { mesas: 1, partidas: 1, publicas: 5 };
+// 03/11 (regras do dono): sem plano, 3 partidas por dia na mesa rápida (antes 5); nas mesas com os amigos, 1 por dia, ou até 3
+// quando a mesa é de um sócio (partidasSocio); 1 mesa criada por dia
+export const LIMITE = { mesas: 1, partidas: 1, partidasSocio: 3, publicas: 3 };
 const DIA = 86400000;
 
 export function planosDesde(env) {
@@ -13,11 +15,13 @@ export function planosDesde(env) {
   return v != null && v !== '' && !isNaN(Number(v)) ? Number(v) : PLANOS_DESDE;
 }
 export const limitesValem = (env, agora) => (agora || Date.now()) >= planosDesde(env);
-// Promoção de lançamento (decisão do dono): vale até o começo dos limites (05/11, 00:00 de Brasília). Quem assina até
-// lá paga o preço promocional nos primeiros ciclos; depois, o normal. PROMO_ATE no ambiente muda a data.
+// Promoção de lançamento (decisão do dono): quem assina até o fim dela paga o preço promocional nos primeiros ciclos;
+// depois, o normal. 03/11 (dono): vai até 30/11 (antes acabava junto do começo dos limites, 05/11), para pegar o
+// primeiro mês de limites. PROMO_ATE no ambiente muda a data.
+export const PROMO_ATE = Date.UTC(2026, 11, 1, 3, 0, 0);   // 01/12/2026, 00:00 de Brasília (vale até 30/11)
 export function promoAte(env) {
   const v = env && env.PROMO_ATE;
-  return v != null && v !== '' && !isNaN(Number(v)) ? Number(v) : planosDesde(env);
+  return v != null && v !== '' && !isNaN(Number(v)) ? Number(v) : Math.max(PROMO_ATE, planosDesde(env));
 }
 export const promoValendo = (env, agora) => (agora || Date.now()) < promoAte(env);
 // dia de Brasília (UTC-3, sem horário de verão)
@@ -47,9 +51,9 @@ export async function somarUso(env, aparelho, campo, dia) {
   } catch (e) {}
 }
 // quem ainda pode jogar uma partida hoje (uso guardado na cadeira: { dia, partidas, publicas }): na mesa com os amigos
-// (publica = false) ou na mesa rápida (publica = true)
-export const podeJogar = (c, env, publica) => !c || c.bot || c.apoiador || !limitesValem(env) || !c.uso || c.uso.dia !== diaBR()
-  || (publica ? (c.uso.publicas || 0) < LIMITE.publicas : (c.uso.partidas || 0) < LIMITE.partidas);
+// (publica = false) ou na mesa rápida (publica = true). 03/11: na mesa de um sócio (daSocio), até LIMITE.partidasSocio.
+export const podeJogar = (c, env, publica, daSocio) => !c || c.bot || c.apoiador || !limitesValem(env) || !c.uso || c.uso.dia !== diaBR()
+  || (publica ? (c.uso.publicas || 0) < LIMITE.publicas : (c.uso.partidas || 0) < (daSocio ? LIMITE.partidasSocio : LIMITE.partidas));
 
 // ---- 28/10 (pedido do dono): ninguém ganha partidas de graça a mais trocando de apelido ou apagando os dados do app ----
 // O limite é do código do aparelho: trocar de apelido não muda nada. Quem apaga os dados do app (ou abre em outro
