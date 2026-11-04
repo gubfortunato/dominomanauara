@@ -54,7 +54,8 @@ const temaOk = v => typeof v === 'string' && /^[a-z][a-z0-9]{2,15}$/.test(v) ? v
 const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pontanegra', 'acai', 'acairoxo', 'ponte', 'rionegro',
   'tucuma', 'arena', 'mercado', 'vitoria', 'calcadao', 'centro', 'relogio', 'teatro', 'palacio', 'chamine', 'anavilhanas',
   'arara', 'boto', 'beiradao', 'barco', 'skylinenoite',   // 28/10: Manaus Skyline
-  'roxoacai', 'floresta', 'pordosol'];   // 03/11: Cor de Açaí, Floresta e Sol de setembro
+  'roxoacai', 'floresta', 'pordosol',   // 03/11: Cor de Açaí, Floresta e Sol de setembro
+  'pontemetalica', 'palaciojustica', 'araraazul'];   // 04/11: Ponte Metálica, Palácio da Justiça e Arara-Azul
 // 28/10 (regras do dono): a partir de 5/11, a mesa com os amigos de quem não é sócio só usa as mesas grátis (Madeira,
 // Vermelha e Azul): no sorteio e na troca. Na mesa rápida o sorteio continua entre todas.
 export const TEMAS_GRATIS = ['madeira', 'garantido', 'caprichoso'];
