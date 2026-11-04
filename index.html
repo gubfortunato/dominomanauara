@@ -6944,7 +6944,7 @@ function mostrarPresente(g) {
   store.set('dmz-presente', g.tipo);
   const nome = profile && profile.name ? ', ' + esc(profile.name) : '';
   openSheet('presente', `<p class="eyebrow">Sócio da Calçada</p><h2 id="sheetTitle">Um presente pra você${nome}!</h2>
-    <p>Você já estava com a gente antes do Sócio da Calçada existir. Para agradecer, ganhou <b>1 ano de sócio de presente</b>, somado ao tempo que você já tinha: partidas e mesas com os amigos sem limite, todas as mesas, ranking completo, estatísticas, foto, selo e avatares exclusivos.</p>
+    <p>Você já estava com a gente antes do Sócio da Calçada existir. Para agradecer, ganhou <b>1 ano de sócio de presente</b>: partidas e mesas com os amigos sem limite, todas as mesas, ranking completo, estatísticas, foto, selo e avatares exclusivos.</p>
     ${g.ate ? `<p>Seu tempo de sócio vale até <b>${dataBR(g.ate)}</b>.</p>` : ''}
     <p class="carta-ass">Boa diversão.<br>Time Dominó Manauara</p>
     <button type="button" class="primary" id="prOk" style="width:100%">Valeu! Bora pra mesa</button>`);

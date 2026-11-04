@@ -181,6 +181,27 @@ UPDATE presentes SET ate = (SELECT ate FROM planos WHERE planos.aparelho = prese
   WHERE tipo = 'fundador' AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'presente-fundador');
 INSERT OR IGNORE INTO marcos (chave, em) VALUES ('presente-fundador', CAST(strftime('%s', 'now') AS INTEGER) * 1000);
 
+-- 03/11 (dono): o presente de quem pagou antes do Sócio da Calçada é 1 ano NO TOTAL: vale até 05/11/2027 (no app, que mostra a
+-- data de Manaus; 1825470000000 = 06/11/2027 00:00 de Brasília), e não 1 ano somado ao tempo comprado. Ninguém perde tempo pago (todos tinham comprado menos de 1
+-- ano). Não mexe em quem pagou de novo depois do presente (o tempo novo é dele) nem nas cortesias. A data de antes fica
+-- guardada em presentes_ajuste (dá para desfazer). Roda uma vez (marco 'presente-fundador-1ano').
+CREATE TABLE IF NOT EXISTS presentes_ajuste (aparelho TEXT PRIMARY KEY, ate_antes INTEGER NOT NULL, em INTEGER NOT NULL);
+INSERT OR IGNORE INTO presentes_ajuste (aparelho, ate_antes, em)
+  SELECT aparelho, ate, CAST(strftime('%s', 'now') AS INTEGER) * 1000 FROM planos
+  WHERE aparelho IN (SELECT aparelho FROM presentes WHERE tipo = 'fundador')
+    AND aparelho NOT IN (SELECT aparelho FROM cortesias)
+    AND ate > 1825470000000
+    AND NOT EXISTS (SELECT 1 FROM pedidos x WHERE x.aparelho = planos.aparelho AND x.status = 'pago'
+      AND x.pago_em > (SELECT em FROM marcos WHERE chave = 'presente-fundador'))
+    AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'presente-fundador-1ano');
+UPDATE planos SET ate = 1825470000000
+  WHERE aparelho IN (SELECT aparelho FROM presentes_ajuste)
+    AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'presente-fundador-1ano');
+UPDATE presentes SET ate = 1825470000000
+  WHERE tipo = 'fundador' AND aparelho IN (SELECT aparelho FROM presentes_ajuste)
+    AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'presente-fundador-1ano');
+INSERT OR IGNORE INTO marcos (chave, em) VALUES ('presente-fundador-1ano', CAST(strftime('%s', 'now') AS INTEGER) * 1000);
+
 -- 03/11 (pedido do dono): números da área do administrador. "jogadores": um aparelho por linha (quando apareceu pela
 -- primeira vez, a última vez no dia, partidas e mãos que o app dele já contou). "semente" = 1: veio das tabelas que já
 -- existiam (quem jogou online, salvou o progresso, é sócio ou abriu o app nas últimas 24 h) antes de a contagem começar.
