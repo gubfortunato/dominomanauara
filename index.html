@@ -2447,6 +2447,16 @@ body.papo-aberto{overflow:hidden}
 .bv-pontos span{width:8px;height:8px;border-radius:50%;background:var(--line)}
 .bv-pontos span.on{background:var(--glow);width:22px;border-radius:999px}
 .bv-ilu{display:block;width:min(260px,80%);height:auto;margin:4px auto 10px}
+.bv-mesa{position:relative;width:min(300px,88%);height:212px;margin:4px auto 10px}
+.bv-tab{position:absolute;left:21%;right:21%;top:44px;bottom:64px;border-radius:16px;background:#5a3a22;border:2px solid #c9a24a;display:grid;place-items:center;box-shadow:inset 0 2px 10px rgba(0,0,0,.35)}
+.bv-tab svg{width:56px;height:auto}
+.bv-s{position:absolute;margin:0;display:grid;justify-items:center;gap:4px;transform:translateX(-50%)}
+.bv-s img,.bv-vazio{width:58px;height:58px;border-radius:50%;border:3px solid #e5a650;background:#3a2716;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.bv-vazio{display:grid;place-items:center;font-weight:900;font-size:24px;color:#f3c063}
+.bv-s figcaption{padding:2px 10px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:#e5a650;color:#2a1606;line-height:1.5}
+.bv-s.eles img{border-color:#8fbcc2}.bv-s.eles figcaption{background:#8fbcc2;color:#10262b}
+.bv-s.cima{left:50%;top:0}.bv-s.baixo{left:50%;bottom:0}
+.bv-s.esq{left:9%;top:58px}.bv-s.dir{left:91%;top:58px}
 .bv-lista{margin:6px 0 12px;padding-left:20px;display:grid;gap:8px;font-size:16.5px;line-height:1.4}
 .bv-lista li::marker{color:var(--nos)}
 .apr-lista{list-style:none;margin:8px 0 12px;padding:0;display:grid;gap:8px}
@@ -13130,16 +13140,17 @@ $('#menuBtn').addEventListener('click', e => {
 }, true);
 
 // ---------- boas-vindas (3 telas) ----------
-const BV_MESA = `<svg class="bv-ilu" viewBox="0 0 220 150" aria-hidden="true"><rect x="40" y="22" width="140" height="106" rx="14" fill="#5a3a22" stroke="#c9a24a" stroke-width="2"/>
-  <g fill="#f6ead6" stroke="#2a1a0c" stroke-width="1.4"><rect x="86" y="62" width="48" height="24" rx="5"/><line x1="110" y1="64" x2="110" y2="84"/></g>
-  <g fill="#2a1a0c"><circle cx="98" cy="70" r="2.6"/><circle cx="98" cy="78" r="2.6"/><circle cx="122" cy="74" r="2.6"/></g>
-  <g font-family="Figtree, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">
-    <circle cx="110" cy="14" r="11" fill="#e5a650"/><text x="110" y="40" fill="#f3c063">PARCEIRO</text>
-    <circle cx="110" cy="138" r="11" fill="#e5a650"/><text x="110" y="120" fill="#f3c063">VOCÊ</text>
-    <circle cx="26" cy="75" r="11" fill="#8fbcc2"/><text x="26" y="98" fill="#8fbcc2">ELES</text>
-    <circle cx="194" cy="75" r="11" fill="#8fbcc2"/><text x="194" y="98" fill="#8fbcc2">ELES</text></g></svg>`;
+// 03/11 (dono: "coloque avatares no lugar das bolinhas"): a mesa das boas-vindas com rostos de verdade: você embaixo
+// (o seu avatar), o parceiro em frente e a dupla adversária dos lados (a turma misturada: galera nova e os de sempre)
+function bvMesa() {
+  const rosto = n => { try { return botFaceURI(n) || ''; } catch (e) { return ''; } };
+  let eu = ''; try { eu = profile ? myFaceURI() : ''; } catch (e) {}
+  const cad = (cls, img, rot) => `<figure class="bv-s ${cls}">${img ? `<img src="${img}" alt="">` : '<span class="bv-vazio">?</span>'}<figcaption>${rot}</figcaption></figure>`;
+  return `<div class="bv-mesa" aria-hidden="true"><div class="bv-tab"><svg viewBox="0 0 52 28"><rect x="2" y="2" width="48" height="24" rx="5" fill="#f6ead6" stroke="#2a1a0c" stroke-width="1.4"/><line x1="26" y1="4" x2="26" y2="24" stroke="#2a1a0c" stroke-width="1.4"/><g fill="#2a1a0c"><circle cx="14" cy="10" r="2.6"/><circle cx="14" cy="18" r="2.6"/><circle cx="38" cy="14" r="2.6"/></g></svg></div>`
+    + cad('cima nos', rosto('Kauã'), 'Parceiro') + cad('esq eles', rosto('Raimundo'), 'Eles') + cad('dir eles', rosto('Yasmin'), 'Eles') + cad('baixo nos', eu, 'Você') + '</div>';
+}
 const BV_TELAS = [
-  { k: 'Bem-vindo à calçada', t: 'Dominó em duplas, do jeito de Manaus', html: `${BV_MESA}<p>Você joga com o <b>parceiro da sua frente</b> contra a dupla dos lados. Cada um recebe 7 pedras e a vez gira pela esquerda.</p><p>Na sua vez, encaixe uma pedra numa ponta da mesa: os números precisam ser iguais.</p>` },
+  { k: 'Bem-vindo à calçada', t: 'Dominó em duplas, do jeito de Manaus', get html() { return bvMesa() + this.texto; }, texto: `<p>Você joga com o <b>parceiro da sua frente</b> contra a dupla dos lados. Cada um recebe 7 pedras e a vez gira pela esquerda.</p><p>Na sua vez, encaixe uma pedra numa ponta da mesa: os números precisam ser iguais.</p>` },
   { k: 'Como se marca ponto', t: 'Some as pontas', html: `<ul class="bv-lista">
       <li><b>Pontas:</b> se a soma das pontas der 5, 10, 15, 20..., quem jogou marca a soma.</li>
       <li><b>Passe:</b> 20 para a dupla de quem jogou por último. <b>Galo</b> (os três passam): 50.</li>
