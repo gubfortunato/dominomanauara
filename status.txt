@@ -1,0 +1,34 @@
+commit 6c7a484 · 2026-11-05T12:21:39Z
+token (usuário): {"ok":true,"status":"active"}
+token (conta): {"ok":false,"status":null}
+subdomínio: gubfort
+wrangler: 4.158.0
+banco: f732778c-0b95-4c57-9811-da7b23322c82
+tabelas: código 0 🚣 Executed 106 queries in 27.06ms (14397 rows read, 1 rows written)         "Total queries executed": 106,     "success": true, 
+presente de quem já tinha pago: 6 aparelhos
+publicar: código 0
+Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
+Uploaded api (2.11 sec)
+Deployed api triggers (0.86 sec)
+  https://api.gubfort.workers.dev
+chaves dos lembretes: 2 segredos já guardados
+saúde: {"ok":true,"servico":"dominomanauara","mesa":true,"pagamentos":true,"ia":true,"versao":"6c7a484"}
+mesa online: mesa 91797: fase espera, cadeira 0, 1 sentado
+ia das fotos: {"ia":true,"modelo":"@cf/meta/llama-4-scout-17b-16e-instruct","veredito":"aprovar","ms":887}
+lembretes: {"chave_publica":true}
+asaas: chave guardada no Cloudflare (código 0)
+asaas conta: {"empresa":"Gustavo Bezerra Fortunato","site":null,"situacao":"APPROVED","erro":null}
+asaas aviso de pagamento (webhook): já cadastrado
+asaas cobrança de teste apm: {"abriu":true,"erro":null,"detalhe":null}
+asaas: cobrança de teste apm cancelada
+asaas cobrança de teste ap3: {"abriu":true,"erro":null,"detalhe":null}
+asaas: cobrança de teste ap3 cancelada
+asaas cobrança de teste ap12: {"abriu":true,"erro":null,"detalhe":null}
+asaas: cobrança de teste ap12 cancelada
+asaas cobrança de teste ap1: {"abriu":true,"erro":null,"detalhe":null}
+asaas: cobrança de teste ap1 cancelada
+asaas cobrança de teste ap3u: {"abriu":true,"erro":null,"detalhe":null}
+asaas: cobrança de teste ap3u cancelada
+asaas cobrança de teste ap12u: {"abriu":true,"erro":null,"detalhe":null}
+asaas: cobrança de teste ap12u cancelada
+url: https://api.gubfort.workers.dev
