@@ -3701,7 +3701,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.50.3', data: '04/11/2026', itens: ['Na aba Mais, o ícone das Regras é a mesma pedra 1|2 da aba Jogar.'] },
+  { v: '3.50.3', data: '04/11/2026', itens: ['Na aba Mais, o ícone das Regras é a mesma pedra 1|2 da aba Jogar.', 'Toda mesa agora tem a sua frase no título que aparece quando a partida começa (e as das araras ficaram novas).'] },
   { v: '3.50.2', data: '04/11/2026', itens: ['Turma que teve o nome retirado por palavrão: todo mundo da Turma vê o motivo, e quem criou escolhe o novo nome. Os pontos continuam.', 'Patrocínio também no fim das abas Calçada, Perfil e Mais.'] },
   { v: '3.50.1', data: '04/11/2026', itens: ['Mesa nova: Peixe-boi, o peixe-boi-da-amazônia nadando no rio.', 'Aviso da promoção de Sócio da Calçada (aparece uma vez).', 'Desafio das Confrarias: fica claro que a estrela de campeã e o troféu da Grande Taça são do app (virtuais).', 'Na mesa, o brilho de quem está na vez não passa mais por cima do selo de nível.'] },
   { v: '3.50', data: '04/11/2026', itens: ['Desafio das Confrarias: cartão novo no início, com a sua Turma, o ranking das 3 primeiras e o botão Desafiar outra Turma. Quem ainda não tem Turma vê o passo a passo. O ranking das Turmas também aparece na aba Calçada.', 'Botão Desafiar outra Turma: cria a mesa online e o convite do WhatsApp já vai como desafio. Na sala, todo mundo vê que é mesa de desafio.', 'Sem plano: até 2 partidas de desafio por dia, além da partida grátis (o desafio não gasta a partida do dia).', 'Jogo offline: o app confere com o servidor pelo menos uma vez a cada 2 dias para manter as partidas grátis do dia (sócio não precisa).'] },
@@ -8643,30 +8643,51 @@ function aplicarMesa() {
 const fundoMesa = m => m.bg || `radial-gradient(circle at 40% 35%, ${m.c1}, ${m.c2} 78%)`;
 // O nome da mesa aparece ao chegar na mesa (todas, até a de madeira), no meio do pano, e some sozinho (nada fixo atrapalhando as pedras).
 // Uma linha embaixo do nome, ao chegar na mesa
+// 04/11 (pedido do dono): uma frase para cada mesa, no título que aparece quando a partida começa (fatos conferidos)
+const SUB_MESA = {
+  madeira: 'A mesa de sempre da calçada',
+  garantido: 'Vermelha como o Boi Garantido',
+  caprichoso: 'Azul como o Boi Caprichoso',
+  roxoacai: 'No roxo do açaí batido',
+  floresta: 'A maior floresta tropical do mundo',
+  encontro: 'Negro e Solimões, 6 km sem se misturar',
+  feltro: 'Museu da Amazônia, torre de 42 m na mata',
+  pontanegra: 'A praia da cidade, no Rio Negro',
+  acai: 'Primo do cacau, rei do creme',
+  acairoxo: 'Com farinha, do jeito daqui',
+  rionegro: 'O maior rio de águas negras do mundo',
+  tucuma: 'O recheio do X-Caboquinho',
+  arena: 'Cesto de palha da Copa de 2014',
+  mercado: 'Na beira do rio desde 1883',
+  vitoria: 'Naiá, a estrela das águas',
+  calcadao: 'O Encontro das Águas desenhado no chão',
+  centro: 'Onde Manaus nasceu, em 1669',
+  relogio: '“Todas ferem, a última mata”',
+  teatro: 'Patrimônio Mundial da UNESCO',   // 03/11: os Teatros da Amazônia entraram na lista em julho/2026
+  palacio: 'Centro Cultural',
+  chamine: 'De usina a teatro',
+  anavilhanas: 'Cerca de 400 ilhas no Rio Negro',
+  arara: 'Grita de longe, voa em casal',
+  araraazul: 'A maior arara do mundo',
+  tucano: 'Bico de arco-íris',
+  peixeboi: 'O manso dos rios da Amazônia',
+  boto: 'O encantado do rio',
+  beiradao: 'Barco, rede e beira de rio',
+  barco: 'De rede atada, rio afora',
+  skylinenoite: 'Manaus acesa',
+  pordosol: 'Fim de tarde na beira do rio',
+  manaus357: '357 anos de Manaus'
+};
 function subMesa(m) {
-  if (m.id === 'teatro') return 'Patrimônio Mundial da UNESCO';   // 03/11 (pedido do dono): os Teatros da Amazônia entraram na lista em julho/2026
-  if (m.id === 'araraazul') return 'Pousada no galho';
-  if (m.id === 'tucano') return 'Bico de arco-íris';
-  if (m.id === 'peixeboi') return 'O manso dos rios da Amazônia';
-  if (m.id === 'arara') return 'Pousada na mata';
-  if (m.id === 'boto') return 'O encantado do rio';
-  if (m.id === 'beiradao') return 'Barco, rede e beira de rio';
-  if (m.id === 'barco') return 'De rede atada, rio afora';
-  if (m.id === 'skylinenoite') return 'Manaus acesa';
-  if (m.id === 'pordosol') return 'Fim de tarde na beira do rio';
-  if (m.id === 'anavilhanas') return 'Cerca de 400 ilhas no Rio Negro';
-  if (m.id === 'chamine') return 'De usina a teatro';
-  if (m.id === 'palacio') return 'Centro Cultural';
-  if (m.id === 'relogio') return '“Todas ferem, a última mata”';
-  if (m.id === 'manaus357') return '357 anos de Manaus';
   if (m.id === 'pontanegra' && ehReveillon()) return 'Réveillon: fogos na Ponta Negra! Liberada hoje';
-  if (m.epoca) return m.sub || (m.epoca[0] === m.epoca[1] ? `Mesa da época: só em ${MESES[m.epoca[0] - 1]}` : `Mesa da época: ${MESES[m.epoca[0] - 1]} a ${MESES[m.epoca[1] - 1]}`);
   if (m.id === 'ponte') {   // inaugurada em 24/10/2011, no aniversário da cidade
     const hoje = diaManaus(), mmdd = hoje.slice(5), anos = +hoje.slice(0, 4) - 2011 - (mmdd < '10-24' ? 1 : 0);
     if (mmdd === '10-24') return `Faz ${anos} anos hoje!`;
     if (mmdd >= '10-14' && mmdd < '10-24') return `Faz ${anos + 1} anos em 24/10`;
     return `${anos} anos`;
   }
+  if (SUB_MESA[m.id]) return SUB_MESA[m.id];
+  if (m.epoca) return m.sub || (m.epoca[0] === m.epoca[1] ? `Mesa da época: só em ${MESES[m.epoca[0] - 1]}` : `Mesa da época: ${MESES[m.epoca[0] - 1]} a ${MESES[m.epoca[1] - 1]}`);
   return '';
 }
 function tituloMesa() {
