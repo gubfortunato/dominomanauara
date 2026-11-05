@@ -24,6 +24,9 @@ export const PRODUTOS = {
   ap3: { nome: 'Dominó Manauara - 3 meses', desc: 'Sócio da Calçada trimestral: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 37.90, dias: 92, recorrente: 'QUARTERLY', promo: { valor: 24.90, vezes: 1 } },
   ap12: { nome: 'Dominó Manauara - 1 ano', desc: 'Sócio da Calçada anual: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 99.90, dias: 366, recorrente: 'YEARLY', promo: { valor: 74.90, vezes: 1 } },
   ap1: { nome: 'Dominó Manauara - 1 mês', desc: 'Sócio da Calçada por 1 mês: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 14.90, dias: 31, promo: { valor: 9.90, vezes: 1 } },
+  // 04/11 (pedido do dono): 3 meses e 1 ano avulsos (Pix ou cartão, sem renovar), para quem não tem cartão
+  ap3u: { nome: 'Dominó Manauara - 3 meses', desc: 'Sócio da Calçada por 3 meses: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 37.90, dias: 92, promo: { valor: 24.90, vezes: 1 } },
+  ap12u: { nome: 'Dominó Manauara - 1 ano', desc: 'Sócio da Calçada por 1 ano: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 99.90, dias: 366, promo: { valor: 74.90, vezes: 1 } },
   apoio990: { nome: 'Dominó Manauara - 1 mês', desc: 'Sócio da Calçada do Dominó Manauara por 1 mês: foto na mesa online, selo e avatares exclusivos.', valor: 9.90, dias: 31 },
   apoio1990: { nome: 'Dominó Manauara - 3 meses', desc: 'Sócio da Calçada do Dominó Manauara por 3 meses: foto na mesa online, selo e avatares exclusivos.', valor: 19.90, dias: 92 },
   apoio2990: { nome: 'Dominó Manauara - 6 meses', desc: 'Sócio da Calçada do Dominó Manauara por 6 meses: foto na mesa online, selo e avatares exclusivos.', valor: 29.90, dias: 183 },
@@ -40,7 +43,7 @@ export const PRODUTOS = {
   doacao20: { nome: 'Doação ao Dominó Manauara', desc: 'Obrigado por ajudar a manter viva a tradição do dominó. Quem doa pode mostrar a foto na mesa online. De presente: 30 dias de Plano Apoiador.', valor: 20, brinde: 31 }
 };
 // Os botões que estão no app agora (o teste da publicação abre uma cobrança de cada)
-export const A_VENDA = ['apm', 'ap3', 'ap12', 'ap1'];   // 28/10: mensal, trimestral e anual (renovam no cartão) e 1 mês avulso
+export const A_VENDA = ['apm', 'ap3', 'ap12', 'ap1', 'ap3u', 'ap12u'];   // 28/10: mensal, trimestral e anual (renovam no cartão) e 1 mês avulso; 04/11: 3 meses e 1 ano avulsos
 // O preço de agora (na promoção de lançamento, o promocional)
 export const emPromo = (prod, env, agora) => !!(prod && prod.promo && promoValendo(env, agora));
 export const precoDe = (prod, env, agora) => emPromo(prod, env, agora) ? prod.promo.valor : prod.valor;
