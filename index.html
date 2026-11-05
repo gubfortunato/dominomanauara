@@ -3701,6 +3701,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.50.3', data: '04/11/2026', itens: ['Na aba Mais, o ícone das Regras é a mesma pedra 1|2 da aba Jogar.'] },
   { v: '3.50.2', data: '04/11/2026', itens: ['Turma que teve o nome retirado por palavrão: todo mundo da Turma vê o motivo, e quem criou escolhe o novo nome. Os pontos continuam.', 'Patrocínio também no fim das abas Calçada, Perfil e Mais.'] },
   { v: '3.50.1', data: '04/11/2026', itens: ['Mesa nova: Peixe-boi, o peixe-boi-da-amazônia nadando no rio.', 'Aviso da promoção de Sócio da Calçada (aparece uma vez).', 'Desafio das Confrarias: fica claro que a estrela de campeã e o troféu da Grande Taça são do app (virtuais).', 'Na mesa, o brilho de quem está na vez não passa mais por cima do selo de nível.'] },
   { v: '3.50', data: '04/11/2026', itens: ['Desafio das Confrarias: cartão novo no início, com a sua Turma, o ranking das 3 primeiras e o botão Desafiar outra Turma. Quem ainda não tem Turma vê o passo a passo. O ranking das Turmas também aparece na aba Calçada.', 'Botão Desafiar outra Turma: cria a mesa online e o convite do WhatsApp já vai como desafio. Na sala, todo mundo vê que é mesa de desafio.', 'Sem plano: até 2 partidas de desafio por dia, além da partida grátis (o desafio não gasta a partida do dia).', 'Jogo offline: o app confere com o servidor pelo menos uma vez a cada 2 dias para manter as partidas grátis do dia (sócio não precisa).'] },
@@ -10678,7 +10679,8 @@ const ABA_IC = {
 };
 const MAIS_IC = {
   dono: '<svg viewBox="0 0 24 24"><path d="M4 19V10m5.3 9V5m5.4 14v-7M20 19V8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
-  regras: '<svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M6.5 12h11" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="7.2" r="1.35" fill="currentColor"/><circle cx="12" cy="16.6" r="1.35" fill="currentColor"/></svg>',
+  // 04/11 (dono): a mesma pedra 1|2 da aba Jogar
+  regras: '<svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 12h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.3" r="1.45" fill="currentColor"/><circle cx="9.9" cy="15.1" r="1.3" fill="currentColor"/><circle cx="14.1" cy="18" r="1.3" fill="currentColor"/></svg>',
   apoio: '<svg viewBox="0 0 24 24"><path d="M12 20.3s-7.6-4.6-7.6-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.6 2.5c0 5.6-7.6 10.2-7.6 10.2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>',
   fale: '<svg viewBox="0 0 24 24"><path d="M4.5 5.5h15v10.2H11l-4.6 3.6v-3.6H4.5z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>',
   insta: '<svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="12" r="3.9" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="17" cy="7" r="1.2" fill="currentColor"/></svg>',
@@ -13053,7 +13055,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.50.2-97522b83';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.50.3-abe544a0';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
