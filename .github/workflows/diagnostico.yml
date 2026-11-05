@@ -28,26 +28,19 @@ jobs:
           sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
           AGORA=$(($(date +%s) * 1000)); H=3600000; D=86400000
           q() { r=$(wrangler d1 execute dominomanauara --remote --json --command "$2" 2>&1); log "$1: $(echo "$r" | jq -c '.[0].results' 2>/dev/null || echo "$r" | grep -iE 'error|✘' | head -2 | tr '\n' ' ')"; }
-          log "diagnóstico $(date -u +%FT%TZ) (horário UTC; Manaus = UTC-4)"
-          q "notificações por tipo de celular (assinaturas, envios que deram certo, último envio)" "SELECT CASE WHEN endpoint LIKE '%fcm.googleapis.com%' THEN 'android/chrome (FCM)' WHEN endpoint LIKE '%push.apple.com%' THEN 'iphone (Apple)' WHEN endpoint LIKE '%mozilla%' THEN 'firefox' ELSE 'outro' END AS tipo, COUNT(*) AS assinaturas, SUM(envios) AS envios_ok, SUM(envios > 0) AS receberam_alguma, MAX(ultimo_envio) AS ultimo_envio, MAX(criado_em) AS ultima_assinatura FROM avisos GROUP BY tipo"
-          q "aparelho do teste automático bloqueado? (quantos, motivo, quando)" "SELECT COUNT(*) AS n, MAX(motivo) AS motivo, MAX(em) AS em FROM bloqueios WHERE aparelho LIKE 'teste-%'"
-          q "bloqueados no total / nas últimas 24 h" "SELECT COUNT(*) AS total, SUM(em > $AGORA - $D) AS h24 FROM bloqueios"
-          q "jogaram online (24 h / 7 dias)" "SELECT SUM(visto_em > $AGORA - $D) AS h24, COUNT(*) AS d7 FROM jogadores_vistos WHERE visto_em > $AGORA - 7 * $D"
-          q "app aberto agora / nas últimas 24 h" "SELECT SUM(visto_em > $AGORA - 60000) AS agora, SUM(visto_em > $AGORA - $D) AS h24, SUM(visto_em = 0) AS sairam FROM presenca"
-          # A presença ("No app agora") só é limpa às 21, 22 e 23 h UTC; desde a última limpeza, todo aparelho que abriu o app
-          # tem uma linha nela. Quem entrou numa mesa online desde então sem linha nenhuma jogou sem o app (programa de fora).
-          H_UTC=$(date -u +%H); if [ "$H_UTC" -ge 21 ]; then LIMPA=$(date -u -d "today ${H_UTC}:05" +%s); else LIMPA=$(date -u -d "yesterday 23:05" +%s); fi; LIMPA=$((LIMPA * 1000))
-          log "janela sem limpeza da presença: desde $(date -u -d @$((LIMPA / 1000)) +%FT%TZ)"
-          q "entraram em mesa online na janela / sem o app aberto nenhuma vez" "SELECT COUNT(*) AS entraram, SUM(NOT EXISTS (SELECT 1 FROM presenca p WHERE p.aparelho = v.aparelho)) AS sem_app FROM jogadores_vistos v WHERE v.visto_em > $LIMPA"
-          for per in atual anterior; do
-            if [ $per = atual ]; then PSQL="(SELECT MAX(periodo) FROM calcada WHERE periodo LIKE 'S%')"; else PSQL="(SELECT MAX(periodo) FROM calcada WHERE periodo LIKE 'S%' AND periodo < (SELECT MAX(periodo) FROM calcada WHERE periodo LIKE 'S%'))"; fi
-            q "ranking semana $per" "SELECT periodo, COUNT(*) AS jogadores, SUM(jogadas) AS partidas, MAX(jogadas) AS mais_partidas, SUM(jogadas >= 60) AS com_60_ou_mais, MAX(CASE WHEN jogadas >= 20 THEN ROUND(1.0 * ganhas / jogadas, 2) END) AS maior_aproveitamento_20mais, SUM(jogadas >= 20 AND 1.0 * ganhas / jogadas >= 0.75) AS aproveitamento_75_20mais, SUM(jogadas_gente) AS partidas_com_gente FROM calcada WHERE periodo = $PSQL"
-            q "ranking semana $per: 8 maiores números de partidas" "SELECT jogadas, ganhas, jogadas_gente FROM calcada WHERE periodo = $PSQL ORDER BY jogadas DESC LIMIT 8"
-          done
-          q "contra robôs por dia (7 dias): maior / dias com 40+" "SELECT MAX(n) AS maior, SUM(n >= 40) AS com_40_ou_mais, COUNT(*) AS linhas FROM calcada_robo WHERE dia >= date('now', '-7 day')"
-          q "mesma dupla por dia (7 dias): maior / com 20+" "SELECT MAX(n) AS maior, SUM(n >= 20) AS com_20_ou_mais FROM calcada_par WHERE dia >= date('now', '-7 day')"
-          q "mesas criadas por endereço por dia (7 dias): maior" "SELECT MAX(c) AS maior, SUM(c >= 20) AS com_20_ou_mais FROM (SELECT marca, COUNT(*) AS c FROM mesas_criadas WHERE criado_em > $AGORA - 7 * $D GROUP BY marca)"
-          q "jogaram online por hora do dia (Manaus, 7 dias, pelo último jogo)" "SELECT CAST(((visto_em / $H) - 4 + 24) % 24 AS INTEGER) AS hora, COUNT(*) AS n FROM jogadores_vistos WHERE visto_em > $AGORA - 7 * $D GROUP BY hora ORDER BY hora"
+          log "diagnóstico da queda das 23h de 04/11 (Manaus) · $(date -u +%FT%TZ) · só contagens"
+          T2230=$(( $(date -u -d '2026-11-05T02:30:00Z' +%s) * 1000 ))
+          F="strftime('%H:%M', ((COL/1000 - 14400)/300)*300, 'unixepoch')"
+          FP=${F//COL/visto_em}; FL=${F//COL/em}
+          q "pico ao mesmo tempo por hora hoje (Manaus)" "SELECT hora, maximo, strftime('%H:%M', em/1000 - 14400, 'unixepoch') AS quando FROM pico_hora WHERE dia = '2026-11-04' ORDER BY hora"
+          q "pessoas diferentes por hora hoje (Manaus)" "SELECT hora, COUNT(*) AS n FROM acessos_hora WHERE dia = '2026-11-04' GROUP BY hora ORDER BY hora"
+          q "app aberto agora (120 s) / fecharam o app (sem hora)" "SELECT SUM(visto_em > $AGORA - 120000) AS agora, SUM(visto_em = 0) AS fecharam FROM presenca"
+          q "presença: último aviso de cada aparelho, por 5 min desde 22:30 (tela e modo)" "SELECT $FP AS faixa, tela, modo, COUNT(*) AS n FROM presenca WHERE visto_em > $T2230 GROUP BY faixa, tela, modo ORDER BY faixa"
+          q "bateram o limite (dia 05/11 de Brasília = desde 23h de Manaus), por tipo e 5 min" "SELECT tipo, $FL AS faixa, COUNT(*) AS n FROM limites_rede WHERE dia = '2026-11-05' GROUP BY tipo, faixa ORDER BY faixa"
+          q "uso desde 23h: mesas com os amigos e mesa rápida" "SELECT COUNT(*) AS aparelhos, SUM(mesas) AS mesas_criadas, SUM(partidas) AS partidas_amigos, SUM(partidas >= 1) AS com_1_ou_mais_amigos, SUM(publicas) AS rapidas, SUM(publicas >= 3) AS com_3_rapidas FROM limites WHERE dia = '2026-11-05'"
+          q "uso desde 23h: offline e desafios" "SELECT (SELECT COUNT(*) FROM offline_uso WHERE dia = '2026-11-05') AS offline_aparelhos, (SELECT SUM(n >= 5) FROM offline_uso WHERE dia = '2026-11-05') AS offline_bateram, (SELECT COUNT(*) FROM desafio_uso WHERE dia = '2026-11-05') AS desafio_aparelhos"
+          q "jogo online: último jogo de cada aparelho, por 5 min desde 22:30" "SELECT $FP AS faixa, COUNT(*) AS n FROM jogadores_vistos WHERE visto_em > $T2230 GROUP BY faixa ORDER BY faixa"
+          q "sócios com plano valendo" "SELECT COUNT(*) AS n FROM planos WHERE ate > $AGORA"
           rm -f wrangler.toml
       - name: Saúde e consumo do Cloudflare (plano grátis)
         working-directory: servidor
