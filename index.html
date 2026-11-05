@@ -8613,7 +8613,18 @@ function naEpoca(p) { const m = +diaManaus().slice(5, 7); return m >= p.epoca[0]
 // 28/10 (regras do dono): a partir de 5/11, sem plano só as mesas Madeira, Vermelha e Azul; as outras aparecem com
 // cadeado e são dos sócios da Calçada (a Manaus 357, prêmio de quem ganhou a Copa, continua de quem ganhou)
 const MESAS_GRATIS = ['madeira', 'garantido', 'caprichoso'];
-const mesaDoSocio = p => !!p && Date.now() >= PLANOS_LANC && !MESAS_GRATIS.includes(p.id) && !(p.evento && conquistaFeita(p.req)) && !temPlano() && !souAdmin();
+// 05/11 (pedido do dono): de 5/11 a 19/11 (dia de Brasília), mais 2 mesas grátis por dia, diferentes a cada dia.
+// A ordem é a mesma do servidor (servidor/src/planos.js, MESAS_RODIZIO); depois de 19/11, só as 3 de sempre.
+const BONUS_INI = Date.UTC(2026, 10, 5, 3, 0, 0), BONUS_FIM = Date.UTC(2026, 10, 20, 3, 0, 0);
+const MESAS_RODIZIO = ['teatro', 'tucano', 'encontro', 'boto', 'peixeboi', 'mercado', 'araraazul', 'pontanegra', 'arena', 'vitoria', 'arara', 'centro', 'floresta', 'ponte',
+  'calcadao', 'acairoxo', 'anavilhanas', 'relogio', 'skylinenoite', 'acai', 'palacio', 'beiradao', 'rionegro', 'tucuma', 'chamine', 'barco', 'roxoacai', 'pordosol', 'feltro'];
+function mesasDoDia(agora) {
+  const t = agora || Date.now(); if (t < BONUS_INI || t >= BONUS_FIM) return [];
+  const k = Math.floor((t - BONUS_INI) / 86400000), n = MESAS_RODIZIO.length;
+  return [MESAS_RODIZIO[(2 * k) % n], MESAS_RODIZIO[(2 * k + 1) % n]];
+}
+const mesaGratis = id => MESAS_GRATIS.includes(id) || mesasDoDia().includes(id);
+const mesaDoSocio = p => !!p && Date.now() >= PLANOS_LANC && !mesaGratis(p.id) && !(p.evento && conquistaFeita(p.req)) && !temPlano() && !souAdmin();
 const mesaLivre = p => !!p && !mesaDoSocio(p) && (MESAS.includes(p) || (p.id === 'pontanegra' && ehReveillon()) || (p.epoca ? souAdmin() || naEpoca(p) : p.evento ? souAdmin() || conquistaFeita(p.req) : mesasNaPromo() || parteLivre(p)));
 // O que é do plano só aparece quando dá para assinar (ou para quem já tem)
 function parteVisivel(p) { return (!p.plano || pagamentosAtivos() || temPlano() || souAdmin()) && (!p.evento || Date.now() < COPA.fim || mesaLivre(p)) && (!p.epoca || mesaLivre(p)); }
@@ -13082,7 +13093,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.50.4-d28730b1';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.50.5-988f1417';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
