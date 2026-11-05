@@ -2879,7 +2879,7 @@ body.papo-aberto{overflow:hidden}
         <div class="ap-outro-l"><label class="ap-outro-in"><span aria-hidden="true">R$</span><input type="text" id="apOutroValor" inputmode="decimal" autocomplete="off" placeholder="30" maxlength="6" aria-label="Valor, a partir de 30 reais" aria-describedby="apOutroDica"></label><button type="button" class="primary ap-outro-b" id="apOutroDoar" disabled>Ser sócio</button></div>
         <p class="ap-outro-h" id="apOutroDica" aria-live="polite">Valor mínimo: R$ 30.</p>
       </div>
-      <p class="note ap-nota">Pagamento na página segura do Asaas. Mensal, trimestral e anual renovam sozinhos no cartão, e você cancela quando quiser aqui no app (o tempo pago vale até o fim). Quem prefere o Pix paga 1 mês avulso, sem renovar. Os preços promocionais valem para quem assinar até 30/11; depois, R$ 14,90 por mês, R$ 37,90 a cada 3 meses ou R$ 99,90 por ano. O tempo novo soma ao que você já tiver.</p>
+      <p class="note ap-nota">Pagamento na página segura do Asaas. Mensal, trimestral e anual renovam sozinhos no cartão, e você cancela quando quiser aqui no app (o tempo pago vale até o fim). Quem prefere o Pix paga 1 mês, 3 meses ou 1 ano de uma vez, sem renovar. Os preços promocionais valem para quem assinar até 30/11; depois, R$ 14,90 por mês, R$ 37,90 a cada 3 meses ou R$ 99,90 por ano. O tempo novo soma ao que você já tiver.</p>
     </div>
     <div class="ap-perso">
       <button type="button" class="secondary" id="apEstilo" style="width:100%">Escolher mesa e montar avatar</button>
@@ -3701,6 +3701,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.50.4', data: '04/11/2026', itens: ['Sócio trimestral e anual também no Pix: dá para pagar 3 meses ou 1 ano de uma vez, sem renovar, no Pix ou no cartão.'] },
   { v: '3.50.3', data: '04/11/2026', itens: ['Na aba Mais, o ícone das Regras é a mesma pedra 1|2 da aba Jogar.', 'Toda mesa agora tem a sua frase no título que aparece quando a partida começa (e as das araras ficaram novas).'] },
   { v: '3.50.2', data: '04/11/2026', itens: ['Turma que teve o nome retirado por palavrão: todo mundo da Turma vê o motivo, e quem criou escolhe o novo nome. Os pontos continuam.', 'Patrocínio também no fim das abas Calçada, Perfil e Mais.'] },
   { v: '3.50.1', data: '04/11/2026', itens: ['Mesa nova: Peixe-boi, o peixe-boi-da-amazônia nadando no rio.', 'Aviso da promoção de Sócio da Calçada (aparece uma vez).', 'Desafio das Confrarias: fica claro que a estrela de campeã e o troféu da Grande Taça são do app (virtuais).', 'Na mesa, o brilho de quem está na vez não passa mais por cima do selo de nível.'] },
@@ -7041,10 +7042,11 @@ function temPlano() { const p = planoLocal(); return !!(p && p.ate > Date.now())
 // 28/10: sócio que renova sozinho no cartão (mensal, trimestral ou anual: não precisa lembrar de renovar)
 function renovaSozinho() { const p = planoLocal(); return !!(p && p.renova); }
 // ---------- 28/10: preços (regras do dono) ----------
-// Mensal, trimestral e anual renovam no cartão; 1 mês avulso no Pix ou no cartão. Promoção de lançamento para quem
+// Mensal, trimestral e anual renovam no cartão; 1 mês, 3 meses e 1 ano avulsos (04/11) no Pix ou no cartão. Promoção de lançamento para quem
 // assina até 4/11 (fim no começo dos limites, 5/11 00:00 de Brasília). O app pergunta ao servidor (GET /precos) e, sem
 // internet, usa estes. Quem cobra é o servidor: o valor da página do Asaas é sempre o certo.
-const PRECOS_BASE = { apm: { normal: 14.9, promo: 9.9, vezes: 3 }, ap3: { normal: 37.9, promo: 24.9, vezes: 1 }, ap12: { normal: 99.9, promo: 74.9, vezes: 1 }, ap1: { normal: 14.9, promo: 9.9, vezes: 1 } };
+const PRECOS_BASE = { apm: { normal: 14.9, promo: 9.9, vezes: 3 }, ap3: { normal: 37.9, promo: 24.9, vezes: 1 }, ap12: { normal: 99.9, promo: 74.9, vezes: 1 }, ap1: { normal: 14.9, promo: 9.9, vezes: 1 },
+  ap3u: { normal: 37.9, promo: 24.9, vezes: 1 }, ap12u: { normal: 99.9, promo: 74.9, vezes: 1 } };   // 04/11: 3 meses e 1 ano avulsos (Pix ou cartão)
 const PLANOS_LANC = Date.UTC(2026, 10, 5, 3, 0, 0);   // 05/11/2026, 00:00 de Brasília
 const PROMO_FIM = Date.UTC(2026, 11, 1, 3, 0, 0);   // 03/11 (dono): a promoção vale até 30/11 (antes, até 4/11), para pegar o 1º mês de limites
 const PROMO_DIA = '30/11';
@@ -7433,16 +7435,20 @@ function escolherMensal() {
   $('#mnUm').addEventListener('click', e => pagarProduto('ap1', e.currentTarget));
   $('#mnFechar').addEventListener('click', closeSheet);
 }
-// 28/10: trimestral e anual renovam sozinhos no cartão: antes de abrir o pagamento, as condições bem claras
+// 28/10: trimestral e anual renovam sozinhos no cartão: antes de abrir o pagamento, as condições bem claras.
+// 04/11 (pedido do dono): e, com menos destaque, a opção de pagar o período uma vez só, no Pix ou no cartão (muita gente
+// não tem cartão de crédito), como o "Só 1 mês" do mensal.
 function escolherPlano(k) {
-  const x = precoDe(k), nome = k === 'ap3' ? 'trimestral' : 'anual', cada = k === 'ap3' ? 'a cada 3 meses' : 'todo ano';
+  const x = precoDe(k), u = precoDe(k + 'u'), tri = k === 'ap3';
+  const nome = tri ? 'trimestral' : 'anual', cada = tri ? 'a cada 3 meses' : 'todo ano';
   const jaRenova = temPlano() && renovaSozinho();
-  openSheet('plano-' + k, `<p class="eyebrow">Sócio da Calçada · ${nome}</p><h2 id="sheetTitle">${brl(x.valor)} ${k === 'ap3' ? 'por 3 meses' : 'por 1 ano'}</h2>
-    <p>${x.promo ? `Preço de lançamento: ${condicaoDe(k)}.` : `${brl(x.valor)} ${cada}.`} Renova sozinho no cartão; cancela quando quiser aqui no app, e o tempo pago vale até o fim.</p>
+  openSheet('plano-' + k, `<p class="eyebrow">Sócio da Calçada · ${nome}</p><h2 id="sheetTitle">${brl(x.valor)} ${tri ? 'por 3 meses' : 'por 1 ano'}</h2>
     ${jaRenova ? '<p class="note">Você já renova sozinho no cartão. Este plano é outra assinatura: o tempo soma ao que você já tem.</p>' : ''}
-    <button type="button" class="primary" id="plAssinar" style="width:100%">Assinar no cartão</button>
+    <button type="button" class="mn-op primary" id="plAssinar"><b>${tri ? 'A cada 3 meses no cartão' : 'Todo ano no cartão'}</b><span>${x.promo ? `Preço de lançamento: ${condicaoDe(k)}.` : `${brl(x.valor)} ${cada}.`} Renova sozinho; cancela quando quiser aqui no app, e o tempo pago vale até o fim.</span></button>
+    <button type="button" class="mn-op secondary" id="plUma"><b>${tri ? 'Só 3 meses' : 'Só 1 ano'}</b><span>${brl(u.valor)} no Pix ou no cartão, sem renovar.</span></button>
     <button type="button" class="linkbtn" id="plFecharP" style="width:100%;margin-top:6px">Agora não</button>`);
   $('#plAssinar').addEventListener('click', e => pagarProduto(k, e.currentTarget));
+  $('#plUma').addEventListener('click', e => pagarProduto(k + 'u', e.currentTarget));
   $('#plFecharP').addEventListener('click', closeSheet);
 }
 // 28/10: cancelar a renovação (o tempo já pago vale até o fim)
@@ -7582,7 +7588,7 @@ openApoioSheet = function () { closeSheet(); if (screen === 'game') leaveGame();
 
 // ---------- Área do dono: quanto entrou ----------
 const reais = v => 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',');
-const NOME_PRODUTO = { apm: 'Sócio mensal', ap1: 'Sócio 1 mês avulso', ap3: 'Sócio trimestral', ap12: 'Sócio anual', apoio990: 'Sócio 1 mês (antigo)', apoio1990: 'Sócio 3 meses (antigo)', apoio2990: 'Sócio 6 meses (antigo)', livre: 'Sócio (valor livre)', apoio5: 'Sócio 1 mês (antigo)', apoio12: 'Sócio 3 meses (antigo)', apoio40: 'Sócio 1 ano (antigo)',
+const NOME_PRODUTO = { apm: 'Sócio mensal', ap1: 'Sócio 1 mês avulso', ap3u: 'Sócio 3 meses avulso', ap12u: 'Sócio 1 ano avulso', ap3: 'Sócio trimestral', ap12: 'Sócio anual', apoio990: 'Sócio 1 mês (antigo)', apoio1990: 'Sócio 3 meses (antigo)', apoio2990: 'Sócio 6 meses (antigo)', livre: 'Sócio (valor livre)', apoio5: 'Sócio 1 mês (antigo)', apoio12: 'Sócio 3 meses (antigo)', apoio40: 'Sócio 1 ano (antigo)',
   mensal: 'Plano 30 dias', anual: 'Plano 1 ano', doacao5: 'Plano antigo', doacao10: 'Plano antigo', doacao20: 'Plano antigo' };
 async function dnPagCarregar() {
   const box = $('#dnPag');
@@ -13076,7 +13082,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.50.3-abe544a0';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.50.4-d28730b1';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
