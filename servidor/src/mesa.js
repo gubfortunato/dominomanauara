@@ -12,7 +12,7 @@ import { somarVivo } from './vivo.js';
 import { somarRanking, reiDaSemana } from './ranking.js';
 import { bloqueado, visto, apelidoBarrado, exigeApp, appAberto, anotarRitmo, RAPIDA_MS } from './bloqueio.js';
 import { PAPO, limparPapo, tamanho, papoRuim } from './papo.js';
-import { limitesValem, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteDaRede, anotarLimite } from './planos.js';
+import { limitesValem, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteDaRede, anotarLimite, mesasDoDia, bonusConfig } from './planos.js';
 // 3.38.2: na Calçada, apelido que o filtro passou a barrar (de quem entrou antes) aparece como "Jogador"
 const nomeVisivel = c => !c.bot && nomeOfensivo(c.nome) ? 'Jogador' : c.nome;
 
@@ -59,6 +59,8 @@ const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pont
 // 28/10 (regras do dono): a partir de 5/11, a mesa com os amigos de quem não é sócio só usa as mesas grátis (Madeira,
 // Vermelha e Azul): no sorteio e na troca. Na mesa rápida o sorteio continua entre todas.
 export const TEMAS_GRATIS = ['madeira', 'garantido', 'caprichoso'];
+// 05/11 (pedido do dono): de 5/11 a 19/11, mais 2 mesas grátis por dia (planos.js, mesasDoDia)
+const temasGratis = () => TEMAS_GRATIS.concat(mesasDoDia());
 const sortearTema = (atual, so) => { const l = (so || TEMAS).filter(t => t !== atual); return l[Math.floor(Math.random() * l.length)]; };
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 
@@ -77,7 +79,7 @@ export function quemContaNoRanking(m, vencedor) {
 }
 export class Mesa {
   constructor(ctx, env) {
-    this.ctx = ctx; this.env = env; this.m = null; this.reacoes = {};
+    this.ctx = ctx; this.env = env; this.m = null; this.reacoes = {}; bonusConfig(env);
     this.papo = []; this.papoRitmo = {}; this.denuncias = {}; this.denunciadas = new Set();   // 3.42: papo da mesa
     // TEMPO_FATOR só existe no teste local (acelera os robôs); no Cloudflare vale 1
     const f = Number(env && env.TEMPO_FATOR) || 1;
@@ -127,7 +129,7 @@ export class Mesa {
     const agora = Date.now();
     this.m = { codigo: limpa(b.codigo, 5), criada: agora, ultimo: agora, fase: 'espera', seq: 0, dono: quem.id,
       cad: [quem, null, null, null], G: null, proximo: null, turnoDesde: agora, porRobo: null,
-      publica: !!b.publica, daSocio: !b.publica && !!b.apoiador, vs: !b.publica && b.desafio ? limpa(b.desafio, 40) : null, iniciaEm: b.publica ? agora + this.T.espera : null, tema: sortearTema(null, !b.publica && limitesValem(this.env) && !b.apoiador ? TEMAS_GRATIS : null), temaSorteado: true };   // 28/10
+      publica: !!b.publica, daSocio: !b.publica && !!b.apoiador, vs: !b.publica && b.desafio ? limpa(b.desafio, 40) : null, iniciaEm: b.publica ? agora + this.T.espera : null, tema: sortearTema(null, !b.publica && limitesValem(this.env) && !b.apoiador ? temasGratis() : null), temaSorteado: true };   // 28/10
     if (this.m.publica) this.m.chegadas = this.sortearChegadas(this.m.iniciaEm);
     if (this.m.publica) this.agendar();
     this.papo = []; this.denunciadas = new Set(); await this.ctx.storage.delete('papo');   // 3.42: mesa nova, papo novo
@@ -651,7 +653,7 @@ export class Mesa {
   temasDoDono() {
     const m = this.m; if (!m || m.publica || !limitesValem(this.env)) return null;
     const d = m.cad.concat(m.fila || []).find(c => c && !c.bot && c.id === m.dono);
-    return d && d.apoiador ? null : TEMAS_GRATIS;
+    return d && d.apoiador ? null : temasGratis();
   }
   temaPermitido(t) { const so = this.temasDoDono(); return t !== 'manaus357' && (!so || so.includes(t)); }   // 03/11 (pedido do dono): a Manaus 357 saiu do jogo
   async trocarTema(id) {

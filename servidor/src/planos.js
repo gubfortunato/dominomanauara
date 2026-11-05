@@ -8,7 +8,22 @@ export const PLANOS_DESDE = Date.UTC(2026, 10, 5, 3, 0, 0);   // 05/11/2026, 00:
 // 03/11 (regras do dono): sem plano, 3 partidas por dia na mesa rápida (antes 5); nas mesas com os amigos, 1 por dia, ou até 3
 // quando a mesa é de um sócio (partidasSocio); 1 mesa criada por dia
 // 04/11 (dono): desafios = partidas de desafio entre Turmas por dia, fora da partida grátis (mesa criada pelo botão Desafiar)
-export const LIMITE = { mesas: 1, partidas: 1, partidasSocio: 3, publicas: 3, desafios: 2 };
+// 05/11 (pedido do dono): por 15 dias (de 5/11 a 19/11, dia de Brasília), sem plano joga 5 partidas por dia na mesa
+// rápida (antes 3) e 2 nas mesas com os amigos (antes 1); e mais 2 mesas grátis por dia, diferentes a cada dia.
+// Depois volta sozinho ao de antes. BONUS_ATE no ambiente muda o fim (para teste).
+const BONUS_INI = Date.UTC(2026, 10, 5, 3, 0, 0), BONUS_FIM = Date.UTC(2026, 10, 20, 3, 0, 0);   // 05/11 00:00 a 20/11 00:00 de Brasília
+let bonusFim = BONUS_FIM;
+export const bonusValendo = (agora) => { const t = agora || Date.now(); return t >= BONUS_INI && t < bonusFim; };
+export function bonusConfig(env) { const v = Number(env && env.BONUS_ATE); if (Number.isFinite(v) && v > 0) bonusFim = v; }
+export const LIMITE = { mesas: 1, get partidas() { return bonusValendo() ? 2 : 1; }, partidasSocio: 3, get publicas() { return bonusValendo() ? 5 : 3; }, desafios: 2 };
+// as 2 mesas a mais de cada dia (a ordem é a mesma no app: index.html, MESAS_RODIZIO)
+export const MESAS_RODIZIO = ['teatro', 'tucano', 'encontro', 'boto', 'peixeboi', 'mercado', 'araraazul', 'pontanegra', 'arena', 'vitoria', 'arara', 'centro', 'floresta', 'ponte',
+  'calcadao', 'acairoxo', 'anavilhanas', 'relogio', 'skylinenoite', 'acai', 'palacio', 'beiradao', 'rionegro', 'tucuma', 'chamine', 'barco', 'roxoacai', 'pordosol', 'feltro'];
+export function mesasDoDia(agora) {
+  const t = agora || Date.now(); if (!bonusValendo(t)) return [];
+  const k = Math.floor((t - BONUS_INI) / DIA), n = MESAS_RODIZIO.length;
+  return [MESAS_RODIZIO[(2 * k) % n], MESAS_RODIZIO[(2 * k + 1) % n]];
+}
 const DIA = 86400000;
 
 export function planosDesde(env) {

@@ -13,7 +13,7 @@ import { donoNumeros, limparNumeros } from './numeros.js';
 import * as rk from './ranking.js';
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
-import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteDaRede } from './planos.js';
+import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteDaRede, bonusConfig } from './planos.js';
 export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
@@ -402,6 +402,7 @@ async function mudarStatus(req, env, origin, id) {
 
 export default {
   async fetch(req, env, ctx) {
+    bonusConfig(env);   // 05/11: fim do bônus de 15 dias (BONUS_ATE só no teste)
     const url = new URL(req.url);
     const origin = req.headers.get('origin') || '';
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(origin) });
