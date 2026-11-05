@@ -1367,6 +1367,14 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .tm-box input{width:100%;font-size:19.5px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
 .tm-box #tmCod{text-transform:uppercase;letter-spacing:.18em;font-weight:700}
 .tm-status{margin:2px 0 12px;font-size:18px;color:var(--muted)}
+/* 04/11: Turma que teve o nome retirado (palavrão): explica o porquê e quem pode escolher o novo nome */
+.tm-retirado{display:grid;gap:8px;margin:4px 0 14px;padding:14px;border-radius:16px;border:1.5px solid color-mix(in srgb,var(--nos) 55%,var(--line));background:color-mix(in srgb,var(--nos) 10%,var(--bg-2))}
+.tm-retirado>b{font-size:18px;line-height:1.25}
+.tm-retirado p{margin:0;font-size:16px;line-height:1.4}
+.tm-retirado p.tr-ok{color:var(--muted)}
+.tm-retirado label{font-weight:700;font-size:16px;margin-top:4px}
+.tm-retirado input{width:100%;font-size:19.5px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg)}
+.tm-retirado small{color:var(--muted);font-size:14.5px}
 .tm-status b{color:var(--ink)}
 .tm-cod{display:grid;justify-items:center;gap:2px;margin:6px 0 12px;padding:12px;border-radius:16px;border:1.5px dashed var(--line)}
 .tm-cod small{color:var(--muted);font-size:14px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
@@ -1984,6 +1992,10 @@ html[data-mesa="pordosol"] .table.wood{--wood-1:#3a0703;--wood-2:#3a0703;--wood-
 #scrHome .sponsor{max-width:560px;width:100%;justify-self:center;margin-inline:auto}
 .sala-patro{margin-top:6px}
 .sala-patro .sponsor{max-width:560px;margin-inline:auto}
+/* 04/11 (dono): patrocínio também nas abas Calçada, Perfil e Mais */
+.aba-patro:empty{display:none}
+.aba-patro{margin-top:14px}
+.aba-patro .sponsor{max-width:560px;width:100%;margin-inline:auto}
 .dn-patro-card{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;width:100%;padding:16px 18px;border-radius:18px;border:1.5px solid var(--nos);background:transparent;color:var(--fg);font:inherit;cursor:pointer}
 .dn-patro-card .ck{grid-column:1;font-size:13.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--nos)}
 .dn-patro-card b{grid-column:1;font-size:18px}
@@ -2156,6 +2168,10 @@ button.vivo-st:active,.vivo-assistir:active{transform:scale(.98)}
 .af-sair{border:0;border-radius:999px;padding:8px 14px;background:var(--nos);color:#fff;font:inherit;font-size:14.5px;font-weight:800;cursor:pointer;white-space:nowrap}
 body.assistindo #menuBtn,body.assistindo #passBtn{visibility:hidden}
 #filaAssistir{width:100%}
+/* 04/11 (dono): exemplo da tela da fila, aberto pela área do administrador */
+.previa-fila{margin:0 0 4px;padding:10px 14px;border-radius:14px;border:1.5px dashed var(--nos);background:color-mix(in srgb,var(--nos) 10%,transparent);font-size:15px;line-height:1.4;color:var(--fg)}
+.previa-fila b{display:block;font-size:12.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--nos);margin-bottom:2px}
+.dn-fila-ver{width:100%;margin-top:10px}
 /* A pedra de costas na mão de quem assiste (classe "costas", 3.29.1): menor (é só para saber quantas faltam) e
    a mesa sobe para a faixa "Assistindo" não cobrir as pedras */
 #hand .ht.costas{cursor:default;width:calc(var(--tw)*.62)}
@@ -2635,6 +2651,7 @@ body.papo-aberto{overflow:hidden}
     <div class="perfil-avisos" id="perfilAvisos" hidden><span id="perfilAvisosTx">🔔 Lembretes para jogar estão ligados.</span><button type="button" class="linkbtn" id="perfilAvisosOff">Desligar</button></div>
     <button type="button" class="primary" id="saveProfile">Salvar e entrar</button>
     <p class="note aceite">Ao salvar, você aceita os <a href="termos.html">Termos de uso</a> e a <a href="privacidade.html">Privacidade</a>.</p>
+    <div class="aba-patro" id="perfilPatro"></div>
   </section>
 
   <section class="screen panel" id="scrHome" hidden>
@@ -2726,6 +2743,7 @@ body.papo-aberto{overflow:hidden}
     <div id="calcCorpo"></div>
     <button type="button" class="calc-abrir" id="calcAbrir"><span class="ca-tx" id="calcAbrirTx">Nenhuma mesa com lugar vago agora.</span><span class="ca-go">Abrir uma mesa rápida <span aria-hidden="true">›</span></span></button>
     <p class="aba-nota" id="calcNota">Na mesa com os amigos, só entra quem tem o número da mesa.</p>
+    <div class="aba-patro" id="calcPatro"></div>
   </section>
   <section class="screen panel" id="scrMais" hidden>
     <header class="aba-cab">
@@ -2733,6 +2751,7 @@ body.papo-aberto{overflow:hidden}
       <h2 class="aba-tit">Mais</h2>
     </header>
     <div class="mais-lista" id="maisLista"></div>
+    <div class="aba-patro" id="maisPatro"></div>
     <div class="mais-pe" id="maisPe"></div>
   </section>
   <section class="screen panel" id="scrSetup" hidden>
@@ -2797,7 +2816,7 @@ body.papo-aberto{overflow:hidden}
       <div class="field"><span class="flabel">Banners <small>· até 3, imagem deitada; a gente corta no formato 5 × 2</small></span><div class="pt-banners" id="ptfBanners"></div><button type="button" class="secondary" id="ptfAddBanner">Adicionar banner</button><input type="file" id="ptfBannerIn" accept="image/*" hidden></div>
       <div class="field"><span class="flabel">Onde aparece</span>
         <div class="patro-chips" id="ptfEspacos" role="group" aria-label="Espaços">
-          <button type="button" data-e="inicio" aria-pressed="false">Banner no início</button><button type="button" data-e="mesa" aria-pressed="false">Mesa com a marca</button><button type="button" data-e="fim" aria-pressed="false">Fim de partida</button><button type="button" data-e="montar" aria-pressed="false">Telas antes de jogar</button>
+          <button type="button" data-e="inicio" aria-pressed="false">Banner no início e nas abas</button><button type="button" data-e="mesa" aria-pressed="false">Mesa com a marca</button><button type="button" data-e="fim" aria-pressed="false">Fim de partida</button><button type="button" data-e="montar" aria-pressed="false">Telas antes de jogar</button>
         </div></div>
       <div class="pt-datas"><div class="field"><label for="ptfInicio">Começa em <small>· opcional</small></label><input type="date" id="ptfInicio"></div><div class="field"><label for="ptfFim">Termina em <small>· opcional</small></label><input type="date" id="ptfFim"></div></div>
       <label class="patro-aceite"><input type="checkbox" id="ptfAtivo" checked><span>No ar</span></label>
@@ -2903,7 +2922,7 @@ body.papo-aberto{overflow:hidden}
     <div class="patro-form" id="patroForm">
       <p class="sala-lead">A turma joga todo dia, no celular. A sua empresa pode aparecer para essa gente toda. Deixe o contato que a gente chama você para mostrar os formatos e os valores.</p>
       <ul class="patro-onde">
-        <li><b>Banner no início</b><span>A primeira coisa que o jogador vê ao abrir o jogo.</span></li>
+        <li><b>Banner no app</b><span>Na tela inicial e nas abas Calçada, Perfil e Mais, onde o jogador passa o tempo entre uma partida e outra.</span></li>
         <li><b>Mesa com a sua marca</b><span>"Mesa oferecida por" no meio da mesa, a partida inteira.</span></li>
         <li><b>Fim de partida</b><span>O seu anúncio na tela do resultado de cada partida, quando todo mundo está olhando.</span></li>
       </ul>
@@ -3682,6 +3701,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.50.2', data: '04/11/2026', itens: ['Turma que teve o nome retirado por palavrão: todo mundo da Turma vê o motivo, e quem criou escolhe o novo nome. Os pontos continuam.', 'Patrocínio também no fim das abas Calçada, Perfil e Mais.'] },
   { v: '3.50.1', data: '04/11/2026', itens: ['Mesa nova: Peixe-boi, o peixe-boi-da-amazônia nadando no rio.', 'Aviso da promoção de Sócio da Calçada (aparece uma vez).', 'Desafio das Confrarias: fica claro que a estrela de campeã e o troféu da Grande Taça são do app (virtuais).', 'Na mesa, o brilho de quem está na vez não passa mais por cima do selo de nível.'] },
   { v: '3.50', data: '04/11/2026', itens: ['Desafio das Confrarias: cartão novo no início, com a sua Turma, o ranking das 3 primeiras e o botão Desafiar outra Turma. Quem ainda não tem Turma vê o passo a passo. O ranking das Turmas também aparece na aba Calçada.', 'Botão Desafiar outra Turma: cria a mesa online e o convite do WhatsApp já vai como desafio. Na sala, todo mundo vê que é mesa de desafio.', 'Sem plano: até 2 partidas de desafio por dia, além da partida grátis (o desafio não gasta a partida do dia).', 'Jogo offline: o app confere com o servidor pelo menos uma vez a cada 2 dias para manter as partidas grátis do dia (sócio não precisa).'] },
   { v: '3.49.1', data: '04/11/2026', itens: ['Mesa nova: Tucano, com o bico de arco-íris.'] },
@@ -7790,7 +7810,7 @@ imgMesa('araraazul', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 3
 // se houver mais de um, revezam. Sem nenhum, aparece o anúncio da casa (CONFIG.patrocinio).
 // Vistas e toques são contados no celular e enviados em lote. Desde a 3.21.1 todo mundo vê os anúncios, com ou sem plano.
 const PTKEY = 'dmz-patros', CONTKEY = 'dmz-patro-cont';
-const ESPACO_NOME = { inicio: 'Banner no início', mesa: 'Mesa com a marca', fim: 'Fim de partida', montar: 'Telas antes de jogar' };
+const ESPACO_NOME = { inicio: 'Banner no início e nas abas', mesa: 'Mesa com a marca', fim: 'Fim de partida', montar: 'Telas antes de jogar' };
 let PATROS = (() => { try { const j = JSON.parse(store.get(PTKEY) || 'null'); return j && Array.isArray(j.lista) ? j : { quando: 0, lista: [] }; } catch (e) { return { quando: 0, lista: [] }; } })();
 async function buscarPatros(agora) {
   if (!CONFIG.api || navigator.onLine === false) return;
@@ -7913,10 +7933,23 @@ function htmlPatroMontar() {
   return `<a class="sponsor${temBanner(p) ? ' has-banner' : ''}"${href}${atrPatro(p, 'montar')}><span class="sp-k">Patrocínio</span>${temBanner(p) ? bannerSlides(p) : `<b>${esc(p.nome)}</b><span>${esc(p.texto || '')}</span>`}</a>`;
 }
 // Mesa online: patrocinador no fim da tela (mesmo espaço do "Monte a mesa")
+// 04/11 (pedido do dono): o banner do início também aparece no fim das abas Calçada, Perfil e Mais (mesmo espaço,
+// mesmo revezamento; a vista conta como "Banner nas abas")
+function patroAba(id) {
+  const box = document.getElementById(id); if (!box) return;
+  const p = id === 'perfilPatro' && !profile ? null : patroPara('inicio');
+  if (!p) { box.innerHTML = ''; return; }
+  const href = p.link ? ` href="${esc(p.link)}" target="_blank" rel="noopener"` : '';
+  box.innerHTML = `<a class="sponsor${temBanner(p) ? ' has-banner' : ''}"${href}${atrPatro(p, 'inicio')}><span class="sp-k">Patrocínio</span>${temBanner(p) ? bannerSlides(p)
+    : `${p.logo ? `<img class="sp-logo" src="${esc(p.logo)}" alt="">` : ''}<b>${esc(p.nome)}</b><span>${esc(p.texto || '')}</span>`}</a>`;
+  if (!p.casa && Date.now() - vistaInicioEm > 30000) { vistaInicioEm = Date.now(); contarPatro(p.id, 'inicio'); }
+}
+const PATRO_ABA = { calcada: 'calcPatro', mais: 'maisPatro', profile: 'perfilPatro' };
 const showPatro = show;
 show = function (name) {
   showPatro(name);
   if (name === 'sala') { $('#salaPatro').innerHTML = htmlPatroMontar(); readySlides(); }
+  if (PATRO_ABA[name]) { try { patroAba(PATRO_ABA[name]); readySlides(); } catch (e) {} }
 };
 marcaDaMesa(false);
 setTimeout(() => buscarPatros(true), 1200);
@@ -9309,7 +9342,8 @@ const TURMA_CONV = 'dmz-turma-convite', TURMA_VISTOS = 'dmz-desafio-vistos';
 const TURMA_ERROS = { bloqueado: 'Seu acesso às turmas foi bloqueado por desrespeitar as regras (apelido ou foto).',
   nome: 'Esse nome não pode. Escolha outro, sem palavrão nem ofensa.', 'nome-usado': 'Já tem uma Turma com esse nome. Escolha outro.',
   'nao-existe': 'Não achei Turma com esse código. Confira as letras e os números.', codigo: 'O código tem 6 letras e números.',
-  cheia: 'Essa Turma já está com 40 pessoas.', muitas: 'Muitas Turmas criadas hoje neste aparelho. Tente amanhã.'
+  cheia: 'Essa Turma já está com 40 pessoas.', muitas: 'Muitas Turmas criadas hoje neste aparelho. Tente amanhã.',
+  'so-quem-criou': 'Só quem criou a Turma pode escolher o novo nome.', 'nao-pode': 'O nome desta Turma já foi escolhido.', 'sem-turma': 'Você não está numa Turma.'
 };
 async function turmaApi(path, body) {
   const r = await fetch(CONFIG.api + path, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : undefined);
@@ -9322,6 +9356,7 @@ async function turmaCarregar(forcar) {
   try { const r = await turmaApi('/turma?aparelho=' + encodeURIComponent(meuId())); if (r.ok) turmaGuardar(r.j); } catch (e) { return; }
   if (screen === 'home') desenharCartaoTurma(); else { try { desenharDesafioCalcada(); } catch (e) {} }
   if ($('#turmaFolha')) desenharTurma();
+  if (TM.info && TM.info.retirado) setTimeout(() => avisoNomeRetirado(0), 600);
 }
 // Período do Desafio (o servidor manda as datas; antes de carregar, calcula aqui pelo horário de Manaus)
 function desafioAgora() {
@@ -9357,7 +9392,7 @@ function desenharCartaoTurma() {
           : `<span class="tc-passos"><span><b>1</b>Junte os amigos numa Turma</span><span><b>2</b>Desafie outra Turma</span><span><b>3</b>Ganhou: +1 ponto</span></span>`}
       ${top.length ? `<span class="tc-rank">${top.map(r => `<span class="tc-lin${t && r.nome === t.nome ? ' eu' : ''}"><i class="m${r.pos}">${r.pos}º</i><span>${esc(nomeTurma(r.nome))}</span><b>${r.pontos}</b></span>`).join('')}</span>`
           : '<span class="tc-vazio">Nenhuma Turma pontuou ainda. A primeira vitória já vale o topo do ranking.</span>'}
-      <span class="tc-go">${t ? 'Desafiar outra Turma' : 'Montar a minha Turma'}</span>`;
+      <span class="tc-go">${t && t.renomeia ? 'Escolher o novo nome da Turma' : t ? 'Desafiar outra Turma' : 'Montar a minha Turma'}</span>`;
     return;
   }
   if (!$('#turmaCardT')) card.innerHTML = '<span class="ck">Desafio das Confrarias · 1º/11 a 20/12</span><span class="ct" id="turmaCardT"></span><span class="cd" id="turmaCardD"></span>';
@@ -9426,6 +9461,7 @@ function desenharTurma() {
     const zap = 'https://wa.me/?text=' + encodeURIComponent(`Entra na minha Turma "${t.nome}" no Dominó Manauara, para o Desafio das Confrarias (1º/11 a 20/12). Código: ${t.codigo}\n${link}`);
     const status = d.aberto ? `<b>${pts(t.pontos)}</b>${t.pos ? ` · ${t.pos}º lugar` : ''}` : d.antes ? 'Começa em 1º de novembro.' : `Este ano a sua Turma fez ${pts(t.pontos)}.`;
     box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">${esc(nomeTurma(t.nome))}${estrelas(t.titulos)}</h2>
+      ${t.retirado ? retiradoHTML(t) : ''}
       <p class="tm-status">${status}${t.taca ? ' · 🏆 Grande Taça' : t.titulos ? ` · ${t.titulos} ${t.titulos === 1 ? 'estrela' : 'estrelas'} de campeã` : ''}</p>
       <div class="tm-cod"><small>Código da Turma</small><b>${esc(t.codigo)}</b></div>
       ${d.aberto ? '<button type="button" class="primary tm-desafiar" id="tmDesafiar">Desafiar outra Turma</button><p class="note tm-desafiar-n">Cria uma mesa online e manda o convite para a outra Turma. Quem ganhar leva o ponto.</p>' : ''}
@@ -9435,6 +9471,12 @@ function desenharTurma() {
       <button type="button" class="secondary tm-fechar" id="tmFechar">Fechar</button>
       <button type="button" class="linkbtn tm-sair" id="tmSair">Sair da Turma</button>`;
     $('#tmZap').addEventListener('click', () => track('turma-convite'));
+    const br = $('#tmRenomear');
+    if (br) br.addEventListener('click', () => {
+      const nome = $('#tmNovoNome').value.trim();
+      if (nome.length < 3) { toast('O nome da Turma precisa de pelo menos 3 letras.'); return; }
+      turmaAcao('/turma/nome', { nome }, 'turma-renomeada');
+    });
     const bd = $('#tmDesafiar'); if (bd) bd.addEventListener('click', desafiarTurma);
     $('#tmSair').addEventListener('click', () => {
       const b = $('#tmSair');
@@ -9444,14 +9486,35 @@ function desenharTurma() {
   }
   $('#tmFechar').addEventListener('click', closeSheet);
 }
+// 04/11 (dono): o nome da Turma foi retirado por ter palavrão. Todo mundo da Turma fica sabendo por quê, e quem
+// criou (ou, se saiu, quem está há mais tempo) escolhe o novo nome, uma vez. Os pontos e os membros ficam.
+function retiradoHTML(t) {
+  const quem = t.quemRenomeia ? esc(t.quemRenomeia) : 'Quem criou a Turma';
+  return `<div class="tm-retirado" role="note"><b>Por que a Turma está sem nome?</b>
+    <p>O nome anterior foi retirado porque tinha um palavrão. O Dominó Manauara é jogado por gente de todas as idades, e o nome da Turma aparece para todo mundo no ranking e na mesa.</p>
+    <p class="tr-ok">Nada mais mudou: os pontos, o lugar no ranking e quem está na Turma continuam iguais.</p>
+    ${t.renomeia ? `<label for="tmNovoNome">Escolha o novo nome</label>
+      <input id="tmNovoNome" maxlength="24" autocomplete="off" placeholder="Nome da Turma (ex.: Os do Japiim)">
+      <button type="button" class="primary" id="tmRenomear">Salvar o novo nome</button>
+      <small>Sem palavrão nem ofensa. Dá para escolher uma vez.</small>`
+    : `<p>${quem}${t.quemCriou ? ', que criou a Turma,' : ', que está há mais tempo na Turma,'} pode escolher o novo nome.</p>`}</div>`;
+}
+const TURMA_RETIRADO = 'dmz-turma-retirado-';
+function avisoNomeRetirado(n) {
+  const t = TM.info;
+  if (!t || !t.retirado || !profile || screen !== 'home' || store.get(TURMA_RETIRADO + t.codigo)) return;
+  if (sheetKind) { if (n < 40) setTimeout(() => avisoNomeRetirado(n + 1), 1500); return; }
+  store.set(TURMA_RETIRADO + t.codigo, String(Date.now())); track('turma-aviso-nome');
+  abrirTurma();
+}
 async function turmaAcao(path, extra, ev) {
   const bt = $$('#turmaFolha button'); bt.forEach(b => b.disabled = true);
   try {
     const r = await turmaApi(path, Object.assign({ aparelho: meuId(), apelido: profile ? profile.name : '' }, extra));
     if (r.ok) {
       turmaGuardar(r.j); track(ev); TM.convite = null;
-      toast(path === '/turma/sair' ? 'Você saiu da Turma.' : path === '/turma/nova' ? `${nomeTurma(r.j.turma.nome)} criada! Mande o código para os amigos.` : `Você entrou: ${nomeTurma(r.j.turma.nome)}!`);
-    } else toast(r.j.erro === 'ja-tem' ? `Você já está na ${nomeTurma(r.j.turma || '')}. Para trocar, saia dela antes.` : TURMA_ERROS[r.j.erro] || 'Não deu agora. Tente de novo.');
+      toast(path === '/turma/nome' ? `Pronto! Agora é a ${nomeTurma(r.j.turma.nome)}. Os pontos continuam.` : path === '/turma/sair' ? 'Você saiu da Turma.' : path === '/turma/nova' ? `${nomeTurma(r.j.turma.nome)} criada! Mande o código para os amigos.` : `Você entrou: ${nomeTurma(r.j.turma.nome)}!`);
+    } else toast(path === '/turma/nome' && r.j.erro === 'muitas' ? 'Muitas tentativas hoje. Tente amanhã.' : r.j.erro === 'ja-tem' ? `Você já está na ${nomeTurma(r.j.turma || '')}. Para trocar, saia dela antes.` : TURMA_ERROS[r.j.erro] || 'Não deu agora. Tente de novo.');
   } catch (e) { toast('Sem internet agora. Tente de novo.'); }
   desenharTurma(); if (screen === 'home') desenharCartaoTurma();
 }
@@ -11980,6 +12043,47 @@ function dnFilasDesenha(lista) {
       <span class="dn-jog-acoes"><button type="button" class="linkbtn dn-jog-b" data-assistir="${esc(v.codigo)}">Assistir</button></span></li>`;
   }).join('');
 }
+// 04/11 (pedido do dono): ver a tela "Na fila do ganha-chama" com um exemplo, sem precisar de uma mesa cheia.
+// Os nomes e o placar são de mentira; os botões não fazem nada; o "Voltar" leva de volta à área do administrador.
+const filaExemplo = () => ({ minha: -1, naFila: 1, fase: 'jogo',
+  fila: [{ nome: 'Mauricio', av: 'y3', on: true }, { nome: 'Você', on: true }, { nome: 'Rubenildon', av: 'y5', on: false }],
+  cad: [{ nome: 'Gustavo' }, { nome: 'Bia' }, { nome: 'Igor' }, { nome: 'Edilson' }],
+  jogo: { score: [85, 120], partida: 2, series: [0, 1] }, fica: { team: 1, n: 1 } });
+function previaFila() {
+  if (ON.ativo && ON.cod) { toast('Você está numa mesa agora. Saia dela para ver o exemplo.'); return; }
+  track('dono-previa-fila'); ON.previaFila = true; show('sala');
+}
+(function () {
+  const f = $('#salaFila'), scr = $('#scrSala'); if (!f || !scr) return;
+  f.insertAdjacentHTML('afterbegin', '<p class="previa-fila" id="previaFilaAviso" hidden><b>Exemplo</b>É assim que aparece para quem chega numa mesa com os amigos que já está cheia. Os nomes e o placar são de mentira.</p>');
+  scr.addEventListener('click', e => {
+    if (!ON.previaFila) return;
+    const b = e.target.closest('button, a'); if (!b) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (b.id === 'salaBack') { ON.previaFila = false; show('dono'); return; }
+    toast('É só um exemplo: aqui os botões não fazem nada.');
+  }, true);
+  const box = $('#dnFilas');
+  if (box) { box.insertAdjacentHTML('beforeend', '<button type="button" class="secondary dn-fila-ver" id="dnFilaVer">Ver a tela da fila (exemplo)</button>'); $('#dnFilaVer').addEventListener('click', previaFila); }
+})();
+const renderSalaPrevia = renderSala;
+renderSala = function () {
+  const av = $('#previaFilaAviso');
+  if (screen === 'sala' && ON.previaFila && !(ON.ativo && ON.cod)) {
+    clearInterval(ON.contaT);
+    $('#salaEntrada').hidden = true; $('#salaEspera').hidden = true; $('#salaFila').hidden = false;
+    const st = $('#salaSt'); if (st) st.hidden = true;
+    $('#salaTitulo').textContent = 'Na fila do ganha-chama';
+    $('#scrSala').classList.remove('publica');
+    if (av) av.hidden = false;
+    desenharFila(filaExemplo());
+    return;
+  }
+  if (av) av.hidden = true;
+  return renderSalaPrevia.apply(this, arguments);
+};
+const showPrevia = show;
+show = function (name) { if (name !== 'sala') ON.previaFila = false; return showPrevia.apply(this, arguments); };
 // um grupo some quando tudo dentro dele está escondido
 function dnGruposVer() {
   DN_GRUPOS.forEach(([, ids], gi) => {
@@ -12949,7 +13053,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.50.1-0c90cfbd';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.50.2-97522b83';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
