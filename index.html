@@ -1942,6 +1942,7 @@ html[data-mesa="pordosol"] .table.wood{--wood-1:#3a0703;--wood-2:#3a0703;--wood-
 .ap-promo[hidden]{display:none}
 .ap-promo b{font-size:15.5px;color:var(--nos)}
 .pl-ap{display:grid;gap:8px}.pl-ap p{margin:0}
+.pl-lista{margin:2px 0 4px;gap:8px}.pl-lista li{font-size:15.5px;grid-template-columns:24px 1fr;gap:9px}.pl-lista svg{width:24px;height:24px}   /* 05/11: o que o sócio ganha, no convite do limite */
 .pl-preco{display:grid;gap:2px;font-size:16px}.pl-preco b{font-size:19px;color:var(--fg)}.pl-preco small{font-size:13.5px;color:var(--muted)}
 .res-cota{margin:8px 0 0;font-size:14.5px;line-height:1.35;color:var(--muted);text-align:center}
 .res-cota b{color:var(--fg)}.res-cota button{display:inline;margin-left:4px;padding:0;border:0;background:none;color:var(--nos);font:inherit;font-weight:800;text-decoration:underline;cursor:pointer}
@@ -6284,9 +6285,9 @@ const ERROS_MESA = {
   'dados': 'Não deu para entrar na mesa. Confira o seu nome no perfil.',
   'apelido': 'Seu apelido fere as regras do jogo. Escolha outro para voltar a jogar.',   // 3.38.2: sai no fim da partida, sem bloqueio
   'app': 'Não deu para entrar na mesa agora. Tente de novo.',
-  'limite': 'Sua partida de hoje nas mesas com os amigos acabou.',   // 28/10: planos
-  'limite-rapida': 'Suas 5 partidas de hoje na mesa rápida acabaram.',
-  'limite-desafio': 'Seus 2 desafios grátis de hoje acabaram.',   // 04/11   // 28/10: planos   // 3.41: o servidor não viu o app aberto (quase nunca acontece)
+  'limite': 'Você aproveitou as partidas grátis de hoje com os amigos. Sendo sócio, joga sem limite!',   // 28/10: planos (05/11: amigável)
+  'limite-rapida': 'Você aproveitou as partidas grátis de hoje na mesa rápida. Sendo sócio, joga sem limite!',
+  'limite-desafio': 'Você fez os desafios grátis de hoje. Sendo sócio, desafia sem limite!',   // 04/11   // 28/10: planos   // 3.41: o servidor não viu o app aberto (quase nunca acontece)
   'bloqueado': 'Seu acesso à mesa online foi bloqueado por desrespeitar as regras (apelido ou foto). Se achar que foi engano, use o "Fale com a gente".'
 };
 // Reações rápidas: a ordem nunca muda (o servidor manda só o número). Para acrescentar, ponha no fim.
@@ -6351,7 +6352,7 @@ function receberOnline(m) {
     if (ERROS_MESA[m.cod]) {
       sairDaMesa();
       // 3.41: trocar o apelido: no lugar do aviso rápido, a janela que leva ao perfil (ao voltar para o início)
-      if (m.cod === 'apelido' && profile && profile.name) store.set(APKEY, profile.name); else toast(ERROS_MESA[m.cod]);
+      if (m.cod === 'apelido' && profile && profile.name) store.set(APKEY, profile.name); else if (!/^limite/.test(m.cod)) toast(ERROS_MESA[m.cod]);   // 05/11: no limite, só a janela amigável
       const acabou = m.cod === 'nao-existe' || m.cod === 'encerrada' || m.cod === 'bloqueado' || m.cod === 'apelido' || m.cod === 'limite' || m.cod === 'limite-rapida' || m.cod === 'limite-desafio';   // 3.25: mesa encerrada (ou bloqueio) volta para o início
       if (screen === 'game') { leaveGameBase(); show(acabou ? 'home' : 'sala'); } else if (screen === 'sala') { if (acabou) show('home'); else renderSala(); }
       else if (screen === 'home') renderHome();
@@ -8624,6 +8625,11 @@ function mesasDoDia(agora) {
   return [MESAS_RODIZIO[(2 * k) % n], MESAS_RODIZIO[(2 * k + 1) % n]];
 }
 const mesaGratis = id => MESAS_GRATIS.includes(id) || mesasDoDia().includes(id);
+// 05/11 (dono): mesa de sócio, com convite amigável e as mesas que estão liberadas hoje
+function avisoMesaSocio(nome) {
+  const hoje = MESAS_GRATIS.concat(mesasDoDia()).map(id => (MESAS.find(x => x.id === id) || {}).nome).filter(Boolean);
+  return `${nome ? nome + ' é' : 'Essa é'} uma mesa dos sócios. Seja Sócio da Calçada e jogue em todas as mesas de Manaus! Hoje, sem plano: ${juntaE(hoje)}.`;
+}
 const mesaDoSocio = p => !!p && Date.now() >= PLANOS_LANC && !mesaGratis(p.id) && !(p.evento && conquistaFeita(p.req)) && !temPlano() && !souAdmin();
 const mesaLivre = p => !!p && !mesaDoSocio(p) && (MESAS.includes(p) || (p.id === 'pontanegra' && ehReveillon()) || (p.epoca ? souAdmin() || naEpoca(p) : p.evento ? souAdmin() || conquistaFeita(p.req) : mesasNaPromo() || parteLivre(p)));
 // O que é do plano só aparece quando dá para assinar (ou para quem já tem)
@@ -8911,7 +8917,7 @@ $('#esUsar').addEventListener('click', () => {
 function escolherMesa(id, avisar) {
   const m = MESAS.find(x => x.id === id); if (!m) return false;
   if (mesaAlheia()) { toast('Na mesa online, quem escolhe a mesa é quem criou.'); return false; }
-  if (!mesaLivre(m)) { toast(m.plano || mesaDoSocio(m) ? `A mesa ${m.nome} é dos sócios da Calçada. Sem plano: Madeira, Vermelha e Azul.` : `Para liberar a mesa ${m.nome}: ${faltaTexto(m.req)}.`); return false; }
+  if (!mesaLivre(m)) { toast(m.plano || mesaDoSocio(m) ? avisoMesaSocio(m.nome) : `Para liberar a mesa ${m.nome}: ${faltaTexto(m.req)}.`); return false; }
   if (m.id === 'madeira') store.del(MCKEY); else store.set(MCKEY, m.id);
   // quem criou a mesa online troca para todo mundo
   if (emMesaOnline() && ON.vista.dono && ON.vista.tema !== m.id && mandar({ t: 'mesa', id: m.id })) ON.vista.tema = m.id;
@@ -11669,18 +11675,32 @@ renderDono = function () { const r = renderDonoPapo.apply(this, arguments); try 
 const PLANOS_DESDE = Date.UTC(2026, 10, 5, 3, 0, 0);   // 05/11/2026, 00:00 de Brasília
 const PLANOS_DIA = '5/11';
 const planosValem = () => Math.max(Date.now(), +(store.get('dmz-hora-max') || 0)) >= PLANOS_DESDE;   // 04/11: voltar a data do celular não desliga os limites
-const PLANO_TXT = {
-  limite: ['Você já jogou a sua partida grátis de hoje', 'Sem plano, é 1 partida por dia nas mesas com os amigos, ou até 3 na mesa de um sócio. À meia-noite tem mais.'],
-  'limite-partida': ['Você já jogou a sua partida grátis de hoje', 'Sem plano, é 1 partida por dia nas mesas com os amigos, ou até 3 na mesa de um sócio. À meia-noite tem mais.'],
-  'limite-mesa': ['Você já criou a mesa de hoje', 'Sem plano, dá para criar 1 mesa com os amigos por dia. À meia-noite tem mais. Para jogar agora, entre pelo número da mesa de um amigo.'],
-  'limite-rapida': ['Você já jogou as suas partidas grátis de hoje', 'Sem plano, são 3 partidas por dia na mesa rápida. À meia-noite tem mais.'],
-  'limite-offline': ['Você já jogou as suas partidas grátis de hoje', 'Sem plano, são 5 partidas por dia no jogo offline, e mais 1 cumprindo as três missões do dia. À meia-noite tem mais.'],
-  'limite-desafio': ['Você já fez os seus 2 desafios grátis de hoje', 'Sem plano, são 2 partidas de desafio entre Turmas por dia, além da partida grátis. À meia-noite tem mais.'],   // 04/11
-  papo: ['Escrever no papo é dos sócios', 'Sem plano, você lê o papo e usa as frases prontas.']
-};
+// 05/11 (pedido do dono): as mensagens de limite são sempre amigáveis, chamam para ser sócio e mostram o que ganha.
+// Os números vêm do que vale hoje (de 5/11 a 19/11: 5 na mesa rápida e 2 com os amigos) e a hora de "ter mais" é a do
+// celular: o dia dos limites vira à meia-noite de Brasília (23h em Manaus).
+const bonusHoje = () => typeof BONUS_INI !== 'undefined' && Date.now() >= BONUS_INI && Date.now() < BONUS_FIM;
+const limRapida = () => bonusHoje() ? 5 : 3, limAmigos = () => bonusHoje() ? 2 : 1;
+function quandoTemMais() {
+  const ag = Date.now(), d = new Date(ag); d.setUTCHours(3, 0, 0, 0); if (d.getTime() <= ag) d.setUTCDate(d.getUTCDate() + 1);
+  const h = d.getHours(); return h === 0 ? 'À meia-noite' : `Às ${h}h`;
+}
+const partidasTx = n => n === 1 ? 'a partida grátis' : `as ${n} partidas grátis`;
+function planoTxt(motivo) {
+  const nome = profile && profile.name ? ', ' + profile.name : '', mais = quandoTemMais() + ' tem mais.';
+  const T = {
+    limite: [`Valeu pela partida${nome}!`, `Você aproveitou ${partidasTx(limAmigos())} de hoje nas mesas com os amigos (na mesa de um sócio, são até 3). ${mais}`],
+    'limite-mesa': ['Sua mesa de hoje já foi criada', `Sem plano, dá para criar 1 mesa com os amigos por dia. Para jogar agora, é só entrar pelo número da mesa de um amigo. ${quandoTemMais()} você cria outra.`],
+    'limite-rapida': [`Que sequência boa${nome}!`, `Você aproveitou ${partidasTx(limRapida())} de hoje na mesa rápida. ${mais}`],
+    'limite-offline': [`Valeu pelas partidas${nome}!`, `Você aproveitou ${partidasTx(typeof offPorDia === 'function' ? offPorDia() : 5)} de hoje no jogo offline (cumprindo as missões do dia, ganha mais 1). ${mais}`],
+    'limite-desafio': ['Que disputa boa!', `Você fez os 2 desafios grátis de hoje entre Turmas. ${mais}`],   // 04/11
+    papo: ['Solte o verbo no papo sendo sócio', 'Sem plano, você lê o papo e usa as frases prontas.']
+  };
+  T['limite-partida'] = T.limite;
+  return T[motivo] || T.limite;
+}
 // Convite para o plano quando bate o limite, sempre com uma saída (o que ainda dá para jogar hoje)
 function convitePlano(motivo) {
-  const [tit, tx] = PLANO_TXT[motivo] || PLANO_TXT.limite, rapida = motivo === 'limite-rapida', off = motivo === 'limite-offline';
+  const [tit, tx] = planoTxt(motivo), rapida = motivo === 'limite-rapida', off = motivo === 'limite-offline';
   const pode = typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !(profile && profile.idade === 'menor');
   const preco = typeof precoDe === 'function' ? precoDe('apm') : null;
   const a = preco ? (preco.promo ? `<span class="pl-preco"><b>${brl(preco.valor)} por mês</b> nos 3 primeiros meses<small>Promoção até ${PROMO_DIA}. Depois, ${brl(preco.normal)} por mês.</small></span>` : `<span class="pl-preco"><b>${brl(preco.valor)} por mês</b><small>Cancela quando quiser.</small></span>`) : '';
@@ -11688,11 +11708,13 @@ function convitePlano(motivo) {
   const resta = [podeRapida ? 'na mesa rápida' : '', podeOff ? 'no jogo offline' : '', off || rapida ? 'com os amigos' : ''].filter(Boolean);
   openSheet('plano', `<p class="eyebrow">${rapida ? 'Mesa rápida' : off ? 'Jogo offline' : motivo === 'limite-desafio' ? 'Desafio das Confrarias' : 'Mesas com os amigos'}</p><h2 id="sheetTitle">${tit}</h2>
     <p>${tx}</p>
-    ${pode ? `<div class="pl-ap"><p><b>Quer continuar agora?</b> Sócio da Calçada joga sem limite, tem papo de mesa em todas as partidas com os amigos, ranking completo, foto na mesa e selo ★.</p>${a}</div>` : ''}
-    ${resta.length ? `<p class="note">Hoje ainda dá para jogar ${juntaE(resta)}, se você não usou as partidas de lá.</p>` : ''}
-    ${pode ? '<button type="button" class="primary" id="plVer" style="width:100%">Quero ser sócio</button>' : ''}
+    ${pode ? `<div class="pl-ap"><p><b>Quer continuar agora?</b> Sendo Sócio da Calçada, a calçada é sua o dia inteiro:</p>
+      <ul class="pr-lista pl-lista">${['<b>Partidas sem limite</b> na mesa rápida, com os amigos e no offline', '<b>Todas as mesas de Manaus</b>, do Teatro Amazonas ao Peixe-boi', '<b>Papo de mesa</b>, foto na mesa e o selo ★ de sócio', '<b>Ranking completo</b> e as suas estatísticas'].map(t => `<li>${typeof CHECK !== 'undefined' ? CHECK : '✓'}<span>${t}</span></li>`).join('')}</ul>
+      ${a}<p class="note">E você ainda ajuda o Dominó Manauara a crescer.</p></div>` : ''}
+    ${resta.length ? `<p class="note">Enquanto isso, ainda dá para jogar ${juntaE(resta)}, se você não usou as partidas de lá.</p>` : ''}
+    <div class="pr-acoes">${pode ? '<button type="button" class="primary" id="plVer" style="width:100%">Quero ser sócio</button>' : ''}
     ${podeRapida ? '<button type="button" class="secondary" id="plRapida" style="width:100%;margin-top:10px">Jogar na mesa rápida</button>' : podeOff ? '<button type="button" class="secondary" id="plOffline" style="width:100%;margin-top:10px">Jogar offline</button>' : ''}
-    <button type="button" class="linkbtn" id="plFechar" style="width:100%;margin-top:6px">Agora não</button>`);
+    <button type="button" class="linkbtn" id="plFechar" style="width:100%;margin-top:6px">Agora não</button></div>`);   // 05/11: os botões ficam sempre à vista
   track('plano-limite-' + motivo);
   if ($('#plVer')) $('#plVer').addEventListener('click', () => { track('plano-quero-' + motivo); closeSheet(); abrirApoio(screen === 'game' || screen === 'sala' ? 'home' : (screen || 'home'), 'plano'); });
   if ($('#plRapida')) $('#plRapida').addEventListener('click', () => { closeSheet(); const b = $('#goRapida'); if (b && !b.hidden) b.click(); else show('home'); });
@@ -11704,7 +11726,7 @@ const receberOnlinePlano = receberOnline;
 receberOnline = function (m) {
   const r = receberOnlinePlano.apply(this, arguments);
   if (m && m.t === 'erro' && (m.cod === 'limite' || m.cod === 'limite-rapida' || m.cod === 'limite-desafio')) setTimeout(() => convitePlano(m.cod), 450);
-  if (m && m.t === 'erro' && m.cod === 'mesa-socio') { toast('Essa mesa é dos sócios da Calçada. Sem plano: Madeira, Vermelha e Azul.'); try { aplicarMesa(); } catch (e) {} }
+  if (m && m.t === 'erro' && m.cod === 'mesa-socio') { toast(avisoMesaSocio()); try { aplicarMesa(); } catch (e) {} }
   return r;
 };
 // Estatísticas detalhadas (Apoiador): do histórico deste celular
@@ -13093,7 +13115,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.50.5-988f1417';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.50.6-725ba18e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
