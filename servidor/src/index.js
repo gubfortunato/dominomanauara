@@ -424,6 +424,7 @@ export default {
       if (url.pathname === '/offline' && req.method === 'POST') return await offline.conferir(req, env, origin, H);   // 04/11: trava do jogo offline
       if (url.pathname === '/turma/entrar' && req.method === 'POST') return await turmas.entrar(req, env, origin, H);
       if (url.pathname === '/turma/sair' && req.method === 'POST') return await turmas.sair(req, env, origin, H);
+      if (url.pathname === '/turma/nome' && req.method === 'POST') return await turmas.renomear(req, env, origin, H);   // 04/11: novo nome da Turma que perdeu o nome
       if (url.pathname === '/pagar' && req.method === 'POST') return await pagar(req, env, origin, H);
       const pd = url.pathname.match(/^\/pedido\/([0-9a-f]{20})$/);
       if (pd && req.method === 'GET') return await pedido(env, origin, H, pd[1]);

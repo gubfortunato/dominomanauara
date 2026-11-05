@@ -15,6 +15,14 @@ const MANAUS = 4 * 3600000;
 const diaManaus = t => new Date(t - MANAUS).toISOString().slice(0, 10);
 // 04/11 (dono): nome de Turma com termo de baixo calão não aparece em lugar nenhum (fica "Turma sem nome")
 const nomeSeguro = n => n && nomeOfensivo(n) ? 'Turma sem nome' : n;
+// 04/11 (dono): Turma que perdeu o nome (palavrão) pode escolher outro, uma vez, por quem criou (ou, se essa pessoa
+// saiu, por quem está há mais tempo). Os pontos e os membros ficam.
+const SEM_NOME = 'turma sem nome';
+const nomeRetirado = n => !n || String(n).trim().toLowerCase() === SEM_NOME || nomeOfensivo(n);
+async function responsavel(env, t) {
+  if (t.criador) { const c = await env.DB.prepare('SELECT aparelho, nome FROM turma_membros WHERE turma = ? AND aparelho = ?').bind(t.codigo, t.criador).first(); if (c) return c; }
+  return await env.DB.prepare('SELECT aparelho, nome FROM turma_membros WHERE turma = ? ORDER BY entrou LIMIT 1').bind(t.codigo).first();
+}
 function codigoNovo() { const b = crypto.getRandomValues(new Uint8Array(6)); return [...b].map(x => LETRAS[x % LETRAS.length]).join(''); }
 // A edição do ano: começa 1º/11 0h e termina no fim de 20/12 (Manaus = UTC-4)
 export function edicao(env, agora) {
@@ -24,7 +32,7 @@ export function edicao(env, agora) {
   return { ano, inicio, fim, aberto: agora >= inicio && agora < fim, antes: agora < inicio, depois: agora >= fim, agora };
 }
 async function turmaDoAparelho(env, ap) {
-  return await env.DB.prepare('SELECT t.codigo, t.nome, t.titulos FROM turma_membros m JOIN turmas t ON t.codigo = m.turma WHERE m.aparelho = ?').bind(ap).first();
+  return await env.DB.prepare('SELECT t.codigo, t.nome, t.titulos, t.criador FROM turma_membros m JOIN turmas t ON t.codigo = m.turma WHERE m.aparelho = ?').bind(ap).first();
 }
 // Fecha a edição que acabou: a Turma com mais pontos (no empate, a que chegou primeiro) ganha um título
 export async function fecharDesafio(env, agora) {
@@ -82,6 +90,10 @@ async function resumo(env, ap) {
       const p = await env.DB.prepare('SELECT pontos FROM desafio_pontos WHERE edicao = ? AND turma = ?').bind(e.ano, t.codigo).first();
       const i = rk.findIndex(r => r.codigo === t.codigo);
       turma = { codigo: t.codigo, nome: nomeSeguro(t.nome), titulos: t.titulos, taca: t.titulos >= 3, membros: (results || []).map(r => r.nome), pontos: (p && p.pontos) || 0, pos: i >= 0 ? i + 1 : null };
+      if (nomeRetirado(t.nome)) {
+        const r = await responsavel(env, t);
+        turma.retirado = true; turma.renomeia = !!(r && r.aparelho === ap); turma.quemRenomeia = r ? r.nome : null; turma.quemCriou = !!(r && r.aparelho === t.criador);
+      }
     }
   }
   return { desafio, turma };
@@ -95,7 +107,7 @@ export async function nova(req, env, origin, h) {
   if (!idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
   if (await bloqueado(env, b.aparelho)) return h.json({ erro: 'bloqueado' }, 403, origin);   // 3.25
   const nome = limpa(b.nome, 24);
-  if (nome.length < 3 || nomeOfensivo(nome)) return h.json({ erro: 'nome' }, 400, origin);
+  if (nome.length < 3 || nomeRetirado(nome)) return h.json({ erro: 'nome' }, 400, origin);
   if (await turmaDoAparelho(env, b.aparelho)) return h.json({ erro: 'ja-tem' }, 409, origin);
   if (await env.DB.prepare('SELECT 1 FROM turmas WHERE lower(nome) = lower(?)').bind(nome).first()) return h.json({ erro: 'nome-usado' }, 409, origin);
   const marca = await h.marcaDoDia(req, env);
@@ -125,6 +137,27 @@ export async function entrar(req, env, origin, h) {
   const n = await env.DB.prepare('SELECT COUNT(*) AS n FROM turma_membros WHERE turma = ?').bind(codigo).first();
   if (n && n.n >= MAX_MEMBROS) return h.json({ erro: 'cheia' }, 409, origin);
   await env.DB.prepare('INSERT INTO turma_membros (aparelho, turma, nome, entrou) VALUES (?, ?, ?, ?)').bind(b.aparelho, codigo, apelidoOk(b.apelido), Date.now()).run();
+  return h.json(await resumo(env, b.aparelho), 200, origin);
+}
+// POST /turma/nome {aparelho, nome}: novo nome para a Turma que teve o nome retirado
+export async function renomear(req, env, origin, h) {
+  let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
+  if (!idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
+  if (await bloqueado(env, b.aparelho)) return h.json({ erro: 'bloqueado' }, 403, origin);
+  const t = await turmaDoAparelho(env, b.aparelho);
+  if (!t) return h.json({ erro: 'sem-turma' }, 404, origin);
+  if (!nomeRetirado(t.nome)) return h.json({ erro: 'nao-pode' }, 403, origin);
+  const r = await responsavel(env, t);
+  if (!r || r.aparelho !== b.aparelho) return h.json({ erro: 'so-quem-criou' }, 403, origin);
+  const marca = await h.marcaDoDia(req, env);
+  const k = await env.DB.prepare("SELECT COUNT(*) AS n FROM tentativas WHERE marca = ? AND tipo = 'turma-nome' AND criado_em > ?").bind(marca, Date.now() - 86400000).first();
+  if (k && k.n >= 15) return h.json({ erro: 'muitas' }, 429, origin);
+  await env.DB.prepare("INSERT INTO tentativas (marca, tipo, criado_em) VALUES (?, 'turma-nome', ?)").bind(marca, Date.now()).run();
+  const nome = limpa(b.nome, 24);
+  if (nome.length < 3 || nomeRetirado(nome)) return h.json({ erro: 'nome' }, 400, origin);
+  if (await env.DB.prepare('SELECT 1 FROM turmas WHERE lower(nome) = lower(?) AND codigo <> ?').bind(nome, t.codigo).first()) return h.json({ erro: 'nome-usado' }, 409, origin);
+  try { await env.DB.prepare('UPDATE turmas SET nome = ? WHERE codigo = ?').bind(nome, t.codigo).run(); }
+  catch (e) { return h.json({ erro: 'nome-usado' }, 409, origin); }
   return h.json(await resumo(env, b.aparelho), 200, origin);
 }
 // POST /turma/sair {aparelho}
