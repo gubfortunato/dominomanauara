@@ -13,7 +13,8 @@ import { donoNumeros, limparNumeros } from './numeros.js';
 import * as rk from './ranking.js';
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
-import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, donoBurlas, bonusConfig } from './planos.js';
+import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
+import { travaCodigo, anotarCodigoErrado, limparCodigos } from './codigos.js';
 export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
@@ -60,17 +61,56 @@ async function sha256(txt) {
 function limpa(v, max) {
   return String(v == null ? '' : v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/[ \t]+/g, ' ').trim().slice(0, max);
 }
+// 10/11 (revisão de segurança): a chave do dono pode ser trocada pela própria Área do administrador. O app manda só o
+// resumo (SHA-256) da chave nova e o "cofre" (a chave nova cifrada com a senha nova, que nunca sai do celular); os dois
+// ficam no banco e passam a valer no lugar do ADMIN_HASH do código. Cada Worker lembra o resumo por 30 segundos.
+let DONO_HASH = null;
+async function hashDono(env) {
+  const agora = Date.now();
+  if (DONO_HASH && agora - DONO_HASH.t < 30000) return DONO_HASH.h;
+  try {
+    const r = await env.DB.prepare('SELECT hash FROM dono_cofre WHERE id = 1').first();
+    DONO_HASH = { h: (r && r.hash) || env.ADMIN_HASH || null, t: agora };
+  } catch (e) {
+    // banco fora do ar: fica com o último resumo lido; sem nenhum, ninguém entra (a chave antiga não volta a valer)
+    if (!DONO_HASH) return null;
+  }
+  return DONO_HASH.h;
+}
 async function ehDono(req, env) {
   const k = req.headers.get('x-admin-key') || '';
-  if (!k || !env.ADMIN_HASH) return false;
-  return (await sha256(k)) === env.ADMIN_HASH;
+  if (!k) return false;
+  const alvo = await hashDono(env);
+  return !!alvo && (await sha256(k)) === alvo;
+}
+const b64ok = (s, min, max) => typeof s === 'string' && s.length >= min && s.length <= max && /^[A-Za-z0-9+/]+={0,2}$/.test(s);
+// GET /dono/cofre -> o cofre da chave do dono (público, como o que já fica no código do site; só abre com a senha)
+async function donoCofre(env, origin) {
+  let cofre = null;
+  try { const r = await env.DB.prepare('SELECT cofre FROM dono_cofre WHERE id = 1').first(); if (r && r.cofre) cofre = JSON.parse(r.cofre); } catch (e) {}
+  return json({ cofre }, 200, origin);
+}
+// POST /dono/cofre {hash, cofre: {it, salt, iv, data}} com a chave atual -> a chave nova passa a valer na hora
+async function donoCofreTrocar(req, env, origin) {
+  if (!(await ehDono(req, env))) return json({ erro: 'nao-autorizado' }, 401, origin);
+  let b; try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
+  const hash = String((b && b.hash) || ''), c = (b && b.cofre) || {};
+  if (!/^[0-9a-f]{64}$/.test(hash)) return json({ erro: 'hash' }, 400, origin);
+  if (!(Number.isInteger(c.it) && c.it >= 600000 && c.it <= 5000000) || !b64ok(c.salt, 22, 24) || !b64ok(c.iv, 16, 16) || !b64ok(c.data, 40, 4000))
+    return json({ erro: 'cofre' }, 400, origin);
+  if (hash === (await hashDono(env))) return json({ erro: 'mesma-chave' }, 400, origin);
+  await env.DB.prepare(`INSERT INTO dono_cofre (id, hash, cofre, trocado_em) VALUES (1, ?, ?, ?)
+    ON CONFLICT (id) DO UPDATE SET hash = excluded.hash, cofre = excluded.cofre, trocado_em = excluded.trocado_em`)
+    .bind(hash, JSON.stringify({ it: c.it, salt: c.salt, iv: c.iv, data: c.data }), Date.now()).run();
+  DONO_HASH = { h: hash, t: Date.now() };
+  return json({ ok: true }, 200, origin);
 }
 
 // Limite contra spam: por endereço de rede, sem guardar o endereço (só um resumo que muda todo dia).
 async function marcaDoDia(req, env) {
   const ip = req.headers.get('cf-connecting-ip') || 'sem-ip';
   const dia = new Date().toISOString().slice(0, 10);
-  return (await sha256(ip + '|' + dia + '|' + (env.ADMIN_HASH || ''))).slice(0, 24);
+  return (await sha256(ip + '|' + dia + '|' + salRede(env, dia))).slice(0, 24);   // 10/11: tempero secreto a partir de 11/11
 }
 
 // ---- Mesa online: cria uma mesa com código de 5 números (cada mesa é um Durable Object) ----
@@ -102,6 +142,7 @@ async function novaMesa(req, env, origin) {
       if (uso.partidas >= LIMITE.partidas) return json({ erro: 'limite-partida' }, 403, origin);
       // aparelho novo na mesma rede de quem acabou de bater o limite (apagou os dados do app): o limite continua
       if (!uso.partidas && !uso.mesas && await limiteHerdado(env, rede, 'partidas', b && b.id, b && b.nome)) return json({ erro: 'limite-partida' }, 403, origin);   // 10/11: rede ou apelido
+      if (await limiteDoIrmao(env, 'partidas', b && b.id, b && b.nome)) return json({ erro: 'limite-partida' }, 403, origin);   // 10/11 (desligado)
     }
   }
   if (!uso && b && b.id) await aparelhoDesde(env, b.id);
@@ -136,6 +177,7 @@ async function mesaRapida(req, env, origin) {
     const uso = await usoDoDia(env, b && b.id);
     if (uso.publicas >= LIMITE.publicas) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);
     if (!uso.publicas && await limiteHerdado(env, rede, 'publicas', b && b.id, b && b.nome)) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);   // 10/11: rede ou apelido
+    if (await limiteDoIrmao(env, 'publicas', b && b.id, b && b.nome)) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);   // 10/11 (desligado): outro aparelho com o mesmo apelido
   } else if (b && b.id) await aparelhoDesde(env, b.id);
   const res = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila', { method: 'POST',
     body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro, nv: b.nv }) });
@@ -143,17 +185,30 @@ async function mesaRapida(req, env, origin) {
   if (res.status === 201) { try { await env.DB.prepare('INSERT INTO mesas_criadas (marca, criado_em) VALUES (?, ?)').bind(marca, Date.now()).run(); } catch (e) {} }
   return json(j, res.status === 201 ? 200 : res.status, origin);
 }
+// 10/11: recusa de WebSocket com aviso (o app mostra a mensagem e não fica tentando de novo)
+function wsRecusa(cod) {
+  const [cli, srv] = Object.values(new WebSocketPair());
+  srv.accept(); srv.send(JSON.stringify({ t: 'erro', cod })); srv.close(4029, cod);
+  return new Response(null, { status: 101, webSocket: cli });
+}
 async function rotaMesa(req, env, origin, codigo, ws) {
   const stub = env.MESA.get(env.MESA.idFromName(codigo));
+  // 10/11: quem errou muitos números de mesa na última hora fica sem buscar e sem entrar por número (codigos.js)
+  const tc = await travaCodigo(env, req.headers.get('cf-connecting-ip'));
   if (ws) {
     if ((req.headers.get('upgrade') || '').toLowerCase() !== 'websocket') return json({ erro: 'ws' }, 426, origin);
     if ((origin || exigeApp(env)) && !origemOk(origin)) return new Response('origem', { status: 403 });   // 3.41: sem o app (sem origem), não entra
+    if (tc.travado) return wsRecusa('muitos-codigos');
     // 28/10: a mesa recebe só o resumo da rede (para o limite de quem apaga os dados do app), nunca o endereço
     const hd = new Headers(req.headers); hd.set('x-rede', (await marcaRede(req.headers.get('cf-connecting-ip'), env)) || ''); hd.delete('cf-connecting-ip');
+    hd.set('x-cod', tc.marca ? tc.marca + ':' + codigo : '');   // 10/11: a mesa anota o número errado, se ela não existir mais
     return stub.fetch(new Request(req, { headers: hd }));
   }
+  if (tc.travado) return json({ erro: 'muitos-codigos' }, 429, origin);
   const r = await stub.fetch('https://mesa/info');
-  return json(await r.json(), 200, origin);
+  const j = await r.json();
+  if (!j || !j.existe) await anotarCodigoErrado(env, tc.marca, codigo);
+  return json(j, 200, origin);
 }
 
 // ---- Anuncie no jogo: formulário de quem quer patrocinar (cai na caixa do dono como "patrocinio") ----
@@ -290,6 +345,7 @@ async function mandarPara(lista, msgDe, env) {
 async function lembretesDoDia(env) {
   // faxina: registros do limite de mesas com mais de 2 dias
   try { await env.DB.prepare('DELETE FROM mesas_criadas WHERE criado_em < ?').bind(Date.now() - 2 * 86400000).run(); } catch (e) {}
+  await limparCodigos(env);   // 10/11: números de mesa errados (mais de 2 horas)
   if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return { ok: 0, falhas: 0, motivo: 'sem-chaves' };
   const agora = Date.now();
   const { results } = await env.DB.prepare(`SELECT id, endpoint, p256dh, auth FROM avisos
@@ -477,6 +533,8 @@ export default {
       if (url.pathname === '/dono/presenca' && req.method === 'GET') return await presenca.donoPresenca(req, env, origin, H);
       if (url.pathname === '/dono/numeros' && req.method === 'GET') return await donoNumeros(req, env, origin, H);   // 03/11
       if (url.pathname === '/dono/burlas' && req.method === 'GET') return await donoBurlas(req, env, origin, H);   // 10/11: possíveis burlas dos limites
+      if (url.pathname === '/dono/cofre' && req.method === 'GET') return await donoCofre(env, origin);   // 10/11: troca da senha do dono
+      if (url.pathname === '/dono/cofre' && req.method === 'POST') return await donoCofreTrocar(req, env, origin);
       if (url.pathname === '/vivo/hoje' && req.method === 'GET') return await vivo.hoje(env, origin, H);
       if (url.pathname === '/dono/mesas' && req.method === 'GET') {
         if (!(await ehDono(req, env))) return json({ erro: 'nao-autorizado' }, 401, origin);
