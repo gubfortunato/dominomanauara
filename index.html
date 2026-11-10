@@ -596,6 +596,15 @@ body{touch-action:manipulation}
 .caixa-lista b{display:block;font-size:17px;color:var(--fg)}
 .caixa-lista p{margin:4px 0 6px;font-size:16px;line-height:1.4;color:var(--fg);opacity:.9}
 .caixa-lista small{font-size:14px;color:var(--muted)}
+/* 10/11 (pedido do dono): Limpar no alto e um X em cada notificação */
+.caixa-topo{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.caixa-topo h2{margin:0}
+.caixa-limpar{flex:none;min-height:40px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--fg);font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.caixa-limpar[hidden]{display:none}
+.caixa-lista li{position:relative;padding-right:48px}
+.caixa-x{position:absolute;top:6px;right:6px;width:40px;height:40px;display:grid;place-items:center;border:0;border-radius:999px;background:transparent;color:var(--muted);cursor:pointer}
+.caixa-x svg{width:18px;height:18px}
+.caixa-x:active{background:var(--line)}
 /* 3.41: em tela bem estreita (320 px), o título do início diminui um pouco para caber o sino, o claro/escuro e a foto */
 
 @media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:13px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
@@ -7399,7 +7408,7 @@ function renderApoioTela() {
   $('#apDoador').hidden = !dn;
   if (dn) {
     $('#apDoaNivel').textContent = coracoes(dn);
-    $('#apDoaTx').textContent = d.cortesia && !d.total ? 'Selo do criador do jogo.' : `Sócio desde ${mesAno(d.desde || d.ultima || Date.now())} · ${reais(d.total)} no total${d.n > 1 ? `, em ${d.n} planos` : ''}. Obrigado!`;
+    $('#apDoaTx').textContent = d.cortesia && !d.total ? `Sócio desde ${mesAno(d.desde || Date.now())}. Obrigado!` : `Sócio desde ${mesAno(d.desde || d.ultima || Date.now())} · ${reais(d.total)} no total${d.n > 1 ? `, em ${d.n} planos` : ''}. Obrigado!`;
     $('#apDoaAvs').innerHTML = AVATARS.filter(a => a.doador).map(a =>
       `<button type="button" class="ap-av" data-av="${a.id}" aria-pressed="${!!(profile && profile.av === a.id)}" aria-label="Avatar do sócio de coração"><img src="${avatarURI(a)}" alt=""></button>`).join('');
     $('#apDoaCod').textContent = codigoBonito(d.codigo);
@@ -7771,16 +7780,17 @@ async function dnApoiadoresCarregar() {
 }
 function dnApoiadoresMostrar() {
   const agora = DN_AP.agora || Date.now(), l = DN_AP.lista;
-  const ativo = x => x.ate && x.ate > agora && !x.cortesia;
+  const ativo = x => x.ate && x.ate > agora && !x.cortesia;   // pagando: é o que entra no número
+  const socio = x => x.ate && x.ate > agora;   // 10/11 (pedido do dono): cortesia aparece como sócio na lista
   const ativos = l.filter(ativo).length, pagaram = l.filter(x => x.n > 0).length, cort = l.filter(x => x.cortesia).length;
   $('#dnApoiadoresK').textContent = `Sócios da Calçada · ${ativos} com plano ativo`;
   $('#dnApoiadoresR').textContent = `${pagaram} ${pagaram === 1 ? 'pessoa já foi sócia' : 'pessoas já foram sócias'}${cort ? ` · ${cort} de cortesia` : ''}.`;
   const busca = (($('#dnApBusca') || {}).value || '').trim().toLowerCase();   // 10/11: achar um sócio pelo nome
-  const vis = l.filter(x => (DN_AP.f === 'ativos' ? ativo(x) : DN_AP.f === 'antigos' ? !ativo(x) && x.n > 0 : true) && (!busca || String(x.nome || '').toLowerCase().includes(busca)));
+  const vis = l.filter(x => (DN_AP.f === 'ativos' ? socio(x) : DN_AP.f === 'antigos' ? !socio(x) && x.n > 0 : true) && (!busca || String(x.nome || '').toLowerCase().includes(busca)));
   $('#dnApoiadoresLista').innerHTML = vis.length ? vis.map(x => {
-    const tags = [ativo(x) ? `★ Sócio até ${dataBR(x.ate)}` : x.cortesia ? (x.ate > agora ? `cortesia até ${dataBR(x.ate)}` : 'cortesia') : x.ate ? `plano acabou em ${dataBR(x.ate)}` : '',
+    const tags = [socio(x) ? `★ Sócio até ${dataBR(x.ate)}${x.cortesia ? ' (cortesia)' : ''}` : x.cortesia ? 'cortesia' : x.ate ? `plano acabou em ${dataBR(x.ate)}` : '',
       x.n ? `♥ ${reais(x.total)} em ${x.n} ${x.n === 1 ? 'plano' : 'planos'}` : '', x.ultimo ? `último: ${dataBR(x.ultimo)}` : '', x.codigo ? `código ${codigoBonito(x.codigo)}` : ''].filter(Boolean).join(' · ');   // 10/11: o código, para ajudar quem perdeu
-    return `<li class="${ativo(x) ? 'ativo' : ''}"><span class="dn-jog-r">${dnJogRosto(x)}</span><span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')}</b><small>${esc(tags)}</small></span></li>`;
+    return `<li class="${socio(x) ? 'ativo' : ''}"><span class="dn-jog-r">${dnJogRosto(x)}</span><span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')}</b><small>${esc(tags)}</small></span></li>`;
   }).join('') : '<li class="dn-jog-vazio">Ninguém aqui ainda.</li>';
 }
 $('#dnApBusca').addEventListener('input', () => dnApoiadoresMostrar());   // 10/11
@@ -11161,6 +11171,11 @@ function aplicarTema() {
 // mandou para todos (e os avisos de evento), que o app busca no servidor no máximo a cada 30 min, mais as notificações que
 // chegaram neste celular (o sw.js guarda uma cópia de cada uma). A mesma mensagem não aparece duas vezes (vem com número).
 const CXKEY = 'dmz-caixa-lida', CXSRV = 'dmz-caixa-srv', CXT = 'dmz-caixa-t';
+// 10/11 (pedido do dono): "Limpar" apaga todas as que estão na lista e o X apaga uma. Vale só neste aparelho: guarda a
+// hora da mais nova que foi limpa (CXLIMPA) e as apagadas uma a uma (CXFORA). Notificação nova aparece normalmente.
+const CXLIMPA = 'dmz-caixa-limpa', CXFORA = 'dmz-caixa-fora';
+const caixaChave = x => x.id ? 'n' + x.id : 'l' + x.em + x.titulo;
+function caixaFora() { try { const l = JSON.parse(store.get(CXFORA) || '[]'); return new Set(Array.isArray(l) ? l : []); } catch (e) { return new Set(); } }
 const CX = { itens: [] };
 const SINO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6a6.2 6.2 0 0 0-6.2 6.2v3.5c0 1-.4 2-1.1 2.7l-1 1.1c-.6.6-.2 1.7.7 1.7h15.2c.9 0 1.3-1.1.7-1.7l-1-1.1c-.7-.7-1.1-1.7-1.1-2.7V8.8A6.2 6.2 0 0 0 12 2.6Z" fill="currentColor"/><path d="M9.3 19.4a2.8 2.8 0 0 0 5.4 0Z" fill="currentColor"/></svg>';
 function caixaLida() { return Number(store.get(CXKEY) || 0); }
@@ -11183,12 +11198,14 @@ async function caixaBuscar(forca) {
   } catch (e) {}
 }
 async function caixaJuntar() {
-  const vistos = new Set(), l = [];
+  const vistos = new Set(), l = [], limpa = Number(store.get(CXLIMPA) || 0), fora = caixaFora();
   for (const x of caixaServidor().concat(await caixaLocais())) {
     if (!x || !x.titulo || !x.em) continue;
     if (/[?&]apoio=/.test(x.url || '') && typeof menorDeIdade === 'function' && menorDeIdade()) continue;   // 28/10: nada de plano para menor de 18
-    const k = x.id ? 'n' + x.id : 'l' + x.em + x.titulo;
-    if (vistos.has(k)) continue; vistos.add(k); l.push(x);
+    const k = caixaChave(x);
+    if (vistos.has(k)) continue; vistos.add(k);
+    if (Number(x.em) <= limpa || fora.has(k)) continue;   // 10/11: limpa ou apagada neste aparelho
+    l.push(x);
   }
   CX.itens = l.sort((a, b) => b.em - a.em).slice(0, 40);
   caixaSinal();
@@ -11209,26 +11226,50 @@ function caixaQuando(ms) {
   if (dia(d) === dia(ontem)) return 'ontem às ' + hm;
   return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0') + ' às ' + hm;
 }
+const CX_X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
+const caixaVazia = '<p class="note caixa-vazia">Nenhuma notificação. Quando a gente mandar novidades, elas aparecem aqui.</p>';
 const caixaItensHTML = t => CX.itens.map((x, i) => `<li class="${x.em > t ? 'nova' : ''}"${x.url && x.url !== '/' && x.url !== './' ? ` data-i="${i}" role="button" tabindex="0"` : ''}>
-        <b>${esc(x.titulo)}</b><p>${esc(x.texto || '')}</p><small>${esc(caixaQuando(x.em))}</small></li>`).join('');
+        <b>${esc(x.titulo)}</b><p>${esc(x.texto || '')}</p><small>${esc(caixaQuando(x.em))}</small>
+        <button type="button" class="caixa-x" data-x="${i}" aria-label="Apagar esta notificação">${CX_X}</button></li>`).join('');
+// 10/11: apaga uma (X) ou todas (Limpar) neste aparelho e redesenha a lista
+function caixaRedesenhar(t) {
+  const ul = document.querySelector('#sheet .caixa-lista'); if (!ul) return;
+  if (CX.itens.length) { ul.innerHTML = caixaItensHTML(t); return; }
+  ul.insertAdjacentHTML('afterend', caixaVazia); ul.remove();
+  const b = $('#caixaLimpar'); if (b) b.hidden = true;
+}
+function caixaApagar(i, t) {
+  const x = CX.itens[i]; if (!x) return;
+  const fora = [...caixaFora(), caixaChave(x)].slice(-200);
+  store.set(CXFORA, JSON.stringify(fora));
+  CX.itens.splice(i, 1); caixaSinal(); caixaRedesenhar(t);
+  track('caixa-apagar');
+}
+function caixaLimpar(t) {
+  const max = Math.max(Number(store.get(CXLIMPA) || 0), ...CX.itens.map(x => Number(x.em) || 0));
+  store.set(CXLIMPA, String(max)); store.set(CXFORA, '[]');
+  CX.itens = []; caixaSinal(); caixaRedesenhar(t);
+  toast('Notificações apagadas. As novas continuam chegando aqui.'); track('caixa-limpar');
+}
 async function abrirCaixa() {
   await caixaJuntar();
   const t = caixaLida();
-  openSheet('caixa', `<p class="eyebrow">Notificações</p><h2 id="sheetTitle">Suas notificações</h2>
-    ${CX.itens.length ? `<ul class="caixa-lista">${caixaItensHTML(t)}</ul>`
-      : '<p class="note">Nenhuma notificação ainda. Quando a gente mandar novidades, elas aparecem aqui.</p>'}
+  openSheet('caixa', `<p class="eyebrow">Notificações</p><div class="caixa-topo"><h2 id="sheetTitle">Suas notificações</h2><button type="button" class="caixa-limpar" id="caixaLimpar"${CX.itens.length ? '' : ' hidden'}>Limpar</button></div>
+    ${CX.itens.length ? `<ul class="caixa-lista">${caixaItensHTML(t)}</ul>` : caixaVazia}
     <button type="button" class="secondary" id="caixaOk" style="width:100%;margin-top:12px">Fechar</button>`);
   track('caixa-abrir');
   // 28/10: ao abrir, confere no servidor (o texto de um aviso pode ter mudado); se mudou, troca na hora
   const antes = JSON.stringify(caixaServidor());
   caixaBuscar(true).then(async () => {
     if (sheetKind !== 'caixa' || JSON.stringify(caixaServidor()) === antes) return;
-    await caixaJuntar(); const ul = document.querySelector('#sheet .caixa-lista'); if (ul) ul.innerHTML = caixaItensHTML(t);
+    await caixaJuntar(); caixaRedesenhar(t);
   });
   store.set(CXKEY, String(Math.max(Date.now(), ...CX.itens.map(x => Number(x.em) || 0)))); caixaSinal();   // 28/10: lida até a mais nova (mesmo com hora no futuro)
   $('#caixaOk').addEventListener('click', closeSheet);
+  $('#caixaLimpar').addEventListener('click', () => caixaLimpar(t));
   const lista = document.querySelector('#sheet .caixa-lista');
   if (lista) lista.addEventListener('click', e => {
+    const bx = e.target.closest('[data-x]'); if (bx) { e.stopPropagation(); caixaApagar(Number(bx.dataset.x), t); return; }   // 10/11
     const li = e.target.closest('[data-i]'); if (!li) return;
     const x = CX.itens[Number(li.dataset.i)]; if (!x) return;
     try {
