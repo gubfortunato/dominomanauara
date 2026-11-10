@@ -1637,6 +1637,8 @@ img.foto-online{-webkit-touch-callout:none;-webkit-user-select:none;user-select:
 #goEstilo{margin:2px 0 8px}
 /* Nome da mesa: aparece no meio do pano ao chegar na mesa e some sozinho */
 .mesa-titulo{position:fixed;z-index:16;width:max-content;max-width:88vw;box-sizing:border-box;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:2px;padding:12px 22px 14px;border-radius:16px;background:rgba(0,0,0,.38);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);color:#efe2cc;pointer-events:none;white-space:nowrap;text-align:center;animation:mesaTitulo 2.8s ease both}
+.mesa-titulo .mt-socio{margin-top:4px;padding:3px 10px;border-radius:999px;background:rgba(240,180,94,.92);color:#2a1a08;font-style:normal;font-size:12.5px;font-weight:800;letter-spacing:.04em}   /* 10/11: vitrine */
+.res-vitrine{margin:8px 0 0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--nos) 12%,transparent);font-size:15.5px;line-height:1.4;text-align:left}
 .mesa-titulo small{font-size:10.5px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;padding-left:.3em;opacity:.8}
 .mesa-titulo b{font-family:var(--font-display);font-weight:400;font-size:clamp(22px,6.5vw,30px);line-height:1.05;white-space:normal}
 @keyframes mesaTitulo{0%{opacity:0;transform:translate(-50%,-44%)}14%{opacity:1;transform:translate(-50%,-50%)}78%{opacity:1}100%{opacity:0}}
@@ -2134,6 +2136,8 @@ body.com-abas #profileBack{display:none}
 .mais-tx small{font-size:14px;line-height:1.35;color:var(--muted);font-weight:600}
 .mais-go{font-size:24px;line-height:1;color:var(--muted)}
 .mais-it.dono{border-color:var(--nos)}
+.trz-cod{width:100%;box-sizing:border-box;font-family:var(--font-display);font-size:28px;letter-spacing:.08em;text-align:center;padding:12px 14px;border-radius:14px;border:1.5px dashed var(--glow);background:var(--bg);color:var(--fg)}   /* 10/11 */
+.dn-ap-busca{width:100%;margin:10px 0 4px;font-size:17px;padding:11px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg)}   /* 10/11 */
 .mais-pe .note{margin:4px 0 0;text-align:center}
 @media (min-width: 760px){.mais-lista{grid-template-columns:1fr 1fr}}
 /* Mesa com os amigos na Calçada (público): rostinho genérico no lugar do avatar */
@@ -3056,6 +3060,7 @@ body.papo-aberto{overflow:hidden}
       <div class="dn-ap-filtro" role="group" aria-label="Mostrar">
         <button type="button" class="on" data-f="todos">Todos</button><button type="button" data-f="ativos">Plano ativo</button><button type="button" data-f="antigos">Já foram sócios</button>
       </div>
+      <input type="search" class="dn-ap-busca" id="dnApBusca" placeholder="Buscar sócio pelo nome" autocomplete="off" aria-label="Buscar sócio pelo nome">
       <ul class="dn-joglista" id="dnApoiadoresLista"></ul>
     </div>
     <div class="dn-list wood dn-avisos" id="dnAvisos" hidden>
@@ -3237,7 +3242,7 @@ function startHand(st) {
     break;
   }
   hands.forEach(h => h.sort((x, y) => x[0] - y[0] || x[1] - y[1]));
-  Object.assign(st, { hands, chain: [], center: 0, bucho: { U: [], D: [] }, passStreak: [], lastPlayer: null, lastKey: null,
+  Object.assign(st, { hands, chain: [], center: 0, bucho: { U: [], D: [] }, passStreak: [], lastPlayer: null, lastKey: null, donoPonta: {}, ultLado: {},
     lacks: [[], [], [], []], result: null, phase: 'play', events: [], pedido: null });
   if (redeals) st.events.push({ type: 'redeal', n: redeals });
   const ns = st.nextStart;
@@ -3266,6 +3271,9 @@ function applyMove(st, p, mv) {
   const t = st.hands[p].splice(mv.i, 1)[0];
   place(st, t, mv.side);
   st.passStreak = []; st.lastPlayer = p; st.lastKey = tkey(t); st.openMode = null;
+  // 10/11: quem deixou cada ponta aberta (o robô não mata a pedra do parceiro)
+  st.donoPonta = Object.assign({}, st.donoPonta || {}, mv.side === 'C' ? { L: p, R: p, U: p, D: p } : { [mv.side]: p });
+  st.ultLado = Object.assign({}, st.ultLado || {}, { [p]: mv.side });
   const pts = tableScore(st);   // soma das 4 pontas (bucho incluído)
   // modo torneio: o ponto fica esperando a dupla pedir
   if (pts) { if (st.pedirPonto) st.pedido = { team: TEAM(p), pts, p }; else addScore(st, TEAM(p), pts); }
@@ -3371,6 +3379,16 @@ function nextHand(st) {
 }
 
 // Robô (o mesmo para todos): pontos na mesa, provocar passe, evitar dar ponto, não trancar com a mão pesada.
+// 10/11 (reclamação de jogador): "o parceiro jamais mata a pedra do outro". Matar = jogar em cima da pedra que o parceiro
+// (uma pessoa) acabou de pôr, na ponta que ele deixou aberta. O robô parceiro de gente só faz isso para bater ou se o ponto
+// compensar muito (20 pontos de desconto). Entre robôs fica como antes (st.gente = as cadeiras com gente; sem a lista,
+// vale para todos). Em 12 mil mãos simuladas: de 42% das vezes que podia evitar para quase nunca.
+const MATAR_PARCEIRO = 20;
+function mataParceiro(st, p, mv) {
+  const q = (p + 2) % 4, d = st.donoPonta, u = st.ultLado;
+  if (!d || !u || mv.side === 'C' || d[mv.side] !== q || u[q] !== mv.side || st.hands[p].length <= 1) return false;
+  return !Array.isArray(st.gente) || st.gente.includes(q);
+}
 function botChoose(st, p, rnd) {
   rnd = rnd || Math.random;
   const moves = legalMoves(st, p);
@@ -3391,6 +3409,7 @@ function botChoose(st, p, rnd) {
     const rest = hand.filter((_, j) => j !== mv.i);
     let v = pts;
     if (!rest.length) v += 300 + (isDbl(t) ? 20 : 0);
+    if (mataParceiro(st, p, mv)) v -= MATAR_PARCEIRO;
     if (isDbl(t)) v += 4;
     v += pips(t) * 0.35;
     const ends = openEnds(sim).map(e => e.v);
@@ -3574,6 +3593,7 @@ function botForte(st, p, n, rnd) {
     }
   }
   if (!feitas) return botChoose(st, p, rnd);
+  for (let i = 0; i < mv.length; i++) if (mataParceiro(st, p, mv[i])) tot[i] -= MATAR_PARCEIRO * feitas;
   let b = 0; for (let i = 1; i < mv.length; i++) if (tot[i] > tot[b]) b = i;
   return mv[b];
 }
@@ -3702,6 +3722,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.51', data: '10/11/2026', itens: ['Seu código de sócio agora fica na aba Mais, fácil de copiar. Em outro aparelho, é só tocar em Mais › Já sou sócio em outro aparelho.', 'O robô parceiro não mata mais a sua pedra: ele joga na outra ponta, a não ser para bater ou fazer muito ponto.', 'Sócio não recebe mais aviso de partidas grátis por engano.', 'Na mesa rápida, quando a mesa sorteada é dos sócios, aparece o selo ★ Mesa dos sócios.'] },
   { v: '3.50.4', data: '04/11/2026', itens: ['Sócio trimestral e anual também no Pix: dá para pagar 3 meses ou 1 ano de uma vez, sem renovar, no Pix ou no cartão.'] },
   { v: '3.50.3', data: '04/11/2026', itens: ['Na aba Mais, o ícone das Regras é a mesma pedra 1|2 da aba Jogar.', 'Toda mesa agora tem a sua frase no título que aparece quando a partida começa (e as das araras ficaram novas).'] },
   { v: '3.50.2', data: '04/11/2026', itens: ['Turma que teve o nome retirado por palavrão: todo mundo da Turma vê o motivo, e quem criou escolhe o novo nome. Os pontos continuam.', 'Patrocínio também no fim das abas Calçada, Perfil e Mais.'] },
@@ -4454,6 +4475,7 @@ function nomeGenerico(nome) {
 // No aparelho do dono, com "Não contar meus acessos" ligado, nada é contado.
 function semContar() { try { const d = JSON.parse(localStorage.getItem('dmz-dono') || 'null'); return !!(d && d.semContar); } catch (e) { return false; } }
 function track(ev, data) {
+  if (/^(plano-quero|promo-socio-quero|ranking-quase|ranking-socio|plano-cota|apoio-banner|plano-sim)/.test(ev)) { try { gatilhoSocio = ev; } catch (e) {} }   // 10/11
   if (semContar()) return;
   try { if (window.umami && window.umami.track) data ? window.umami.track(ev, data) : window.umami.track(ev); } catch (e) {}
 }
@@ -7076,11 +7098,15 @@ function condicaoDe(k, curta) {
 }
 const dataBR = ms => new Date(ms).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Manaus' });
 const codigoBonito = c => c ? c.slice(0, 4) + '-' + c.slice(4) : '';
+// 10/11: quando vira sócio, anota de onde veio (convite do limite, vitrine, aviso da promoção, ranking…)
+function anotarOrigemSocio(antes) { if (!antes && temPlano()) { track('socio-virou-' + (store.get('dmz-socio-origem') || 'direto')); store.del('dmz-socio-origem'); } }
 function guardarPlano(j) {
+  const eraSocio = temPlano();
   if (j && j.ate) store.set(PLKEY, JSON.stringify({ ate: j.ate, codigo: j.codigo || null, visto: Date.now(), renova: j.renova && typeof j.renova === 'object' ? j.renova : !!j.renova,
     socio: j.socio && j.socio.numero ? { numero: j.socio.numero, desde: j.socio.desde } : ((planoLocal() || {}).socio || null) }));   // 03/11: carteira de sócio
   else store.del(PLKEY);
   aplicarPlano();
+  try { anotarOrigemSocio(eraSocio); } catch (e) {}
 }
 // Doador: quanto já doou (soma), desde quando apoia e a última doação. O selo cresce: ♥, ♥♥ (R$ 30), ♥♥♥ (R$ 100).
 function doadorLocal() { try { return JSON.parse(store.get(DOAKEY) || 'null'); } catch (e) { return null; } }
@@ -7255,10 +7281,13 @@ function conferirPendente() {
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { conferirPendente(); conferirPlano(); } });
 
 // ---------- Tela do plano ----------
+let gatilhoSocio = '';   // 10/11: o último convite tocado antes de abrir a tela do sócio
 function abrirApoio(deOnde, rolarPara) {
   if (!pagamentosAtivos()) return;
   apoioVolta = deOnde || 'home';
   track('apoio-aberto');
+  if (!temPlano()) store.set('dmz-socio-origem', gatilhoSocio || ('tela-' + (deOnde || 'home')));
+  gatilhoSocio = '';
   buscarPrecos();   // 28/10: os preços de agora (promoção)
   show('apoio');
   if (rolarPara === 'plano') setTimeout(() => { const el = $('#apPlano'); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 320);
@@ -7522,22 +7551,27 @@ $('#apAvs').addEventListener('click', e => {
   profile.av = b.dataset.av; store.set(PKEY, JSON.stringify(profile));   // PKEY = chave do perfil
   renderApoioTela(); toast('Avatar trocado!');
 });
-$('#apTrazer').addEventListener('click', async () => {
-  const cod = $('#apTrazerCod').value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-  if (cod.length !== 8) { toast('O código tem 8 letras e números, como ABCD-1234.'); return; }
-  const b = $('#apTrazer'); b.disabled = true;
+// 10/11: trazer o plano pelo código (na tela do sócio e na aba Mais). Devolve true quando deu certo.
+async function trazerPlanoCodigo(valor, b) {
+  const cod = String(valor || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (cod.length !== 8) { toast('O código tem 8 letras e números, como ABCD-1234.'); return false; }
+  if (b) b.disabled = true;
+  let ok = false;
   try {
     const r = await fetch(CONFIG.api + '/plano/trazer', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ codigo: cod, aparelho: meuId() }) });
     const j = await r.json().catch(() => ({}));
     if (r.ok && (j.ate || j.doador)) {
+      ok = true; track('plano-trazido');
       guardarConta(j); $('#apTrazerCod').value = ''; renderApoioTela();
-      if (j.progresso && typeof nuvemRestaurar === 'function' && nuvemRestaurar(j.progresso)) return;   // 3.39: o progresso veio junto
-      toast(j.ate > Date.now() ? `Pronto! Seu tempo de sócio veio junto, vale até ${dataBR(j.ate)}.` : 'Pronto! Seu selo ♥ veio junto.');
+      if (j.progresso && typeof nuvemRestaurar === 'function' && nuvemRestaurar(j.progresso)) return true;   // 3.39: o progresso veio junto
+      toast(j.ate > Date.now() ? `Pronto! Você é sócio neste aparelho até ${dataBR(j.ate)}.` : 'Pronto! Seu selo ♥ veio junto.');
     }
-    else toast(r.status === 404 ? 'Não achei esse código. Confira no outro celular.' : r.status === 429 ? 'Muitas tentativas. Tente de novo mais tarde.' : 'Não deu agora. Tente de novo.');
+    else toast(r.status === 404 ? 'Não achei esse código. Confira no outro aparelho, em Mais › Seu código de sócio.' : r.status === 429 ? 'Muitas tentativas. Tente de novo mais tarde.' : 'Não deu agora. Tente de novo.');
   } catch (e) { toast('Sem internet agora.'); }
-  b.disabled = false;
-});
+  if (b) b.disabled = false;
+  return ok;
+}
+$('#apTrazer').addEventListener('click', () => trazerPlanoCodigo($('#apTrazerCod').value, $('#apTrazer')));
 $('#apTrazerCod').addEventListener('input', e => {
   const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
   e.target.value = v.length > 4 ? v.slice(0, 4) + '-' + v.slice(4) : v;
@@ -7652,13 +7686,15 @@ function dnApoiadoresMostrar() {
   const ativos = l.filter(ativo).length, pagaram = l.filter(x => x.n > 0).length, cort = l.filter(x => x.cortesia).length;
   $('#dnApoiadoresK').textContent = `Sócios da Calçada · ${ativos} com plano ativo`;
   $('#dnApoiadoresR').textContent = `${pagaram} ${pagaram === 1 ? 'pessoa já foi sócia' : 'pessoas já foram sócias'}${cort ? ` · ${cort} de cortesia` : ''}.`;
-  const vis = l.filter(x => DN_AP.f === 'ativos' ? ativo(x) : DN_AP.f === 'antigos' ? !ativo(x) && x.n > 0 : true);
+  const busca = (($('#dnApBusca') || {}).value || '').trim().toLowerCase();   // 10/11: achar um sócio pelo nome
+  const vis = l.filter(x => (DN_AP.f === 'ativos' ? ativo(x) : DN_AP.f === 'antigos' ? !ativo(x) && x.n > 0 : true) && (!busca || String(x.nome || '').toLowerCase().includes(busca)));
   $('#dnApoiadoresLista').innerHTML = vis.length ? vis.map(x => {
     const tags = [ativo(x) ? `★ Sócio até ${dataBR(x.ate)}` : x.cortesia ? (x.ate > agora ? `cortesia até ${dataBR(x.ate)}` : 'cortesia') : x.ate ? `plano acabou em ${dataBR(x.ate)}` : '',
-      x.n ? `♥ ${reais(x.total)} em ${x.n} ${x.n === 1 ? 'plano' : 'planos'}` : '', x.ultimo ? `último: ${dataBR(x.ultimo)}` : ''].filter(Boolean).join(' · ');
+      x.n ? `♥ ${reais(x.total)} em ${x.n} ${x.n === 1 ? 'plano' : 'planos'}` : '', x.ultimo ? `último: ${dataBR(x.ultimo)}` : '', x.codigo ? `código ${codigoBonito(x.codigo)}` : ''].filter(Boolean).join(' · ');   // 10/11: o código, para ajudar quem perdeu
     return `<li class="${ativo(x) ? 'ativo' : ''}"><span class="dn-jog-r">${dnJogRosto(x)}</span><span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')}</b><small>${esc(tags)}</small></span></li>`;
   }).join('') : '<li class="dn-jog-vazio">Ninguém aqui ainda.</li>';
 }
+$('#dnApBusca').addEventListener('input', () => dnApoiadoresMostrar());   // 10/11
 $('#dnApoiadores').addEventListener('click', e => {
   const b = e.target.closest('[data-f]'); if (!b) return;
   DN_AP.f = b.dataset.f;
@@ -8724,6 +8760,25 @@ function tituloMesa() {
   const el = $('.mesa-titulo');
   setTimeout(() => { if (el.isConnected) el.remove(); }, 2900);
 }
+// 10/11 (dono: "tudo deve converter grátis em sócio"): vitrine das mesas de sócio. Sem plano, a mesa rápida (e a mesa de
+// um sócio) pode cair numa mesa de sócio: o título avisa, o fim da partida convida e a janela do limite lembra dela.
+const VITRINE_KEY = 'dmz-vitrine';
+function vitrineAgora() {
+  try {
+    if (mode !== 'on' || !planosValem() || temPlano() || souAdmin() || menorDeIdade() || !pagamentosAtivos()) return null;
+    const m = mesaDaMesaOnline(); return m && mesaDoSocio(m) ? m : null;
+  } catch (e) { return null; }
+}
+function vitrineDeHoje() { try { const v = JSON.parse(store.get(VITRINE_KEY) || 'null'); return v && v.dia === diaBRLocal() ? v : null; } catch (e) { return null; } }
+const tituloMesaVitrine = tituloMesa;
+tituloMesa = function () {
+  tituloMesaVitrine.apply(this, arguments);
+  const m = vitrineAgora(), el = $('.mesa-titulo');
+  if (!m || !el) return;
+  el.insertAdjacentHTML('beforeend', '<em class="mt-socio">★ Mesa dos sócios</em>');
+  if (!(vitrineDeHoje() || {}).id || vitrineDeHoje().id !== m.id) track('vitrine-mesa');
+  store.set(VITRINE_KEY, JSON.stringify({ id: m.id, nome: m.nome, dia: diaBRLocal() }));
+};
 const showEstilo = show;
 show = function (name) {
   const antes = screen;
@@ -10124,6 +10179,7 @@ let roboMsAmostra = 0.6;
 function roboForteLigado() { return typeof meuNivel !== 'function' || meuNivel() >= ROBO_FORTE_NIVEL; }
 function jogadaRobo(st, p) {
   try {
+    if (!Array.isArray(st.gente)) st.gente = [0];   // 10/11: no jogo contra a turma do bairro, gente é só você (cadeira 0)
     if (!roboForteLigado() || legalMoves(st, p).length <= 1) return botChoose(st, p);
     const n = Math.max(30, Math.min(120, Math.round(90 / Math.max(0.05, roboMsAmostra))));
     const t0 = performance.now(), mv = botForte(st, p, n);
@@ -10722,6 +10778,7 @@ const ABA_IC = {
   mais: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="ic-c" x="3.5" y="3.5" width="7" height="7" rx="2"/><rect class="ic-c" x="13.5" y="3.5" width="7" height="7" rx="2"/><rect class="ic-c" x="3.5" y="13.5" width="7" height="7" rx="2"/><rect class="ic-c" x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>'
 };
 const MAIS_IC = {
+  codigo: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12.5" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M6.8 10.2h5M6.8 13.9h3.4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M16.6 9.4l.8 1.7 1.9.2-1.4 1.3.4 1.9-1.7-1-1.7 1 .4-1.9-1.4-1.3 1.9-.2z" fill="currentColor"/></svg>',   // 10/11
   dono: '<svg viewBox="0 0 24 24"><path d="M4 19V10m5.3 9V5m5.4 14v-7M20 19V8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
   // 04/11 (dono): a mesma pedra 1|2 da aba Jogar
   regras: '<svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 12h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.3" r="1.45" fill="currentColor"/><circle cx="9.9" cy="15.1" r="1.3" fill="currentColor"/><circle cx="14.1" cy="18" r="1.3" fill="currentColor"/></svg>',
@@ -10816,7 +10873,10 @@ function renderMais() {
     { k: 'aprender', ic: 'aprender', t: 'Aprender a jogar', s: 'Lições curtas e partida treino com dicas' },   // 03/11
     { k: 'regras', ic: 'regras', t: 'Regras', s: 'Bucho, garagem, passe e galo, explicados' },
     { k: 'som', ic: 'som', t: 'Som e vibração', s: typeof somRotulo === 'function' ? somRotulo() : '' },   // 03/11
-    vis('footApoio') && { k: 'apoio', ic: 'apoio', t: 'Sócio da Calçada', s: 'Mesas com os amigos sem limite e mais' },
+    // 10/11 (pedido do dono: sócios não achavam o código): o código fica aqui, à vista
+    temPlano() && { k: 'codigo', ic: 'codigo', t: 'Seu código de sócio', s: (() => { const p = planoLocal() || {}, d = carteiraDados() || {}; return (p.codigo ? codigoBonito(p.codigo) : 'Toque para ver') + (d.numero ? ` · Sócio nº ${d.numero}` : ''); })(), destaque: true },
+    vis('footApoio') && { k: 'apoio', ic: 'apoio', t: 'Sócio da Calçada', s: temPlano() ? `Seu plano vale até ${dataBR((planoLocal() || {}).ate)}` : 'Mesas com os amigos sem limite e mais' },
+    !temPlano() && pagamentosAtivos() && { k: 'trazer', ic: 'codigo', t: 'Já sou sócio em outro aparelho', s: 'Use o seu código para trazer o plano para cá' },
     vis('fbCard') && { k: 'fale', ic: 'fale', t: 'Fale com a gente', s: 'Achou um erro ou tem uma ideia?' },
     { k: 'chamar', ic: 'chamar', t: 'Chamar os amigos', s: 'Mande o jogo no WhatsApp para a turma' },
     { k: 'insta', ic: 'insta', t: 'Siga no Instagram', s: '@dominomanauara · novidades e dicas', href: 'https://www.instagram.com/dominomanauara/' },
@@ -10829,6 +10889,31 @@ function renderMais() {
       : `<button type="button" class="mais-it${i.destaque ? ' dono' : ''}" data-k="${i.k}">${corpo}</button>`;
   }).join('');
 }
+// 10/11 (pedido do dono): o código de sócio, grande e fácil de copiar, e como usar em outro aparelho
+function abrirCodigoSocio() {
+  const p = planoLocal() || {}, d = carteiraDados() || {}, cod = p.codigo ? codigoBonito(p.codigo) : '';
+  if (!cod) { conferirPlano(true).then(() => { if ((planoLocal() || {}).codigo) abrirCodigoSocio(); else toast('Não achei o seu código agora. Tente de novo com internet.'); }); return; }
+  track('mais-codigo-ver');
+  openSheet('codigo', `<p class="eyebrow">Sócio da Calçada${d.numero ? ` · nº ${d.numero}` : ''}</p><h2 id="sheetTitle">Seu código de sócio</h2>
+    <div class="carta-cod"><b>${esc(cod)}</b><button type="button" class="linkbtn" id="codCopiar">Copiar</button></div>
+    <p class="note">Sócio até ${dataBR(p.ate)}${p.renova ? ' (renova sozinho no cartão)' : ''}.</p>
+    <p><b>Trocou de celular ou quer jogar no computador?</b> Abra o Dominó Manauara lá, toque em <b>Mais › Já sou sócio em outro aparelho</b> e digite este código. O plano passa para o aparelho novo.</p>
+    <p class="note">O plano vale em um aparelho por vez. Guarde o código (um print da tela já serve) e não passe para ninguém.</p>
+    <button type="button" class="primary" id="codOk" style="width:100%">Pronto</button>`);
+  $('#codCopiar').addEventListener('click', async () => { try { await navigator.clipboard.writeText(cod); toast('Código copiado.'); } catch (e) { toast('Não deu para copiar. Tire um print da tela.'); } });
+  $('#codOk').addEventListener('click', closeSheet);
+}
+function abrirTrazerPlano() {
+  openSheet('trazer', `<p class="eyebrow">Sócio da Calçada</p><h2 id="sheetTitle">Já sou sócio em outro aparelho</h2>
+    <p>Digite o código de sócio. Ele está no outro aparelho, em <b>Mais › Seu código de sócio</b>.</p>
+    <input type="text" class="trz-cod" id="trzCod" maxlength="9" placeholder="ABCD-1234" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Código de sócio">
+    <button type="button" class="primary" id="trzOk" style="width:100%;margin-top:10px">Trazer o meu plano</button>
+    <p class="note">O plano passa para este aparelho e sai do outro.</p>`);
+  const i = $('#trzCod');
+  i.addEventListener('input', e => { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8); e.target.value = v.length > 4 ? v.slice(0, 4) + '-' + v.slice(4) : v; });
+  $('#trzOk').addEventListener('click', async e => { if (await trazerPlanoCodigo(i.value, e.currentTarget)) { closeSheet(); if (screen === 'mais') renderMais(); } });
+  setTimeout(() => { try { i.focus(); } catch (e) {} }, 300);
+}
 function abasMaisClique(k) {
   const clica = id => { const e = document.getElementById(id); if (e) e.click(); };
   track('mais-' + k);
@@ -10837,6 +10922,8 @@ function abasMaisClique(k) {
   else if (k === 'aprender') abrirAprender();
   else if (k === 'som') abrirSom();
   else if (k === 'apoio') clica('footApoio');
+  else if (k === 'codigo') abrirCodigoSocio();
+  else if (k === 'trazer') abrirTrazerPlano();
   else if (k === 'fale') clica('fbCard');
   else if (k === 'chamar') clica('shareApp');
   else if (k === 'instalar') { clica('footInstalar'); const bt = $('#instPular'); if (bt) bt.textContent = 'Voltar'; }
@@ -11700,7 +11787,7 @@ function planoTxt(motivo) {
 }
 // Convite para o plano quando bate o limite, sempre com uma saída (o que ainda dá para jogar hoje)
 function convitePlano(motivo) {
-  const [tit, tx] = planoTxt(motivo), rapida = motivo === 'limite-rapida', off = motivo === 'limite-offline';
+  const [tit, tx] = planoTxt(motivo), rapida = motivo === 'limite-rapida', off = motivo === 'limite-offline', vit = vitrineDeHoje();
   const pode = typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !(profile && profile.idade === 'menor');
   const preco = typeof precoDe === 'function' ? precoDe('apm') : null;
   const a = preco ? (preco.promo ? `<span class="pl-preco"><b>${brl(preco.valor)} por mês</b> nos 3 primeiros meses<small>Promoção até ${PROMO_DIA}. Depois, ${brl(preco.normal)} por mês.</small></span>` : `<span class="pl-preco"><b>${brl(preco.valor)} por mês</b><small>Cancela quando quiser.</small></span>`) : '';
@@ -11709,18 +11796,35 @@ function convitePlano(motivo) {
   openSheet('plano', `<p class="eyebrow">${rapida ? 'Mesa rápida' : off ? 'Jogo offline' : motivo === 'limite-desafio' ? 'Desafio das Confrarias' : 'Mesas com os amigos'}</p><h2 id="sheetTitle">${tit}</h2>
     <p>${tx}</p>
     ${pode ? `<div class="pl-ap"><p><b>Quer continuar agora?</b> Sendo Sócio da Calçada, a calçada é sua o dia inteiro:</p>
-      <ul class="pr-lista pl-lista">${['<b>Partidas sem limite</b> na mesa rápida, com os amigos e no offline', '<b>Todas as mesas de Manaus</b>, do Teatro Amazonas ao Peixe-boi', '<b>Papo de mesa</b>, foto na mesa e o selo ★ de sócio', '<b>Ranking completo</b> e as suas estatísticas'].map(t => `<li>${typeof CHECK !== 'undefined' ? CHECK : '✓'}<span>${t}</span></li>`).join('')}</ul>
+      <ul class="pr-lista pl-lista">${['<b>Partidas sem limite</b> na mesa rápida, com os amigos e no offline', (vit ? `<b>Todas as mesas de Manaus</b>, como a mesa ${esc(vit.nome)} que você jogou hoje` : '<b>Todas as mesas de Manaus</b>, do Teatro Amazonas ao Peixe-boi'), '<b>Papo de mesa</b>, foto na mesa e o selo ★ de sócio', '<b>Ranking completo</b> e as suas estatísticas'].map(t => `<li>${typeof CHECK !== 'undefined' ? CHECK : '✓'}<span>${t}</span></li>`).join('')}</ul>
       ${a}<p class="note">E você ainda ajuda o Dominó Manauara a crescer.</p></div>` : ''}
     ${resta.length ? `<p class="note">Enquanto isso, ainda dá para jogar ${juntaE(resta)}, se você não usou as partidas de lá.</p>` : ''}
     <div class="pr-acoes">${pode ? '<button type="button" class="primary" id="plVer" style="width:100%">Quero ser sócio</button>' : ''}
     ${podeRapida ? '<button type="button" class="secondary" id="plRapida" style="width:100%;margin-top:10px">Jogar na mesa rápida</button>' : podeOff ? '<button type="button" class="secondary" id="plOffline" style="width:100%;margin-top:10px">Jogar offline</button>' : ''}
     <button type="button" class="linkbtn" id="plFechar" style="width:100%;margin-top:6px">Agora não</button></div>`);   // 05/11: os botões ficam sempre à vista
   track('plano-limite-' + motivo);
-  if ($('#plVer')) $('#plVer').addEventListener('click', () => { track('plano-quero-' + motivo); closeSheet(); abrirApoio(screen === 'game' || screen === 'sala' ? 'home' : (screen || 'home'), 'plano'); });
+  if ($('#plVer')) $('#plVer').addEventListener('click', () => { track('plano-quero-' + motivo + (vit ? '-vitrine' : '')); closeSheet(); abrirApoio(screen === 'game' || screen === 'sala' ? 'home' : (screen || 'home'), 'plano'); });
   if ($('#plRapida')) $('#plRapida').addEventListener('click', () => { closeSheet(); const b = $('#goRapida'); if (b && !b.hidden) b.click(); else show('home'); });
   if ($('#plOffline')) $('#plOffline').addEventListener('click', () => { closeSheet(); if (screen !== 'home') show('home'); const b = $('#goOffline'); if (b) b.click(); });
   $('#plFechar').addEventListener('click', closeSheet);
 }
+// 10/11 (sócio recebia "acabaram as grátis"): quem é sócio neste aparelho e recebe aviso de limite não vê convite para ser
+// sócio: o app confere o plano no servidor e, se está valendo, pede desculpas e leva de volta para jogar
+const convitePlanoBase = convitePlano;
+convitePlano = function (motivo) {
+  if (motivo === 'papo' || !temPlano()) return convitePlanoBase(motivo);
+  track('plano-limite-socio-' + motivo);
+  conferirPlano(true).then(() => {
+    if (!temPlano()) return convitePlanoBase(motivo);
+    const p = planoLocal() || {}, rapida = motivo === 'limite-rapida';
+    openSheet('plano', `<p class="eyebrow">Sócio da Calçada</p><h2 id="sheetTitle">Você é sócio, pode jogar!</h2>
+      <p>A mesa não reconheceu o seu plano desta vez. Já conferimos: você é Sócio da Calçada até <b>${dataBR(p.ate)}</b>, com partidas sem limite. Desculpe o susto.</p>
+      <button type="button" class="primary" id="psVolta" style="width:100%">${rapida ? 'Voltar para a mesa rápida' : 'Voltar a jogar'}</button>
+      <button type="button" class="linkbtn" id="psFechar" style="width:100%;margin-top:6px">Fechar</button>`);
+    $('#psVolta').addEventListener('click', () => { closeSheet(); if (rapida) { const b = $('#goRapida'); if (b && !b.hidden) { b.click(); return; } } show('home'); });
+    $('#psFechar').addEventListener('click', closeSheet);
+  });
+};
 // o servidor tirou da mesa (ou não deixou entrar): já jogou a partida de hoje (mesa rápida: as 5 de hoje)
 const receberOnlinePlano = receberOnline;
 receberOnline = function (m) {
@@ -13115,7 +13219,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.50.6-725ba18e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.51-50e50da4';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -14077,6 +14181,9 @@ showResult = function () {
         // na mesa online não tira ninguém da mesa no meio da sessão: o botão fica só no offline (o jogo fica guardado)
         const bs = $('#resCotaSocio'); if (bs) bs.addEventListener('click', () => { track('plano-cota-offline'); closeSheet(); leaveGame(); abrirApoio('home', 'plano'); });
       }
+      // 10/11: vitrine (só o texto: na mesa online ninguém sai da mesa no meio da sessão)
+      const vm = typeof vitrineAgora === 'function' && vitrineAgora();
+      if (vm && !$('#sheet .res-vitrine')) nb.insertAdjacentHTML('beforebegin', `<p class="res-vitrine">★ Gostou da mesa <b>${esc(vm.nome)}</b>? Sendo Sócio da Calçada, você joga nela quando quiser, também com os amigos.</p>`);
     }
   } catch (e) {}
   return r;

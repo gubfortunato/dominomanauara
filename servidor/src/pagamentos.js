@@ -515,6 +515,7 @@ export async function donoApoiadores(req, env, origin, h) {
   const { results } = await env.DB.prepare(`SELECT a.aparelho,
       (SELECT ate FROM planos p WHERE p.aparelho = a.aparelho) AS ate,
       (SELECT desde FROM planos p WHERE p.aparelho = a.aparelho) AS desde,
+      (SELECT codigo FROM planos p WHERE p.aparelho = a.aparelho) AS codigo,
       COALESCE((SELECT SUM(valor) FROM pedidos d WHERE d.aparelho = a.aparelho AND d.status = 'pago'), 0) AS total,
       (SELECT COUNT(*) FROM pedidos d WHERE d.aparelho = a.aparelho AND d.status = 'pago') AS n,
       (SELECT MAX(pago_em) FROM pedidos d WHERE d.aparelho = a.aparelho AND d.status = 'pago') AS ultimo,

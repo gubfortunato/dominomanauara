@@ -124,7 +124,7 @@ function startHand(st) {
     break;
   }
   hands.forEach(h => h.sort((x, y) => x[0] - y[0] || x[1] - y[1]));
-  Object.assign(st, { hands, chain: [], center: 0, bucho: { U: [], D: [] }, passStreak: [], lastPlayer: null, lastKey: null,
+  Object.assign(st, { hands, chain: [], center: 0, bucho: { U: [], D: [] }, passStreak: [], lastPlayer: null, lastKey: null, donoPonta: {}, ultLado: {},
     lacks: [[], [], [], []], result: null, phase: 'play', events: [], pedido: null });
   if (redeals) st.events.push({ type: 'redeal', n: redeals });
   const ns = st.nextStart;
@@ -153,6 +153,9 @@ function applyMove(st, p, mv) {
   const t = st.hands[p].splice(mv.i, 1)[0];
   place(st, t, mv.side);
   st.passStreak = []; st.lastPlayer = p; st.lastKey = tkey(t); st.openMode = null;
+  // 10/11: quem deixou cada ponta aberta (o robô não mata a pedra do parceiro)
+  st.donoPonta = Object.assign({}, st.donoPonta || {}, mv.side === 'C' ? { L: p, R: p, U: p, D: p } : { [mv.side]: p });
+  st.ultLado = Object.assign({}, st.ultLado || {}, { [p]: mv.side });
   const pts = tableScore(st);   // soma das 4 pontas (bucho incluído)
   // modo torneio: o ponto fica esperando a dupla pedir
   if (pts) { if (st.pedirPonto) st.pedido = { team: TEAM(p), pts, p }; else addScore(st, TEAM(p), pts); }
@@ -258,6 +261,16 @@ function nextHand(st) {
 }
 
 // Robô (o mesmo para todos): pontos na mesa, provocar passe, evitar dar ponto, não trancar com a mão pesada.
+// 10/11 (reclamação de jogador): "o parceiro jamais mata a pedra do outro". Matar = jogar em cima da pedra que o parceiro
+// (uma pessoa) acabou de pôr, na ponta que ele deixou aberta. O robô parceiro de gente só faz isso para bater ou se o ponto
+// compensar muito (20 pontos de desconto). Entre robôs fica como antes (st.gente = as cadeiras com gente; sem a lista,
+// vale para todos). Em 12 mil mãos simuladas: de 42% das vezes que podia evitar para quase nunca.
+const MATAR_PARCEIRO = 20;
+function mataParceiro(st, p, mv) {
+  const q = (p + 2) % 4, d = st.donoPonta, u = st.ultLado;
+  if (!d || !u || mv.side === 'C' || d[mv.side] !== q || u[q] !== mv.side || st.hands[p].length <= 1) return false;
+  return !Array.isArray(st.gente) || st.gente.includes(q);
+}
 function botChoose(st, p, rnd) {
   rnd = rnd || Math.random;
   const moves = legalMoves(st, p);
@@ -278,6 +291,7 @@ function botChoose(st, p, rnd) {
     const rest = hand.filter((_, j) => j !== mv.i);
     let v = pts;
     if (!rest.length) v += 300 + (isDbl(t) ? 20 : 0);
+    if (mataParceiro(st, p, mv)) v -= MATAR_PARCEIRO;
     if (isDbl(t)) v += 4;
     v += pips(t) * 0.35;
     const ends = openEnds(sim).map(e => e.v);
@@ -461,6 +475,7 @@ function botForte(st, p, n, rnd) {
     }
   }
   if (!feitas) return botChoose(st, p, rnd);
+  for (let i = 0; i < mv.length; i++) if (mataParceiro(st, p, mv[i])) tot[i] -= MATAR_PARCEIRO * feitas;
   let b = 0; for (let i = 1; i < mv.length; i++) if (tot[i] > tot[b]) b = i;
   return mv[b];
 }
