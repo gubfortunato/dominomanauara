@@ -21,38 +21,31 @@ jobs:
         run: |
           set +e
           OUT=/tmp/priv.txt; : > $OUT
-          npm i -g wrangler@4 > /dev/null 2>&1
-          id=$(wrangler d1 list --json 2>/dev/null | jq -r '.[] | select(.name=="dominomanauara") | .uuid')
-          sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
-          AGORA=$(($(date +%s) * 1000)); D=86400000
-          p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
-          NOME="COALESCE((SELECT nome FROM presenca x WHERE x.aparelho = T.aparelho AND x.nome IS NOT NULL), (SELECT nome FROM jogadores_vistos x WHERE x.aparelho = T.aparelho), (SELECT nome FROM ranking x WHERE x.aparelho = T.aparelho ORDER BY atualizado DESC LIMIT 1))"
-          DESDE=$(( $(date -u -d '2026-10-10T00:00:00Z' +%s) * 1000 ))
-          p vistos "SELECT aparelho, nome, av, mesa, visto_em FROM jogadores_vistos"
-          p presenca "SELECT aparelho, nome, av, tela, modo, detalhe, visto_em FROM presenca WHERE nome IS NOT NULL"
-          p ranking "SELECT aparelho, nome, av, MAX(atualizado) AS em, SUM(jogadas) AS jogadas FROM ranking GROUP BY aparelho"
-          p turma_membros "SELECT * FROM turma_membros"
-          p turmas "SELECT * FROM turmas"
-          p aparelhos "SELECT aparelho, desde FROM aparelhos WHERE desde >= $DESDE"
-          p jogadores "SELECT aparelho, primeiro, ultimo, partidas, maos FROM jogadores WHERE ultimo >= $DESDE"
-          p planos "SELECT aparelho, ate, desde FROM planos"
-          p pedidos "SELECT aparelho, produto, valor, status, criado_em, pago_em FROM pedidos"
-          p cortesias "SELECT * FROM cortesias"
-          p bloqueios "SELECT * FROM bloqueios"
-          p apelidos_trocar "SELECT * FROM apelidos_trocar"
-          p ritmo "SELECT * FROM ritmo"
-          p limites_rede "SELECT * FROM limites_rede"
-          p tentativas "SELECT marca, tipo, COUNT(*) AS n, MIN(criado_em) AS de, MAX(criado_em) AS ate FROM tentativas GROUP BY marca, tipo"
-          p mesas_criadas "SELECT marca, COUNT(*) AS n, MIN(criado_em) AS de, MAX(criado_em) AS ate FROM mesas_criadas GROUP BY marca"
-          p pares "SELECT * FROM calcada_par WHERE dia >= '2026-10-25'"
-          p robo "SELECT * FROM calcada_robo WHERE dia >= '2026-10-25'"
-          p calcada "SELECT periodo, aparelho, nome, pontos, ganhas, jogadas, ganhas_gente, jogadas_gente FROM calcada WHERE periodo >= 'S2026'"
-          p fotos "SELECT aparelho, status, criado_em, denuncias FROM fotos"
-          p papo_denuncias "SELECT * FROM papo_denuncias ORDER BY em DESC LIMIT 80"
-          p mensagens "SELECT id, criado_em, tipo, nome, contato, versao, aparelho, substr(texto,1,400) AS texto FROM mensagens ORDER BY criado_em DESC LIMIT 150"
-          p acessos "SELECT dia, aparelho, COUNT(*) AS horas FROM acessos_hora GROUP BY dia, aparelho"
-          p partidas_dia "SELECT * FROM partidas_dia"
-          rm -f wrangler.toml
+          cat > /tmp/cf.mjs <<'JS'
+          import fs from 'fs';
+          const T=process.env.CLOUDFLARE_API_TOKEN, A=process.env.CLOUDFLARE_ACCOUNT_ID, OUT='/tmp/priv.txt';
+          const H={authorization:'Bearer '+T,'content-type':'application/json'};
+          const put=(k,v)=>fs.appendFileSync(OUT,'== '+k+'\n'+JSON.stringify(v).slice(0,400000)+'\n');
+          async function gql(query,variables){const r=await fetch('https://api.cloudflare.com/client/v4/graphql',{method:'POST',headers:H,body:JSON.stringify({query,variables})});return r.json();}
+          async function api(path,body){const r=await fetch('https://api.cloudflare.com/client/v4/accounts/'+A+path,{method:body?'POST':'GET',headers:H,body:body?JSON.stringify(body):undefined});let j;try{j=await r.json()}catch(e){j={status:r.status}};return j;}
+          // 1) estrutura dos dados disponíveis
+          put('tipos', await gql(`{a:__type(name:"AccountWorkersInvocationsAdaptiveDimensions"){fields{name}} b:__type(name:"AccountDurableObjectsInvocationsAdaptiveGroupsDimensions"){fields{name}} c:__type(name:"AccountWorkersInvocationsAdaptiveSum"){fields{name}}}`));
+          // 2) requisições por hora e situação, dia a dia desde 01/11 (para ter base de comparação)
+          for(let d=1; d<=10; d++){
+            const from=new Date(Date.UTC(2026,10,d)).toISOString(), to=new Date(Date.UTC(2026,10,d+1)).toISOString();
+            put('worker_'+d, await gql(`query($a:String!,$f:Time!,$t:Time!){viewer{accounts(filter:{accountTag:$a}){
+              w:workersInvocationsAdaptive(limit:5000,filter:{datetime_geq:$f,datetime_lt:$t}){sum{requests errors subrequests} dimensions{datetimeHour scriptName status}}
+              o:durableObjectsInvocationsAdaptiveGroups(limit:5000,filter:{datetime_geq:$f,datetime_lt:$t}){sum{requests errors} dimensions{datetimeHour status}}
+            }}}`,{a:A,f:from,t:to}));
+          }
+          // 3) logs do Worker (Workers Logs): chaves disponíveis e amostra
+          const agora=Date.now(), desde=agora-4*86400000;
+          put('obs_chaves', await api('/workers/observability/telemetry/keys',{timeframe:{from:desde,to:agora},limit:500}));
+          put('obs_amostra', await api('/workers/observability/telemetry/query',{queryId:'amostra',timeframe:{from:desde,to:agora},view:'events',limit:20,parameters:{}}));
+          put('obs_status', await api('/workers/observability/telemetry/query',{queryId:'status',timeframe:{from:desde,to:agora},view:'calculations',parameters:{calculations:[{operator:'count'}],groupBys:[{type:'number',value:'$workers.event.response.status'}]}}));
+          JS
+          sed -i 's/^          //' /tmp/cf.mjs
+          node /tmp/cf.mjs 2>> $OUT
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
           MIID/zCCAmegAwIBAgIUQME67vF2YCFx4qbuKp7jtL5uF+AwDQYJKoZIhvcNAQEL
