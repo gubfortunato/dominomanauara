@@ -1511,17 +1511,7 @@ html[data-mesa="amazonas"] .table .mesa-fita{display:block;position:absolute;ins
   -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 24%, #000 76%, transparent 100%);mask-image:linear-gradient(90deg, transparent 0, #000 24%, #000 76%, transparent 100%)}
 html[data-mesa="amazonas"] .table .mesa-fita i{position:absolute;left:-20%;top:47%;width:280%;height:170px;opacity:.5;   /* 10/11 (pedido do dono): parada, mais grossa e mais transparente */
   background:var(--img-amazonasfita-sw) 0 0/50% 100% repeat-x;transform:rotate(-10deg)}
-/* Branca: branco gelo, um pouco mais escuro nas bordas para as pedras (marfim) se destacarem; os textos da mesa ficam escuros */
-html[data-mesa="branca"] .table.wood{--wood-1:#f3f1ec;--wood-2:#cfc9be;--wood-edge:#b9b1a3;--wood-ink:#2a2017;--wood-muted:#5f5040;
-  background:radial-gradient(120% 90% at 50% 45%, transparent 45%, rgba(70,55,35,.16)), radial-gradient(circle at 45% 38%, #faf8f4, #e2ddd3 70%, #d3cdc2)}
 html[data-mesa="amazonas"] .table .ends{background:rgba(8,14,34,.62);color:#e8ebf2;border-color:rgba(255,255,255,.2)}
-html[data-mesa="branca"] .table .seat{background:rgba(60,45,30,.09);border-color:rgba(60,45,30,.16)}
-html[data-mesa="branca"] .table .seat.nos{background:rgba(229,166,80,.26);border-color:rgba(176,108,26,.55)}
-html[data-mesa="branca"] .table .seat.turn{background:rgba(229,166,80,.3)}
-html[data-mesa="branca"] .table .ends{border-color:rgba(60,45,30,.25)}
-html[data-mesa="branca"] .table .mesa-patro{opacity:.95;background:rgba(36,26,16,.8);color:#f6efe2}   /* 10/11: o logo do patrocinador aparece (pílula escura) */
-html[data-mesa="branca"] .table .seat.turn .sc{color:#8a5310}
-html[data-mesa="branca"] .table .av[data-nv]::after{background:#3a2c1e;color:#f3c063;border-color:#c98a2b}
 html[data-mesa="tucuma"] .table.wood{--wood-1:#4f2608;--wood-2:#4f2608;--wood-edge:#c98238;
   background:radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,.42)), linear-gradient(rgba(40,22,10,0.80), rgba(40,22,10,0.62) 30%, rgba(40,22,10,0.62)), var(--img-tucuma-sw) center bottom/cover no-repeat, #4f2608}
 html[data-mesa="encontro"] .table.wood{--wood-1:#1e2840;--wood-2:#1e2840;--wood-edge:#c9a06a;
@@ -3806,6 +3796,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.51.13', data: '10/11/2026', itens: ['A mesa Branca saiu do jogo. Quem estava com ela volta para a de Madeira.'] },
   { v: '3.51.12', data: '10/11/2026', itens: ['Mesa Amazonas: a faixa branca e vermelha fica parada, mais grossa e mais transparente.'] },
   { v: '3.51.11', data: '10/11/2026', itens: ['Mesas novas de sócio: Black Piano, Branca e Amazonas (no azul do Amazonas, com as 62 estrelas dos municípios e uma faixa larga, branca e vermelha, ondulando).', 'Arara no ombro: agora é a mesma arara da mesa Arara-Vermelha.', 'As cores das mesas não mudam mais de tom no meio do jogo, e o desenho da mesa cheia aparece com a cor certa na sala.', 'Áudio no papo: o ▶ toca no primeiro toque (o áudio já vem para o celular quando chega).'] },
   { v: '3.51.10', data: '10/11/2026', itens: ['Áudio no papo no iPhone: o microfone grava mesmo com os sons do jogo ligados, e o áudio toca também com o celular no silencioso.'] },
@@ -7204,9 +7195,9 @@ const MESAS = [
   // 03/11 (pedido do dono): mais duas de cor lisa, de sócio
   { id: 'roxoacai', nome: 'Cor de Açaí', c1: '#5b2350', c2: '#25091f' },
   { id: 'floresta', nome: 'Floresta', c1: '#1f6a3c', c2: '#0a2c18' },
-  // 10/11 (pedido do dono): Black Piano (preto laqueado, com o reflexo de piano) e Branca
+  // 10/11 (pedido do dono): Black Piano (preto laqueado, com o reflexo de piano). A Branca saiu no mesmo dia (pedido do dono):
+  // quem estava com ela volta para a de Madeira (mesaEscolhida cai na primeira)
   { id: 'pianoblack', nome: 'Black Piano', bg: 'linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 42%, rgba(255,255,255,.03) 50%, transparent 56%), radial-gradient(circle at 40% 35%, #2a2a2f, #050506 80%)' },
-  { id: 'branca', nome: 'Branca', bg: 'radial-gradient(circle at 40% 35%, #fdfcf9, #d8d3c9 82%)' },
   // 10/11 (pedido do dono): Amazonas, nas cores da bandeira e com as 62 estrelas dos municípios (Manaus maior), sem
   // reproduzir a bandeira inteira (a lei da Bandeira Nacional proíbe usar bandeira como "guarnição de mesa")
   { id: 'amazonas', nome: 'Amazonas', bg: 'var(--img-amazonas-sw) center/cover no-repeat, #0c1d47' },
@@ -9024,7 +9015,6 @@ const fundoMesa = m => m.bg || `radial-gradient(circle at 40% 35%, ${m.c1}, ${m.
 const SUB_MESA = {
   madeira: 'A mesa de sempre da calçada',
   pianoblack: 'Preto de piano de cauda, brilhando na calçada',   // 10/11
-  branca: 'Branquinha, para a pedra aparecer',
   amazonas: 'No azul do Amazonas, com as 62 estrelas dos municípios',
   garantido: 'Vermelha como o Boi Garantido',
   caprichoso: 'Azul como o Boi Caprichoso',
@@ -13804,7 +13794,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.51.12-d595c63b';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.51.13-2c587da9';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

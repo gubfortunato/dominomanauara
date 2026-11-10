@@ -58,10 +58,11 @@ const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pont
   'arara', 'boto', 'beiradao', 'barco', 'skylinenoite',   // 28/10: Manaus Skyline
   'roxoacai', 'floresta', 'pordosol',   // 03/11: Cor de Açaí, Floresta e Sol de setembro
   'araraazul', 'tucano', 'peixeboi',   // 04/11: Arara-Azul, Tucano e Peixe-boi
-  'pianoblack', 'branca', 'amazonas'];   // 10/11: Black Piano, Branca e Amazonas
+  'pianoblack', 'amazonas'];   // 10/11: Black Piano e Amazonas (a Branca saiu no mesmo dia, pedido do dono)
 // 28/10 (regras do dono): a partir de 5/11, a mesa com os amigos de quem não é sócio só usa as mesas grátis (Madeira,
 // Vermelha e Azul): no sorteio e na troca. Na mesa rápida o sorteio continua entre todas.
 export const TEMAS_GRATIS = ['madeira', 'garantido', 'caprichoso'];
+const TEMAS_FORA = ['manaus357', 'branca'];   // mesas que saíram do jogo (app antigo ainda pode pedir)
 // 05/11 (pedido do dono): de 5/11 a 19/11, mais 2 mesas grátis por dia (planos.js, mesasDoDia)
 const temasGratis = () => TEMAS_GRATIS.concat(mesasDoDia());
 const sortearTema = (atual, so) => { const l = (so || TEMAS).filter(t => t !== atual); return l[Math.floor(Math.random() * l.length)]; };
@@ -697,7 +698,7 @@ export class Mesa {
     const d = m.cad.concat(m.fila || []).find(c => c && !c.bot && c.id === m.dono);
     return d && d.apoiador ? null : temasGratis();
   }
-  temaPermitido(t) { const so = this.temasDoDono(); return t !== 'manaus357' && (!so || so.includes(t)); }   // 03/11 (pedido do dono): a Manaus 357 saiu do jogo
+  temaPermitido(t) { const so = this.temasDoDono(); return !TEMAS_FORA.includes(t) && (!so || so.includes(t)); }   // 03/11: a Manaus 357 saiu do jogo; 10/11: a Branca também
   async trocarTema(id) {
     const m = this.m, t = temaOk(id);
     if (!t || t === m.tema) return;
