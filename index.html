@@ -2137,6 +2137,8 @@ body.com-abas #profileBack{display:none}
 .mais-go{font-size:24px;line-height:1;color:var(--muted)}
 .mais-it.dono{border-color:var(--nos)}
 .trz-cod{width:100%;box-sizing:border-box;font-family:var(--font-display);font-size:28px;letter-spacing:.08em;text-align:center;padding:12px 14px;border-radius:14px;border:1.5px dashed var(--glow);background:var(--bg);color:var(--fg)}   /* 10/11 */
+.dn-oculto{display:none!important}   /* 10/11: listas longas da área do administrador */
+.dn-vermais{display:block;width:100%;margin:8px 0 2px;padding:10px 12px;border-radius:12px;border:1.5px solid color-mix(in srgb,currentColor 25%,transparent);background:transparent;color:inherit;font:inherit;font-weight:700;font-size:15.5px;cursor:pointer}
 .dn-ap-busca{width:100%;margin:10px 0 4px;font-size:17px;padding:11px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg)}   /* 10/11 */
 .mais-pe .note{margin:4px 0 0;text-align:center}
 @media (min-width: 760px){.mais-lista{grid-template-columns:1fr 1fr}}
@@ -7736,6 +7738,43 @@ async function dnBurlasCarregar() {
   } catch (e) { $('#dnBurlasR').textContent = 'Não deu para carregar agora.'; }
 }
 renderDono = function () { renderDonoBase(); dnPagCarregar(); dnApoiadoresCarregar(); dnBurlasCarregar(); };
+// 10/11 (pedido do dono): toda lista longa da área do administrador (e da lista "No app agora" da Calçada) mostra 5 itens,
+// com "Ver mais (N)" e "Ver menos". Vale para as listas que se refazem sozinhas: quem abriu continua aberto.
+const DN_MAX = 5, dnAbertas = new Set();
+const DN_SEM_CORTE = new Set(['dnnMais', 'dnnPicos']);   // números do acompanhamento: curtos, ficam inteiros
+function dnEncurtar(ul) {
+  if (!ul || !ul.id || DN_SEM_CORTE.has(ul.id)) return;
+  const itens = [...ul.children].filter(li => li.tagName === 'LI' && !li.classList.contains('dn-jog-vazio'));
+  let bt = ul.nextElementSibling && ul.nextElementSibling.classList.contains('dn-vermais') ? ul.nextElementSibling : null;
+  if (itens.length <= DN_MAX + 1) { itens.forEach(li => li.classList.remove('dn-oculto')); if (bt) bt.remove(); return; }
+  const aberto = dnAbertas.has(ul.id);
+  itens.forEach((li, i) => li.classList.toggle('dn-oculto', !aberto && i >= DN_MAX));
+  if (!bt) {
+    bt = document.createElement('button'); bt.type = 'button'; bt.className = 'dn-vermais'; ul.after(bt);
+    bt.addEventListener('click', () => {
+      const lista = bt.previousElementSibling; if (!lista) return;
+      if (dnAbertas.has(lista.id)) { dnAbertas.delete(lista.id); dnEncurtar(lista); lista.scrollIntoView({ block: 'nearest' }); } else { dnAbertas.add(lista.id); dnEncurtar(lista); }
+    });
+  }
+  bt.textContent = aberto ? 'Ver menos' : `Ver mais (${itens.length - DN_MAX})`;
+  bt.setAttribute('aria-expanded', String(aberto));
+}
+(function () {
+  // na área do administrador, todas as listas; na Calçada, só a "No app agora" (que só o administrador vê)
+  const raizes = ['scrDono', 'scrCalcada'].map(id => document.getElementById(id)).filter(Boolean);
+  const vale = ul => !!ul.closest('#scrDono') || ul.id === 'vivoPresLista';
+  const passar = r => r.querySelectorAll('ul[id], ol[id]').forEach(x => { if (vale(x)) dnEncurtar(x); });
+  const ob = new MutationObserver(ms => {
+    const alvos = new Set();
+    for (const m of ms) {
+      const t = m.target;
+      if ((t.tagName === 'UL' || t.tagName === 'OL') && t.id) alvos.add(t);
+      m.addedNodes.forEach(nd => { if (nd.nodeType !== 1) return; if ((nd.tagName === 'UL' || nd.tagName === 'OL') && nd.id) alvos.add(nd); else if (nd.querySelectorAll) nd.querySelectorAll('ul[id], ol[id]').forEach(x => alvos.add(x)); });
+    }
+    alvos.forEach(x => { if (vale(x)) dnEncurtar(x); });
+  });
+  raizes.forEach(r => { ob.observe(r, { childList: true, subtree: true }); passar(r); });
+})();
 
 aplicarPlano();
 setTimeout(() => { conferirPlano(true); conferirPendente(); }, 1500);
@@ -10460,7 +10499,7 @@ async function vivoPresenca(agora) {
     // 3.26.2: tempo real — só quem está com o app aberto agora; quem sai some na hora
     const extras = [j.semCadastro ? `${j.semCadastro} na entrada, sem cadastro` : '', j.menores ? `${j.menores} ${j.menores === 1 ? 'menor de 18' : 'menores de 18'}, sem nome` : ''].filter(Boolean);
     box.innerHTML = `<span class="vivo-pk"><span class="vivo-ponto vivo-ponto-p" aria-hidden="true"></span>No app agora · ${n} ${n === 1 ? 'pessoa' : 'pessoas'}</span>${extras.length ? `<small class="vivo-pjan">${extras.join(' · ')}</small>` : ''}` +
-      (l.length ? `<ul class="vivo-pl2">${l.map(x => `<li><span class="vivo-pl-t"><b>${esc(x.nome || 'Sem apelido')}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span>${x.bloq ? ' <em>bloqueado</em>' : x.trocar ? ' <em>trocando o apelido</em>' : ''}</span>`
+      (l.length ? `<ul class="vivo-pl2" id="vivoPresLista">${l.map(x => `<li><span class="vivo-pl-t"><b>${esc(x.nome || 'Sem apelido')}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span>${x.bloq ? ' <em>bloqueado</em>' : x.trocar ? ' <em>trocando o apelido</em>' : ''}</span>`
         // 28/10 (pedido do dono): Derrubar (pedir outro apelido) em cada linha; o Bloquear continua na Área do administrador
         + (x.aparelho && x.aparelho !== meu && x.nome && !x.bloq && !x.trocar ? `<button type="button" class="vivo-derrubar" data-derrubar="${esc(x.aparelho)}" data-nome="${esc(x.nome)}">Derrubar</button>` : '')
         // 28/10 (pedido do dono): e Desbloquear na linha de quem está bloqueado
@@ -12349,15 +12388,7 @@ renderDono = function () {
 };
 // lista de jogadores da mesa online: mostra 5 e um "Ver todos"
 const DN_JOG_VER = 5; let dnJogTodos = false;
-function dnJogDobrar() {
-  const lista = $('#dnJogLista'); if (!lista) return;
-  const lis = [...lista.children].filter(li => !li.classList.contains('dn-jog-vazio'));
-  let b = $('#dnJogMais');
-  if (!b) { lista.insertAdjacentHTML('afterend', '<button type="button" class="linkbtn dn-jog-mais" id="dnJogMais" hidden></button>'); b = $('#dnJogMais'); b.addEventListener('click', () => { dnJogTodos = !dnJogTodos; dnJogDobrar(); }); }
-  lis.forEach((li, i) => { li.hidden = !dnJogTodos && i >= DN_JOG_VER; });
-  b.hidden = lis.length <= DN_JOG_VER;
-  b.textContent = dnJogTodos ? 'Mostrar menos' : `Ver todos (${lis.length})`;
-}
+function dnJogDobrar() { const l = $('#dnJogLista'); if (l && typeof dnEncurtar === 'function') dnEncurtar(l); }   // 10/11: o mesmo "Ver mais / Ver menos" de todas as listas
 const dnJogCarregarPainel = dnJogCarregar;
 dnJogCarregar = async function () { const r = await dnJogCarregarPainel.apply(this, arguments); try { dnJogDobrar(); } catch (e) {} return r; };
 // 3.31: bloquear direto da Calçada, na lista "No app agora" (antes só pela mesa ou pela lista da Área do administrador)
@@ -13253,7 +13284,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.51.1-a26997e8';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.51.2-8a44219f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
