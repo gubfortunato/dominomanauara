@@ -109,6 +109,22 @@ export async function limiteDoApelido(env, tipo, aparelho, nome) {
     return !(c && c.n > 3);
   } catch (e) { return false; }
 }
+// 10/11 (pronto, mas DESLIGADO até o dono decidir): aparelho antigo com o mesmo apelido pouco comum de outro aparelho que
+// já bateu o limite hoje fica sem partida grátis também: o limite do dia é um só para os dois (app instalado + navegador,
+// dois celulares). Para ligar: LIMITE_IRMAO_LIGADO = true (ou LIMITE_IRMAO = '1' no ambiente, para teste).
+const LIMITE_IRMAO_LIGADO = false;
+export async function limiteDoIrmao(env, tipo, aparelho, nome) {
+  if (!(LIMITE_IRMAO_LIGADO || (env && env.LIMITE_IRMAO === '1'))) return false;
+  const n = nomeChave(nome); if (!aparelho || n.length < 4 || !limitesValem(env)) return false;
+  try {
+    const r = await env.DB.prepare('SELECT 1 AS x FROM limites_rede WHERE dia = ? AND tipo = ? AND nome = ? AND aparelho <> ? LIMIT 1').bind(diaBR(), tipo, n, aparelho).first();
+    if (!r || await temPlano(env, aparelho)) return false;
+    const c = await env.DB.prepare(`SELECT COUNT(*) AS n FROM jogadores_vistos WHERE ${CHAVE_SQL} = ?`).bind(n).first();
+    if (c && c.n > 3) return false;
+    await anotarBurla(env, tipo, 'irmao', aparelho, nome);
+    return true;
+  } catch (e) { return false; }
+}
 // cada limite herdado (pela rede ou pelo apelido) fica anotado para o painel do dono ("Possíveis burlas")
 export async function anotarBurla(env, tipo, via, aparelho, nome) {
   try {

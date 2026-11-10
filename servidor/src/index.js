@@ -13,7 +13,7 @@ import { donoNumeros, limparNumeros } from './numeros.js';
 import * as rk from './ranking.js';
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
-import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, donoBurlas, bonusConfig } from './planos.js';
+import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig } from './planos.js';
 export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
@@ -102,6 +102,7 @@ async function novaMesa(req, env, origin) {
       if (uso.partidas >= LIMITE.partidas) return json({ erro: 'limite-partida' }, 403, origin);
       // aparelho novo na mesma rede de quem acabou de bater o limite (apagou os dados do app): o limite continua
       if (!uso.partidas && !uso.mesas && await limiteHerdado(env, rede, 'partidas', b && b.id, b && b.nome)) return json({ erro: 'limite-partida' }, 403, origin);   // 10/11: rede ou apelido
+      if (await limiteDoIrmao(env, 'partidas', b && b.id, b && b.nome)) return json({ erro: 'limite-partida' }, 403, origin);   // 10/11 (desligado)
     }
   }
   if (!uso && b && b.id) await aparelhoDesde(env, b.id);
@@ -136,6 +137,7 @@ async function mesaRapida(req, env, origin) {
     const uso = await usoDoDia(env, b && b.id);
     if (uso.publicas >= LIMITE.publicas) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);
     if (!uso.publicas && await limiteHerdado(env, rede, 'publicas', b && b.id, b && b.nome)) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);   // 10/11: rede ou apelido
+    if (await limiteDoIrmao(env, 'publicas', b && b.id, b && b.nome)) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);   // 10/11 (desligado): outro aparelho com o mesmo apelido
   } else if (b && b.id) await aparelhoDesde(env, b.id);
   const res = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila', { method: 'POST',
     body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro, nv: b.nv }) });

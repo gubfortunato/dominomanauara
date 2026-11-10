@@ -12,7 +12,7 @@ import { somarVivo } from './vivo.js';
 import { somarRanking, reiDaSemana } from './ranking.js';
 import { bloqueado, visto, apelidoBarrado, exigeApp, appAberto, anotarRitmo, RAPIDA_MS } from './bloqueio.js';
 import { PAPO, limparPapo, tamanho, papoRuim } from './papo.js';
-import { limitesValem, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteHerdado, anotarLimite, mesasDoDia, bonusConfig } from './planos.js';
+import { limitesValem, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteHerdado, limiteDoIrmao, anotarLimite, mesasDoDia, bonusConfig } from './planos.js';
 // 3.38.2: na Calçada, apelido que o filtro passou a barrar (de quem entrou antes) aparece como "Jogador"
 const nomeVisivel = c => !c.bot && nomeOfensivo(c.nome) ? 'Jogador' : c.nome;
 
@@ -447,6 +447,7 @@ export class Mesa {
       // aparelho novo na mesma rede de quem acabou de bater o limite (apagou os dados do app ou trocou de navegador)
       const tipo = m.publica ? 'publicas' : 'partidas';
       if (!jaEstava && !this.mesaDesafio() && !(quem.uso[tipo] || 0) && await limiteHerdado(this.env, att.rede, tipo, quem.id, quem.nome)) return this.recusar(ws, m.publica ? 'limite-rapida' : 'limite');   // 10/11: rede ou apelido
+      if (!jaEstava && !this.mesaDesafio() && await limiteDoIrmao(this.env, tipo, quem.id, quem.nome)) return this.recusar(ws, m.publica ? 'limite-rapida' : 'limite');   // 10/11 (desligado): outro aparelho com o mesmo apelido
     } else if (!jaEstava) await aparelhoDesde(this.env, quem.id);
     quem.rede = att.rede || null;
     try { await apelidoNaTurma(this.env, quem.id, quem.nome); } catch (e) {}
