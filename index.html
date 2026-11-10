@@ -12173,7 +12173,7 @@ function vozBuscar() {
 function vozChegou(m) {
   AUD.buscando.delete(m.n);
   if (m.sumiu) {
-    if (AUD.pedido !== m.n && !m.rapido) { const it = PP.itens.find(x => x.n === m.n); if (it && it.au) it.au.foi = true; desenharPapo(); return; }   // busca antecipada: só marca
+    if (AUD.pedido !== m.n) { if (!m.rapido) { const it = PP.itens.find(x => x.n === m.n); if (it && it.au) it.au.foi = true; } desenharPapo(); return; }   // busca antecipada: só marca (no limite, quieta: busca de novo no toque)
     if (AUD.pedido === m.n) { AUD.pedido = null; AUD.n = null; }
     const it = PP.itens.find(x => x.n === m.n); if (it && it.au && !m.rapido) it.au.foi = true;
     toast(m.rapido ? 'Calma: muitos áudios de uma vez. Espere um pouco.' : 'Esse áudio não está mais disponível.'); desenharPapo(); return;
