@@ -47,10 +47,9 @@ jobs:
             return ag.map(a=>[(a.groups||[]).map(g=>g.value),a.count]).sort((a,b)=>b[1]-a[1]);
           }
           const ST='$workers.event.response.status', P='$workers.event.path', UA=W+'user-agent', IP=W+'cf-connecting-ip', ORG='$workers.event.request.cf.asOrganization';
-          const g=await gql(`query($a:String!,$f:Time!,$t:Time!){viewer{accounts(filter:{accountTag:$a}){
-            w:workersInvocationsAdaptive(limit:50,filter:{datetime_geq:$f,datetime_lt:$t,scriptName:"api"}){sum{requests} quantiles{cpuTimeP50 cpuTimeP99 cpuTimeP999} dimensions{date status usageModel}}
-          }}}`,{a:A,f:new Date(Date.now()-3*86400000).toISOString(),t:new Date().toISOString()});
-          await put('cpu', g);
+          for (const u of ['https://api.gubfort.workers.dev/saude', 'https://api.gubfort.workers.dev/saude/voz']) {
+            await put(u, fetch(u).then(r => r.text()).then(t => t.slice(0, 1500)));
+          }
           JS
           sed -i 's/^          //' /tmp/cf.mjs
           node /tmp/cf.mjs 2>> $OUT
