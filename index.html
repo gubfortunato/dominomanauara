@@ -3780,6 +3780,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.51.10', data: '10/11/2026', itens: ['Áudio no papo no iPhone: o microfone grava mesmo com os sons do jogo ligados, e o áudio toca também com o celular no silencioso.'] },
   { v: '3.51.9', data: '10/11/2026', itens: ['Áudio no papo: o microfone e o ▶ respondem ao toque no iPhone, e aparece um aviso enquanto o celular libera o microfone.'] },
   { v: '3.51.8', data: '10/11/2026', itens: ['Carteira de sócio: o botão embaixo dela não fica mais apagado pela sombra.'] },
   { v: '3.51.7', data: '10/11/2026', itens: ['Áudio no papo de mesa: nas mesas com os amigos, os sócios mandam mensagens de voz de até 10 segundos, com o texto embaixo. Todos na mesa ouvem.'] },
@@ -11676,6 +11677,11 @@ function toqueOuClique(el, fn) {
   });
   el.addEventListener('click', e => { e.stopPropagation(); if (Date.now() - ult < 900) return; fn(e); });
 }
+// 10/11 (iPhone: "AudioSession category is not compatible with audio capture"): os sons do jogo deixam o áudio do
+// iPhone no modo "ambient" (segue a chave de silencioso e não corta a música). Para gravar, o modo vira "play-and-record";
+// para ouvir o áudio do papo, "playback" (toca mesmo no silencioso, como áudio de WhatsApp). Depois, volta ao normal.
+function vozSessao(tipo) { try { if (navigator.audioSession) navigator.audioSession.type = tipo; } catch (e) {} }
+function vozSessaoNormal() { vozSessao(typeof SOM !== 'undefined' && SOM && SOM.ctx ? 'ambient' : 'auto'); }
 // registro do que acontece no áudio, para achar problema de celular (só o passo, o erro, a versão e o tipo de celular)
 function vozLog(passo, erro) {
   try { if (CONFIG.api) fetch(CONFIG.api + '/cliente/log', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ onde: 'voz-' + passo, erro: String(erro || '').slice(0, 200), v: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '' }), keepalive: true }).catch(() => {}); } catch (e) {}
@@ -12008,6 +12014,7 @@ async function vozGravar() {
   if (tipo === null || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { toast('Este celular não grava áudio por aqui. Atualize o sistema ou use o texto.'); return; }
   let st;
   GR.abrindo = true;
+  vozSessao('play-and-record');
   const avisoT = setTimeout(() => { if (GR.abrindo) toast('Liberando o microfone… Se o celular perguntar, toque em Permitir.'); }, 700);
   try {
     st = await Promise.race([
@@ -12015,21 +12022,23 @@ async function vozGravar() {
       new Promise((_, nao) => setTimeout(() => nao(Object.assign(new Error('prazo'), { name: 'Prazo' })), 15000))
     ]);
   } catch (e) {
-    GR.abrindo = false; clearTimeout(avisoT); track('papo-voz-erro-' + String((e && e.name) || 'x').toLowerCase()); vozLog('microfone', ((e && e.name) || '') + ': ' + ((e && e.message) || ''));
+    GR.abrindo = false; clearTimeout(avisoT); vozSessaoNormal(); track('papo-voz-erro-' + String((e && e.name) || 'x').toLowerCase()); vozLog('microfone', ((e && e.name) || '') + ': ' + ((e && e.message) || ''));
     toast(e && e.name === 'NotAllowedError' ? 'Libere o microfone: no iPhone, Ajustes › Apps › Safari › Microfone (ou toque em Permitir quando o app pedir).'
-      : e && e.name === 'Prazo' ? 'O celular não liberou o microfone. Feche e abra o app e tente de novo.' : 'Não deu para usar o microfone agora.');
+      : e && e.name === 'Prazo' ? 'O celular não liberou o microfone. Feche e abra o app e tente de novo.'
+      : e && e.name === 'NotFoundError' ? 'Não achei o microfone deste celular.' : 'Não deu para usar o microfone agora. Feche e abra o app e tente de novo.');
     return;
   }
   GR.abrindo = false; clearTimeout(avisoT); vozLog('microfone', 'ok');
   let rec;
   try { rec = new MediaRecorder(st, Object.assign({ audioBitsPerSecond: 32000 }, tipo ? { mimeType: tipo } : {})); }
-  catch (e) { try { rec = new MediaRecorder(st); } catch (e2) { st.getTracks().forEach(t => t.stop()); vozLog('gravador', (e2 && e2.name) + ': ' + (e2 && e2.message)); toast('Não deu para gravar áudio neste celular.'); return; } }
+  catch (e) { try { rec = new MediaRecorder(st); } catch (e2) { st.getTracks().forEach(t => t.stop()); vozSessaoNormal(); vozLog('gravador', (e2 && e2.name) + ': ' + (e2 && e2.message)); toast('Não deu para gravar áudio neste celular.'); return; } }
   const partes = [];
   GR = { rec, stream: st, partes, t0: Date.now(), ms: 0, timer: null, blob: null, enviar: false, tipo: rec.mimeType || tipo || 'audio/mp4' };
   rec.ondataavailable = e => { if (e.data && e.data.size) partes.push(e.data); };
   rec.onerror = e => vozLog('erro-gravador', (e && e.error && (e.error.name + ': ' + e.error.message)) || 'erro');
   rec.onstop = () => {
     try { GR.stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+    vozSessaoNormal();
     if (GR.rec !== rec) return;   // cancelado
     GR.ms = Math.min(VOZ_MAX, Date.now() - GR.t0); GR.rec = null; clearInterval(GR.timer);
     GR.blob = new Blob(partes, { type: GR.tipo });
@@ -12037,7 +12046,7 @@ async function vozGravar() {
     $('#papoGrava').classList.add('parou');
     if (GR.enviar) vozMandar(); else desenharPapo();
   };
-  try { rec.start(); } catch (e) { st.getTracks().forEach(t => t.stop()); GR = { rec: null }; vozLog('comecar', (e && e.name) + ': ' + (e && e.message)); toast('Não deu para gravar agora.'); return; }
+  try { rec.start(); } catch (e) { st.getTracks().forEach(t => t.stop()); vozSessaoNormal(); GR = { rec: null }; vozLog('comecar', (e && e.name) + ': ' + (e && e.message)); toast('Não deu para gravar agora.'); return; }
   $('#papoGrava').classList.remove('parou');
   GR.timer = setInterval(() => {
     const ms = Date.now() - GR.t0;
@@ -12054,7 +12063,7 @@ function vozParar(enviar) {
 function vozCancelar(quieto) {
   const r = GR.rec; clearInterval(GR.timer);
   GR = { rec: null, blob: null };
-  if (r) { try { r.stop(); } catch (e) {} try { r.stream.getTracks().forEach(t => t.stop()); } catch (e) {} }
+  if (r) { try { r.stop(); } catch (e) {} try { r.stream.getTracks().forEach(t => t.stop()); } catch (e) {} vozSessaoNormal(); }
   if (!quieto) desenharPapo();
 }
 const vozB64 = blob => new Promise((ok, erro) => { const f = new FileReader(); f.onload = () => ok(String(f.result).replace(/^data:[^,]*,/, '')); f.onerror = erro; f.readAsDataURL(blob); });
@@ -12076,17 +12085,18 @@ function vozEl() {
   if (AUD.el) return AUD.el;
   const a = AUD.el = new Audio(); a.preload = 'auto';
   a.addEventListener('timeupdate', () => { const f = AUD.n != null && document.querySelector(`#papoLista [data-vozbar="${AUD.n}"]`); if (f && a.duration && isFinite(a.duration)) f.style.width = Math.min(100, a.currentTime / a.duration * 100) + '%'; });
-  const fim = () => { const f = AUD.n != null && document.querySelector(`#papoLista [data-vozbar="${AUD.n}"]`); if (f) f.style.width = '0'; AUD.n = null; desenharPapo(); };
+  const fim = () => { const f = AUD.n != null && document.querySelector(`#papoLista [data-vozbar="${AUD.n}"]`); if (f) f.style.width = '0'; AUD.n = null; vozSessaoNormal(); desenharPapo(); };
   a.addEventListener('ended', fim);
+  a.addEventListener('error', () => { if (!AUD.pedido) { AUD.n = null; vozSessaoNormal(); desenharPapo(); } });
   a.addEventListener('pause', () => { if (!AUD.pedido) desenharPapo(); });
   a.addEventListener('playing', () => desenharPapo());
   return a;
 }
 function vozTocar(n) {
   const a = vozEl();
-  if (AUD.n === n && !a.paused) { a.pause(); AUD.n = null; desenharPapo(); return; }
+  if (AUD.n === n && !a.paused) { a.pause(); AUD.n = null; vozSessaoNormal(); desenharPapo(); return; }
   const u = AUD.urls.get(n);
-  AUD.n = n;
+  AUD.n = n; vozSessao('playback');
   if (u) { a.src = u; a.play().catch(() => { AUD.n = null; desenharPapo(); }); desenharPapo(); return; }
   try { a.src = VOZ_SILENCIO; a.play().catch(() => {}); } catch (e) {}
   AUD.pedido = n; desenharPapo();
@@ -12101,7 +12111,7 @@ function vozChegou(m) {
   try {
     const bin = atob(m.dados), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
     const u = URL.createObjectURL(new Blob([u8], { type: m.tipo || 'audio/mp4' })); AUD.urls.set(m.n, u);
-    if (AUD.pedido === m.n) { AUD.pedido = null; const a = vozEl(); a.src = u; a.play().catch(() => { toast('Toque de novo para ouvir.'); AUD.n = null; desenharPapo(); }); }
+    if (AUD.pedido === m.n) { AUD.pedido = null; const a = vozEl(); vozSessao('playback'); a.src = u; a.play().catch(() => { toast('Toque de novo para ouvir.'); AUD.n = null; desenharPapo(); }); }
   } catch (e) { AUD.pedido = null; AUD.n = null; toast('Não deu para tocar esse áudio.'); }
   desenharPapo();
 }
@@ -12254,7 +12264,7 @@ document.addEventListener('click', async e => {
 // 10/11: ouvir o áudio denunciado
 document.addEventListener('click', async e => {
   const b = e.target.closest && e.target.closest('#dnPapo [data-papovoz]'); if (!b) return;
-  const a = vozEl(); try { a.src = VOZ_SILENCIO; a.play().catch(() => {}); } catch (er) {}
+  const a = vozEl(); vozSessao('playback'); try { a.src = VOZ_SILENCIO; a.play().catch(() => {}); } catch (er) {}
   b.disabled = true; const rot = b.textContent; b.textContent = 'Carregando…';
   try {
     const j = await dnMsgPedir(`/dono/papo/voz?mesa=${encodeURIComponent(b.dataset.mesa)}&em=${encodeURIComponent(b.dataset.em)}`);
@@ -13725,7 +13735,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.51.9-33b272d6';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.51.10-53a8ae7d';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
