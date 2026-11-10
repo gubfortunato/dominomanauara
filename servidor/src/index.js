@@ -13,7 +13,7 @@ import { donoNumeros, limparNumeros } from './numeros.js';
 import * as rk from './ranking.js';
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
-import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteDaRede, bonusConfig } from './planos.js';
+import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, donoBurlas, bonusConfig } from './planos.js';
 export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
@@ -101,7 +101,7 @@ async function novaMesa(req, env, origin) {
       if (uso.mesas >= LIMITE.mesas) return json({ erro: 'limite-mesa' }, 403, origin);
       if (uso.partidas >= LIMITE.partidas) return json({ erro: 'limite-partida' }, 403, origin);
       // aparelho novo na mesma rede de quem acabou de bater o limite (apagou os dados do app): o limite continua
-      if (!uso.partidas && !uso.mesas && await limiteDaRede(env, rede, 'partidas', b && b.id, b && b.nome)) return json({ erro: 'limite-partida' }, 403, origin);
+      if (!uso.partidas && !uso.mesas && await limiteHerdado(env, rede, 'partidas', b && b.id, b && b.nome)) return json({ erro: 'limite-partida' }, 403, origin);   // 10/11: rede ou apelido
     }
   }
   if (!uso && b && b.id) await aparelhoDesde(env, b.id);
@@ -135,7 +135,7 @@ async function mesaRapida(req, env, origin) {
   if (limitesValem(env) && !(await temPlano(env, b && b.id))) {
     const uso = await usoDoDia(env, b && b.id);
     if (uso.publicas >= LIMITE.publicas) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);
-    if (!uso.publicas && await limiteDaRede(env, rede, 'publicas', b && b.id, b && b.nome)) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);
+    if (!uso.publicas && await limiteHerdado(env, rede, 'publicas', b && b.id, b && b.nome)) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);   // 10/11: rede ou apelido
   } else if (b && b.id) await aparelhoDesde(env, b.id);
   const res = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila', { method: 'POST',
     body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro, nv: b.nv }) });
@@ -476,6 +476,7 @@ export default {
       if (url.pathname === '/ranking/fora' && req.method === 'POST') return await rk.sairDoRanking(req, env, origin, H);
       if (url.pathname === '/dono/presenca' && req.method === 'GET') return await presenca.donoPresenca(req, env, origin, H);
       if (url.pathname === '/dono/numeros' && req.method === 'GET') return await donoNumeros(req, env, origin, H);   // 03/11
+      if (url.pathname === '/dono/burlas' && req.method === 'GET') return await donoBurlas(req, env, origin, H);   // 10/11: possíveis burlas dos limites
       if (url.pathname === '/vivo/hoje' && req.method === 'GET') return await vivo.hoje(env, origin, H);
       if (url.pathname === '/dono/mesas' && req.method === 'GET') {
         if (!(await ehDono(req, env))) return json({ erro: 'nao-autorizado' }, 401, origin);

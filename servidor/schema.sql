@@ -134,6 +134,8 @@ CREATE TABLE IF NOT EXISTS limites (dia TEXT NOT NULL, aparelho TEXT NOT NULL, m
 -- limite hoje, por rede (só um resumo do endereço com o dia, que muda todo dia; o endereço nunca é guardado), por 2 dias.
 CREATE TABLE IF NOT EXISTS marcos (chave TEXT PRIMARY KEY, em INTEGER NOT NULL);   -- (o que roda uma vez só; criada aqui antes do 1º uso)
 CREATE TABLE IF NOT EXISTS aparelhos (aparelho TEXT PRIMARY KEY, desde INTEGER NOT NULL);
+-- 10/11: limites herdados (pela rede ou pelo apelido) para o painel "Possíveis burlas" do dono
+CREATE TABLE IF NOT EXISTS burlas (dia TEXT NOT NULL, aparelho TEXT NOT NULL, tipo TEXT NOT NULL, via TEXT NOT NULL, nome TEXT, em INTEGER NOT NULL, PRIMARY KEY (dia, aparelho, tipo));
 -- (uma tabela por vez: o D1 recusa SELECT composto grande, "too many terms in compound SELECT")
 INSERT OR IGNORE INTO aparelhos (aparelho, desde) SELECT aparelho, 0 FROM jogadores_vistos WHERE aparelho IS NOT NULL AND aparelho <> '' AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'aparelhos-antigos');
 INSERT OR IGNORE INTO aparelhos (aparelho, desde) SELECT aparelho, 0 FROM planos WHERE aparelho IS NOT NULL AND aparelho <> '' AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'aparelhos-antigos');

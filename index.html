@@ -3063,6 +3063,11 @@ body.papo-aberto{overflow:hidden}
       <input type="search" class="dn-ap-busca" id="dnApBusca" placeholder="Buscar sócio pelo nome" autocomplete="off" aria-label="Buscar sócio pelo nome">
       <ul class="dn-joglista" id="dnApoiadoresLista"></ul>
     </div>
+    <div class="dn-list wood dn-jog" id="dnBurlas" hidden>
+      <span class="ck">Possíveis burlas dos limites</span>
+      <p class="dn-avn" id="dnBurlasR">Carregando…</p>
+      <ul class="dn-joglista" id="dnBurlasLista"></ul>
+    </div>
     <div class="dn-list wood dn-avisos" id="dnAvisos" hidden>
       <span class="ck">Lembretes para jogar</span>
       <p class="dn-avn" id="dnAvN"></p>
@@ -3722,6 +3727,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.51.1', data: '10/11/2026', itens: ['O jogo guarda melhor o código do seu aparelho: apagar só parte dos dados não faz você perder o plano de sócio.'] },
   { v: '3.51', data: '10/11/2026', itens: ['Seu código de sócio agora fica na aba Mais, fácil de copiar. Em outro aparelho, é só tocar em Mais › Já sou sócio em outro aparelho.', 'O robô parceiro não mata mais a sua pedra: ele joga na outra ponta, a não ser para bater ou fazer muito ponto.', 'Sócio não recebe mais aviso de partidas grátis por engano.', 'Na mesa rápida, quando a mesa sorteada é dos sócios, aparece o selo ★ Mesa dos sócios.'] },
   { v: '3.50.4', data: '04/11/2026', itens: ['Sócio trimestral e anual também no Pix: dá para pagar 3 meses ou 1 ano de uma vez, sem renovar, no Pix ou no cartão.'] },
   { v: '3.50.3', data: '04/11/2026', itens: ['Na aba Mais, o ícone das Regras é a mesma pedra 1|2 da aba Jogar.', 'Toda mesa agora tem a sua frase no título que aparece quando a partida começa (e as das araras ficaram novas).'] },
@@ -6189,10 +6195,15 @@ const ON = { cod: null, ws: null, ativo: false, vista: null, seq: -1, tent: 0, r
   depoisDoDeal: null, armado: false, ultimoAviso: 0, buscando: false, rapida: false, recebido: 0, contaT: null };
 
 function onlineAtivo() { return !!CONFIG.api && typeof WebSocket === 'function'; }
+// 10/11 (pedido do dono): o código do aparelho também fica num cookie (lido na hora), no IndexedDB e no Cache; apagar só
+// uma parte dos dados não cria um código novo (o jogo volta com o mesmo código, o mesmo limite e o mesmo plano)
+let ID_NOVO = false;
+function idDoCookie() { try { const m = document.cookie.match(/(?:^|;\s*)dmz_id=([a-z0-9-]{8,40})/i); return m ? m[1] : null; } catch (e) { return null; } }
 function meuId() {
   let id = store.get('dmz-id');
   if (!id || !/^[a-z0-9-]{8,40}$/i.test(id)) {
-    id = (crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join(''));
+    id = idDoCookie();
+    if (!id) { id = (crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('')); ID_NOVO = true; }
     store.set('dmz-id', id);
   }
   return id;
@@ -7140,7 +7151,12 @@ function aplicarPlano() {
 // Só confere quem tem (ou teve) plano neste aparelho: quem acabou de pagar é ligado pelo pedido pendente.
 async function conferirPlano(agora) {
   const p = planoLocal(), d = doadorLocal();
-  if (!pagamentosAtivos() || (!p && !d)) return;
+  if (!pagamentosAtivos()) return;
+  if (!p && !d) {   // 10/11: sem plano guardado aqui, confere no máximo a cada 6 h (quem perdeu só parte dos dados volta a ser sócio)
+    if (Date.now() - (+store.get('dmz-plano-conferido') || 0) < 6 * 3600000) return;
+    store.set('dmz-plano-conferido', String(Date.now()));
+    agora = true;
+  }
   if (!agora && Date.now() - Math.max((p && p.visto) || 0, (d && d.visto) || 0) < 10 * 60000) return;
   try {
     const r = await fetch(CONFIG.api + '/plano?aparelho=' + encodeURIComponent(meuId()));
@@ -7701,7 +7717,25 @@ $('#dnApoiadores').addEventListener('click', e => {
   document.querySelectorAll('#dnApoiadores [data-f]').forEach(x => x.classList.toggle('on', x === b));
   dnApoiadoresMostrar();
 });
-renderDono = function () { renderDonoBase(); dnPagCarregar(); dnApoiadoresCarregar(); };
+// 10/11 (pedido do dono): quem apagou os dados ou trocou de aparelho para jogar de novo depois do limite. "Barrado" =
+// o servidor reconheceu (mesma rede ou mesmo apelido) e manteve o limite; "jogou" = aparelho novo com o apelido de quem
+// bateu o limite que passou (apelido comum, por exemplo). Só os nomes, nada de código de aparelho.
+const TIPO_LIM = { publicas: 'mesa rápida', partidas: 'mesa com os amigos', offline: 'offline' };
+const horaMan = ms => new Date(ms).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Manaus' });
+async function dnBurlasCarregar() {
+  const box = $('#dnBurlas'); if (!box) return;
+  box.hidden = !CONFIG.api || !souAdmin(); if (box.hidden) return;
+  try {
+    const r = await fetch(CONFIG.api + '/dono/burlas', { headers: { 'x-admin-key': dono.admin } });
+    if (!r.ok) throw new Error('http');
+    const j = await r.json(), hoje = (j.barrados || []).filter(b => b.dia === j.dia);
+    $('#dnBurlasR').textContent = `Hoje: ${j.bateram} ${j.bateram === 1 ? 'aparelho bateu' : 'aparelhos bateram'} o limite · ${j.novos} aparelhos novos · ${hoje.length} ${hoje.length === 1 ? 'tentativa barrada' : 'tentativas barradas'} · ${(j.suspeitos || []).length} ${(j.suspeitos || []).length === 1 ? 'passou' : 'passaram'}.`;
+    const itens = (j.suspeitos || []).map(x => `<li><span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')} · jogou</b><small>${esc(`Aparelho novo às ${horaMan(x.novo)}, depois de bater o limite da ${TIPO_LIM[x.tipo] || x.tipo} às ${horaMan(x.bateu)}`)} · ${esc([x.rapidas ? `${x.rapidas} na rápida` : '', x.amigos ? `${x.amigos} com os amigos` : '', x.offline ? `${x.offline} offline` : ''].filter(Boolean).join(', ') || 'ainda sem partida')}</small></span></li>`)
+      .concat((j.barrados || []).map(b => `<li class="bloq"><span class="dn-jog-t"><b>${esc(b.nome || 'Sem apelido')} · barrado</b><small>${esc(`${b.dia === j.dia ? 'Hoje' : 'Ontem'} às ${horaMan(b.em)} · ${TIPO_LIM[b.tipo] || b.tipo} · reconhecido pelo ${b.via === 'apelido' ? 'apelido' : 'endereço de internet'}`)}</small></span></li>`));
+    $('#dnBurlasLista').innerHTML = itens.length ? itens.join('') : '<li class="dn-jog-vazio">Nenhuma tentativa hoje.</li>';
+  } catch (e) { $('#dnBurlasR').textContent = 'Não deu para carregar agora.'; }
+}
+renderDono = function () { renderDonoBase(); dnPagCarregar(); dnApoiadoresCarregar(); dnBurlasCarregar(); };
 
 aplicarPlano();
 setTimeout(() => { conferirPlano(true); conferirPendente(); }, 1500);
@@ -12104,7 +12138,7 @@ const DN_GRUPOS = [
   ['Precisa de você', ['dnMsgs', 'dnPapo', 'dnFotos', 'dnRobo'], true],
   ['Jogadores', ['dnNoApp', 'dnFilas', 'dnJog'], true],
   ['Números do jogo', ['dnNum'], true],   // 03/11: jogadores desde o início, partidas, horários e picos
-  ['Dinheiro', ['dnPag', 'dnApoiadores', 'dnPatroCard', 'dnAnuncieLink'], false],
+  ['Dinheiro', ['dnPag', 'dnApoiadores', 'dnBurlas', 'dnPatroCard', 'dnAnuncieLink'], false],
   ['Falar com os jogadores', ['dnAvisos'], false],
   ['Números do Umami', ['dnOpen', 'dnLive', 'dnRange', 'dnBody', 'dnErr', 'dnKey', 'dnFull'], false],
   ['Ajustes deste aparelho', ['dnSemContar', 'dnTestePag', 'dnKeyTrocar', 'dnVerCarta', 'dnSair', 'dnTela'], false]
@@ -13219,7 +13253,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.51-50e50da4';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.51.1-a26997e8';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -14051,6 +14085,21 @@ async function offRecuperar() {
   });
 }
 offRecuperar().then(() => offEspelhar());
+// 10/11: o código do aparelho espelhado (cookie, IndexedDB e Cache); se este código acabou de nascer e havia um guardado, volta o antigo
+async function idRecuperar() {
+  if (store.get('dmz-id') && !ID_NOVO) return;
+  let v = null;
+  try { const db = await offIDB(); v = await new Promise(ok => { const r = db.transaction('kv').objectStore('kv').get('id'); r.onsuccess = () => ok(r.result || null); r.onerror = () => ok(null); }); } catch (e) {}
+  if (!v) { try { const c = await caches.open('dmz-travas'); const r = await c.match('/__id'); if (r) v = await r.text(); } catch (e) {} }
+  if (v && /^[a-z0-9-]{8,40}$/i.test(v) && v !== store.get('dmz-id')) { store.set('dmz-id', v); ID_NOVO = false; track('id-recuperado'); }
+}
+async function idEspelhar() {
+  const id = meuId();
+  try { document.cookie = `dmz_id=${id}; Max-Age=34560000; Path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`; } catch (e) {}
+  try { const db = await offIDB(); db.transaction('kv', 'readwrite').objectStore('kv').put(id, 'id'); } catch (e) {}
+  try { const c = await caches.open('dmz-travas'); await c.put('/__id', new Response(id)); } catch (e) {}
+}
+idRecuperar().then(idEspelhar);
 const offContarEspelho = offlineContar;
 offlineContar = function () { offContarEspelho(); offEspelhar(); };
 addEventListener('online', () => { offConferir(true); });
