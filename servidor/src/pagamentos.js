@@ -4,6 +4,7 @@
 // O Asaas avisa o pagamento pelo webhook (CHECKOUT_PAID); só então o plano liga. O jogo nunca vê CPF nem cartão:
 // quem paga preenche tudo na página do Asaas. Aqui fica só o código do aparelho, o produto, o valor e as datas.
 import { promoValendo, promoAte } from './planos.js';
+import { casaAoLigar, casaDe, premiosDe, campeaoAte } from './copa.js';   // 10/11: tempo de casa e Copa dos Sócios
 const DIA = 86400000;
 export const PRODUTOS = {
   // 3.22: um jeito só de apoiar. Cada valor compra tempo de Apoiador (foto na mesa, selo ★, avatares exclusivos e o
@@ -107,6 +108,7 @@ async function ligarPlano(env, aparelho, dias) {
   const ate = Math.max(agora, (p && p.ate) || 0) + dias * DIA;
   if (p) await env.DB.prepare('UPDATE planos SET ate = ? WHERE aparelho = ?').bind(ate, aparelho).run();
   else await novaConta(env, aparelho, ate);
+  await casaAoLigar(env, aparelho, p && p.ate, agora);   // 10/11: tempo de casa (zera se ficou mais de 7 dias vencido)
   return ate;
 }
 // data para o Asaas, no horário de Brasília (UTC-3): "AAAA-MM-DD HH:MM:SS"
@@ -142,6 +144,7 @@ export async function donoCortesia(req, env, origin, h) {
   const ate = Date.now() + 10 * 365 * DIA, pl = await planoDe(env, b.aparelho);
   if (!pl) await novaConta(env, b.aparelho, ate);
   else if (!(pl.ate > ate - 365 * DIA)) await env.DB.prepare('UPDATE planos SET ate = ? WHERE aparelho = ?').bind(ate, b.aparelho).run();
+  await casaAoLigar(env, b.aparelho, pl && pl.ate);   // 10/11: tempo de casa
   return h.json(await contaDe(env, b.aparelho), 200, origin);
 }
 async function contaDe(env, aparelho) {
@@ -158,8 +161,11 @@ async function contaDe(env, aparelho) {
         const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM (SELECT codigo, MIN(desde) AS d FROM planos WHERE ate > 0 GROUP BY codigo) WHERE d < ? OR (d = ? AND codigo < ?)')
           .bind(eu.d, eu.d, p.codigo).first();
         conta.socio = { numero: ((r && r.n) || 0) + 1, desde: eu.d };
+        conta.socio.casa = await casaDe(env, p.codigo, eu.d);   // 10/11: tempo de casa ("sócio há 3 meses")
       }
     } catch (e) {}
+    try { conta.copa = await premiosDe(env, aparelho, p.codigo); } catch (e) {}   // 10/11: troféu, medalhas e participações
+    try { const c = await campeaoAte(env, aparelho); if (c) conta.campeaoAte = c; } catch (e) {}   // mesa do campeão
   }
   return conta;
 }
