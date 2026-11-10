@@ -69,10 +69,12 @@ export async function donoPapo(req, env, origin, h) {
   if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
   const agora = Date.now();
   try { await env.DB.prepare('DELETE FROM papo_denuncias WHERE em < ?').bind(agora - PAPO.dias * DIA).run(); } catch (e) {}
+  try { await env.DB.prepare('DELETE FROM papo_vozes WHERE em < ?').bind(agora - PAPO.dias * DIA).run(); } catch (e) {}   // 10/11
   const { results } = await env.DB.prepare(`SELECT mesa, msg_em, autor, MAX(autor_nome) AS autor_nome, MAX(texto) AS texto, MAX(contexto) AS contexto,
-      COUNT(*) AS vezes, MIN(em) AS primeira, MAX(em) AS ultima, (SELECT 1 FROM bloqueios b WHERE b.aparelho = d.autor) AS bloq
+      COUNT(*) AS vezes, MIN(em) AS primeira, MAX(em) AS ultima, (SELECT 1 FROM bloqueios b WHERE b.aparelho = d.autor) AS bloq,
+      (SELECT 1 FROM papo_vozes v WHERE v.mesa = d.mesa AND v.msg_em = d.msg_em) AS voz
     FROM papo_denuncias d GROUP BY mesa, msg_em, autor ORDER BY ultima DESC LIMIT 100`).all();
-  const lista = (results || []).map(r => { let c = []; try { c = JSON.parse(r.contexto || '[]'); } catch (e) {} return Object.assign({}, r, { contexto: c, bloq: !!r.bloq }); });
+  const lista = (results || []).map(r => { let c = []; try { c = JSON.parse(r.contexto || '[]'); } catch (e) {} return Object.assign({}, r, { contexto: c, bloq: !!r.bloq, voz: !!r.voz }); });
   return h.json({ lista }, 200, origin);
 }
 // POST /dono/papo/apagar {mesa, msg_em, autor} -> já olhei: tira da lista
@@ -81,5 +83,6 @@ export async function donoPapoApagar(req, env, origin, h) {
   let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
   if (!/^\d{5}$/.test(String(b.mesa || '')) || !Number.isInteger(b.msg_em) || !b.autor) return h.json({ erro: 'dados' }, 400, origin);
   await env.DB.prepare('DELETE FROM papo_denuncias WHERE mesa = ? AND msg_em = ? AND autor = ?').bind(String(b.mesa), b.msg_em, String(b.autor)).run();
+  try { await env.DB.prepare('DELETE FROM papo_vozes WHERE mesa = ? AND msg_em = ?').bind(String(b.mesa), b.msg_em).run(); } catch (e) {}   // 10/11
   return h.json({ ok: true }, 200, origin);
 }

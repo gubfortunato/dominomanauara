@@ -128,6 +128,8 @@ CREATE TABLE IF NOT EXISTS papo_denuncias (id INTEGER PRIMARY KEY AUTOINCREMENT,
   autor TEXT NOT NULL, autor_nome TEXT, denunciante TEXT NOT NULL, texto TEXT, contexto TEXT);
 CREATE UNIQUE INDEX IF NOT EXISTS papo_denuncias_um ON papo_denuncias (mesa, msg_em, autor, denunciante);
 CREATE INDEX IF NOT EXISTS papo_denuncias_em ON papo_denuncias (em);
+-- 10/11: áudio do papo denunciado (o som, para o administrador ouvir), por até 30 dias
+CREATE TABLE IF NOT EXISTS papo_vozes (mesa TEXT NOT NULL, msg_em INTEGER NOT NULL, em INTEGER NOT NULL, tipo TEXT NOT NULL, dados TEXT NOT NULL, PRIMARY KEY (mesa, msg_em));
 
 -- 28/10: planos. Sem plano: nas mesas com os amigos, cria 1 mesa e joga 1 partida por dia; na mesa rápida, 5 partidas
 -- completas por dia (dia de Brasília). Guarda só a contagem do dia por aparelho, por 7 dias.

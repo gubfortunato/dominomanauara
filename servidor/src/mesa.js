@@ -13,6 +13,7 @@ import { somarRanking, reiDaSemana } from './ranking.js';
 import { bloqueado, visto, apelidoBarrado, exigeApp, appAberto, anotarRitmo, RAPIDA_MS } from './bloqueio.js';
 import { PAPO, limparPapo, tamanho, papoRuim } from './papo.js';
 import { anotarCodigoErrado } from './codigos.js';
+import { VOZ, transcrever } from './voz.js';
 import { limitesValem, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteHerdado, limiteDoIrmao, anotarLimite, mesasDoDia, bonusConfig } from './planos.js';
 // 3.38.2: na Calçada, apelido que o filtro passou a barrar (de quem entrou antes) aparece como "Jogador"
 const nomeVisivel = c => !c.bot && nomeOfensivo(c.nome) ? 'Jogador' : c.nome;
@@ -82,6 +83,7 @@ export class Mesa {
   constructor(ctx, env) {
     this.ctx = ctx; this.env = env; this.m = null; this.reacoes = {}; bonusConfig(env);
     this.papo = []; this.papoRitmo = {}; this.denuncias = {}; this.denunciadas = new Set();   // 3.42: papo da mesa
+    this.vozRitmo = {}; this.vozes = new Map(); this.ouvirRitmo = {};   // 10/11: áudio no papo (voz.js)
     // TEMPO_FATOR só existe no teste local (acelera os robôs); no Cloudflare vale 1
     const f = Number(env && env.TEMPO_FATOR) || 1;
     this.cacheVivo = Number(env && env.CACHE_VIVO_MS) || Math.max(3000, 15000 * Math.min(1, f));   // 27/10: lista das mesas guardada por 15 s (no teste, menos)
@@ -141,6 +143,7 @@ export class Mesa {
     if (this.m.publica) this.m.chegadas = this.sortearChegadas(this.m.iniciaEm);
     if (this.m.publica) this.agendar();
     this.papo = []; this.denunciadas = new Set(); await this.ctx.storage.delete('papo');   // 3.42: mesa nova, papo novo
+    this.vozes = new Map(); try { const ks = await this.ctx.storage.list({ prefix: 'au:' }); if (ks.size) await this.ctx.storage.delete([...ks.keys()].slice(0, 128)); } catch (e) {}   // 10/11: e sem áudio da mesa de antes
     await this.salvar();
     return Response.json({ ok: true }, { status: 201 });
   }
@@ -370,6 +373,7 @@ export class Mesa {
   // ---------- Mensagens dos celulares ----------
   async webSocketMessage(ws, data) {
     if (data === 'ping') { try { ws.send('pong'); } catch (e) {} return; }
+    if (typeof data !== 'string' || data.length > 300000) return;   // 10/11: o maior é o áudio do papo (até ~260 mil letras)
     let msg; try { msg = JSON.parse(data); } catch (e) { return; }
     const att = ws.deserializeAttachment() || {};
     att.visto = Date.now(); ws.serializeAttachment(att);
@@ -393,6 +397,8 @@ export class Mesa {
       case 'ponto': if (p >= 0) return this.pontoPedido(p); return;
       case 'papo': return this.falar(ws, att, p, msg);   // 3.42
       case 'papoDenuncia': return this.denunciarPapo(ws, att, msg.n);
+      case 'papoVoz': return this.falarVoz(ws, att, p, msg);   // 10/11: áudio no papo
+      case 'papoOuvir': return this.ouvirVoz(ws, att, msg.n);
     }
   }
   async webSocketClose(ws) { await this.mudouConexao(ws); }
@@ -1016,10 +1022,19 @@ export class Mesa {
     return s;
   }
   paraQuem(it, a, menores) {
-    return { t: 'papo', n: it.n, nome: it.nome, p: it.p, em: it.em, k: it.k, txt: it.txt, eu: !!a.id && a.id === it.id };
+    const o = { t: 'papo', n: it.n, nome: it.nome, p: it.p, em: it.em, k: it.k, txt: it.txt, eu: !!a.id && a.id === it.id };
+    if (it.au) o.au = { ms: it.au.ms, foi: !!it.au.foi };   // 10/11: áudio (o som vem quando a pessoa toca para ouvir)
+    return o;
+  }
+  // 10/11: pode mandar áudio: sentado ou na fila, sem menor na mesa, maior de 18 e sócio
+  podeVoz(id) {
+    if (!this.env.AI || !this.papoAberto() || !this.podeEscrever(id)) return false;
+    const c = this.m.cad.concat(this.m.fila || []).find(x => x && x.id === id);
+    return !!c && !!c.apoiador;
   }
   podeLer(it, a, menores) {
     if (!(a.id || a.assiste)) return false;
+    if (it.au && !a.id) return false;   // 10/11: quem assiste não recebe áudio
     if (it.txt == null) return true;
     return !(a.assiste ? a.menor : menores.has(a.id));
   }
@@ -1033,7 +1048,10 @@ export class Mesa {
     const agora = Date.now(), ult = this.papo[this.papo.length - 1];
     const it = Object.assign({ n: ult ? ult.n + 1 : 1, id: quem.id, nome: quem.nome, p, em: agora }, o);
     this.papo.push(it);
-    if (this.papo.length > PAPO.guarda) this.papo.splice(0, this.papo.length - PAPO.guarda);
+    if (this.papo.length > PAPO.guarda) {
+      const saiu = this.papo.splice(0, this.papo.length - PAPO.guarda);
+      for (const x of saiu) if (x.au) { this.vozes.delete(x.n); try { await this.ctx.storage.delete('au:' + x.n); } catch (e) {} }   // 10/11
+    }
     const menores = this.idsMenores();
     for (const ws of this.ctx.getWebSockets()) {
       const a = ws.deserializeAttachment() || {};
@@ -1043,6 +1061,57 @@ export class Mesa {
       this.enviar(ws, msg);
     }
     try { await this.ctx.storage.put('papo', this.papo); } catch (e) {}
+    return it;
+  }
+  // 10/11: mensagem de voz (até 10 s). O áudio vira texto e passa pelo filtro do papo antes de sair (voz.js).
+  async falarVoz(ws, att, p, msg) {
+    const m = this.m;
+    if (!m || m.publica || !att.id) return;
+    if (m.fase !== 'espera' && m.fase !== 'jogo') return;
+    const quem = p >= 0 ? m.cad[p] : (m.fila || []).find(c => c.id === att.id);
+    if (!quem || quem.bot) return;
+    const nao = motivo => this.enviar(ws, { t: 'papoNao', motivo, voz: true });
+    if (!this.env.AI) return nao('voz-off');
+    if (!this.papoAberto() || quem.menor) return nao('fechado');
+    if (!quem.apoiador) { const a = await this.apoiador(att.id); if (!a.apoiador) return nao('voz-socio'); }
+    const agora = Date.now(), h = (this.vozRitmo[att.id] || []).filter(t => agora - t < 60000);
+    if ((h.length && agora - h[h.length - 1] < VOZ.intervalo) || h.length >= VOZ.porMinuto) return nao('voz-rapido');
+    const dados = typeof msg.dados === 'string' ? msg.dados : '', tipo = String(msg.tipo || '').slice(0, 60), ms = Math.round(Number(msg.ms) || 0);
+    if (!VOZ.tipos.test(tipo) || dados.length < 200 || !/^[A-Za-z0-9+/]+={0,2}$/.test(dados)) return nao('voz-falhou');
+    if (dados.length > VOZ.maxB64 || ms > VOZ.maxMs) return nao('voz-grande');
+    if (ms < VOZ.minMs) return nao('voz-curto');
+    h.push(agora); this.vozRitmo[att.id] = h;   // a tentativa barrada também conta
+    const r = await transcrever(this.env, dados);
+    if (r.erro) return nao(r.erro);
+    // enquanto o áudio virava texto, a mesa pode ter mudado (fechou, entrou menor, a pessoa saiu)
+    if (this.m !== m || !this.papoAberto() || (m.fase !== 'espera' && m.fase !== 'jogo')) return nao('fechado');
+    const p2 = m.cad.findIndex(c => c && c.id === att.id), quem2 = p2 >= 0 ? m.cad[p2] : (m.fila || []).find(c => c.id === att.id);
+    if (!quem2) return;
+    const ult = this.papo[this.papo.length - 1], n = ult ? ult.n + 1 : 1;
+    this.vozes.set(n, { dados, tipo });
+    try { await this.ctx.storage.put('au:' + n, { dados, tipo }); } catch (e) {}
+    const it = await this.guardarPapo(quem2, p2, { txt: r.txt, au: { ms: Math.min(ms, VOZ.maxMs), tipo } }, false);
+    if (it && it.n !== n) {   // (não deve acontecer) outra mensagem passou na frente: o áudio muda de número junto
+      this.vozes.set(it.n, { dados, tipo }); this.vozes.delete(n);
+      try { await this.ctx.storage.put('au:' + it.n, { dados, tipo }); await this.ctx.storage.delete('au:' + n); } catch (e) {}
+    }
+    // só os 10 áudios mais novos ficam guardados; os de antes continuam na conversa, com o texto
+    const comVoz = this.papo.filter(x => x.au && !x.au.foi), velhos = comVoz.slice(0, Math.max(0, comVoz.length - VOZ.guarda));
+    for (const x of velhos) { x.au.foi = true; this.vozes.delete(x.n); try { await this.ctx.storage.delete('au:' + x.n); } catch (e) {} }
+    if (velhos.length) { try { await this.ctx.storage.put('papo', this.papo); } catch (e) {} }
+  }
+  // 10/11: tocar um áudio do papo (quem pode ler a conversa e está na mesa)
+  async ouvirVoz(ws, att, n) {
+    if (!this.m || this.m.publica || !Number.isInteger(n) || !att.id) return;
+    const agora = Date.now(), h = (this.ouvirRitmo[att.id] || []).filter(t => agora - t < 60000);
+    if (h.length >= VOZ.ouvirPorMinuto) return this.enviar(ws, { t: 'papoVoz', n, sumiu: true, rapido: true });
+    h.push(agora); this.ouvirRitmo[att.id] = h;
+    const it = this.papo.find(x => x.n === n);
+    if (!it || !it.au || it.au.foi || !this.podeLer(it, att, this.idsMenores())) return this.enviar(ws, { t: 'papoVoz', n, sumiu: true });
+    let v = this.vozes.get(n);
+    if (!v) { try { v = await this.ctx.storage.get('au:' + n); if (v) this.vozes.set(n, v); } catch (e) {} }
+    if (!v) return this.enviar(ws, { t: 'papoVoz', n, sumiu: true });
+    this.enviar(ws, { t: 'papoVoz', n, dados: v.dados, tipo: v.tipo });
   }
   async falar(ws, att, p, msg) {
     const m = this.m;
@@ -1088,11 +1157,16 @@ export class Mesa {
     const h = (this.denuncias[att.id] || []).filter(t => agora - t < 3600000);
     if (h.length >= PAPO.denunciasPorHora) return responde(false, 'muitas');
     const contexto = this.papo.slice(Math.max(0, i - PAPO.contexto), i + 1)
-      .map(x => ({ nome: x.nome, txt: x.txt == null ? null : x.txt, k: x.k == null ? null : x.k, em: x.em, autor: x.id === it.id }));
+      .map(x => ({ nome: x.nome, txt: x.txt == null ? null : (x.au ? '🎤 ' : '') + x.txt, k: x.k == null ? null : x.k, em: x.em, autor: x.id === it.id }));
     try {
       await this.env.DB.prepare('DELETE FROM papo_denuncias WHERE em < ?').bind(agora - PAPO.dias * 86400000).run();
       await this.env.DB.prepare('INSERT OR IGNORE INTO papo_denuncias (em, mesa, msg_em, autor, autor_nome, denunciante, texto, contexto) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-        .bind(agora, m.codigo, it.em, it.id, it.nome, att.id, it.txt, JSON.stringify(contexto)).run();
+        .bind(agora, m.codigo, it.em, it.id, it.nome, att.id, it.au ? '🎤 ' + it.txt : it.txt, JSON.stringify(contexto)).run();
+      // 10/11: áudio denunciado: o som também vai para o administrador ouvir (30 dias)
+      if (it.au) {
+        let v = this.vozes.get(it.n); if (!v) { try { v = await this.ctx.storage.get('au:' + it.n); } catch (e) {} }
+        if (v) await this.env.DB.prepare('INSERT OR IGNORE INTO papo_vozes (mesa, msg_em, em, tipo, dados) VALUES (?, ?, ?, ?, ?)').bind(m.codigo, it.em, agora, v.tipo, v.dados).run();
+      }
     } catch (e) { return responde(false, 'falha'); }
     h.push(agora); this.denuncias[att.id] = h; this.denunciadas.add(chave);
     responde(true);
@@ -1311,7 +1385,7 @@ export class Mesa {
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
       leituraMs: G && G.phase === 'handEnd' ? Math.max(0, Math.round(m.turnoDesde + this.T.leitura - Date.now())) : 0, proximaPedida: !!(G && G.phase === 'handEnd' && m.proximaPedida === m.seq),   // 28/10
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
-      tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id) }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
+      tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
       cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || !id ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
       tempos: minha >= 0 && m.tempos ? m.tempos[minha] || 0 : 0, tolerado: TEMPO_TOLERADO,   // 03/11

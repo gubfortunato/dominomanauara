@@ -15,6 +15,7 @@ import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, 
 import { donoPapo, donoPapoApagar } from './papo.js';
 import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
 import { travaCodigo, anotarCodigoErrado, limparCodigos } from './codigos.js';
+import { saudeVoz, donoPapoVoz, limparVozesDenunciadas } from './voz.js';
 export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
@@ -345,6 +346,7 @@ async function lembretesDoDia(env) {
   // faxina: registros do limite de mesas com mais de 2 dias
   try { await env.DB.prepare('DELETE FROM mesas_criadas WHERE criado_em < ?').bind(Date.now() - 2 * 86400000).run(); } catch (e) {}
   await limparCodigos(env);   // 10/11: números de mesa errados (mais de 2 horas)
+  await limparVozesDenunciadas(env);   // 10/11: áudios denunciados (mais de 30 dias)
   if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return { ok: 0, falhas: 0, motivo: 'sem-chaves' };
   const agora = Date.now();
   const { results } = await env.DB.prepare(`SELECT id, endpoint, p256dh, auth FROM avisos
@@ -475,6 +477,7 @@ export default {
       // Plano Apoiador e doações (Asaas)
       const H = { json, marcaDoDia, ehDono, SITE };
       if (url.pathname === '/saude/ia' && req.method === 'GET') return await fotos.saudeIA(env, origin, H);
+      if (url.pathname === '/saude/voz' && req.method === 'GET') return await saudeVoz(env, origin, H);   // 10/11: áudio do papo
       if ((url.pathname === '/turma' || url.pathname === '/desafio') && req.method === 'GET') return await turmas.ver(env, origin, H, url);
       if (url.pathname === '/turma/nova' && req.method === 'POST') return await turmas.nova(req, env, origin, H);
       if (url.pathname === '/offline' && req.method === 'POST') return await offline.conferir(req, env, origin, H);   // 04/11: trava do jogo offline
@@ -499,6 +502,7 @@ export default {
       if (url.pathname === '/dono/desbloquear' && req.method === 'POST') return await donoDesbloquear(req, env, origin, H);
       if (url.pathname === '/dono/papo' && req.method === 'GET') return await donoPapo(req, env, origin, H);   // 3.42: papo denunciado
       if (url.pathname === '/dono/papo/apagar' && req.method === 'POST') return await donoPapoApagar(req, env, origin, H);
+      if (url.pathname === '/dono/papo/voz' && req.method === 'GET') return await donoPapoVoz(req, env, origin, H);   // 10/11: áudio denunciado
       if (url.pathname === '/dono/apelido' && req.method === 'POST') return await donoApelido(req, env, origin, H);   // 3.41
       if (url.pathname === '/dono/robos' && req.method === 'GET') return await donoRobos(req, env, origin, H);   // 3.41
       const dv = url.pathname.match(/^\/dono\/pagamentos\/([0-9a-f]{20})\/devolver$/);
