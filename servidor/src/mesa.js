@@ -104,21 +104,27 @@ export class Mesa {
     if (url.pathname === '/expulsar' && req.method === 'POST') return Response.json(await this.expulsar(await req.json()));
     if (url.pathname === '/info' && url.searchParams.get('vivo')) return Response.json(this.infoVivo());
     if (url.pathname === '/info') {
-      const m = this.viva();
-      return Response.json(m ? { existe: true, fase: m.fase, publica: !!m.publica, humanos: m.cad.filter(c => c && !c.bot).length, livres: m.cad.filter(c => !c || (c.bot && !c.saiu)).length } : { existe: false });
+      const m = this.viva(), id = url.searchParams.get('id');
+      return Response.json(m ? Object.assign({ existe: true, fase: m.fase, publica: !!m.publica, humanos: m.cad.filter(c => c && !c.bot).length, livres: m.cad.filter(c => !c || (c.bot && !c.saiu)).length },
+        id ? { meu: this.jaNaMesa(id) } : {}) : { existe: false });   // 10/11: meu = já está sentado ou na fila (rede travada ainda volta)
     }
     if ((req.headers.get('upgrade') || '').toLowerCase() === 'websocket') {
       const par = new WebSocketPair();
       const [cli, srv] = Object.values(par);
-      this.aceitar(srv, req.headers.get('x-rede'), req.headers.get('x-cod'));
+      this.aceitar(srv, req.headers.get('x-rede'), req.headers.get('x-cod'), req.headers.get('x-trava'));
       return new Response(null, { status: 101, webSocket: cli });
     }
     return new Response('nao-encontrado', { status: 404 });
   }
-  aceitar(ws, rede, cod) {
+  aceitar(ws, rede, cod, trava) {
     this.ctx.acceptWebSocket(ws);
     ws.serializeAttachment({ id: null, visto: Date.now(), rede: /^[0-9a-f]{24}$/.test(String(rede || '')) ? rede : null,   // 28/10: resumo da rede (planos)
-      cod: /^[0-9a-f]{24}:\d{5}$/.test(String(cod || '')) ? cod : null });   // 10/11: para anotar número de mesa errado (codigos.js)
+      cod: /^[0-9a-f]{24}:\d{5}$/.test(String(cod || '')) ? cod : null,   // 10/11: para anotar número de mesa errado (codigos.js)
+      trava: trava === '1' });   // 10/11: rede que errou muitos números: só volta quem já está na mesa (sentado, na fila ou com o robô no lugar)
+  }
+  jaNaMesa(id) {
+    const m = this.m; if (!m || !id) return false;
+    return m.cad.some(c => c && (c.id === id || c.lugarDe === id)) || (m.fila || []).some(c => c.id === id);
   }
   viva() { return this.m && this.m.ultimo > Date.now() - VIDA ? this.m : null; }
 
@@ -434,6 +440,7 @@ export class Mesa {
     const m = this.m;
     const quem = this.pessoa(msg);
     if (!quem) return this.enviar(ws, { t: 'erro', cod: 'dados' });
+    if (att.trava && !this.jaNaMesa(quem.id)) return this.recusar(ws, 'muitos-codigos');   // 10/11: rede travada não entra em mesa nova
     att.apelido = !!msg.apelido;   // 3.38.2: este app entende o aviso 'apelido' (escolher outro apelido)
     if (await bloqueado(this.env, quem.id)) return this.recusar(ws, 'bloqueado');
     // 3.41: o administrador pediu outro apelido e a pessoa voltou com o mesmo (app antigo: 'nao-existe', volta ao início)
@@ -514,6 +521,7 @@ export class Mesa {
   assistir(ws, att, msg) {
     const m = this.m;
     if (att.id) return;   // quem já está na mesa ou na fila já recebe tudo
+    if (att.trava) return this.recusar(ws, 'muitos-codigos');   // 10/11: rede travada não assiste por número
     const n = this.ctx.getWebSockets().filter(w => (w.deserializeAttachment() || {}).assiste).length;
     if (n >= ASSISTIR_MAX) return this.recusar(ws, 'plateia-cheia');
     att.assiste = true; att.menor = !!(msg && msg.menor); ws.serializeAttachment(att);   // 3.42: menor que assiste não recebe o texto livre
