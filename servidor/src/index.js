@@ -185,26 +185,25 @@ async function mesaRapida(req, env, origin) {
   if (res.status === 201) { try { await env.DB.prepare('INSERT INTO mesas_criadas (marca, criado_em) VALUES (?, ?)').bind(marca, Date.now()).run(); } catch (e) {} }
   return json(j, res.status === 201 ? 200 : res.status, origin);
 }
-// 10/11: recusa de WebSocket com aviso (o app mostra a mensagem e não fica tentando de novo)
-function wsRecusa(cod) {
-  const [cli, srv] = Object.values(new WebSocketPair());
-  srv.accept(); srv.send(JSON.stringify({ t: 'erro', cod })); srv.close(4029, cod);
-  return new Response(null, { status: 101, webSocket: cli });
-}
 async function rotaMesa(req, env, origin, codigo, ws) {
   const stub = env.MESA.get(env.MESA.idFromName(codigo));
-  // 10/11: quem errou muitos números de mesa na última hora fica sem buscar e sem entrar por número (codigos.js)
+  // 10/11: quem errou muitos números de mesa na última hora fica sem buscar, sem entrar em mesa nova e sem assistir por
+  // número (codigos.js). Quem já está na mesa (sentado, na fila ou com o robô no lugar) continua voltando normalmente.
   const tc = await travaCodigo(env, req.headers.get('cf-connecting-ip'));
   if (ws) {
     if ((req.headers.get('upgrade') || '').toLowerCase() !== 'websocket') return json({ erro: 'ws' }, 426, origin);
     if ((origin || exigeApp(env)) && !origemOk(origin)) return new Response('origem', { status: 403 });   // 3.41: sem o app (sem origem), não entra
-    if (tc.travado) return wsRecusa('muitos-codigos');
     // 28/10: a mesa recebe só o resumo da rede (para o limite de quem apaga os dados do app), nunca o endereço
     const hd = new Headers(req.headers); hd.set('x-rede', (await marcaRede(req.headers.get('cf-connecting-ip'), env)) || ''); hd.delete('cf-connecting-ip');
     hd.set('x-cod', tc.marca ? tc.marca + ':' + codigo : '');   // 10/11: a mesa anota o número errado, se ela não existir mais
+    hd.set('x-trava', tc.travado ? '1' : '');   // 10/11: a mesa só deixa voltar quem já está nela
     return stub.fetch(new Request(req, { headers: hd }));
   }
-  if (tc.travado) return json({ erro: 'muitos-codigos' }, 429, origin);
+  if (tc.travado) {
+    const id = new URL(req.url).searchParams.get('id') || '';
+    if (/^[a-z0-9-]{8,40}$/i.test(id)) { const j = await (await stub.fetch('https://mesa/info?id=' + encodeURIComponent(id))).json(); if (j && j.existe && j.meu) return json(j, 200, origin); }
+    return json({ erro: 'muitos-codigos' }, 429, origin);
+  }
   const r = await stub.fetch('https://mesa/info');
   const j = await r.json();
   if (!j || !j.existe) await anotarCodigoErrado(env, tc.marca, codigo);
