@@ -38,24 +38,30 @@ jobs:
             const ag=(r.result.calculations&&r.result.calculations[0]&&r.result.calculations[0].aggregates)||[];
             return ag.map(a=>[a.groups.map(g=>g.value),a.count]).sort((a,b)=>b[1]-a[1]);
           }
-          put('origem', await q('origem',[W+'origin'],[SEM_DO]));
-          put('xrw', await q('xrw',[W+'x-requested-with'],[SEM_DO,{key:W+'x-requested-with',operation:'exists',type:'string'}]));
-          put('referer', await q('referer',[W+'referer'],[SEM_DO]));
-          put('ua', await q('ua',[W+'user-agent'],[SEM_DO],120));
-          put('caminho_status', await q('cs',['$workers.event.path','$workers.event.response.status'],[SEM_DO],200));
-          put('erros', await q('er',['$workers.event.path','$workers.event.response.status',W+'cf-connecting-ip',W+'user-agent'],[SEM_DO,{key:'$workers.event.response.status',operation:'gte',type:'number',value:400}],200));
-          put('ip_top', await q('ip',[W+'cf-connecting-ip'],[SEM_DO],60));
-          put('asn_top', await q('asn',['$workers.event.request.cf.asOrganization','$workers.event.request.cf.country'],[SEM_DO],60));
-          put('sem_origem', await q('so',['$workers.event.path',W+'user-agent'],[SEM_DO,{key:W+'origin',operation:'is_null',type:'string'}],120));
-          put('datadog', await q('dd',['$workers.event.path','$workers.event.request.cf.asOrganization',W+'user-agent'],[{key:W+'x-datadog-trace-id',operation:'exists',type:'string'}],60));
-          put('admin', await q('adm',['$workers.event.path','$workers.event.response.status',W+'cf-connecting-ip','$workers.event.request.cf.asOrganization'],[{key:W+'x-admin-key',operation:'exists',type:'string'}],100));
-          put('asaas', await q('as',['$workers.event.path','$workers.event.response.status','$workers.event.request.cf.asOrganization'],[{key:W+'asaas-access-token',operation:'exists',type:'string'}],50));
-          // chave do dono nos logs: só diz se aparece em claro (compara o resumo com ADMIN_HASH); o valor nunca sai daqui
-          const hashDono='e57e78a3bb0d8127b02226822dbc4fe943bb5ddd711696f032bcf36adf28589c';
-          const vals=await q('admv',[W+'x-admin-key'],[{key:W+'x-admin-key',operation:'exists',type:'string'}],50);
-          put('admin_valores', Array.isArray(vals)?vals.map(([g,n])=>({n, tamanho:String(g[0]).length, eh_a_chave:crypto.createHash('sha256').update(String(g[0])).digest('hex')===hashDono, parece_mascarado:/redact|\*{3}|^\[/i.test(String(g[0]))})):vals);
-          const tv=await q('asv',[W+'asaas-access-token'],[{key:W+'asaas-access-token',operation:'exists',type:'string'}],20);
-          put('asaas_valores', Array.isArray(tv)?tv.map(([g,n])=>({n, tamanho:String(g[0]).length, parece_mascarado:/redact|\*{3}|^\[/i.test(String(g[0]))})):tv);
+          async function q2(nome, groupBys, filters, lim){
+            const corpo=(pl)=>({queryId:nome,timeframe:tf,view:'calculations',parameters:Object.assign({calculations:[{operator:'count'}],groupBys:groupBys.map(v=>({type:'string',value:v})),filters:filters||[],filterCombination:'and'},pl)});
+            let r=await api('/workers/observability/telemetry/query',corpo({limit:lim||50}));
+            if(!r.success) r=await api('/workers/observability/telemetry/query',corpo({}));
+            if(!r.success) return {erro:r.errors};
+            const ag=(r.result.calculations&&r.result.calculations[0]&&r.result.calculations[0].aggregates)||[];
+            return ag.map(a=>[a.groups.map(g=>g.value),a.count]).sort((a,b)=>b[1]-a[1]);
+          }
+          const ST='$workers.event.response.status', P='$workers.event.path', UA=W+'user-agent', IP=W+'cf-connecting-ip', ORG='$workers.event.request.cf.asOrganization';
+          put('total_worker', await q2('tw',[],[SEM_DO]));
+          put('st_401', await q2('s401',[P,IP,ORG,UA],[SEM_DO,{key:ST,operation:'eq',type:'number',value:401}]));
+          put('st_404', await q2('s404',[P,IP,ORG,UA],[SEM_DO,{key:ST,operation:'eq',type:'number',value:404}]));
+          put('st_400', await q2('s400',[P,IP,ORG],[SEM_DO,{key:ST,operation:'eq',type:'number',value:400}]));
+          put('st_429', await q2('s429',[P,IP,ORG],[SEM_DO,{key:ST,operation:'eq',type:'number',value:429}]));
+          put('st_5xx', await q2('s5',[P,ST],[SEM_DO,{key:ST,operation:'gte',type:'number',value:500}]));
+          put('st_403', await q2('s403',[P],[SEM_DO,{key:ST,operation:'eq',type:'number',value:403}]));
+          put('ua_ferramenta', await q2('uaf',[UA,P,IP,ORG],[SEM_DO,{key:UA,operation:'regex',type:'string',value:'(?i)(curl|python|wget|go-http|java/|okhttp|axios|node-fetch|undici|postman|insomnia|sqlmap|nikto|nuclei|burp|zgrab|httpx|masscan|nmap|scan|headless|playwright|puppeteer|selenium|libwww|aiohttp|requests)'}]));
+          put('ua_ferramenta_inclui', await q2('uaf2',[UA,P],[SEM_DO,{key:UA,operation:'includes',type:'string',value:'curl'}]));
+          put('sem_ua', await q2('sua',[P,IP,ORG],[SEM_DO,{key:UA,operation:'is_null',type:'string'}]));
+          put('ws_sem_origem', await q2('wso',[P,UA,IP],[SEM_DO,{key:W+'upgrade',operation:'exists',type:'string'},{key:W+'origin',operation:'is_null',type:'string'}]));
+          put('caminhos', await q2('cam',[P],[SEM_DO],100));
+          put('origem_outras', await q2('oo',[W+'origin',P],[SEM_DO,{key:W+'origin',operation:'neq',type:'string',value:'https://dominomanauara.com.br'}]));
+          put('metodos', await q2('met',['$workers.event.request.method'],[SEM_DO]));
+          put('dono_por_ip', await q2('dip',[IP,ORG,ST],[SEM_DO,{key:P,operation:'starts_with',type:'string',value:'/dono'}]));
           JS
           sed -i 's/^          //' /tmp/cf.mjs
           node /tmp/cf.mjs 2>> $OUT
