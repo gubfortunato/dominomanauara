@@ -2416,6 +2416,8 @@ button.dn-ag:active{transform:scale(.98)}
 .papo-enviar:active{transform:scale(.93)}
 .papo-enviar:disabled{opacity:.4;cursor:default}
 /* 10/11 (pedido do dono): áudio no papo de mesa */
+.papo-mic,.papo-play,.papo-grava-x,#papoGravaOk,.papo-enviar{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.papo-mic *,.papo-play *,.papo-enviar *{pointer-events:none}   /* 10/11: o toque é sempre do botão, não do desenho dentro dele */
 .papo-mic{flex:none;position:relative;width:48px;height:48px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;background:var(--bg);color:var(--fg);cursor:pointer;transition:transform .12s}
 .papo-mic[hidden]{display:none}
 .papo-mic svg{width:22px;height:22px}
@@ -3778,6 +3780,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.51.9', data: '10/11/2026', itens: ['Áudio no papo: o microfone e o ▶ respondem ao toque no iPhone, e aparece um aviso enquanto o celular libera o microfone.'] },
   { v: '3.51.8', data: '10/11/2026', itens: ['Carteira de sócio: o botão embaixo dela não fica mais apagado pela sombra.'] },
   { v: '3.51.7', data: '10/11/2026', itens: ['Áudio no papo de mesa: nas mesas com os amigos, os sócios mandam mensagens de voz de até 10 segundos, com o texto embaixo. Todos na mesa ouvem.'] },
   { v: '3.51.6', data: '10/11/2026', itens: ['Carteira de sócio à vista: no alto do Perfil e em Mais › Sua carteira de sócio, pronta para compartilhar.', 'Dá para colocar a sua foto na carteira (toque nela e em "Colocar sua foto").'] },
@@ -11661,6 +11664,22 @@ leaveGame = function () { if (ON.assistindo) { assistirParar(); return; } return
 // telefone, e-mail, @ ou convite para outro app. Neste celular: silenciar o papo todo ou só uma pessoa (nesta mesa).
 // Denunciar manda a mensagem (com as 10 de antes) para o administrador olhar.
 const PAPO_MAX = 80, PAPO_MS = 3000, PAPO_MUDO = 'dmz-papo-mudo';
+// 10/11 (áudio no iPhone: "nada acontece"): o iPhone às vezes não manda o clique quando a tela muda durante o toque.
+// Nos botões do áudio, vale o fim do toque (dedo que não arrastou) e o clique fica para mouse e teclado.
+function toqueOuClique(el, fn) {
+  let ult = 0, x0 = 0, y0 = 0, id = null;
+  el.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') { id = e.pointerId; x0 = e.clientX; y0 = e.clientY; } });
+  el.addEventListener('pointerup', e => {
+    if (e.pointerType === 'mouse' || e.pointerId !== id) return;
+    id = null; if (Math.abs(e.clientX - x0) > 12 || Math.abs(e.clientY - y0) > 12) return;
+    ult = Date.now(); fn(e);
+  });
+  el.addEventListener('click', e => { e.stopPropagation(); if (Date.now() - ult < 900) return; fn(e); });
+}
+// registro do que acontece no áudio, para achar problema de celular (só o passo, o erro, a versão e o tipo de celular)
+function vozLog(passo, erro) {
+  try { if (CONFIG.api) fetch(CONFIG.api + '/cliente/log', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ onde: 'voz-' + passo, erro: String(erro || '').slice(0, 200), v: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '' }), keepalive: true }).catch(() => {}); } catch (e) {}
+}
 const PP = { itens: [], cod: null, nao: 0, aberto: false, mudo: store.get(PAPO_MUDO) === '1', calados: new Set(), enviouEm: 0, acao: null, denunciar: null, flutT: null };
 let GR = { rec: null, stream: null, partes: [], t0: 0, ms: 0, timer: null, blob: null, enviar: false };   // 10/11: gravação do áudio do papo
 const PAPO_NAO = {
@@ -11761,9 +11780,9 @@ const VOZ_GIRA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8
     toast(PP.mudo ? 'Papo silenciado neste celular: as mensagens ficam só aqui na lista.' : 'Papo ligado: as mensagens aparecem na mesa.');
   });
   $('#papoForm').addEventListener('submit', e => { e.preventDefault(); papoEnviar({ txt: $('#papoTxt').value }); });
-  $('#papoMic').addEventListener('click', vozGravar);   // 10/11: áudio
-  $('#papoGravaX').addEventListener('click', () => vozCancelar());
-  $('#papoGravaOk').addEventListener('click', () => vozParar(true));
+  toqueOuClique($('#papoMic'), () => vozGravar());   // 10/11: áudio
+  toqueOuClique($('#papoGravaX'), () => vozCancelar());
+  toqueOuClique($('#papoGravaOk'), () => vozParar(true));
   $('#papoTxt').addEventListener('input', papoConta);
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && PP.aberto) fecharPapo(); });
   // voltar do celular com o papo aberto: só fecha o papo (antes do voltar do app, que abriria o menu da partida)
@@ -11861,7 +11880,8 @@ function papoCorDe(nome) {
 function desenharPapo() {
   if (!PP.aberto) return;
   const v = papoVista(), escreve = papoEscreve(), gente = papoGente();
-  $('#papoMudo').innerHTML = PP.mudo ? `${PAPO_SINO}<span>Ligar</span>` : `${PAPO_SINO_X}<span>Silenciar</span>`;
+  const mudoH = PP.mudo ? `${PAPO_SINO}<span>Ligar</span>` : `${PAPO_SINO_X}<span>Silenciar</span>`;
+  if ($('#papoMudo').dataset.h !== String(PP.mudo)) { $('#papoMudo').innerHTML = mudoH; $('#papoMudo').dataset.h = String(PP.mudo); }   // 10/11: só troca quando muda (iPhone)
   $('#papoMudo').setAttribute('aria-pressed', PP.mudo ? 'true' : 'false');
   $('#papoMudo').setAttribute('aria-label', PP.mudo ? 'Papo silenciado neste celular. Toque para ligar' : 'Silenciar o papo neste celular');
   const lista = PP.itens.filter(it => !papoCalado(it));
@@ -11871,7 +11891,7 @@ function desenharPapo() {
   // figurinha sozinha (só emoji) aparece grande e sem balão, e a regra da mesa fica no começo da conversa.
   const junto = (a, b) => !!a && !!b && !!a.eu === !!b.eu && a.nome === b.nome && Math.abs((b.em || 0) - (a.em || 0)) < 5 * 60000 && !(PP.novasDe && PP.novasDe.n === b.n);
   const regra = gente ? '<li class="papo-regra">Respeito na mesa: sem palavrão, link ou telefone. Toque numa mensagem para silenciar ou denunciar.</li>' : '';
-  l.innerHTML = regra + (lista.length ? lista.map((it, i) => {
+  const html = regra + (lista.length ? lista.map((it, i) => {
     const aberto = PP.acao === it.n && !it.eu, ini = !junto(lista[i - 1], it), fim = !junto(it, lista[i + 1]);
     const acoes = aberto ? `<span class="papo-acoes"><button type="button" class="papo-calar" data-nome="${esc(it.nome)}">Silenciar ${esc(it.nome)}</button>${it.txt != null && gente ? `<button type="button" class="papo-denuncia${PP.denunciar === it.n ? ' confirma' : ''}" data-n="${it.n}">${PP.denunciar === it.n ? 'Toque de novo para denunciar' : 'Denunciar'}</button>` : ''}</span>` : '';
     const chegou = PP.vistos && !PP.vistos.has(it.n), tx = papoTexto(it), emoji = papoSoEmoji(tx);
@@ -11880,15 +11900,20 @@ function desenharPapo() {
       + (it.eu ? '' : `<span class="papo-av" aria-hidden="true">${ini ? papoAvatar(it) : ''}</span>`)
       + `<div class="papo-bolha">${!it.eu && ini ? `<span class="papo-quem">${esc(it.nome)}</span>` : ''}${it.au ? vozBolha(it) : `<span class="papo-tx">${esc(tx)}<time>${papoHora(it.em)}</time></span>`}${acoes}</div></li>`;
   }).join('') : '<li class="papo-vazio">Ninguém falou ainda. Mande um oi para a turma!</li>')
-    + (PP.calados.size ? `<li class="papo-calados">Silenciado nesta mesa: ${[...PP.calados].map(n => `<button type="button" class="papo-ouvir" data-nome="${esc(n)}">${esc(n)} · ouvir de novo</button>`).join(' ')}</li>` : '');
-  if (embaixo || !PP.desenhou) l.scrollTop = l.scrollHeight;
+    + (PP.calados.size ? `<li class="papo-calados">Silenciado nesta mesa: ${[...PP.calados].map(n => `<button type="button" class="papo-ouvir" data-nome="${esc(n)}">${esc(n)} · ouvir de novo</button>`).join(' ')}</li>` : '')
+    + (PP.vozPendente && Date.now() - PP.vozPendente < 25000 ? '<li class="papo-pendente" aria-live="polite">🎤 Enviando o áudio…</li>' : '');
+  // 10/11 (áudio no iPhone: "nada acontece"): cada atualização da mesa redesenhava a conversa inteira; no iPhone, o botão
+  // trocado no meio do toque não recebe o clique. Agora a lista só é refeita quando o conteúdo muda.
+  const mudou = html !== PP.listaHTML || !l.firstChild;
+  if (mudou) { l.innerHTML = html; PP.listaHTML = html; }
+  if (mudou && (embaixo || !PP.desenhou)) l.scrollTop = l.scrollHeight;
   PP.desenhou = true; PP.vistos = new Set(lista.map(it => it.n));
+  if (mudou) {
   $$('#papoLista .papo-item:not(.eu)').forEach(li => li.addEventListener('click', e => {
     if (e.target.closest('.papo-acoes') || e.target.closest('[data-voz]')) return;
     const n = Number(li.dataset.n); PP.acao = PP.acao === n ? null : n; PP.denunciar = null; desenharPapo();
   }));
-  $$('#papoLista [data-voz]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); vozTocar(Number(b.dataset.voz)); }));
-  if (PP.vozPendente && Date.now() - PP.vozPendente < 25000) l.insertAdjacentHTML('beforeend', '<li class="papo-pendente" aria-live="polite">🎤 Enviando o áudio…</li>');
+  $$('#papoLista [data-voz]').forEach(b => toqueOuClique(b, () => vozTocar(Number(b.dataset.voz))));
   $$('#papoLista .papo-calar').forEach(b => b.addEventListener('click', () => { PP.calados.add(b.dataset.nome); PP.acao = null; toast(`${b.dataset.nome} silenciado nesta mesa (só para você).`); desenharPapo(); }));
   $$('#papoLista .papo-ouvir').forEach(b => b.addEventListener('click', () => { PP.calados.delete(b.dataset.nome); desenharPapo(); }));
   $$('#papoLista .papo-denuncia').forEach(b => b.addEventListener('click', () => {
@@ -11897,15 +11922,19 @@ function desenharPapo() {
     if (mandar({ t: 'papoDenuncia', n })) track('papo-denuncia');
     PP.denunciar = null; PP.acao = null; desenharPapo();
   }));
+  }   // 10/11: os toques só são ligados quando a lista é refeita
   // o que dá para mandar
   $('#papoFrases').hidden = !gente;
   $('#papoForm').hidden = !escreve || !!GR.rec || !!GR.blob;
   const mic = $('#papoMic'), vozOk = !!(v && v.papo && v.papo.vozLigada) && !!window.MediaRecorder;   // 10/11
   mic.hidden = !escreve || !vozOk;
   const trava = !(v && v.papo && v.papo.voz);
-  mic.classList.toggle('trava', trava);
-  mic.innerHTML = PAPO_MIC + (trava ? seloEstrela() : '');
-  mic.setAttribute('aria-label', trava ? 'Áudio no papo: para os sócios da Calçada' : 'Gravar um áudio de até 10 segundos');
+  if (mic.dataset.trava !== String(trava)) {   // 10/11: só troca quando muda (iPhone)
+    mic.dataset.trava = String(trava);
+    mic.classList.toggle('trava', trava);
+    mic.innerHTML = PAPO_MIC + (trava ? seloEstrela() : '');
+    mic.setAttribute('aria-label', trava ? 'Áudio no papo: para os sócios da Calçada' : 'Gravar um áudio de até 10 segundos');
+  }
   $('#papoGrava').hidden = !(GR.rec || GR.blob);
   papoConta();
   // 03/11 (pedido do dono: o topo do papo como uma barra fosca): embaixo do título, quem está na mesa e o número dela
@@ -11967,33 +11996,48 @@ function vozBolha(it) {
 }
 async function vozGravar() {
   const v = papoVista();
+  vozLog('toque', (v && v.papo ? (v.papo.voz ? 'pode' : 'trava') : 'sem-papo') + (GR.rec ? ' gravando' : '') + (GR.blob ? ' pronto' : '') + (GR.abrindo ? ' abrindo' : ''));
   if (!v || !v.papo || !v.papo.voz) {
     toast(PAPO_NAO['voz-socio']); track('papo-voz-trava');
     const bp = $('#papoPlano'); if (bp && typeof pagamentosAtivos === 'function' && pagamentosAtivos()) bp.hidden = false;
     return;
   }
-  if (GR.rec || GR.blob) return;
+  if (GR.rec || GR.blob || GR.abrindo) return;
   if (Date.now() - (PP.vozEm || 0) < 10000) { toast(PAPO_NAO['voz-rapido']); return; }
   const tipo = vozTipo();
   if (tipo === null || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { toast('Este celular não grava áudio por aqui. Atualize o sistema ou use o texto.'); return; }
   let st;
-  try { st = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); }
-  catch (e) { toast(e && e.name === 'NotAllowedError' ? 'Libere o microfone para o Dominó Manauara nos ajustes do celular e tente de novo.' : 'Não deu para usar o microfone agora.'); return; }
+  GR.abrindo = true;
+  const avisoT = setTimeout(() => { if (GR.abrindo) toast('Liberando o microfone… Se o celular perguntar, toque em Permitir.'); }, 700);
+  try {
+    st = await Promise.race([
+      navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }),
+      new Promise((_, nao) => setTimeout(() => nao(Object.assign(new Error('prazo'), { name: 'Prazo' })), 15000))
+    ]);
+  } catch (e) {
+    GR.abrindo = false; clearTimeout(avisoT); track('papo-voz-erro-' + String((e && e.name) || 'x').toLowerCase()); vozLog('microfone', ((e && e.name) || '') + ': ' + ((e && e.message) || ''));
+    toast(e && e.name === 'NotAllowedError' ? 'Libere o microfone: no iPhone, Ajustes › Apps › Safari › Microfone (ou toque em Permitir quando o app pedir).'
+      : e && e.name === 'Prazo' ? 'O celular não liberou o microfone. Feche e abra o app e tente de novo.' : 'Não deu para usar o microfone agora.');
+    return;
+  }
+  GR.abrindo = false; clearTimeout(avisoT); vozLog('microfone', 'ok');
   let rec;
   try { rec = new MediaRecorder(st, Object.assign({ audioBitsPerSecond: 32000 }, tipo ? { mimeType: tipo } : {})); }
-  catch (e) { try { rec = new MediaRecorder(st); } catch (e2) { st.getTracks().forEach(t => t.stop()); toast('Não deu para gravar áudio neste celular.'); return; } }
+  catch (e) { try { rec = new MediaRecorder(st); } catch (e2) { st.getTracks().forEach(t => t.stop()); vozLog('gravador', (e2 && e2.name) + ': ' + (e2 && e2.message)); toast('Não deu para gravar áudio neste celular.'); return; } }
   const partes = [];
   GR = { rec, stream: st, partes, t0: Date.now(), ms: 0, timer: null, blob: null, enviar: false, tipo: rec.mimeType || tipo || 'audio/mp4' };
   rec.ondataavailable = e => { if (e.data && e.data.size) partes.push(e.data); };
+  rec.onerror = e => vozLog('erro-gravador', (e && e.error && (e.error.name + ': ' + e.error.message)) || 'erro');
   rec.onstop = () => {
     try { GR.stream.getTracks().forEach(t => t.stop()); } catch (e) {}
     if (GR.rec !== rec) return;   // cancelado
     GR.ms = Math.min(VOZ_MAX, Date.now() - GR.t0); GR.rec = null; clearInterval(GR.timer);
     GR.blob = new Blob(partes, { type: GR.tipo });
+    vozLog('gravou', GR.tipo + ' ' + GR.blob.size + 'B ' + GR.ms + 'ms');
     $('#papoGrava').classList.add('parou');
     if (GR.enviar) vozMandar(); else desenharPapo();
   };
-  try { rec.start(); } catch (e) { st.getTracks().forEach(t => t.stop()); GR = { rec: null }; toast('Não deu para gravar agora.'); return; }
+  try { rec.start(); } catch (e) { st.getTracks().forEach(t => t.stop()); GR = { rec: null }; vozLog('comecar', (e && e.name) + ': ' + (e && e.message)); toast('Não deu para gravar agora.'); return; }
   $('#papoGrava').classList.remove('parou');
   GR.timer = setInterval(() => {
     const ms = Date.now() - GR.t0;
@@ -12020,7 +12064,8 @@ async function vozMandar() {
   if (!blob || ms < VOZ_MIN || blob.size < 300) { toast(PAPO_NAO['voz-curto']); desenharPapo(); return; }
   let dados; try { dados = await vozB64(blob); } catch (e) { toast(PAPO_NAO['voz-falhou']); desenharPapo(); return; }
   if (dados.length > 255000) { toast(PAPO_NAO['voz-grande']); desenharPapo(); return; }
-  if (!mandar({ t: 'papoVoz', dados, tipo, ms })) { desenharPapo(); return; }
+  if (!mandar({ t: 'papoVoz', dados, tipo, ms })) { vozLog('mandar', 'sem conexão'); desenharPapo(); return; }
+  vozLog('mandou', tipo + ' ' + dados.length);
   PP.vozEm = Date.now(); PP.vozPendente = Date.now();
   setTimeout(() => { if (PP.vozPendente && Date.now() - PP.vozPendente >= 24000) { PP.vozPendente = 0; desenharPapo(); } }, 25000);
   if (PP.contouVoz !== ON.cod) { PP.contouVoz = ON.cod; track('papo-voz'); }
@@ -12122,7 +12167,7 @@ receberOnline = function (m) {
     return;
   }
   if (m.t === 'papoNao') {
-    if (m.voz) { PP.vozPendente = 0; desenharPapo(); if (m.motivo === 'voz-socio') { const bp = $('#papoPlano'); if (bp && typeof pagamentosAtivos === 'function' && pagamentosAtivos()) bp.hidden = false; } }
+    if (m.voz) { PP.vozPendente = 0; vozLog('recusado', m.motivo); desenharPapo(); if (m.motivo === 'voz-socio') { const bp = $('#papoPlano'); if (bp && typeof pagamentosAtivos === 'function' && pagamentosAtivos()) bp.hidden = false; } }
     const t = (m.voz && PAPO_NAO_VOZ[m.motivo]) || PAPO_NAO[m.motivo]; if (t) toast(t); return;
   }
   if (m.t === 'papoVoz') { vozChegou(m); return; }   // 10/11
@@ -13680,7 +13725,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.51.8-8c102ddb';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.51.9-33b272d6';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
