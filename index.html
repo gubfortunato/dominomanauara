@@ -796,6 +796,7 @@ body{touch-action:manipulation}
 .kicker{font-size:14px}
 .note{font-size:15.5px;line-height:1.5}
 .lead{font-size:18.5px}
+#scrHome>.lead{font-size:21.5px;line-height:1.35}   /* 10/11 (pedido do dono): a saudação "Fala, ..." maior */
 .field label,.flabel{font-size:16px}
 .field small{font-size:14.5px}
 .field select{font-size:18px}
@@ -3796,6 +3797,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.51.14', data: '10/11/2026', itens: ['Tela inicial: a saudação "Fala, ..." ficou maior.'] },
   { v: '3.51.13', data: '10/11/2026', itens: ['A mesa Branca saiu do jogo. Quem estava com ela volta para a de Madeira.'] },
   { v: '3.51.12', data: '10/11/2026', itens: ['Mesa Amazonas: a faixa branca e vermelha fica parada, mais grossa e mais transparente.'] },
   { v: '3.51.11', data: '10/11/2026', itens: ['Mesas novas de sócio: Black Piano, Branca e Amazonas (no azul do Amazonas, com as 62 estrelas dos municípios e uma faixa larga, branca e vermelha, ondulando).', 'Arara no ombro: agora é a mesma arara da mesa Arara-Vermelha.', 'As cores das mesas não mudam mais de tom no meio do jogo, e o desenho da mesa cheia aparece com a cor certa na sala.', 'Áudio no papo: o ▶ toca no primeiro toque (o áudio já vem para o celular quando chega).'] },
@@ -13794,7 +13796,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.51.13-2c587da9';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.51.14-659595e4';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
