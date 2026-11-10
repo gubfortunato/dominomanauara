@@ -2109,27 +2109,6 @@ html[data-mesa="pordosol"] .table.wood{--wood-1:#3a0703;--wood-2:#3a0703;--wood-
 @keyframes abaVivoPulsa{0%{box-shadow:0 0 0 2px var(--bg-2),0 0 0 2px rgba(229,72,77,.6)}70%{box-shadow:0 0 0 2px var(--bg-2),0 0 0 8px rgba(229,72,77,0)}100%{box-shadow:0 0 0 2px var(--bg-2),0 0 0 2px rgba(229,72,77,0)}}
 @media (prefers-reduced-motion:reduce){.aba-vivo.pulsa{animation:none}}
 body.com-abas{--panel-pb:100px}
-/* 10/11 (pedido do dono): no fundo das abas, riscos de esboço de Manaus — Jogar: Teatro Amazonas; Calçada: Ponte Rio Negro;
-   Perfil: uma arara; Mais: Arena da Amazônia. Desenhos originais em arquivos à parte (guardados no celular pelo sw.js). Ficam no
-   alto, atrás do título (os cartões cobrem o resto da tela), e rolam junto com a página. */
-#scrHome,#scrCalcada,#scrProfile,#scrMais{background-repeat:no-repeat;background-size:min(100%, 520px) auto;background-attachment:local;
-  background-position:center top 18px}
-#scrProfile{background-size:min(80%, 420px) auto;background-position:right -40px top 6px}   /* a arara no canto, ao lado do título */
-#scrMais{background-position:center top -64px}   /* a Arena sobe: o cesto aparece atrás do título */
-#scrHome{background-image:url(esbocos/teatro-escuro.svg)}
-#scrCalcada{background-image:url(esbocos/ponte-escuro.svg)}
-#scrProfile{background-image:url(esbocos/arara-escuro.svg)}
-#scrMais{background-image:url(esbocos/arena-escuro.svg)}
-@media (prefers-color-scheme: light){
-  :root:not([data-theme="dark"]) #scrHome{background-image:url(esbocos/teatro-claro.svg)}
-  :root:not([data-theme="dark"]) #scrCalcada{background-image:url(esbocos/ponte-claro.svg)}
-  :root:not([data-theme="dark"]) #scrProfile{background-image:url(esbocos/arara-claro.svg)}
-  :root:not([data-theme="dark"]) #scrMais{background-image:url(esbocos/arena-claro.svg)}
-}
-:root[data-theme="light"] #scrHome{background-image:url(esbocos/teatro-claro.svg)}
-:root[data-theme="light"] #scrCalcada{background-image:url(esbocos/ponte-claro.svg)}
-:root[data-theme="light"] #scrProfile{background-image:url(esbocos/arara-claro.svg)}
-:root[data-theme="light"] #scrMais{background-image:url(esbocos/arena-claro.svg)}
 body.com-abas #profileBack{display:none}
 .so-mais{display:none!important}
 @media (orientation: landscape) and (max-height: 560px){
@@ -2531,9 +2510,6 @@ body.papo-aberto{overflow:hidden}
 .pr-preco b small{font-family:inherit;font-size:18px;color:#f3d9a6;margin-left:2px}
 .pr-preco span:last-child{font-size:14.5px;color:#f0dcb6}
 .pr-lista{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:10px}
-.at-k{margin:6px 0 2px}
-.at-obrigado{margin:6px 0 0;font-size:16px;line-height:1.45}
-.at-nota{margin:2px 0 6px}
 .pr-lista li{display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:start;font-size:16.5px;line-height:1.35}
 .pr-lista svg{width:26px;height:26px;padding:4px;border-radius:50%;background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);box-sizing:border-box}
 .pr-nota{text-align:center;margin:4px 0 12px}
@@ -3820,7 +3796,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.52', data: '10/11/2026', itens: ['Manaus em traço de esboço no fundo das abas: Teatro Amazonas (Jogar), Ponte Rio Negro (Calçada), arara (Perfil) e Arena da Amazônia (Mais).', 'Recado da atualização, uma vez, ao abrir o app: correções, novidades e obrigado pelas opiniões.', 'A mesa Branca saiu do jogo. Quem estava com ela volta para a de Madeira.'] },
+  { v: '3.51.13', data: '10/11/2026', itens: ['A mesa Branca saiu do jogo. Quem estava com ela volta para a de Madeira.'] },
   { v: '3.51.12', data: '10/11/2026', itens: ['Mesa Amazonas: a faixa branca e vermelha fica parada, mais grossa e mais transparente.'] },
   { v: '3.51.11', data: '10/11/2026', itens: ['Mesas novas de sócio: Black Piano, Branca e Amazonas (no azul do Amazonas, com as 62 estrelas dos municípios e uma faixa larga, branca e vermelha, ondulando).', 'Arara no ombro: agora é a mesma arara da mesa Arara-Vermelha.', 'As cores das mesas não mudam mais de tom no meio do jogo, e o desenho da mesa cheia aparece com a cor certa na sala.', 'Áudio no papo: o ▶ toca no primeiro toque (o áudio já vem para o celular quando chega).'] },
   { v: '3.51.10', data: '10/11/2026', itens: ['Áudio no papo no iPhone: o microfone grava mesmo com os sons do jogo ligados, e o áudio toca também com o celular no silencioso.'] },
@@ -13177,42 +13153,6 @@ $('#back').addEventListener('click', e => { if (sheetKind === 'promo' && e.targe
 const renderHomePromo = renderHome;
 renderHome = function () { renderHomePromo.apply(this, arguments); setTimeout(() => { try { avisoPromoSocio(); } catch (e) {} }, 2200); };
 
-// ===== 10/11 (pedido do dono): recado da atualização =====
-// Uma vez por aparelho, na próxima vez que abrir o app (no início), só para quem já tinha o app (quem acabou de instalar não
-// vê). Fala das correções sem detalhes, das novidades principais e agradece quem mandou opinião. Espera a folha da promoção.
-const ATUALIZA_AVISO = 'dmz-aviso-atualizacao-3.52';
-function avisoAtualizacao() {
-  if (store.get(ATUALIZA_AVISO)) return;
-  if (!window.__versaoAntes) { store.set(ATUALIZA_AVISO, 'novo'); return; }   // instalou agora: não tem o que "atualizou"
-  if (sheetKind || screen !== 'home' || !profile) return;
-  store.set(ATUALIZA_AVISO, String(Date.now()));
-  const nome = profile && profile.name ? esc(profile.name) : '';
-  const socio = temPlano(), podeSer = !socio && !menorDeIdade() && typeof pagamentosAtivos === 'function' && pagamentosAtivos();
-  const item = (b, t) => `<li>${CHECK}<span><b>${b}</b> ${t}</span></li>`;
-  openSheet('atualiza', `<p class="eyebrow">Atualização</p>
-    <h2 id="sheetTitle">${nome ? `${nome}, a` : 'A'} calçada está de cara nova!</h2>
-    <p class="pr-lead">Atualizamos o Dominó Manauara: corrigimos os problemas que vocês contaram e o jogo ficou mais estável.</p>
-    <p class="eyebrow at-k">O que tem de novo</p>
-    <ul class="pr-lista">
-      ${item('Áudio no papo de mesa:', 'os sócios mandam mensagens de voz de até 10 segundos nas partidas com os amigos.')}
-      ${item('Carteirinha de sócio', 'com a sua foto, no Perfil e no Mais.')}
-      ${item('Estrela e coração dourados', 'para os sócios.')}
-      ${item('Mesas novas de sócio:', 'Black Piano e Amazonas, com as 62 estrelas dos municípios.')}
-      ${item('Notificações:', 'limpe todas de uma vez ou uma por uma.')}
-      ${item('Manaus no fundo das telas:', 'Teatro Amazonas, Ponte Rio Negro, arara e Arena da Amazônia, em traço de esboço.')}
-    </ul>
-    <p class="at-obrigado">Obrigado a todo mundo que mandou ideia, elogio e aviso de problema. É assim que a calçada fica cada vez melhor. Continue falando com a gente pelo <b>Fale com a gente</b>, no Mais.</p>
-    ${socio ? '<p class="note at-nota">E obrigado por ser sócio: é você que mantém a calçada viva!</p>'
-      : podeSer ? '<p class="note at-nota">Seja Sócio da Calçada e aproveite tudo isso: partidas sem limite, todas as mesas, áudio no papo e o selo ★.</p>' : ''}
-    <div class="pr-acoes">${podeSer ? '<button type="button" class="primary" id="atSocio" style="width:100%">Quero ser sócio</button>' : ''}
-      <button type="button" class="${podeSer ? 'secondary' : 'primary'}" id="atFechar" style="width:100%${podeSer ? ';margin-top:8px' : ''}">Bora jogar</button></div>`);
-  track('atualizacao-aviso');
-  $('#atFechar').addEventListener('click', () => { track('atualizacao-fechou'); closeSheet(); });
-  const sb = $('#atSocio'); if (sb) sb.addEventListener('click', () => { track('atualizacao-socio'); closeSheet(); abrirApoio('home', 'plano'); });
-}
-const renderHomeAtualiza = renderHome;
-renderHome = function () { renderHomeAtualiza.apply(this, arguments); setTimeout(() => { try { avisoAtualizacao(); } catch (e) {} }, 2700); };
-
 
 // ---- Desenho das peças ----
 function tileSVG(p, cls, shadow) {
@@ -13854,7 +13794,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.52-d4b7b954';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.51.13-2c587da9';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -14002,7 +13942,6 @@ recarregar = function (destino) { if (novaVersao && tentativasVersao(novaVersao)
 $$('.appver').forEach(el => { el.textContent = APP_VERSION; });
 (function () {
   const antes = store.get('dmz-versao');
-  window.__versaoAntes = antes || null;   // 10/11: o recado da atualização só aparece para quem já tinha o app
   // 3.40 (pedido do dono): o público não precisa saber das atualizações; o aviso e a lista do que mudou ficam só para o administrador
   if (antes && antes !== APP_VERSION) setTimeout(() => { if (souAdmin()) toast(`App atualizado para a versão ${APP_VERSION}. Para ver o que mudou, toque em "Versão", no rodapé do Mais.`); }, 900);
   store.set('dmz-versao', APP_VERSION);
