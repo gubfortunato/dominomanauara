@@ -395,15 +395,35 @@ export class Mesa {
 
   // Selo na mesa: ★ para quem tem o plano, ♥ / ♥♥ / ♥♥♥ para quem doou
   async apoiador(id) {
+    // 10/11 (sócio barrado como se fosse grátis): o plano é conferido com uma segunda tentativa; se o banco falhar nas
+    // duas, a resposta é "não sei" (planoIncerto) e ninguém é barrado nem perde o selo por isso
+    let p = null, incerto = true;
+    for (let t = 0; t < 2 && incerto; t++) { try { p = await this.env.DB.prepare('SELECT ate FROM planos WHERE aparelho = ?').bind(id).first(); incerto = false; } catch (e) {} }
     try {
-      const p = await this.env.DB.prepare('SELECT ate FROM planos WHERE aparelho = ?').bind(id).first();
       const d = await this.env.DB.prepare("SELECT COALESCE(SUM(valor), 0) AS t FROM pedidos WHERE aparelho = ? AND status = 'pago'").bind(id).first();
       let foto = null; try { foto = await fotoPublica(this.env, id); } catch (e) {}
       let turma = null; try { turma = await nomeDaTurma(this.env, id); } catch (e) {}
       let ct = null; try { ct = await cortesiaDe(this.env, id); } catch (e) {}
       let rei = false; try { const k = await reiDaSemana(this.env); rei = !!(k && k.aparelho === id); } catch (e) {}   // 3.37: coroa do Rei da Calçada
-      return { apoiador: !!(p && p.ate > Date.now()), doador: Math.max(nivelDoador((d && d.t) || 0), (ct && ct.nivel) || 0), foto, turma, rei };
-    } catch (e) { return { apoiador: false, doador: 0, foto: null, turma: null, rei: false }; }
+      return { apoiador: !!(p && p.ate > Date.now()), planoIncerto: incerto, doador: Math.max(nivelDoador((d && d.t) || 0), (ct && ct.nivel) || 0), foto, turma, rei };
+    } catch (e) { return { apoiador: !!(p && p.ate > Date.now()), planoIncerto: incerto, doador: 0, foto: null, turma: null, rei: false }; }
+  }
+  // 10/11: confere no banco, de novo, quem está na mesa sem o selo de sócio (no começo e no fim de cada partida, antes de
+  // contar o limite ou tirar alguém da mesa). Quem tem plano valendo vira sócio na hora. Devolve false se o banco falhou.
+  async conferirSocios() {
+    const m = this.m; if (!m || !limitesValem(this.env)) return true;
+    const gente = m.cad.concat(m.fila || []).filter(c => c && !c.bot && c.id && !c.apoiador);
+    if (!gente.length) return true;
+    const ids = [...new Set(gente.map(c => c.id))];
+    for (let t = 0; t < 2; t++) {
+      try {
+        const { results } = await this.env.DB.prepare(`SELECT aparelho FROM planos WHERE ate > ? AND aparelho IN (${ids.map(() => '?').join(', ')})`).bind(Date.now(), ...ids).all();
+        const ok = new Set((results || []).map(r => r.aparelho));
+        for (const c of gente) if (ok.has(c.id)) { c.apoiador = true; c.uso = null; c.planoIncerto = false; }
+        return true;
+      } catch (e) {}
+    }
+    return false;
   }
   async entrar(ws, att, msg) {
     const m = this.m;
@@ -418,7 +438,7 @@ export class Mesa {
     if (!jaEstava && exigeApp(this.env) && !(await appAberto(this.env, quem.id))) { await anotarRitmo(this.env, quem.id, { semApp: 1 }); return this.recusar(ws, 'app'); }
     Object.assign(quem, await this.apoiador(quem.id));
     // planos (28/10; 03/11): sem plano, 1 partida por dia nas mesas com os amigos (mesmo convidado; até 3 na mesa de um sócio) e 3 na mesa rápida
-    if (limitesValem(this.env) && !quem.apoiador) {
+    if (limitesValem(this.env) && !quem.apoiador && !quem.planoIncerto) {
       quem.uso = await usoDoDia(this.env, quem.id);
       const antes = m.cad.concat(m.fila || []).find(c => c && c.id === quem.id);
       if (antes && antes.uso && antes.uso.dia === quem.uso.dia)
@@ -434,7 +454,7 @@ export class Mesa {
     const f = (m.fila || []).findIndex(c => c.id === quem.id);
     if (p < 0 && f >= 0) {
       // já estava na fila (voltou): continua esperando a vez
-      Object.assign(m.fila[f], { apoiador: quem.apoiador, doador: quem.doador, foto: quem.foto, turma: quem.turma, nv: quem.nv, rei: quem.rei, uso: quem.uso || m.fila[f].uso, rede: quem.rede || m.fila[f].rede });
+      Object.assign(m.fila[f], { apoiador: quem.planoIncerto ? m.fila[f].apoiador : quem.apoiador, doador: quem.doador, foto: quem.foto, turma: quem.turma, nv: quem.nv, rei: quem.rei, uso: quem.uso || m.fila[f].uso, rede: quem.rede || m.fila[f].rede });
       att.id = quem.id; ws.serializeAttachment(att);
       m.ultimo = Date.now(); await this.salvar(); this.espalhar(); this.mandarPapo(ws, att);
       return;
@@ -443,7 +463,7 @@ export class Mesa {
       // voltou (ou abriu em outro aparelho): retoma a cadeira; se tinha saído, volta a jogar
       const c = m.cad[p];
       if (m.fase === 'espera') { c.nome = quem.nome; c.av = quem.av; c.bairro = quem.bairro; }
-      c.apoiador = quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv; c.menor = quem.menor; c.rei = quem.rei; c.apelidoRuim = quem.apelidoRuim;
+      c.apoiador = quem.planoIncerto ? c.apoiador : quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv; c.menor = quem.menor; c.rei = quem.rei; c.apelidoRuim = quem.apelidoRuim;   // 10/11: falha do banco não tira o selo
       if (quem.uso) c.uso = quem.uso;
       if (quem.rede) c.rede = quem.rede;
       if (c.saiu) { c.saiu = false; c.bot = false; }
@@ -599,6 +619,7 @@ export class Mesa {
     const m = this.m, G = m.G, r = G && G.result;
     if (!m.publica || !G || G.phase !== 'handEnd' || !r || r.matchWinner == null || r.limite || !limitesValem(this.env)) return;
     r.limite = true;
+    if (!(await this.conferirSocios())) return;   // 10/11: banco fora do ar: não conta (ninguém sai por engano)
     const dia = diaBR();
     for (const c of m.cad) {
       if (!c || c.bot || c.saiu || !c.id || c.apoiador) continue;
@@ -723,6 +744,8 @@ export class Mesa {
   async comecarAmigos(ws) {
     const m = this.m;
     if (m.fase !== 'espera') return;
+    await this.conferirSocios();   // 10/11
+    if (m.fase !== 'espera') return;
     if (!m.publica && this.tirarSemPartida(false)) { await this.salvar(); this.espalhar(); }
     const gente = m.cad.filter(c => c && !c.bot).length, min = this.minAmigos();
     if (gente < min) return this.enviar(ws, { t: 'erro', cod: 'poucos', min });
@@ -730,6 +753,8 @@ export class Mesa {
   }
   async comecar() {
     const m = this.m;
+    if (m.fase !== 'espera') return;
+    await this.conferirSocios();   // 10/11: sócio nunca conta partida grátis
     if (m.fase !== 'espera') return;
     this.sentarRobos();
     m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = !!m.torneio && !m.publica; startHand(m.G); m.robo = null; m.tempos = null; this.inicioDePartida();
@@ -1118,6 +1143,7 @@ export class Mesa {
     // 28/10: o alarme pode acordar antes da hora do lance (para conferir quem ficou sem conexão): o lance espera a hora dele
     if (!m.proximo || agora < (m.turnoEm != null ? m.turnoEm : m.proximo) - 50 || m.fase !== 'jogo') { this.agendar(); return; }
     const G = m.G, p = G.turn, c = m.cad[p], moves = legalMoves(G, p);
+    G.gente = m.cad.map((x, i) => x && !x.bot ? i : -1).filter(i => i >= 0);   // 10/11: o robô não mata a pedra de parceiro que é gente
     if (c.bot) {
       this.marcarRobo(p);
       if (moves.length) applyMove(G, p, botChoose(G, p)); else applyPass(G, p);
@@ -1167,6 +1193,7 @@ export class Mesa {
     await this.contarVivo();
     await this.contarRanking();
     await this.contarPublicas();   // planos (28/10)
+    if (!m.publica && m.G && m.G.phase === 'handEnd' && m.G.result && m.G.result.matchWinner != null) await this.conferirSocios();   // 10/11
     // 3.41: ritmo vai para o banco no fim da partida, ou ao fim da mão para quem já tem 15 jogadas medidas (menos escrita)
     if (m.G && m.G.phase === 'handEnd' && m.ritmo) { const fimPartida = !!(m.G.result && m.G.result.matchWinner != null); for (const id of Object.keys(m.ritmo)) { const x = m.ritmo[id]; if (fimPartida || x.n >= (Number(this.env.RITMO_LOTE) || 15)) { delete m.ritmo[id]; try { await anotarRitmo(this.env, id, x); } catch (e) {} } } }
     if (await this.encerrarSeVazia()) return;
