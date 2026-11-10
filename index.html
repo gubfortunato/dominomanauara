@@ -3797,7 +3797,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.51.11', data: '10/11/2026', itens: ['Mesas novas de sócio: Black Piano, Branca e Amazonas (no azul do Amazonas, com as 62 estrelas dos municípios).'] },
+  { v: '3.51.11', data: '10/11/2026', itens: ['Mesas novas de sócio: Black Piano, Branca e Amazonas (no azul do Amazonas, com as 62 estrelas dos municípios).', 'Áudio no papo: o ▶ toca no primeiro toque (o áudio já vem para o celular quando chega).'] },
   { v: '3.51.10', data: '10/11/2026', itens: ['Áudio no papo no iPhone: o microfone grava mesmo com os sons do jogo ligados, e o áudio toca também com o celular no silencioso.'] },
   { v: '3.51.9', data: '10/11/2026', itens: ['Áudio no papo: o microfone e o ▶ respondem ao toque no iPhone, e aparece um aviso enquanto o celular libera o microfone.'] },
   { v: '3.51.8', data: '10/11/2026', itens: ['Carteira de sócio: o botão embaixo dela não fica mais apagado pela sombra.'] },
@@ -12014,8 +12014,8 @@ function papoEnviar(o) {
 // Toca no microfone, grava até 10 s (para sozinho no tempo), e manda ou cancela. O servidor transforma o áudio em texto,
 // confere com o filtro do papo e só então ele aparece para a mesa, com o texto embaixo. Só sócios mandam; todo mundo que
 // está na mesa ouve (tocando no ▶). Para menor de 18 e em mesa com menor, não aparece (como o texto livre).
-const VOZ_MAX = 10000, VOZ_MIN = 600, VOZ_SILENCIO = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
-const AUD = { el: null, n: null, pedido: null, urls: new Map() };
+const VOZ_MAX = 10000, VOZ_MIN = 600, VOZ_SILENCIO = 'data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';   // 10/11: silêncio de verdade (0,05 s), para destravar o som no iPhone
+const AUD = { el: null, n: null, pedido: null, urls: new Map(), buscando: new Set(), ultN: null, ultT: 0 };
 const vozSeg = ms => '0:' + String(Math.min(59, Math.round((ms || 0) / 1000))).padStart(2, '0');
 function vozTipo() {
   if (!window.MediaRecorder) return null;
@@ -12121,6 +12121,9 @@ function vozEl() {
   return a;
 }
 function vozTocar(n) {
+  // 10/11 ("tem que tocar várias vezes"): o mesmo toque chegava duas vezes (o botão é redesenhado no meio) e o segundo pausava
+  if (AUD.ultN === n && Date.now() - AUD.ultT < 450) return;
+  AUD.ultN = n; AUD.ultT = Date.now();
   const a = vozEl();
   if (AUD.n === n && !a.paused) { a.pause(); AUD.n = null; vozSessaoNormal(); desenharPapo(); return; }
   const u = AUD.urls.get(n);
@@ -12128,10 +12131,20 @@ function vozTocar(n) {
   if (u) { a.src = u; a.play().catch(() => { AUD.n = null; desenharPapo(); }); desenharPapo(); return; }
   try { a.src = VOZ_SILENCIO; a.play().catch(() => {}); } catch (e) {}
   AUD.pedido = n; desenharPapo();
-  if (!mandar({ t: 'papoOuvir', n })) { AUD.pedido = null; AUD.n = null; desenharPapo(); }
+  if (!AUD.buscando.has(n) && !mandar({ t: 'papoOuvir', n })) { AUD.pedido = null; AUD.n = null; desenharPapo(); }
+}
+// 10/11: o áudio já vem para o celular quando chega no papo (até 10 por mesa), para o ▶ tocar na hora, no primeiro toque
+function vozBuscar() {
+  if (!papoNaMesa() || !papoGente()) return;
+  for (const it of PP.itens) {
+    if (!it.au || it.au.foi || AUD.urls.has(it.n) || AUD.buscando.has(it.n)) continue;
+    if (mandar({ t: 'papoOuvir', n: it.n })) AUD.buscando.add(it.n);
+  }
 }
 function vozChegou(m) {
+  AUD.buscando.delete(m.n);
   if (m.sumiu) {
+    if (AUD.pedido !== m.n && !m.rapido) { const it = PP.itens.find(x => x.n === m.n); if (it && it.au) it.au.foi = true; desenharPapo(); return; }   // busca antecipada: só marca
     if (AUD.pedido === m.n) { AUD.pedido = null; AUD.n = null; }
     const it = PP.itens.find(x => x.n === m.n); if (it && it.au && !m.rapido) it.au.foi = true;
     toast(m.rapido ? 'Calma: muitos áudios de uma vez. Espere um pouco.' : 'Esse áudio não está mais disponível.'); desenharPapo(); return;
@@ -12192,8 +12205,8 @@ function papoMeu(it) {
 const receberOnlinePapo = receberOnline;
 receberOnline = function (m) {
   if (m.t === 'papoLista') {
-    if (PP.cod !== ON.cod) { PP.calados = new Set(); PP.nao = 0; }
-    PP.cod = ON.cod; PP.itens = (m.itens || []).slice(-30); desenharPapo(); papoBotoes();
+    if (PP.cod !== ON.cod) { PP.calados = new Set(); PP.nao = 0; AUD.urls = new Map(); AUD.buscando = new Set(); }
+    PP.cod = ON.cod; PP.itens = (m.itens || []).slice(-30); desenharPapo(); papoBotoes(); vozBuscar();
     return;
   }
   if (m.t === 'papo') {
@@ -12202,6 +12215,7 @@ receberOnline = function (m) {
     if (m.eu && m.au) PP.vozPendente = 0;   // 10/11: o seu áudio saiu
     PP.itens.push(m); if (PP.itens.length > 30) PP.itens.splice(0, PP.itens.length - 30);
     papoMostrar(m); papoMeu(m); desenharPapo();
+    if (m.au) vozBuscar();   // 10/11
     return;
   }
   if (m.t === 'papoNao') {
