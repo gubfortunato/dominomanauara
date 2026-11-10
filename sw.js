@@ -1,6 +1,6 @@
 // Dominó Manauara: guarda o jogo no celular para abrir rápido e funcionar sem internet.
 // Ao publicar uma versão nova, troque o número abaixo para os celulares baixarem tudo de novo.
-const CACHE = 'dominomanauara-3.51.13-2c587da9';
+const CACHE = 'dominomanauara-3.52-d4b7b954';
 const FILES = [
   './',
   './index.html',
@@ -12,7 +12,15 @@ const FILES = [
   './icons/icon-192-v2.png',
   './icons/icon-512-v2.png',
   './icons/apple-touch-icon-v2.png',
-  './icons/badge-96.png'
+  './icons/badge-96.png',
+  './esbocos/teatro-claro.svg',
+  './esbocos/teatro-escuro.svg',
+  './esbocos/ponte-claro.svg',
+  './esbocos/ponte-escuro.svg',
+  './esbocos/arara-claro.svg',
+  './esbocos/arara-escuro.svg',
+  './esbocos/arena-claro.svg',
+  './esbocos/arena-escuro.svg'
 ];
 
 self.addEventListener('install', e => {
