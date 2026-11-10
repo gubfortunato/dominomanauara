@@ -27,14 +27,20 @@ jobs:
           AGORA=$(($(date +%s) * 1000)); D=86400000
           p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
           NOME="COALESCE((SELECT nome FROM presenca x WHERE x.aparelho = T.aparelho AND x.nome IS NOT NULL), (SELECT nome FROM jogadores_vistos x WHERE x.aparelho = T.aparelho), (SELECT nome FROM ranking x WHERE x.aparelho = T.aparelho ORDER BY atualizado DESC LIMIT 1))"
-          p socios "SELECT T.aparelho, T.ate, T.desde, T.codigo, ${NOME//T./T.} AS nome, (SELECT status FROM assinaturas s WHERE s.aparelho = T.aparelho ORDER BY rowid DESC LIMIT 1) AS assinatura FROM planos T ORDER BY T.desde"
-          p limites_de_socios "SELECT l.dia, l.aparelho, l.mesas, l.partidas, l.publicas, p.ate, p.desde FROM limites l JOIN planos p ON p.aparelho = l.aparelho WHERE l.dia >= '2026-11-05' AND (l.partidas > 0 OR l.publicas > 0 OR l.mesas > 0)"
-          p offline_de_socios "SELECT o.dia, o.aparelho, o.n, p.ate, p.desde FROM offline_uso o JOIN planos p ON p.aparelho = o.aparelho WHERE o.dia >= '2026-11-05'"
-          p rede_de_socios "SELECT r.dia, r.tipo, r.aparelho, r.em, p.ate FROM limites_rede r JOIN planos p ON p.aparelho = r.aparelho"
-          p desafio_de_socios "SELECT d.dia, d.aparelho, d.n FROM desafio_uso d JOIN planos p ON p.aparelho = d.aparelho"
-          p mensagens "SELECT T.id, T.criado_em, T.tipo, T.nome, T.versao, T.aparelho, T.status, substr(T.texto, 1, 300) AS texto, (SELECT ate FROM planos x WHERE x.aparelho = T.aparelho) AS plano_ate FROM mensagens T WHERE T.criado_em > $AGORA - 12 * $D ORDER BY T.criado_em DESC LIMIT 120"
-          p pedidos "SELECT T.id, T.aparelho, T.produto, T.valor, T.status, T.criado_em, T.pago_em, (SELECT ate FROM planos x WHERE x.aparelho = T.aparelho) AS plano_ate, ${NOME} AS nome FROM pedidos T WHERE T.criado_em > $AGORA - 20 * $D ORDER BY T.criado_em DESC LIMIT 300"
-          p cortesias "SELECT T.aparelho, T.nivel, T.desde, ${NOME} AS nome FROM cortesias T"
+          DESDE=$(( $(date -u -d '2026-10-31T00:00:00Z' +%s) * 1000 ))
+          p limites "SELECT dia, aparelho, mesas, partidas, publicas FROM limites WHERE dia >= '2026-11-05'"
+          p limites_rede "SELECT dia, marca, tipo, aparelho, nome, em FROM limites_rede"
+          p offline "SELECT dia, aparelho, n FROM offline_uso WHERE dia >= '2026-11-05'"
+          p desafios "SELECT dia, aparelho, n FROM desafio_uso WHERE dia >= '2026-11-05'"
+          p aparelhos "SELECT aparelho, desde FROM aparelhos WHERE desde >= $DESDE"
+          p jogadores "SELECT aparelho, primeiro, ultimo, partidas FROM jogadores WHERE ultimo >= $DESDE"
+          p partidas_dia "SELECT dia, aparelho, n FROM partidas_dia WHERE dia >= '2026-11-01'"
+          p nomes_vistos "SELECT aparelho, nome, av, visto_em FROM jogadores_vistos WHERE visto_em >= $DESDE"
+          p nomes_presenca "SELECT aparelho, nome, av, visto_em FROM presenca WHERE nome IS NOT NULL"
+          p nomes_ranking "SELECT aparelho, nome, av, MAX(atualizado) AS em FROM ranking WHERE atualizado >= $DESDE GROUP BY aparelho"
+          p planos "SELECT aparelho, desde, ate FROM planos"
+          p acessos_dia "SELECT dia, COUNT(DISTINCT aparelho) AS n FROM acessos_hora GROUP BY dia ORDER BY dia"
+          p mesas_criadas "SELECT marca, criado_em FROM mesas_criadas WHERE criado_em >= $DESDE"
           rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
