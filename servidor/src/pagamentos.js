@@ -287,6 +287,13 @@ export async function trazerPlano(req, env, origin, h) {
       await env.DB.prepare('UPDATE fotos SET aparelho = ? WHERE aparelho = ?').bind(b.aparelho, p.aparelho).run();
     }
     try { await env.DB.prepare('UPDATE OR IGNORE presentes SET aparelho = ? WHERE aparelho = ?').bind(b.aparelho, p.aparelho).run(); } catch (e) {}
+    // 10/11 (pedido do dono): a cortesia também vai junto (estrela e coração de sócio no aparelho novo, como quem pagou)
+    try {
+      if (await env.DB.prepare('SELECT 1 FROM cortesias WHERE aparelho = ?').bind(p.aparelho).first()) {
+        await env.DB.prepare('DELETE FROM cortesias WHERE aparelho = ?').bind(b.aparelho).run();
+        await env.DB.prepare('UPDATE cortesias SET aparelho = ? WHERE aparelho = ?').bind(b.aparelho, p.aparelho).run();
+      }
+    } catch (e) {}
     // 28/10: e a assinatura (a renovação do mês continua caindo no aparelho novo)
     await env.DB.prepare('UPDATE assinaturas SET aparelho = ? WHERE aparelho = ?').bind(b.aparelho, p.aparelho).run();
     // 3.39: e o progresso do jogo guardado
