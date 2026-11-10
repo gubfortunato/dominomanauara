@@ -2500,6 +2500,11 @@ body.papo-aberto{overflow:hidden}
 .cart svg{display:block;width:100%;height:auto;border-radius:4.2%/6.6%;box-shadow:0 18px 34px -16px rgba(0,0,0,.7)}
 .cart-share{width:100%}
 .cart-img{display:block;width:100%;height:auto;border-radius:14px;margin:6px 0 4px}
+.cart-perfil{display:grid;gap:6px;margin:2px 0 6px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.cart-perfil[hidden]{display:none}
+.cart-perfil:active .cart svg{transform:scale(.985)}
+.cart-dica{text-align:center;font-size:14px;color:var(--muted)}
+#sheet .cart{margin:4px 0 10px}
 /* 03/11 (pedido do dono: o topo do papo mais suave): sem barra nem caixa. O título, quem está na mesa e o número dela no
    mesmo tom do painel; silenciar e fechar sem fundo; a conversa some num degradê suave antes de chegar no topo. */
 .papo-topo{margin:0 0 4px;gap:4px;padding-right:0}
@@ -2632,6 +2637,7 @@ body.papo-aberto{overflow:hidden}
   <section class="screen panel" id="scrProfile" hidden>
     <button type="button" class="backbtn" id="profileBack">← Voltar</button>
     <div><p class="kicker">Seu perfil</p><h2 class="brand" style="font-size:30px">Quem vai pra mesa?</h2></div>
+    <div class="cart-perfil" id="perfilCart" role="button" tabindex="0" aria-label="Ver e compartilhar a sua carteira de sócio" hidden></div>
     <div class="field">
       <label for="nameInput">Seu nome ou apelido</label>
       <input id="nameInput" type="text" maxlength="14" autocomplete="nickname" autocapitalize="words" enterkeyhint="done" spellcheck="false" placeholder="Ex.: Zé do Bairro">
@@ -3739,6 +3745,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.51.6', data: '10/11/2026', itens: ['Carteira de sócio à vista: no alto do Perfil e em Mais › Sua carteira de sócio, pronta para compartilhar.'] },
   { v: '3.51.5', data: '10/11/2026', itens: ['Notificações: botão Limpar e um X em cada uma para apagar.', 'Estrela e coração dos sócios redesenhados, em ouro.'] },
   { v: '3.51.4', data: '10/11/2026', itens: ['Quem já está sentado na mesa sempre consegue voltar para ela, mesmo depois de a internet cair.'] },
   { v: '3.51.3', data: '10/11/2026', itens: ['Mesa com os amigos mais protegida: quem fica tentando adivinhar número de mesa é travado por um tempo, e o papo da turma fica só entre vocês e quem recebeu o número.'] },
@@ -4624,6 +4631,7 @@ function secaoAvatares(filtro, tem, txtTem, txtNao) {
 }
 function renderProfile() {
   $('#profileBack').hidden = !profile || !profile.idade;
+  try { renderPerfilCarteira(); } catch (e) {}   // 10/11: carteira de sócio no alto do Perfil
   $$('#idadeSeg button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.i === draft.idade)));
   // Menor de 18: só avatar, sem foto (proteção do ECA Digital).
   const menor = draft.idade === 'menor';
@@ -7460,7 +7468,7 @@ function carteiraDados() {
   try { img = profile && profile.av === 'foto' && photo ? photo : avatarURI(avatarDe(avBaseDe(profile)) || AVATARS[0]); } catch (e) {}
   return { nome: (profile && profile.name) || 'Sócio', img, numero: s.numero || null, desde: s.desde || null, ate: p.ate };
 }
-function carteiraSVG(d, fontes) {
+function carteiraSVG(d, fontes, sfx) {
   const nome = String(d.nome || 'Sócio'), n = [...nome].length;
   const tam = Math.round(Math.max(40, Math.min(84, 780 / (n * 0.72))));
   const num = d.numero ? String(d.numero).padStart(4, '0') : '–';
@@ -7507,7 +7515,7 @@ function carteiraSVG(d, fontes) {
     <text x="70" y="704" font-weight="500" font-size="22" fill="#a98f70">O dominó da calçada, em qualquer lugar.</text>
     <text x="1130" y="704" font-weight="700" font-size="22" fill="#cbb08a" text-anchor="end">dominomanauara.com.br</text>
   </g>
-</svg>`;
+</svg>`.replace(/\b(cf(?:Fundo|Ouro|Veio|Recorte|Foto))\b/g, '$1' + (sfx || ''));   // 10/11: ids próprios em cada lugar (Perfil, tela do sócio, janela)
 }
 function renderCarteira() {
   const box = $('#cartBox'); if (!box) return;
@@ -7536,8 +7544,8 @@ async function carteiraImagem() {
     return await new Promise(ok => c.toBlob(ok, 'image/png'));
   } finally { URL.revokeObjectURL(url); }
 }
-$('#cartShare').addEventListener('click', async e => {
-  const b = e.currentTarget, rot = b.textContent; b.disabled = true; b.textContent = 'Preparando a imagem…';
+async function compartilharCarteira(b) {
+  const rot = b.textContent; b.disabled = true; b.textContent = 'Preparando a imagem…';
   track('carteira-compartilhar');
   try {
     const blob = await carteiraImagem(); if (!blob) throw new Error('sem-imagem');
@@ -7551,7 +7559,30 @@ $('#cartShare').addEventListener('click', async e => {
     }
   } catch (er) { toast('Não deu para preparar a imagem agora. Tente de novo.'); }
   finally { b.disabled = false; b.textContent = rot; }
-});
+}
+$('#cartShare').addEventListener('click', e => compartilharCarteira(e.currentTarget));
+$('#perfilCart').addEventListener('click', () => abrirCarteira());
+$('#perfilCart').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrirCarteira(); } });
+// 10/11 (pedido do dono: "a carteirinha de sócio ainda não aparece no app"): ela só aparecia dentro da tela do sócio,
+// que o sócio quase não abre. Agora fica no alto do Perfil e em Mais › Sua carteira de sócio, e abre numa janela.
+function abrirCarteira() {
+  const d = carteiraDados();
+  if (!d) { conferirPlano(true).then(() => { if (carteiraDados()) abrirCarteira(); else toast('Não achei a sua carteira agora. Tente de novo com internet.'); }); return; }
+  track('carteira-ver');
+  openSheet('carteira', `<p class="eyebrow">Sócio da Calçada${d.numero ? ` · nº ${d.numero}` : ''}</p><h2 id="sheetTitle">Sua carteira de sócio</h2>
+    <div class="cart">${carteiraSVG(d, '', 'J')}</div>
+    <p class="note">Mostre para a turma: compartilhe no WhatsApp, no Instagram ou salve no celular.</p>
+    <button type="button" class="primary" id="cartShareJ" style="width:100%">Compartilhar a carteira</button>
+    <button type="button" class="secondary" id="cartFechar" style="width:100%;margin-top:8px">Fechar</button>`);
+  $('#cartShareJ').addEventListener('click', e => compartilharCarteira(e.currentTarget));
+  $('#cartFechar').addEventListener('click', closeSheet);
+}
+function renderPerfilCarteira() {
+  const box = $('#perfilCart'); if (!box) return;
+  const d = carteiraDados();
+  box.hidden = !d;
+  if (d) box.innerHTML = `<div class="cart">${carteiraSVG(d, '', 'P')}</div><span class="cart-dica">Toque para ver e compartilhar</span>`;
+}
 // 28/10: o que a tela do sócio mostra de quem renova sozinho: o plano, a próxima cobrança e até quando vale
 function textoRenova(p) {
   const r = p.renova && typeof p.renova === 'object' ? p.renova : { ciclo: 'MONTHLY' };
@@ -10955,6 +10986,7 @@ const ABA_IC = {
   mais: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="ic-c" x="3.5" y="3.5" width="7" height="7" rx="2"/><rect class="ic-c" x="13.5" y="3.5" width="7" height="7" rx="2"/><rect class="ic-c" x="3.5" y="13.5" width="7" height="7" rx="2"/><rect class="ic-c" x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>'
 };
 const MAIS_IC = {
+  carteira: '<svg viewBox="0 0 24 24"><rect x="2.8" y="5.5" width="18.4" height="13" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="8.4" cy="10.8" r="2.1" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 15.7c.6-1.4 1.6-2.1 2.9-2.1s2.3.7 2.9 2.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M13.8 10h4.2M13.8 13.4h2.8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',   // 10/11
   codigo: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12.5" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M6.8 10.2h5M6.8 13.9h3.4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M16.6 9.4l.8 1.7 1.9.2-1.4 1.3.4 1.9-1.7-1-1.7 1 .4-1.9-1.4-1.3 1.9-.2z" fill="currentColor"/></svg>',   // 10/11
   dono: '<svg viewBox="0 0 24 24"><path d="M4 19V10m5.3 9V5m5.4 14v-7M20 19V8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
   // 04/11 (dono): a mesma pedra 1|2 da aba Jogar
@@ -11051,6 +11083,7 @@ function renderMais() {
     { k: 'regras', ic: 'regras', t: 'Regras', s: 'Bucho, garagem, passe e galo, explicados' },
     { k: 'som', ic: 'som', t: 'Som e vibração', s: typeof somRotulo === 'function' ? somRotulo() : '' },   // 03/11
     // 10/11 (pedido do dono: sócios não achavam o código): o código fica aqui, à vista
+    temPlano() && { k: 'carteira', ic: 'carteira', t: 'Sua carteira de sócio', s: (() => { const d = carteiraDados() || {}; return (d.numero ? `Sócio nº ${String(d.numero).padStart(4, '0')} · ` : '') + 'mostre e compartilhe'; })() },   // 10/11
     temPlano() && { k: 'codigo', ic: 'codigo', t: 'Seu código de sócio', s: (() => { const p = planoLocal() || {}, d = carteiraDados() || {}; return (p.codigo ? codigoBonito(p.codigo) : 'Toque para ver') + (d.numero ? ` · Sócio nº ${d.numero}` : ''); })(), destaque: true },
     vis('footApoio') && { k: 'apoio', ic: 'apoio', t: 'Sócio da Calçada', s: temPlano() ? `Seu plano vale até ${dataBR((planoLocal() || {}).ate)}` : 'Mesas com os amigos sem limite e mais' },
     !temPlano() && pagamentosAtivos() && { k: 'trazer', ic: 'codigo', t: 'Já sou sócio em outro aparelho', s: 'Use o seu código para trazer o plano para cá' },
@@ -11100,6 +11133,7 @@ function abasMaisClique(k) {
   else if (k === 'som') abrirSom();
   else if (k === 'apoio') clica('footApoio');
   else if (k === 'codigo') abrirCodigoSocio();
+  else if (k === 'carteira') abrirCarteira();
   else if (k === 'trazer') abrirTrazerPlano();
   else if (k === 'fale') clica('fbCard');
   else if (k === 'chamar') clica('shareApp');
@@ -13420,7 +13454,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.51.5-0426734e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.51.6-a15c3c77';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
