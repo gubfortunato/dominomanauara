@@ -3094,6 +3094,7 @@ body.papo-aberto{overflow:hidden}
     <label class="dn-sw"><input type="checkbox" id="dnTestePag"><span><b>Testar os planos neste celular</b><small>Só você vê os botões. Para os jogadores, continua desligado até ajustarmos o Asaas.</small></span></label>
     <button type="button" class="linkbtn" id="dnKeyTrocar">Tenho o plano Pro do Umami: colar a chave</button>
     <button type="button" class="linkbtn" id="dnVerCarta">Ver a carta de boas-vindas do sócio</button>
+    <button type="button" class="linkbtn" id="dnSenhaTrocar">Trocar a senha da Área do administrador</button>
     <button type="button" class="linkbtn" id="dnSair">Sair da Área do administrador neste aparelho</button>
     <p class="note dn-tela" id="dnTela"></p>
   </section>
@@ -3729,6 +3730,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.51.3', data: '10/11/2026', itens: ['Mesa com os amigos mais protegida: quem fica tentando adivinhar número de mesa é travado por um tempo, e o papo da turma fica só entre vocês e quem recebeu o número.'] },
   { v: '3.51.1', data: '10/11/2026', itens: ['O jogo guarda melhor o código do seu aparelho: apagar só parte dos dados não faz você perder o plano de sócio.'] },
   { v: '3.51', data: '10/11/2026', itens: ['Seu código de sócio agora fica na aba Mais, fácil de copiar. Em outro aparelho, é só tocar em Mais › Já sou sócio em outro aparelho.', 'O robô parceiro não mata mais a sua pedra: ele joga na outra ponta, a não ser para bater ou fazer muito ponto.', 'Sócio não recebe mais aviso de partidas grátis por engano.', 'Na mesa rápida, quando a mesa sorteada é dos sócios, aparece o selo ★ Mesa dos sócios.'] },
   { v: '3.50.4', data: '04/11/2026', itens: ['Sócio trimestral e anual também no Pix: dá para pagar 3 meses ou 1 ano de uma vez, sem renovar, no Pix ou no cartão.'] },
@@ -5033,16 +5035,81 @@ let dnSes = null, dnTimer = null, dnRange = 'hoje', dnSeq = 0;
 
 const b64d = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 function senhaLimpa(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim().replace(/\s+/g, '-'); }
-async function donoAbrir(senha) {
-  const c = CONFIG.dono;
-  if (!c || !window.crypto || !crypto.subtle) return null;
+const b64e = u8 => btoa(String.fromCharCode(...u8));
+// 10/11 (revisão de segurança): a senha pode ser trocada na própria Área do administrador. O cofre (a chave do dono
+// cifrada com a senha) passa a vir do servidor; sem internet, ou antes da primeira troca, vale o que está no código.
+async function donoCofre() {
+  if (CONFIG.api) {
+    try { const r = await fetch(CONFIG.api + '/dono/cofre', { cache: 'no-store' }); const j = await r.json(); if (j && j.cofre && j.cofre.data) return j.cofre; } catch (e) {}
+  }
+  return CONFIG.dono;
+}
+async function cofreChave(senha, salt, it, uso) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(senhaLimpa(senha)), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: it, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, [uso]);
+}
+async function cofreAbrir(c, senha) {
   try {
-    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(senhaLimpa(senha)), 'PBKDF2', false, ['deriveKey']);
-    const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64d(c.salt), iterations: c.it, hash: 'SHA-256' },
-      base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+    const key = await cofreChave(senha, b64d(c.salt), c.it, 'decrypt');
     const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64d(c.iv) }, key, b64d(c.data));
     return JSON.parse(new TextDecoder().decode(pt));
   } catch (e) { return null; }
+}
+async function donoAbrir(senha) {
+  if (!CONFIG.dono || !window.crypto || !crypto.subtle) return null;
+  const c = await donoCofre();
+  return c ? cofreAbrir(c, senha) : null;
+}
+// 10/11: trocar a senha. O celular cria uma chave nova, cifra com a senha nova e manda ao servidor só o cofre e o resumo
+// da chave (a senha nunca sai do aparelho). A chave antiga para de valer na hora, em todos os aparelhos.
+const SENHA_MIN = 14;
+async function sha256hex(t) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+function abrirTrocarSenha() {
+  if (!dono || !dono.admin) { openDonoLogin(true); return; }
+  const campo = (id, rot) => `<input id="${id}" class="dn-pw" type="password" name="${id}" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="${rot}" aria-label="${rot}">`;
+  openSheet('info', `<p class="eyebrow">Área do administrador</p><h2 id="sheetTitle">Trocar a senha</h2>
+    <p>A senha nova vale para entrar em qualquer aparelho. A antiga para de funcionar na hora.</p>
+    <form id="senhaForm" class="dn-form" autocomplete="on">
+      <input type="text" name="username" value="dono" autocomplete="username" hidden>
+      ${campo('senhaNova', 'Senha nova')}
+      ${campo('senhaDeNovo', 'Repita a senha nova')}
+      <p class="note" id="senhaMsg">Use pelo menos ${SENHA_MIN} caracteres (ou 4 palavras soltas) e não use essa senha em outro lugar. O iPhone pode sugerir uma senha forte e guardar nas Senhas.</p>
+      <button type="submit" class="primary" id="senhaGo">Trocar a senha</button>
+    </form>`);
+  setTimeout(() => { const i = $('#senhaNova'); if (i) i.focus(); }, 60);
+  $('#senhaForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const s1 = $('#senhaNova').value, s2 = $('#senhaDeNovo').value, msg = $('#senhaMsg'), btn = $('#senhaGo');
+    const ruim = t => { msg.textContent = t; msg.classList.add('dn-bad'); };
+    const l1 = senhaLimpa(s1);
+    if (l1.length < SENHA_MIN) return ruim(`A senha precisa ter pelo menos ${SENHA_MIN} caracteres.`);
+    if (new Set(l1).size < 6) return ruim('Essa senha repete demais as mesmas letras. Escolha outra.');
+    if (senhaLimpa(s2) !== l1) return ruim('As duas senhas não estão iguais.');
+    btn.disabled = true; btn.textContent = 'Trocando…'; msg.classList.remove('dn-bad'); msg.textContent = 'Isso leva alguns segundos.';
+    try {
+      const nova = b64e(crypto.getRandomValues(new Uint8Array(32))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), it = 600000;
+      const conteudo = Object.assign({ admin: nova }, dono.share ? { share: dono.share } : {});
+      const key = await cofreChave(s1, salt, it, 'encrypt');
+      const data = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(conteudo))));
+      const cofre = { it, salt: b64e(salt), iv: b64e(iv), data: b64e(data) };
+      const teste = await cofreAbrir(cofre, s2);   // confere o cofre antes de mandar
+      if (!teste || teste.admin !== nova) throw new Error('conferir');
+      const r = await fetch(CONFIG.api + '/dono/cofre', { method: 'POST', cache: 'no-store', headers: { 'content-type': 'application/json', 'x-admin-key': dono.admin },
+        body: JSON.stringify({ hash: await sha256hex(nova), cofre }) });
+      if (r.status === 401) { dono.admin = null; donoSalvar(); closeSheet(); toast('A chave deste aparelho não vale mais. Entre com a senha e tente de novo.'); renderDono(); return; }
+      if (!r.ok) throw new Error('http-' + r.status);
+      dono.admin = nova; donoSalvar();
+      let ok = false;
+      try { ok = (await fetch(CONFIG.api + '/dono/avisos', { cache: 'no-store', headers: { 'x-admin-key': nova } })).ok; } catch (x) {}
+      closeSheet();
+      toast(ok ? 'Senha trocada. Nos outros aparelhos, entre de novo com a senha nova.' : 'Senha trocada, mas não consegui conferir agora. Se a área pedir, entre com a senha nova.');
+      renderDono();
+    } catch (er) {
+      btn.disabled = false; btn.textContent = 'Trocar a senha';
+      ruim(navigator.onLine === false ? 'Sem internet agora. A senha não mudou.' : 'Não deu para trocar agora. A senha não mudou. Tente de novo.');
+    }
+  });
 }
 function donoSalvar() { if (dono) store.set(DKEY, JSON.stringify(dono)); else store.del(DKEY); }
 
@@ -5062,13 +5129,13 @@ function openDonoLogin(deNovo) {
     const btn = $('#donoGo'), msg = $('#donoMsg');
     btn.disabled = true; btn.textContent = 'Conferindo…';
     const r = await donoAbrir($('#donoPw').value);
-    if (!r || !r.share) {
+    if (!r || !(r.share || r.admin)) {
       btn.disabled = false; btn.textContent = 'Entrar';
       msg.textContent = 'Senha errada. Confira e tente de novo.'; msg.classList.add('dn-bad');
       $('#donoPw').select();
       return;
     }
-    dono = Object.assign(dono || { semContar: true }, { share: r.share });
+    dono = Object.assign(dono || { semContar: true }, r.share ? { share: r.share } : {});
     if (r.admin) dono.admin = r.admin;
     donoSalvar();
     try { garantirCortesia(); } catch (e) {}
@@ -5312,7 +5379,7 @@ function renderDono() {
   // Plano grátis do Umami: sem API, então os números abrem no painel compartilhado.
   // Com a chave do plano Pro, os números aparecem aqui mesmo.
   const temChave = !!dono.key;
-  $('#dnFull').href = $('#dnOpen').href = dono.share; dnTela(); dnMsgCarregar(); dnAvisosCarregar();
+  $('#dnFull').href = $('#dnOpen').href = dono.share || 'https://cloud.umami.is'; dnTela(); dnMsgCarregar(); dnAvisosCarregar();
   $('#dnOpen').hidden = temChave; $('#dnFull').hidden = !temChave;
   $('#dnLive').hidden = $('#dnBody').hidden = $('#dnRange').hidden = !temChave;
   $('#dnNum').hidden = !dono.admin;   // 03/11: os números do jogo vêm do nosso servidor (não dependem do Umami)
@@ -5444,6 +5511,7 @@ $('#dnKeyTrocar').addEventListener('click', () => {
   $('#dnKey').hidden = false; $('#dnKeyIn').focus();
   $('#dnKey').scrollIntoView({ block: 'center', behavior: 'smooth' });
 });
+$('#dnSenhaTrocar').addEventListener('click', abrirTrocarSenha);
 $('#dnSair').addEventListener('click', () => {
   dono = null; dnSes = null; donoSalvar(); clearInterval(dnTimer);
   loadUmami();
@@ -6317,6 +6385,7 @@ const ERROS_MESA = {
   'nao-existe': 'Essa mesa não existe mais: a partida acabou ou todo mundo saiu. Crie uma nova ou entre em outra.',
   'encerrada': 'A mesa foi encerrada: a partida acabou e não tinha mais ninguém na mesa.',
   'cheia': 'Essa mesa já está cheia.',
+  'muitos-codigos': 'Muitos números de mesa errados por aqui. Confira o número com quem te convidou e tente de novo daqui a pouco.',   // 10/11
   'dados': 'Não deu para entrar na mesa. Confira o seu nome no perfil.',
   'apelido': 'Seu apelido fere as regras do jogo. Escolha outro para voltar a jogar.',   // 3.38.2: sai no fim da partida, sem bloqueio
   'app': 'Não deu para entrar na mesa agora. Tente de novo.',
@@ -6661,6 +6730,7 @@ async function entrarMesa(cod) {
   const b = $('#salaEntrar'); b.disabled = true;
   try {
     const r = await fetch(CONFIG.api + '/mesa/' + cod);
+    if (r.status === 429) { toast(ERROS_MESA['muitos-codigos']); return; }   // 10/11: muitos números errados na última hora
     const j = await r.json().catch(() => ({}));
     if (!j.existe) { toast('Não achei a mesa ' + cod + '. Confira o número com quem te convidou.'); return; }
     if (j.fase === 'jogo' && !j.livres && j.publica && mesaGuardada() !== cod) { toast('Essa mesa já começou e está cheia.'); return; }   // com os amigos: entra na fila
@@ -12180,6 +12250,7 @@ const DN_GRUPOS = [
   ['Dinheiro', ['dnPag', 'dnApoiadores', 'dnBurlas', 'dnPatroCard', 'dnAnuncieLink'], false],
   ['Falar com os jogadores', ['dnAvisos'], false],
   ['Números do Umami', ['dnOpen', 'dnLive', 'dnRange', 'dnBody', 'dnErr', 'dnKey', 'dnFull'], false],
+  ['Segurança', ['dnSenhaTrocar'], false],   // 10/11: trocar a senha (vale para todos os aparelhos)
   ['Ajustes deste aparelho', ['dnSemContar', 'dnTestePag', 'dnKeyTrocar', 'dnVerCarta', 'dnSair', 'dnTela'], false]
 ];
 const DN_GKEY = 'dmz-dono-grupos';
@@ -13284,7 +13355,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.51.2-8a44219f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.51.3-4fbb4a6e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

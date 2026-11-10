@@ -81,6 +81,12 @@ jobs:
           else
             log "chaves dos lembretes: $(wrangler secret list 2>/dev/null | grep -c VAPID) segredos já guardados"
           fi
+          # 10/11: tempero secreto do resumo da rede (SAL_REDE): criado uma vez e guardado só no Cloudflare (vale a partir de 11/11)
+          if [ "$rc" = "0" ] && ! wrangler secret list 2>/dev/null | grep -q SAL_REDE; then
+            openssl rand -hex 32 | tr -d '\n' | wrangler secret put SAL_REDE > /dev/null 2>&1; log "tempero da rede: criado agora (código $?)"
+          else
+            log "tempero da rede: $(wrangler secret list 2>/dev/null | grep -c SAL_REDE) segredo já guardado"
+          fi
           url="https://api.$sub.workers.dev"
           # espera a versão nova chegar (a saúde passa a dizer "mesa")
           for i in $(seq 1 18); do s=$(curl -s "$url/saude"); echo "$s" | grep -q "\"versao\":\"${GITHUB_SHA::7}\"" && break; sleep 5; done
@@ -95,7 +101,7 @@ jobs:
             case "$ASAAS_API_KEY" in *_hmlg_*) AS=https://api-sandbox.asaas.com/v3; log "asaas: modo de teste (sandbox)";; *) AS=https://api.asaas.com/v3;; esac
             UA='User-Agent: dominomanauara-publicacao'
             conta=$(curl -s -H "access_token: $ASAAS_API_KEY" -H "$UA" "$AS/myAccount/commercialInfo")
-            log "asaas conta: $(echo "$conta" | jq -c '{empresa: (.companyName // .name), site: .site, situacao: .status, erro: .errors}')"
+            log "asaas conta: $(echo "$conta" | jq -c '{situacao: .status, erro: .errors}')"   # 10/11: sem o nome da empresa (este relatório é público)
             email=$(echo "$conta" | jq -r '.email // empty')
             hooks=$(curl -s -H "access_token: $ASAAS_API_KEY" -H "$UA" "$AS/webhooks")
             alvo="$url/asaas/webhook"

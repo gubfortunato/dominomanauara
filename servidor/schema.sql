@@ -40,6 +40,10 @@ CREATE TABLE IF NOT EXISTS planos (aparelho TEXT PRIMARY KEY, ate INTEGER NOT NU
 CREATE UNIQUE INDEX IF NOT EXISTS planos_codigo ON planos (codigo);
 CREATE TABLE IF NOT EXISTS eventos_asaas (id TEXT PRIMARY KEY, recebido_em INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS tentativas (marca TEXT NOT NULL, tipo TEXT NOT NULL, criado_em INTEGER NOT NULL);
+-- 10/11: números de mesa errados por rede (resumo; o endereço nunca é guardado), para travar quem testa número por número. 2 horas.
+CREATE TABLE IF NOT EXISTS codigos_errados (marca TEXT NOT NULL, codigo TEXT NOT NULL, em INTEGER NOT NULL, PRIMARY KEY (marca, codigo));
+-- 10/11: chave do dono trocada pela Área do administrador: o resumo da chave nova e ela cifrada com a senha nova (uma linha só)
+CREATE TABLE IF NOT EXISTS dono_cofre (id INTEGER PRIMARY KEY CHECK (id = 1), hash TEXT NOT NULL, cofre TEXT NOT NULL, trocado_em INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS pedidos_aparelho ON pedidos (aparelho, status);
 -- Lembrete de renovação: qual inscrição de aviso é de qual aparelho, e quais avisos de "seu plano está acabando" já foram
 CREATE TABLE IF NOT EXISTS avisos_id (endpoint TEXT PRIMARY KEY, aparelho TEXT NOT NULL);

@@ -12,6 +12,7 @@ import { somarVivo } from './vivo.js';
 import { somarRanking, reiDaSemana } from './ranking.js';
 import { bloqueado, visto, apelidoBarrado, exigeApp, appAberto, anotarRitmo, RAPIDA_MS } from './bloqueio.js';
 import { PAPO, limparPapo, tamanho, papoRuim } from './papo.js';
+import { anotarCodigoErrado } from './codigos.js';
 import { limitesValem, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteHerdado, limiteDoIrmao, anotarLimite, mesasDoDia, bonusConfig } from './planos.js';
 // 3.38.2: na Calçada, apelido que o filtro passou a barrar (de quem entrou antes) aparece como "Jogador"
 const nomeVisivel = c => !c.bot && nomeOfensivo(c.nome) ? 'Jogador' : c.nome;
@@ -109,14 +110,15 @@ export class Mesa {
     if ((req.headers.get('upgrade') || '').toLowerCase() === 'websocket') {
       const par = new WebSocketPair();
       const [cli, srv] = Object.values(par);
-      this.aceitar(srv, req.headers.get('x-rede'));
+      this.aceitar(srv, req.headers.get('x-rede'), req.headers.get('x-cod'));
       return new Response(null, { status: 101, webSocket: cli });
     }
     return new Response('nao-encontrado', { status: 404 });
   }
-  aceitar(ws, rede) {
+  aceitar(ws, rede, cod) {
     this.ctx.acceptWebSocket(ws);
-    ws.serializeAttachment({ id: null, visto: Date.now(), rede: /^[0-9a-f]{24}$/.test(String(rede || '')) ? rede : null });   // 28/10: resumo da rede (planos)
+    ws.serializeAttachment({ id: null, visto: Date.now(), rede: /^[0-9a-f]{24}$/.test(String(rede || '')) ? rede : null,   // 28/10: resumo da rede (planos)
+      cod: /^[0-9a-f]{24}:\d{5}$/.test(String(cod || '')) ? cod : null });   // 10/11: para anotar número de mesa errado (codigos.js)
   }
   viva() { return this.m && this.m.ultimo > Date.now() - VIDA ? this.m : null; }
 
@@ -366,7 +368,10 @@ export class Mesa {
     const att = ws.deserializeAttachment() || {};
     att.visto = Date.now(); ws.serializeAttachment(att);
     const m = this.viva();
-    if (!m) { this.enviar(ws, { t: 'erro', cod: 'nao-existe' }); try { ws.close(4004, 'nao-existe'); } catch (e) {} return; }
+    if (!m) {
+      if (att.cod) { const [mk, cd] = att.cod.split(':'); await anotarCodigoErrado(this.env, mk, cd); }   // 10/11: número que não tem mesa conta no limite da rede
+      this.enviar(ws, { t: 'erro', cod: 'nao-existe' }); try { ws.close(4004, 'nao-existe'); } catch (e) {} return;
+    }
     const p = att.id ? m.cad.findIndex(c => c && c.id === att.id) : -1;
     switch (msg.t) {
       case 'entrar': return this.entrar(ws, att, msg);

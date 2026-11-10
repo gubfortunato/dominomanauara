@@ -84,8 +84,13 @@ export const podeJogar = (c, env, publica, daSocio, desafio) => !c || c.bot || c
 // navegador) ganha um código novo; por isso, um aparelho novo (visto pela 1ª vez há menos de 24 h) que chega pela mesma
 // rede de um aparelho que bateu o limite hoje herda o limite, se usar o mesmo apelido ou se apareceu até 2 horas depois.
 // A rede fica só como um resumo (hash do endereço com o dia, que muda todo dia): o endereço nunca é guardado. 2 dias.
-const sha = async t => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(b => b.toString(16).padStart(2, '0')).join('');
-export async function marcaRede(ip, env) { return ip ? (await sha('rede|' + ip + '|' + diaBR() + '|' + ((env && env.ADMIN_HASH) || ''))).slice(0, 24) : null; }
+export const sha = async t => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(b => b.toString(16).padStart(2, '0')).join('');
+// 10/11 (revisão de segurança): o resumo da rede usava como "tempero" um valor que está no código público (dava para
+// refazer os resumos). Agora usa um segredo guardado só no Cloudflare (SAL_REDE), a partir da virada do dia 11/11, para
+// não zerar no meio do dia as marcas que já existem. Sem o segredo, continua como antes.
+export const SAL_DESDE = '2026-11-11';
+export function salRede(env, dia) { return (String(dia || diaBR()) >= SAL_DESDE && env && env.SAL_REDE) || (env && env.ADMIN_HASH) || ''; }
+export async function marcaRede(ip, env) { const dia = diaBR(); return ip ? (await sha('rede|' + ip + '|' + dia + '|' + salRede(env, dia))).slice(0, 24) : null; }
 const nomeChave = n => String(n || '').toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
 // 10/11 (pedido do dono, depois da análise de 5 a 9/11): quem apaga os dados (ou troca de aparelho/navegador) e volta com
 // o MESMO apelido logo depois de bater o limite do dia fica com o limite também, em qualquer rede (antes, só na mesma
