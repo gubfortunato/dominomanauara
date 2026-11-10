@@ -472,6 +472,12 @@ export default {
       }
       const mc = url.pathname.match(/^\/mesa\/(\d{5})(\/ws)?$/);
       if (mc && req.method === 'GET') return await rotaMesa(req, env, origin, mc[1], !!mc[2]);
+      // 10/11: registro de passo do app (áudio do papo no iPhone): só vai para o log do Cloudflare (3 dias), nada fica no banco
+      if (url.pathname === '/cliente/log' && req.method === 'POST') {
+        let b = {}; try { const t = await req.text(); if (t.length < 2000) b = JSON.parse(t); } catch (e) {}
+        console.log('cliente:', JSON.stringify({ onde: String(b.onde || '').slice(0, 40), erro: String(b.erro || '').slice(0, 200), v: String(b.v || '').slice(0, 20), ua: (req.headers.get('user-agent') || '').slice(0, 160) }));
+        return json({ ok: true }, 200, origin);
+      }
       if (url.pathname === '/mensagens' && req.method === 'POST') return await receberMensagem(req, env, origin);
       if (url.pathname === '/patrocinio' && req.method === 'POST') return await receberPatrocinio(req, env, origin);
       // Plano Apoiador e doações (Asaas)
