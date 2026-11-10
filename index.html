@@ -2415,6 +2415,36 @@ button.dn-ag:active{transform:scale(.98)}
 .papo-enviar svg{width:22px;height:22px;margin-left:2px}
 .papo-enviar:active{transform:scale(.93)}
 .papo-enviar:disabled{opacity:.4;cursor:default}
+/* 10/11 (pedido do dono): áudio no papo de mesa */
+.papo-mic{flex:none;position:relative;width:48px;height:48px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;background:var(--bg);color:var(--fg);cursor:pointer;transition:transform .12s}
+.papo-mic[hidden]{display:none}
+.papo-mic svg{width:22px;height:22px}
+.papo-mic:active{transform:scale(.93)}
+.papo-mic.trava{color:var(--muted)}
+.papo-mic.trava .selo-ic{position:absolute;right:-3px;top:-3px;width:17px;height:17px}
+.papo-grava{display:flex;align-items:center;gap:10px;flex:none;padding:4px 0}
+.papo-grava[hidden]{display:none}
+.papo-grava-x{flex:none;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);font-size:26px;line-height:1;cursor:pointer}
+.papo-grava-ponto{flex:none;width:12px;height:12px;border-radius:50%;background:#e5484d;animation:gravaPisca 1s ease-in-out infinite}
+.papo-grava.parou .papo-grava-ponto{animation:none;background:var(--muted)}
+@keyframes gravaPisca{50%{opacity:.25}}
+@media (prefers-reduced-motion: reduce){.papo-grava-ponto{animation:none}}
+.papo-grava-t{flex:none;font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;min-width:44px}
+.papo-grava-barra{flex:1;height:6px;border-radius:999px;background:var(--line);overflow:hidden}
+.papo-grava-barra i{display:block;height:100%;width:0;background:#e5484d;border-radius:inherit}
+.papo-grava.parou .papo-grava-barra i{background:var(--glow)}
+.papo-voz{display:flex;align-items:center;gap:10px;min-width:190px;padding:2px 0 4px}
+.papo-play{flex:none;width:40px;height:40px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--glow);color:#1b1206;cursor:pointer}
+.papo-item.eu .papo-play{background:var(--pip);color:var(--tile)}
+.papo-play svg{width:20px;height:20px}
+.papo-play:disabled{opacity:.45;cursor:default}
+.papo-play.carrega svg{animation:vozGira 1s linear infinite}
+@keyframes vozGira{to{transform:rotate(360deg)}}
+.papo-voz-barra{flex:1;height:5px;border-radius:999px;background:color-mix(in srgb, currentColor 22%, transparent);overflow:hidden}
+.papo-voz-barra i{display:block;height:100%;width:0;background:currentColor;opacity:.75;border-radius:inherit}
+.papo-voz-t{flex:none;font-size:14px;font-weight:700;opacity:.75;font-variant-numeric:tabular-nums}
+.papo-voz-tx{font-size:16px;opacity:.9}
+.papo-pendente{align-self:flex-end;font-size:15px;color:var(--muted);padding:4px 6px}
 .papo-nota{margin:8px 2px 0;font-size:14px;line-height:1.4;color:var(--muted);flex:none}
 .papo-nota[hidden]{display:none}
 /* mensagem chegando com o papo fechado (sala, garagem, quem assiste) */
@@ -3747,6 +3777,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.51.7', data: '10/11/2026', itens: ['Áudio no papo de mesa: nas mesas com os amigos, os sócios mandam mensagens de voz de até 10 segundos, com o texto embaixo. Todos na mesa ouvem.'] },
   { v: '3.51.6', data: '10/11/2026', itens: ['Carteira de sócio à vista: no alto do Perfil e em Mais › Sua carteira de sócio, pronta para compartilhar.', 'Dá para colocar a sua foto na carteira (toque nela e em "Colocar sua foto").'] },
   { v: '3.51.5', data: '10/11/2026', itens: ['Notificações: botão Limpar e um X em cada uma para apagar.', 'Estrela e coração dos sócios redesenhados, em ouro.'] },
   { v: '3.51.4', data: '10/11/2026', itens: ['Quem já está sentado na mesa sempre consegue voltar para ela, mesmo depois de a internet cair.'] },
@@ -11629,6 +11660,7 @@ leaveGame = function () { if (ON.assistindo) { assistirParar(); return; } return
 // Denunciar manda a mensagem (com as 10 de antes) para o administrador olhar.
 const PAPO_MAX = 80, PAPO_MS = 3000, PAPO_MUDO = 'dmz-papo-mudo';
 const PP = { itens: [], cod: null, nao: 0, aberto: false, mudo: store.get(PAPO_MUDO) === '1', calados: new Set(), enviouEm: 0, acao: null, denunciar: null, flutT: null };
+let GR = { rec: null, stream: null, partes: [], t0: 0, ms: 0, timer: null, blob: null, enviar: false };   // 10/11: gravação do áudio do papo
 const PAPO_NAO = {
   rapido: 'Calma: uma mensagem a cada 3 segundos.',
   fechado: 'Nesta mesa, agora o papo é só com as frases prontas.',
@@ -11636,8 +11668,18 @@ const PAPO_NAO = {
   contato: 'Aqui não vale link, telefone, e-mail, @ nem chamar para outro app.',
   grande: `A mensagem pode ter até ${PAPO_MAX} letras.`,
   repetida: 'Você acabou de mandar essa.',
-  plano: 'Escrever no papo de mesa é para os sócios da Calçada. As frases prontas são para todos.'
+  plano: 'Escrever no papo de mesa é para os sócios da Calçada. As frases prontas são para todos.',
+  // 10/11: áudio
+  'voz-socio': 'Mandar áudio no papo é para os sócios da Calçada. Ouvir é para todos.',
+  'voz-rapido': 'Calma: um áudio a cada 10 segundos.',
+  'voz-grande': 'O áudio pode ter até 10 segundos.',
+  'voz-curto': 'O áudio ficou curto demais. Grave de novo, falando um pouco mais.',
+  'voz-vazio': 'Não deu para entender o áudio. Fale mais perto do celular e tente de novo.',
+  'voz-falhou': 'Não deu para mandar o áudio agora. Tente de novo.',
+  'voz-off': 'O áudio no papo ainda não está ligado.'
 };
+// 10/11: quando o barrado é um áudio, a mensagem fala de áudio
+const PAPO_NAO_VOZ = { palavra: 'Esse áudio não foi: tem palavra que não passa aqui. Respeito na mesa.', contato: 'No áudio também não vale telefone, link nem chamar para outro app.', fechado: 'Nesta mesa, agora o papo é só com as frases prontas.' };
 const papoVista = () => ON.vistaReal || ON.vista;
 const papoNaMesa = () => { const v = papoVista(); return !!(ON.ativo && v && v.papo && v.codigo === ON.cod); };   // mesa com os amigos
 const souMenor = () => !profile || profile.idade === 'menor';
@@ -11645,7 +11687,7 @@ const papoGente = () => { const v = papoVista(); return !!v && (v.minha >= 0 || 
 const papoEscreve = () => papoNaMesa() && papoGente() && !souMenor() && !!papoVista().papo.aberto && papoVista().papo.escreve !== false;
 const papoSemPlano = () => papoNaMesa() && papoGente() && !souMenor() && papoVista().papo.escreve === false;   // 28/10: planos
 const papoCalado = it => !it.eu && PP.calados.has(it.nome);
-const papoTexto = it => it.txt != null ? it.txt : (REACOES[it.k] || '');
+const papoTexto = it => it.au ? '🎤 ' + (it.txt || 'Áudio') : it.txt != null ? it.txt : (REACOES[it.k] || '');   // 10/11: áudio
 const papoHora = em => { try { return new Date(em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
 
 // 03/11: avatar de quem falou (da cadeira ou da fila; quem não está mais lá fica com a inicial), figurinha sozinha e
@@ -11668,6 +11710,10 @@ const PAPO_SINO_X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 1
 // ---------- botões (jogo, sala e garagem) ----------
 const PAPO_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v10H9.5L5 19.5v-4H4z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M8 9.3h8M8 12.3h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 const papoBotao = id => `<button type="button" class="reagir papo-bt" id="${id}" hidden>${PAPO_IC}Papo de mesa<span class="papo-nao" hidden></span></button>`;
+const PAPO_MIC = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8.6" y="2.8" width="6.8" height="11.6" rx="3.4" fill="currentColor"/><path d="M5.4 11.2a6.6 6.6 0 0 0 13.2 0M12 17.8v3.4" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>';
+const VOZ_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.2 5.3v13.4l10.6-6.7z" fill="currentColor"/></svg>';
+const VOZ_PAUSA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 5.4h3.2v13.2H7.4zM13.4 5.4h3.2v13.2h-3.2z" fill="currentColor"/></svg>';
+const VOZ_GIRA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>';
 (function () {
   const head = $('.me-head'), rb = $('#reagirBtn');
   if (head) { if (rb) rb.insertAdjacentHTML('afterend', papoBotao('papoBtn')); else head.insertAdjacentHTML('beforeend', papoBotao('papoBtn')); }
@@ -11687,8 +11733,15 @@ const papoBotao = id => `<button type="button" class="reagir papo-bt" id="${id}"
       <div class="papo-frases" id="papoFrases"></div>
       <form class="papo-form" id="papoForm" autocomplete="off">
         <div class="papo-campo"><input id="papoTxt" type="text" maxlength="${PAPO_MAX}" enterkeyhint="send" placeholder="Escreva para a mesa" aria-label="Mensagem para a mesa"><span class="papo-conta" id="papoConta" aria-live="polite" hidden></span></div>
+        <button type="button" class="papo-mic" id="papoMic" aria-label="Gravar um áudio de até 10 segundos" hidden>${PAPO_MIC}</button>
         <button type="submit" class="papo-enviar" id="papoEnviar" aria-label="Enviar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.2 12.1 19.6 4.6c.6-.3 1.2.3.9.9l-7.5 15.4c-.3.6-1.2.5-1.3-.2l-1.4-6.4-6.4-1.4c-.7-.1-.8-1-.2-1.3Z" fill="currentColor"/></svg></button>
       </form>
+      <div class="papo-grava" id="papoGrava" hidden role="group" aria-label="Gravando áudio">
+        <button type="button" class="papo-grava-x" id="papoGravaX" aria-label="Cancelar o áudio">×</button>
+        <span class="papo-grava-ponto" aria-hidden="true"></span><span class="papo-grava-t" id="papoGravaT" aria-live="off">0:00</span>
+        <span class="papo-grava-barra" aria-hidden="true"><i id="papoGravaBarra"></i></span>
+        <button type="button" class="papo-enviar" id="papoGravaOk" aria-label="Enviar o áudio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.2 12.1 19.6 4.6c.6-.3 1.2.3.9.9l-7.5 15.4c-.3.6-1.2.5-1.3-.2l-1.4-6.4-6.4-1.4c-.7-.1-.8-1-.2-1.3Z" fill="currentColor"/></svg></button>
+      </div>
       <p class="papo-nota" id="papoNota"></p>
       <button type="button" class="secondary papo-plano" id="papoPlano" hidden>Ser Sócio da Calçada</button>
     </div>
@@ -11706,6 +11759,9 @@ const papoBotao = id => `<button type="button" class="reagir papo-bt" id="${id}"
     toast(PP.mudo ? 'Papo silenciado neste celular: as mensagens ficam só aqui na lista.' : 'Papo ligado: as mensagens aparecem na mesa.');
   });
   $('#papoForm').addEventListener('submit', e => { e.preventDefault(); papoEnviar({ txt: $('#papoTxt').value }); });
+  $('#papoMic').addEventListener('click', vozGravar);   // 10/11: áudio
+  $('#papoGravaX').addEventListener('click', () => vozCancelar());
+  $('#papoGravaOk').addEventListener('click', () => vozParar(true));
   $('#papoTxt').addEventListener('input', papoConta);
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && PP.aberto) fecharPapo(); });
   // voltar do celular com o papo aberto: só fecha o papo (antes do voltar do app, que abriria o menu da partida)
@@ -11779,6 +11835,7 @@ function abrirPapo() {
 // Fecha descendo (o fundo clareia junto); "rapido" (troca de tela, saiu da mesa) some na hora
 function fecharPapo(rapido) {
   const estava = PP.aberto;
+  if (GR.rec || GR.blob) vozCancelar(true);   // 10/11: fechou o papo gravando: o áudio não vai
   PP.aberto = false; PP.acao = null; PP.denunciar = null;
   document.body.classList.remove('papo-aberto');
   try { $('#papoTxt').blur(); } catch (e) {}
@@ -11819,15 +11876,17 @@ function desenharPapo() {
     const novas = PP.novasDe && PP.novasDe.n === it.n ? `<li class="papo-novas"><span>${PP.novasDe.qtd === 1 ? '1 mensagem nova' : PP.novasDe.qtd + ' mensagens novas'}</span></li>` : '';
     return novas + `<li class="papo-item${it.eu ? ' eu' : papoCorDe(it.nome)}${it.txt == null ? ' frase' : ''}${ini ? ' ini' : ''}${fim ? ' fim' : ''}${emoji ? ' emoji' : ''}${aberto ? ' aberto' : ''}${chegou ? ' chegou' : ''}" data-n="${it.n}">`
       + (it.eu ? '' : `<span class="papo-av" aria-hidden="true">${ini ? papoAvatar(it) : ''}</span>`)
-      + `<div class="papo-bolha">${!it.eu && ini ? `<span class="papo-quem">${esc(it.nome)}</span>` : ''}<span class="papo-tx">${esc(tx)}<time>${papoHora(it.em)}</time></span>${acoes}</div></li>`;
+      + `<div class="papo-bolha">${!it.eu && ini ? `<span class="papo-quem">${esc(it.nome)}</span>` : ''}${it.au ? vozBolha(it) : `<span class="papo-tx">${esc(tx)}<time>${papoHora(it.em)}</time></span>`}${acoes}</div></li>`;
   }).join('') : '<li class="papo-vazio">Ninguém falou ainda. Mande um oi para a turma!</li>')
     + (PP.calados.size ? `<li class="papo-calados">Silenciado nesta mesa: ${[...PP.calados].map(n => `<button type="button" class="papo-ouvir" data-nome="${esc(n)}">${esc(n)} · ouvir de novo</button>`).join(' ')}</li>` : '');
   if (embaixo || !PP.desenhou) l.scrollTop = l.scrollHeight;
   PP.desenhou = true; PP.vistos = new Set(lista.map(it => it.n));
   $$('#papoLista .papo-item:not(.eu)').forEach(li => li.addEventListener('click', e => {
-    if (e.target.closest('.papo-acoes')) return;
+    if (e.target.closest('.papo-acoes') || e.target.closest('[data-voz]')) return;
     const n = Number(li.dataset.n); PP.acao = PP.acao === n ? null : n; PP.denunciar = null; desenharPapo();
   }));
+  $$('#papoLista [data-voz]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); vozTocar(Number(b.dataset.voz)); }));
+  if (PP.vozPendente && Date.now() - PP.vozPendente < 25000) l.insertAdjacentHTML('beforeend', '<li class="papo-pendente" aria-live="polite">🎤 Enviando o áudio…</li>');
   $$('#papoLista .papo-calar').forEach(b => b.addEventListener('click', () => { PP.calados.add(b.dataset.nome); PP.acao = null; toast(`${b.dataset.nome} silenciado nesta mesa (só para você).`); desenharPapo(); }));
   $$('#papoLista .papo-ouvir').forEach(b => b.addEventListener('click', () => { PP.calados.delete(b.dataset.nome); desenharPapo(); }));
   $$('#papoLista .papo-denuncia').forEach(b => b.addEventListener('click', () => {
@@ -11838,7 +11897,14 @@ function desenharPapo() {
   }));
   // o que dá para mandar
   $('#papoFrases').hidden = !gente;
-  $('#papoForm').hidden = !escreve;
+  $('#papoForm').hidden = !escreve || !!GR.rec || !!GR.blob;
+  const mic = $('#papoMic'), vozOk = !!(v && v.papo && v.papo.vozLigada) && !!window.MediaRecorder;   // 10/11
+  mic.hidden = !escreve || !vozOk;
+  const trava = !(v && v.papo && v.papo.voz);
+  mic.classList.toggle('trava', trava);
+  mic.innerHTML = PAPO_MIC + (trava ? seloEstrela() : '');
+  mic.setAttribute('aria-label', trava ? 'Áudio no papo: para os sócios da Calçada' : 'Gravar um áudio de até 10 segundos');
+  $('#papoGrava').hidden = !(GR.rec || GR.blob);
   papoConta();
   // 03/11 (pedido do dono: o topo do papo como uma barra fosca): embaixo do título, quem está na mesa e o número dela
   try {
@@ -11878,6 +11944,121 @@ function papoEnviar(o) {
   }
   PP.enviouEm = agora;
 }
+
+// ---------- 10/11 (pedido do dono): áudio no papo de mesa ----------
+// Toca no microfone, grava até 10 s (para sozinho no tempo), e manda ou cancela. O servidor transforma o áudio em texto,
+// confere com o filtro do papo e só então ele aparece para a mesa, com o texto embaixo. Só sócios mandam; todo mundo que
+// está na mesa ouve (tocando no ▶). Para menor de 18 e em mesa com menor, não aparece (como o texto livre).
+const VOZ_MAX = 10000, VOZ_MIN = 600, VOZ_SILENCIO = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+const AUD = { el: null, n: null, pedido: null, urls: new Map() };
+const vozSeg = ms => '0:' + String(Math.min(59, Math.round((ms || 0) / 1000))).padStart(2, '0');
+function vozTipo() {
+  if (!window.MediaRecorder) return null;
+  for (const t of ['audio/mp4', 'audio/mp4;codecs=mp4a.40.2', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus']) { try { if (MediaRecorder.isTypeSupported(t)) return t; } catch (e) {} }
+  return '';
+}
+function vozBolha(it) {
+  const tocando = AUD.n === it.n && AUD.el && !AUD.el.paused, carrega = AUD.pedido === it.n, foi = it.au && it.au.foi;
+  return `<span class="papo-voz"><button type="button" class="papo-play${carrega ? ' carrega' : ''}" data-voz="${it.n}" ${foi ? 'disabled' : ''} aria-label="${foi ? 'Áudio antigo, não dá mais para ouvir' : tocando ? 'Pausar o áudio' : 'Ouvir o áudio'}">${carrega ? VOZ_GIRA : tocando ? VOZ_PAUSA : VOZ_PLAY}</button>`
+    + `<span class="papo-voz-barra"><i data-vozbar="${it.n}"></i></span><span class="papo-voz-t">${foi ? 'antigo' : vozSeg(it.au && it.au.ms)}</span></span>`
+    + `<span class="papo-tx papo-voz-tx">${esc(it.txt || '')}<time>${papoHora(it.em)}</time></span>`;
+}
+async function vozGravar() {
+  const v = papoVista();
+  if (!v || !v.papo || !v.papo.voz) {
+    toast(PAPO_NAO['voz-socio']); track('papo-voz-trava');
+    const bp = $('#papoPlano'); if (bp && typeof pagamentosAtivos === 'function' && pagamentosAtivos()) bp.hidden = false;
+    return;
+  }
+  if (GR.rec || GR.blob) return;
+  if (Date.now() - (PP.vozEm || 0) < 10000) { toast(PAPO_NAO['voz-rapido']); return; }
+  const tipo = vozTipo();
+  if (tipo === null || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { toast('Este celular não grava áudio por aqui. Atualize o sistema ou use o texto.'); return; }
+  let st;
+  try { st = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); }
+  catch (e) { toast(e && e.name === 'NotAllowedError' ? 'Libere o microfone para o Dominó Manauara nos ajustes do celular e tente de novo.' : 'Não deu para usar o microfone agora.'); return; }
+  let rec;
+  try { rec = new MediaRecorder(st, Object.assign({ audioBitsPerSecond: 32000 }, tipo ? { mimeType: tipo } : {})); }
+  catch (e) { try { rec = new MediaRecorder(st); } catch (e2) { st.getTracks().forEach(t => t.stop()); toast('Não deu para gravar áudio neste celular.'); return; } }
+  const partes = [];
+  GR = { rec, stream: st, partes, t0: Date.now(), ms: 0, timer: null, blob: null, enviar: false, tipo: rec.mimeType || tipo || 'audio/mp4' };
+  rec.ondataavailable = e => { if (e.data && e.data.size) partes.push(e.data); };
+  rec.onstop = () => {
+    try { GR.stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+    if (GR.rec !== rec) return;   // cancelado
+    GR.ms = Math.min(VOZ_MAX, Date.now() - GR.t0); GR.rec = null; clearInterval(GR.timer);
+    GR.blob = new Blob(partes, { type: GR.tipo });
+    $('#papoGrava').classList.add('parou');
+    if (GR.enviar) vozMandar(); else desenharPapo();
+  };
+  try { rec.start(); } catch (e) { st.getTracks().forEach(t => t.stop()); GR = { rec: null }; toast('Não deu para gravar agora.'); return; }
+  $('#papoGrava').classList.remove('parou');
+  GR.timer = setInterval(() => {
+    const ms = Date.now() - GR.t0;
+    $('#papoGravaT').textContent = vozSeg(Math.min(ms, VOZ_MAX)); $('#papoGravaBarra').style.width = Math.min(100, ms / VOZ_MAX * 100) + '%';
+    if (ms >= VOZ_MAX) vozParar(false);   // no tempo, para e espera você mandar ou cancelar
+  }, 100);
+  $('#papoGravaT').textContent = '0:00'; $('#papoGravaBarra').style.width = '0';
+  track('papo-voz-gravar'); desenharPapo();
+}
+function vozParar(enviar) {
+  if (GR.rec) { GR.enviar = !!enviar; clearInterval(GR.timer); try { GR.rec.stop(); } catch (e) {} return; }
+  if (GR.blob && enviar) vozMandar();
+}
+function vozCancelar(quieto) {
+  const r = GR.rec; clearInterval(GR.timer);
+  GR = { rec: null, blob: null };
+  if (r) { try { r.stop(); } catch (e) {} try { r.stream.getTracks().forEach(t => t.stop()); } catch (e) {} }
+  if (!quieto) desenharPapo();
+}
+const vozB64 = blob => new Promise((ok, erro) => { const f = new FileReader(); f.onload = () => ok(String(f.result).replace(/^data:[^,]*,/, '')); f.onerror = erro; f.readAsDataURL(blob); });
+async function vozMandar() {
+  const blob = GR.blob, ms = GR.ms, tipo = (blob && blob.type) || GR.tipo || 'audio/mp4';
+  GR = { rec: null, blob: null };
+  if (!blob || ms < VOZ_MIN || blob.size < 300) { toast(PAPO_NAO['voz-curto']); desenharPapo(); return; }
+  let dados; try { dados = await vozB64(blob); } catch (e) { toast(PAPO_NAO['voz-falhou']); desenharPapo(); return; }
+  if (dados.length > 255000) { toast(PAPO_NAO['voz-grande']); desenharPapo(); return; }
+  if (!mandar({ t: 'papoVoz', dados, tipo, ms })) { desenharPapo(); return; }
+  PP.vozEm = Date.now(); PP.vozPendente = Date.now();
+  setTimeout(() => { if (PP.vozPendente && Date.now() - PP.vozPendente >= 24000) { PP.vozPendente = 0; desenharPapo(); } }, 25000);
+  if (PP.contouVoz !== ON.cod) { PP.contouVoz = ON.cod; track('papo-voz'); }
+  desenharPapo();
+}
+// ouvir: o primeiro toque destrava o som no iPhone; o áudio vem da mesa e fica guardado aqui enquanto o app está aberto
+function vozEl() {
+  if (AUD.el) return AUD.el;
+  const a = AUD.el = new Audio(); a.preload = 'auto';
+  a.addEventListener('timeupdate', () => { const f = AUD.n != null && document.querySelector(`#papoLista [data-vozbar="${AUD.n}"]`); if (f && a.duration && isFinite(a.duration)) f.style.width = Math.min(100, a.currentTime / a.duration * 100) + '%'; });
+  const fim = () => { const f = AUD.n != null && document.querySelector(`#papoLista [data-vozbar="${AUD.n}"]`); if (f) f.style.width = '0'; AUD.n = null; desenharPapo(); };
+  a.addEventListener('ended', fim);
+  a.addEventListener('pause', () => { if (!AUD.pedido) desenharPapo(); });
+  a.addEventListener('playing', () => desenharPapo());
+  return a;
+}
+function vozTocar(n) {
+  const a = vozEl();
+  if (AUD.n === n && !a.paused) { a.pause(); AUD.n = null; desenharPapo(); return; }
+  const u = AUD.urls.get(n);
+  AUD.n = n;
+  if (u) { a.src = u; a.play().catch(() => { AUD.n = null; desenharPapo(); }); desenharPapo(); return; }
+  try { a.src = VOZ_SILENCIO; a.play().catch(() => {}); } catch (e) {}
+  AUD.pedido = n; desenharPapo();
+  if (!mandar({ t: 'papoOuvir', n })) { AUD.pedido = null; AUD.n = null; desenharPapo(); }
+}
+function vozChegou(m) {
+  if (m.sumiu) {
+    if (AUD.pedido === m.n) { AUD.pedido = null; AUD.n = null; }
+    const it = PP.itens.find(x => x.n === m.n); if (it && it.au && !m.rapido) it.au.foi = true;
+    toast(m.rapido ? 'Calma: muitos áudios de uma vez. Espere um pouco.' : 'Esse áudio não está mais disponível.'); desenharPapo(); return;
+  }
+  try {
+    const bin = atob(m.dados), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    const u = URL.createObjectURL(new Blob([u8], { type: m.tipo || 'audio/mp4' })); AUD.urls.set(m.n, u);
+    if (AUD.pedido === m.n) { AUD.pedido = null; const a = vozEl(); a.src = u; a.play().catch(() => { toast('Toque de novo para ouvir.'); AUD.n = null; desenharPapo(); }); }
+  } catch (e) { AUD.pedido = null; AUD.n = null; toast('Não deu para tocar esse áudio.'); }
+  desenharPapo();
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { if (GR.rec || GR.blob) vozCancelar(); if (AUD.el && !AUD.el.paused) AUD.el.pause(); } });
 
 // ---------- mensagens que chegam ----------
 const FALA_PAPO_MS = t => Math.min(7000, 2800 + 55 * [...t].length);
@@ -11933,11 +12114,16 @@ receberOnline = function (m) {
   if (m.t === 'papo') {
     if (PP.cod !== ON.cod) { PP.cod = ON.cod; PP.itens = []; PP.calados = new Set(); PP.nao = 0; }
     if (PP.itens.some(x => x.n === m.n)) return;
+    if (m.eu && m.au) PP.vozPendente = 0;   // 10/11: o seu áudio saiu
     PP.itens.push(m); if (PP.itens.length > 30) PP.itens.splice(0, PP.itens.length - 30);
     papoMostrar(m); papoMeu(m); desenharPapo();
     return;
   }
-  if (m.t === 'papoNao') { if (PAPO_NAO[m.motivo]) toast(PAPO_NAO[m.motivo]); return; }
+  if (m.t === 'papoNao') {
+    if (m.voz) { PP.vozPendente = 0; desenharPapo(); if (m.motivo === 'voz-socio') { const bp = $('#papoPlano'); if (bp && typeof pagamentosAtivos === 'function' && pagamentosAtivos()) bp.hidden = false; } }
+    const t = (m.voz && PAPO_NAO_VOZ[m.motivo]) || PAPO_NAO[m.motivo]; if (t) toast(t); return;
+  }
+  if (m.t === 'papoVoz') { vozChegou(m); return; }   // 10/11
   if (m.t === 'papoDenuncia') {
     toast(m.ok ? 'Denúncia enviada. O administrador vai olhar. Obrigado por ajudar a manter a mesa boa.'
       : m.motivo === 'muitas' ? 'Você já mandou muitas denúncias agora. Tente mais tarde.' : 'Não deu para denunciar essa mensagem.');
@@ -12000,6 +12186,7 @@ async function dnPapoCarregar() {
         <small>${quandoFoi(x.ultima)} · mesa ${esc(x.mesa)}${x.vezes > 1 ? ` · ${x.vezes} denúncias` : ''}</small>
         ${antes ? `<details class="dp-antes"><summary>O que veio antes</summary>${antes}</details>` : ''}</span>
         <span class="dn-jog-acoes">${x.bloq ? '<span class="dn-jog-st">bloqueado</span>' : `<button type="button" class="linkbtn dn-jog-b" data-papobloq="${esc(x.autor)}" ${chave}>Bloquear</button>`}
+        ${x.voz ? `<button type="button" class="linkbtn dn-jog-b" data-papovoz ${chave}>Ouvir o áudio</button>` : ''}
         <button type="button" class="linkbtn dn-jog-b" data-papook ${chave}>Já olhei</button></span></li>`;
     }).join('');
   } catch (e) { $('#dnPapoTx').textContent = 'Não deu para carregar agora.'; }
@@ -12016,6 +12203,19 @@ document.addEventListener('click', async e => {
     if (!bloq) toast('Denúncia tirada da lista.');
   } catch (er) { toast('Não deu agora. Tente de novo.'); }
   dnPapoCarregar(); try { dnJogCarregar(); } catch (er) {}
+});
+// 10/11: ouvir o áudio denunciado
+document.addEventListener('click', async e => {
+  const b = e.target.closest && e.target.closest('#dnPapo [data-papovoz]'); if (!b) return;
+  const a = vozEl(); try { a.src = VOZ_SILENCIO; a.play().catch(() => {}); } catch (er) {}
+  b.disabled = true; const rot = b.textContent; b.textContent = 'Carregando…';
+  try {
+    const j = await dnMsgPedir(`/dono/papo/voz?mesa=${encodeURIComponent(b.dataset.mesa)}&em=${encodeURIComponent(b.dataset.em)}`);
+    if (!j || !j.dados) { toast('Esse áudio não está mais guardado.'); return; }
+    const bin = atob(j.dados), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    a.src = URL.createObjectURL(new Blob([u8], { type: j.tipo || 'audio/mp4' })); a.play().catch(() => toast('Toque de novo para ouvir.'));
+  } catch (er) { toast('Não deu para carregar o áudio agora.'); }
+  finally { b.disabled = false; b.textContent = rot; }
 });
 const renderDonoPapo = renderDono;
 renderDono = function () { const r = renderDonoPapo.apply(this, arguments); try { dnPapoCarregar(); } catch (e) {} return r; };
@@ -13478,7 +13678,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.51.6-a15c3c77';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.51.7-9fc8427f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
