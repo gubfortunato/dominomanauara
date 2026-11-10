@@ -21,43 +21,23 @@ jobs:
         run: |
           set +e
           OUT=/tmp/priv.txt; : > $OUT
-          cat > /tmp/cf.mjs <<'JS'
-          import fs from 'fs';
-          const T=process.env.CLOUDFLARE_API_TOKEN, A=process.env.CLOUDFLARE_ACCOUNT_ID, OUT='/tmp/priv.txt';
-          const H={authorization:'Bearer '+T,'content-type':'application/json'};
-          const put=async(k,v)=>{try{v=await v}catch(e){v={erro:String(e).slice(0,200)}};fs.appendFileSync(OUT,'== '+k+'\n'+JSON.stringify(v).slice(0,400000)+'\n');};
-          async function gql(query,variables){const r=await fetch('https://api.cloudflare.com/client/v4/graphql',{method:'POST',headers:H,body:JSON.stringify({query,variables})});return r.json();}
-          async function api(path,body){const r=await fetch('https://api.cloudflare.com/client/v4/accounts/'+A+path,{method:body?'POST':'GET',headers:H,body:body?JSON.stringify(body):undefined});let j;try{j=await r.json()}catch(e){j={status:r.status}};return j;}
-          const crypto = await import('crypto');
-          const desde=Date.UTC(2026,10,6,12,0), agora=Date.now(), tf={from:desde,to:agora};
-          const W='$workers.event.request.headers.', SEM_DO={key:'$workers.executionModel',operation:'neq',type:'string',value:'durableObject'};
-          async function q(nome, groupBys, filters, limit){
-            const r=await api('/workers/observability/telemetry/query',{queryId:nome,timeframe:tf,view:'calculations',limit:limit||100,
-              parameters:{calculations:[{operator:'count'}],groupBys:groupBys.map(v=>({type:'string',value:v})),filters:filters||[],filterCombination:'and'}});
-            if(!r.success) return {erro:r.errors};
-            const ag=(r.result.calculations&&r.result.calculations[0]&&r.result.calculations[0].aggregates)||[];
-            return ag.map(a=>[(a.groups||[]).map(g=>g.value),a.count]).sort((a,b)=>b[1]-a[1]);
-          }
-          async function q2(nome, groupBys, filters, lim){
-            const corpo=(pl)=>({queryId:nome,timeframe:tf,view:'calculations',parameters:Object.assign({calculations:[{operator:'count'}],groupBys:groupBys.map(v=>({type:'string',value:v})),filters:filters||[],filterCombination:'and'},pl)});
-            let r=await api('/workers/observability/telemetry/query',corpo({limit:lim||50}));
-            if(!r.success) r=await api('/workers/observability/telemetry/query',corpo({}));
-            if(!r.success) return {erro:r.errors};
-            const ag=(r.result.calculations&&r.result.calculations[0]&&r.result.calculations[0].aggregates)||[];
-            return ag.map(a=>[(a.groups||[]).map(g=>g.value),a.count]).sort((a,b)=>b[1]-a[1]);
-          }
-          const ST='$workers.event.response.status', P='$workers.event.path', UA=W+'user-agent', IP=W+'cf-connecting-ip', ORG='$workers.event.request.cf.asOrganization';
-          const desde2=Date.now()-40*60000, tf2={from:desde2,to:Date.now()};
-          async function ev2(nome, filters, lim){
-            const r=await api('/workers/observability/telemetry/query',{queryId:nome,timeframe:tf2,view:'events',limit:lim||100,parameters:{filters,filterCombination:'and'}});
-            if(!r.success) return {erro:r.errors};
-            return ((r.result.events&&r.result.events.events)||[]).map(e=>({t:e.timestamp, nivel:(e.$metadata||{}).level, msg:String((e.$metadata||{}).message||'').slice(0,500)}));
-          }
-          await put('cliente', ev2('c1',[{key:'$metadata.message',operation:'includes',type:'string',value:'cliente:'}]));
-          await put('voz', ev2('c2',[{key:'$metadata.message',operation:'includes',type:'string',value:'voz:'}]));
-          JS
-          sed -i 's/^          //' /tmp/cf.mjs
-          node /tmp/cf.mjs 2>> $OUT
+          npm i -g wrangler@4 > /dev/null 2>&1
+          id=$(wrangler d1 list --json 2>/dev/null | jq -r '.[] | select(.name=="dominomanauara") | .uuid')
+          sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
+          AGORA=$(($(date +%s) * 1000))
+          p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
+          NOME="COALESCE((SELECT nome FROM presenca x WHERE x.aparelho = T.aparelho AND x.nome IS NOT NULL), (SELECT nome FROM jogadores_vistos x WHERE x.aparelho = T.aparelho), (SELECT nome FROM calcada x WHERE x.aparelho = T.aparelho ORDER BY atualizado DESC LIMIT 1))"
+          # ranking de novembro (semana e mês) com a situação do plano de cada aparelho
+          p calcada_nov "SELECT T.periodo, T.aparelho, T.nome, T.nv, T.pontos, T.ganhas, T.jogadas, (SELECT ate FROM planos x WHERE x.aparelho = T.aparelho) AS plano_ate, (SELECT desde FROM planos x WHERE x.aparelho = T.aparelho) AS plano_desde, (SELECT 1 FROM cortesias x WHERE x.aparelho = T.aparelho) AS cortesia FROM calcada T WHERE T.periodo LIKE 'S2026-11%' OR T.periodo = 'M2026-11' ORDER BY T.periodo, T.pontos DESC"
+          # todos os planos, com o apelido de cada aparelho
+          p planos "SELECT T.aparelho, T.ate, T.desde, $NOME AS nome FROM planos T"
+          p pedidos "SELECT aparelho, produto, valor, status, criado_em, pago_em FROM pedidos ORDER BY criado_em DESC LIMIT 200"
+          # mesmo apelido em outro aparelho que tem plano (trocou de celular ou de navegador)
+          p mesmo_nome_vistos "SELECT DISTINCT c.aparelho AS ap_ranking, v.aparelho AS ap_outro, p.ate FROM calcada c JOIN jogadores_vistos v ON lower(trim(v.nome)) = lower(trim(c.nome)) AND v.aparelho <> c.aparelho JOIN planos p ON p.aparelho = v.aparelho WHERE c.periodo = 'M2026-11'"
+          p mesmo_nome_presenca "SELECT DISTINCT c.aparelho AS ap_ranking, v.aparelho AS ap_outro, p.ate FROM calcada c JOIN presenca v ON lower(trim(v.nome)) = lower(trim(c.nome)) AND v.aparelho <> c.aparelho JOIN planos p ON p.aparelho = v.aparelho WHERE c.periodo = 'M2026-11'"
+          p mesmo_nome_calcada "SELECT DISTINCT c.aparelho AS ap_ranking, v.aparelho AS ap_outro, p.ate FROM calcada c JOIN calcada v ON lower(trim(v.nome)) = lower(trim(c.nome)) AND v.aparelho <> c.aparelho JOIN planos p ON p.aparelho = v.aparelho WHERE c.periodo = 'M2026-11'"
+          p burlas "SELECT * FROM burlas ORDER BY em DESC LIMIT 100"
+          rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
           MIID/zCCAmegAwIBAgIUQME67vF2YCFx4qbuKp7jtL5uF+AwDQYJKoZIhvcNAQEL
