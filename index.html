@@ -1497,6 +1497,12 @@ html[data-mesa="garantido"] .table.wood{--wood-1:#9a2222;--wood-2:#4a0d0d;--wood
 html[data-mesa="caprichoso"] .table.wood{--wood-1:#23489c;--wood-2:#0c1f4a;--wood-edge:#4a74c9}
 html[data-mesa="roxoacai"] .table.wood{--wood-1:#5b2350;--wood-2:#25091f;--wood-edge:#9a4f86}
 html[data-mesa="floresta"] .table.wood{--wood-1:#1f6a3c;--wood-2:#0a2c18;--wood-edge:#4fa36c}
+/* 10/11 (pedido do dono): Black Piano: preto laqueado, com dois reflexos em diagonal como a tampa de um piano, e a borda cromada */
+html[data-mesa="pianoblack"] .table.wood{--wood-1:#1c1c20;--wood-2:#060607;--wood-edge:#9aa0aa;
+  background:linear-gradient(118deg, transparent 26%, rgba(255,255,255,.075) 38%, rgba(255,255,255,.02) 46%, transparent 52%), linear-gradient(118deg, transparent 60%, rgba(255,255,255,.045) 66%, transparent 72%), radial-gradient(120% 90% at 50% 40%, #1d1d21, #050506 78%)}
+/* Branca: branco gelo, um pouco mais escuro nas bordas para as pedras (marfim) se destacarem; os textos da mesa ficam escuros */
+html[data-mesa="branca"] .table.wood{--wood-1:#f3f1ec;--wood-2:#cfc9be;--wood-edge:#b9b1a3;--wood-ink:#2a2017;--wood-muted:#5f5040;
+  background:radial-gradient(120% 90% at 50% 45%, transparent 45%, rgba(70,55,35,.16)), radial-gradient(circle at 45% 38%, #faf8f4, #e2ddd3 70%, #d3cdc2)}
 html[data-mesa="tucuma"] .table.wood{--wood-1:#4f2608;--wood-2:#4f2608;--wood-edge:#c98238;
   background:radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,.42)), linear-gradient(rgba(40,22,10,0.80), rgba(40,22,10,0.62) 30%, rgba(40,22,10,0.62)), var(--img-tucuma-sw) center bottom/cover no-repeat, #4f2608}
 html[data-mesa="encontro"] .table.wood{--wood-1:#1e2840;--wood-2:#1e2840;--wood-edge:#c9a06a;
@@ -7160,6 +7166,9 @@ const MESAS = [
   // 03/11 (pedido do dono): mais duas de cor lisa, de sócio
   { id: 'roxoacai', nome: 'Cor de Açaí', c1: '#5b2350', c2: '#25091f' },
   { id: 'floresta', nome: 'Floresta', c1: '#1f6a3c', c2: '#0a2c18' },
+  // 10/11 (pedido do dono): Black Piano (preto laqueado, com o reflexo de piano) e Branca
+  { id: 'pianoblack', nome: 'Black Piano', bg: 'linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 42%, rgba(255,255,255,.03) 50%, transparent 56%), radial-gradient(circle at 40% 35%, #2a2a2f, #050506 80%)' },
+  { id: 'branca', nome: 'Branca', bg: 'radial-gradient(circle at 40% 35%, #fdfcf9, #d8d3c9 82%)' },
   // 28/10 (pedido do dono): primeiro Madeira, Vermelha e Azul; depois as demais
   { id: 'encontro', nome: 'Encontro das Águas', bg: 'var(--img-encontro-sw) center 42%/140% auto no-repeat, #1e2840' },
   { id: 'feltro', nome: 'MUSA', bg: 'var(--img-musa-sw) center 25%/140% auto no-repeat, #163a29' },   // id antigo mantido (quem já escolheu continua com ela)
