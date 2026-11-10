@@ -2505,6 +2505,8 @@ body.papo-aberto{overflow:hidden}
 .cart-perfil:active .cart svg{transform:scale(.985)}
 .cart-dica{text-align:center;font-size:14px;color:var(--muted)}
 #sheet .cart{margin:4px 0 10px}
+.cart-foto-acoes{display:flex;align-items:center;justify-content:center;gap:14px;margin:0 0 6px}
+.cart-foto-acoes .secondary{flex:1}
 /* 03/11 (pedido do dono: o topo do papo mais suave): sem barra nem caixa. O título, quem está na mesa e o número dela no
    mesmo tom do painel; silenciar e fechar sem fundo; a conversa some num degradê suave antes de chegar no topo. */
 .papo-topo{margin:0 0 4px;gap:4px;padding-right:0}
@@ -3745,7 +3747,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.51.6', data: '10/11/2026', itens: ['Carteira de sócio à vista: no alto do Perfil e em Mais › Sua carteira de sócio, pronta para compartilhar.'] },
+  { v: '3.51.6', data: '10/11/2026', itens: ['Carteira de sócio à vista: no alto do Perfil e em Mais › Sua carteira de sócio, pronta para compartilhar.', 'Dá para colocar a sua foto na carteira (toque nela e em "Colocar sua foto").'] },
   { v: '3.51.5', data: '10/11/2026', itens: ['Notificações: botão Limpar e um X em cada uma para apagar.', 'Estrela e coração dos sócios redesenhados, em ouro.'] },
   { v: '3.51.4', data: '10/11/2026', itens: ['Quem já está sentado na mesa sempre consegue voltar para ela, mesmo depois de a internet cair.'] },
   { v: '3.51.3', data: '10/11/2026', itens: ['Mesa com os amigos mais protegida: quem fica tentando adivinhar número de mesa é travado por um tempo, e o papo da turma fica só entre vocês e quem recebeu o número.'] },
@@ -7461,11 +7463,15 @@ function renderApoioTela() {
 // Um desenho só (SVG), mostrado na tela do sócio e transformado em imagem para compartilhar. Mostra o apelido, a foto
 // (ou o avatar), o número de sócio (ordem de chegada, vem do servidor), desde quando e até quando vale. O código do
 // plano NUNCA entra na carteira: ele leva o plano para outro celular e a carteira é feita para ser mostrada.
+// 10/11 (pedido do dono): a carteira pode ter uma foto só dela (fica neste celular). Sem ela, usa a foto do perfil, se
+// houver, ou o avatar. Menor de 18 não usa foto (como no resto do jogo).
+const CARTFOTO = 'dmz-cart-foto';
+function cartFoto() { if (typeof menorDeIdade === 'function' && menorDeIdade()) return null; const f = store.get(CARTFOTO); return f && /^data:image\//.test(f) ? f : null; }
 function carteiraDados() {
   const p = planoLocal(); if (!p || !temPlano()) return null;
   const s = p.socio || {};
   let img = null;
-  try { img = profile && profile.av === 'foto' && photo ? photo : avatarURI(avatarDe(avBaseDe(profile)) || AVATARS[0]); } catch (e) {}
+  try { img = cartFoto() || (profile && profile.av === 'foto' && photo ? photo : avatarURI(avatarDe(avBaseDe(profile)) || AVATARS[0])); } catch (e) {}
   return { nome: (profile && profile.name) || 'Sócio', img, numero: s.numero || null, desde: s.desde || null, ate: p.ate };
 }
 function carteiraSVG(d, fontes, sfx) {
@@ -7569,13 +7575,31 @@ function abrirCarteira() {
   const d = carteiraDados();
   if (!d) { conferirPlano(true).then(() => { if (carteiraDados()) abrirCarteira(); else toast('Não achei a sua carteira agora. Tente de novo com internet.'); }); return; }
   track('carteira-ver');
+  const podeFoto = !(typeof menorDeIdade === 'function' && menorDeIdade());
+  const temFoto = !!cartFoto() || !!(profile && profile.av === 'foto' && photo);
   openSheet('carteira', `<p class="eyebrow">Sócio da Calçada${d.numero ? ` · nº ${d.numero}` : ''}</p><h2 id="sheetTitle">Sua carteira de sócio</h2>
-    <div class="cart">${carteiraSVG(d, '', 'J')}</div>
+    <div class="cart" id="cartJ">${carteiraSVG(d, '', 'J')}</div>
+    ${podeFoto ? `<div class="cart-foto-acoes"><button type="button" class="secondary" id="cartFotoPor">${temFoto ? 'Trocar a foto' : 'Colocar sua foto'}</button>${cartFoto() ? '<button type="button" class="linkbtn" id="cartFotoTirar">Usar o avatar</button>' : ''}</div>
+    <input type="file" id="cartFotoIn" accept="image/*" hidden>` : ''}
     <p class="note">Mostre para a turma: compartilhe no WhatsApp, no Instagram ou salve no celular.</p>
     <button type="button" class="primary" id="cartShareJ" style="width:100%">Compartilhar a carteira</button>
     <button type="button" class="secondary" id="cartFechar" style="width:100%;margin-top:8px">Fechar</button>`);
   $('#cartShareJ').addEventListener('click', e => compartilharCarteira(e.currentTarget));
   $('#cartFechar').addEventListener('click', closeSheet);
+  if (!podeFoto) return;
+  const atualizar = () => { try { renderCarteira(); renderPerfilCarteira(); } catch (e) {} abrirCarteira(); };
+  $('#cartFotoPor').addEventListener('click', () => $('#cartFotoIn').click());
+  $('#cartFotoIn').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    try {
+      const u = await squareJPEG(f, 480);
+      if (!store.set(CARTFOTO, u)) { toast('Não deu para guardar a foto neste celular. Tente uma foto menor.'); return; }
+      track('carteira-foto'); atualizar(); toast('Foto na carteira!');
+    } catch (err) { toast('Não consegui abrir essa foto. Tente outra.'); }
+  });
+  const tirar = $('#cartFotoTirar');
+  if (tirar) tirar.addEventListener('click', () => { store.del(CARTFOTO); atualizar(); toast(profile && profile.av === 'foto' && photo ? 'A carteira voltou para a foto do perfil.' : 'A carteira voltou para o avatar.'); });
 }
 function renderPerfilCarteira() {
   const box = $('#perfilCart'); if (!box) return;
