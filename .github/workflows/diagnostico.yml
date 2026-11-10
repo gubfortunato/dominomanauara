@@ -47,17 +47,11 @@ jobs:
             return ag.map(a=>[(a.groups||[]).map(g=>g.value),a.count]).sort((a,b)=>b[1]-a[1]);
           }
           const ST='$workers.event.response.status', P='$workers.event.path', UA=W+'user-agent', IP=W+'cf-connecting-ip', ORG='$workers.event.request.cf.asOrganization';
-          async function ev(nome, filters){
-            const r=await api('/workers/observability/telemetry/query',{queryId:nome,timeframe:tf,view:'events',limit:200,parameters:{filters,filterCombination:'and'}});
-            if(!r.success) return {erro:r.errors};
-            const lista=(r.result.events&&r.result.events.events)||[];
-            return lista.map(e=>{const w=e.$workers||{},q=(w.event||{}).request||{},h=q.headers||{},cf=q.cf||{};
-              return {t:e.timestamp, metodo:q.method, url:q.url, status:(w.event&&w.event.response||{}).status, ua:h['user-agent'], ip:h['cf-connecting-ip'], org:cf.asOrganization, cidade:cf.city, origem:h.origin||null, ref:h.referer||null, ct:h['content-type']||null, tam:h['content-length']||null};});
-          }
-          await put('ev_headless', ev('h1',[{key:UA,operation:'includes',type:'string',value:'HeadlessChrome'}]));
-          await put('ev_curl788', ev('h2',[{key:UA,operation:'includes',type:'string',value:'curl/7.88'}]));
-          await put('ev_google', ev('h3',[{key:ORG,operation:'eq',type:'string',value:'Google LLC'},SEM_DO]));
-          await put('ev_head', ev('h4',[{key:'$workers.event.request.method',operation:'eq',type:'string',value:'HEAD'}]));
+          const resumo=j=>j&&j.success?(j.result||[]).map(x=>({plano:x.rate_plan&&(x.rate_plan.public_name||x.rate_plan.id), id:x.rate_plan&&x.rate_plan.id, estado:x.state, freq:x.frequency, produto:x.product&&x.product.name, zona:x.zone&&x.zone.name, preco:x.price, moeda:x.currency})):{erro:j&&j.errors};
+          await put('assinaturas_conta', api('/subscriptions').then(resumo));
+          await put('config_workers', api('/workers/account-settings').then(j=>j&&j.success?j.result:{erro:j&&j.errors}));
+          const zr=await fetch('https://api.cloudflare.com/client/v4/zones?per_page=50',{headers:H}).then(r=>r.json()).catch(e=>({}));
+          await put('zonas', zr&&zr.success?(zr.result||[]).map(z=>({nome:z.name, plano:z.plan&&z.plan.name, conta:z.account&&z.account.id===A})):{erro:zr&&zr.errors});
           JS
           sed -i 's/^          //' /tmp/cf.mjs
           node /tmp/cf.mjs 2>> $OUT
