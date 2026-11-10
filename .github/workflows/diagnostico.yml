@@ -28,21 +28,34 @@ jobs:
           const put=(k,v)=>fs.appendFileSync(OUT,'== '+k+'\n'+JSON.stringify(v).slice(0,400000)+'\n');
           async function gql(query,variables){const r=await fetch('https://api.cloudflare.com/client/v4/graphql',{method:'POST',headers:H,body:JSON.stringify({query,variables})});return r.json();}
           async function api(path,body){const r=await fetch('https://api.cloudflare.com/client/v4/accounts/'+A+path,{method:body?'POST':'GET',headers:H,body:body?JSON.stringify(body):undefined});let j;try{j=await r.json()}catch(e){j={status:r.status}};return j;}
-          // 1) estrutura dos dados disponíveis
-          put('tipos', await gql(`{a:__type(name:"AccountWorkersInvocationsAdaptiveDimensions"){fields{name}} b:__type(name:"AccountDurableObjectsInvocationsAdaptiveGroupsDimensions"){fields{name}} c:__type(name:"AccountWorkersInvocationsAdaptiveSum"){fields{name}}}`));
-          // 2) requisições por hora e situação, dia a dia desde 01/11 (para ter base de comparação)
-          for(let d=1; d<=10; d++){
-            const from=new Date(Date.UTC(2026,10,d)).toISOString(), to=new Date(Date.UTC(2026,10,d+1)).toISOString();
-            put('worker_'+d, await gql(`query($a:String!,$f:Time!,$t:Time!){viewer{accounts(filter:{accountTag:$a}){
-              w:workersInvocationsAdaptive(limit:5000,filter:{datetime_geq:$f,datetime_lt:$t}){sum{requests errors subrequests} dimensions{datetimeHour scriptName status}}
-              o:durableObjectsInvocationsAdaptiveGroups(limit:5000,filter:{datetime_geq:$f,datetime_lt:$t}){sum{requests errors} dimensions{datetimeHour status}}
-            }}}`,{a:A,f:from,t:to}));
+          const crypto = await import('crypto');
+          const desde=Date.UTC(2026,10,6,12,0), agora=Date.now(), tf={from:desde,to:agora};
+          const W='$workers.event.request.headers.', SEM_DO={key:'$workers.executionModel',operation:'neq',type:'string',value:'durableObject'};
+          async function q(nome, groupBys, filters, limit){
+            const r=await api('/workers/observability/telemetry/query',{queryId:nome,timeframe:tf,view:'calculations',limit:limit||100,
+              parameters:{calculations:[{operator:'count'}],groupBys:groupBys.map(v=>({type:'string',value:v})),filters:filters||[],filterCombination:'and'}});
+            if(!r.success) return {erro:r.errors};
+            const ag=(r.result.calculations&&r.result.calculations[0]&&r.result.calculations[0].aggregates)||[];
+            return ag.map(a=>[a.groups.map(g=>g.value),a.count]).sort((a,b)=>b[1]-a[1]);
           }
-          // 3) logs do Worker (Workers Logs): chaves disponíveis e amostra
-          const agora=Date.now(), desde=agora-4*86400000;
-          put('obs_chaves', await api('/workers/observability/telemetry/keys',{timeframe:{from:desde,to:agora},limit:500}));
-          put('obs_amostra', await api('/workers/observability/telemetry/query',{queryId:'amostra',timeframe:{from:desde,to:agora},view:'events',limit:20,parameters:{}}));
-          put('obs_status', await api('/workers/observability/telemetry/query',{queryId:'status',timeframe:{from:desde,to:agora},view:'calculations',parameters:{calculations:[{operator:'count'}],groupBys:[{type:'number',value:'$workers.event.response.status'}]}}));
+          put('origem', await q('origem',[W+'origin'],[SEM_DO]));
+          put('xrw', await q('xrw',[W+'x-requested-with'],[SEM_DO,{key:W+'x-requested-with',operation:'exists',type:'string'}]));
+          put('referer', await q('referer',[W+'referer'],[SEM_DO]));
+          put('ua', await q('ua',[W+'user-agent'],[SEM_DO],120));
+          put('caminho_status', await q('cs',['$workers.event.path','$workers.event.response.status'],[SEM_DO],200));
+          put('erros', await q('er',['$workers.event.path','$workers.event.response.status',W+'cf-connecting-ip',W+'user-agent'],[SEM_DO,{key:'$workers.event.response.status',operation:'gte',type:'number',value:400}],200));
+          put('ip_top', await q('ip',[W+'cf-connecting-ip'],[SEM_DO],60));
+          put('asn_top', await q('asn',['$workers.event.request.cf.asOrganization','$workers.event.request.cf.country'],[SEM_DO],60));
+          put('sem_origem', await q('so',['$workers.event.path',W+'user-agent'],[SEM_DO,{key:W+'origin',operation:'is_null',type:'string'}],120));
+          put('datadog', await q('dd',['$workers.event.path','$workers.event.request.cf.asOrganization',W+'user-agent'],[{key:W+'x-datadog-trace-id',operation:'exists',type:'string'}],60));
+          put('admin', await q('adm',['$workers.event.path','$workers.event.response.status',W+'cf-connecting-ip','$workers.event.request.cf.asOrganization'],[{key:W+'x-admin-key',operation:'exists',type:'string'}],100));
+          put('asaas', await q('as',['$workers.event.path','$workers.event.response.status','$workers.event.request.cf.asOrganization'],[{key:W+'asaas-access-token',operation:'exists',type:'string'}],50));
+          // chave do dono nos logs: só diz se aparece em claro (compara o resumo com ADMIN_HASH); o valor nunca sai daqui
+          const hashDono='e57e78a3bb0d8127b02226822dbc4fe943bb5ddd711696f032bcf36adf28589c';
+          const vals=await q('admv',[W+'x-admin-key'],[{key:W+'x-admin-key',operation:'exists',type:'string'}],50);
+          put('admin_valores', Array.isArray(vals)?vals.map(([g,n])=>({n, tamanho:String(g[0]).length, eh_a_chave:crypto.createHash('sha256').update(String(g[0])).digest('hex')===hashDono, parece_mascarado:/redact|\*{3}|^\[/i.test(String(g[0]))})):vals);
+          const tv=await q('asv',[W+'asaas-access-token'],[{key:W+'asaas-access-token',operation:'exists',type:'string'}],20);
+          put('asaas_valores', Array.isArray(tv)?tv.map(([g,n])=>({n, tamanho:String(g[0]).length, parece_mascarado:/redact|\*{3}|^\[/i.test(String(g[0]))})):tv);
           JS
           sed -i 's/^          //' /tmp/cf.mjs
           node /tmp/cf.mjs 2>> $OUT
