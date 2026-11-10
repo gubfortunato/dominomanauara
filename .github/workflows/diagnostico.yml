@@ -47,9 +47,15 @@ jobs:
             return ag.map(a=>[(a.groups||[]).map(g=>g.value),a.count]).sort((a,b)=>b[1]-a[1]);
           }
           const ST='$workers.event.response.status', P='$workers.event.path', UA=W+'user-agent', IP=W+'cf-connecting-ip', ORG='$workers.event.request.cf.asOrganization';
-          for (const u of ['https://api.gubfort.workers.dev/saude', 'https://api.gubfort.workers.dev/saude/voz']) {
-            await put(u, fetch(u).then(r => r.text()).then(t => t.slice(0, 1500)));
+          const desde2=Date.now()-60*60000, tf2={from:desde2,to:Date.now()};
+          async function ev2(nome, filters, lim){
+            const r=await api('/workers/observability/telemetry/query',{queryId:nome,timeframe:tf2,view:'events',limit:lim||60,parameters:{filters,filterCombination:'and'}});
+            if(!r.success) return {erro:r.errors};
+            return ((r.result.events&&r.result.events.events)||[]).map(e=>({t:e.timestamp, nivel:(e.$metadata||{}).level, msg:String((e.$metadata||{}).message||'').slice(0,400), erro:String((e.$metadata||{}).error||'').slice(0,300), modelo:(e.$workers||{}).executionModel, url:(((e.$workers||{}).event||{}).request||{}).url}));
           }
+          await put('erros_1h', ev2('e1',[{key:'$metadata.level',operation:'eq',type:'string',value:'error'}]));
+          await put('voz_1h', ev2('e2',[{key:'$metadata.message',operation:'includes',type:'string',value:'voz'}]));
+          await put('saude_voz', fetch('https://api.gubfort.workers.dev/saude/voz').then(r=>r.text()));
           JS
           sed -i 's/^          //' /tmp/cf.mjs
           node /tmp/cf.mjs 2>> $OUT
