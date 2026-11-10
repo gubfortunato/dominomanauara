@@ -47,21 +47,17 @@ jobs:
             return ag.map(a=>[(a.groups||[]).map(g=>g.value),a.count]).sort((a,b)=>b[1]-a[1]);
           }
           const ST='$workers.event.response.status', P='$workers.event.path', UA=W+'user-agent', IP=W+'cf-connecting-ip', ORG='$workers.event.request.cf.asOrganization';
-          await put('total_worker', q2('tw',[],[SEM_DO]));
-          await put('st_401', q2('s401',[P,IP,ORG,UA],[SEM_DO,{key:ST,operation:'eq',type:'number',value:401}]));
-          await put('st_404', q2('s404',[P,IP,ORG,UA],[SEM_DO,{key:ST,operation:'eq',type:'number',value:404}]));
-          await put('st_400', q2('s400',[P,IP,ORG],[SEM_DO,{key:ST,operation:'eq',type:'number',value:400}]));
-          await put('st_429', q2('s429',[P,IP,ORG],[SEM_DO,{key:ST,operation:'eq',type:'number',value:429}]));
-          await put('st_5xx', q2('s5',[P,ST],[SEM_DO,{key:ST,operation:'gte',type:'number',value:500}]));
-          await put('st_403', q2('s403',[P],[SEM_DO,{key:ST,operation:'eq',type:'number',value:403}]));
-          await put('ua_ferramenta', q2('uaf',[UA,P,IP,ORG],[SEM_DO,{key:UA,operation:'regex',type:'string',value:'(?i)(curl|python|wget|go-http|java/|okhttp|axios|node-fetch|undici|postman|insomnia|sqlmap|nikto|nuclei|burp|zgrab|httpx|masscan|nmap|scan|headless|playwright|puppeteer|selenium|libwww|aiohttp|requests)'}]));
-          await put('ua_ferramenta_inclui', q2('uaf2',[UA,P],[SEM_DO,{key:UA,operation:'includes',type:'string',value:'curl'}]));
-          await put('sem_ua', q2('sua',[P,IP,ORG],[SEM_DO,{key:UA,operation:'is_null',type:'string'}]));
-          await put('ws_sem_origem', q2('wso',[P,UA,IP],[SEM_DO,{key:W+'upgrade',operation:'exists',type:'string'},{key:W+'origin',operation:'is_null',type:'string'}]));
-          await put('caminhos', q2('cam',[P],[SEM_DO],100));
-          await put('origem_outras', q2('oo',[W+'origin',P],[SEM_DO,{key:W+'origin',operation:'neq',type:'string',value:'https://dominomanauara.com.br'}]));
-          await put('metodos', q2('met',['$workers.event.request.method'],[SEM_DO]));
-          await put('dono_por_ip', q2('dip',[IP,ORG,ST],[SEM_DO,{key:P,operation:'starts_with',type:'string',value:'/dono'}]));
+          async function ev(nome, filters){
+            const r=await api('/workers/observability/telemetry/query',{queryId:nome,timeframe:tf,view:'events',limit:200,parameters:{filters,filterCombination:'and'}});
+            if(!r.success) return {erro:r.errors};
+            const lista=(r.result.events&&r.result.events.events)||[];
+            return lista.map(e=>{const w=e.$workers||{},q=(w.event||{}).request||{},h=q.headers||{},cf=q.cf||{};
+              return {t:e.timestamp, metodo:q.method, url:q.url, status:(w.event&&w.event.response||{}).status, ua:h['user-agent'], ip:h['cf-connecting-ip'], org:cf.asOrganization, cidade:cf.city, origem:h.origin||null, ref:h.referer||null, ct:h['content-type']||null, tam:h['content-length']||null};});
+          }
+          await put('ev_headless', ev('h1',[{key:UA,operation:'includes',type:'string',value:'HeadlessChrome'}]));
+          await put('ev_curl788', ev('h2',[{key:UA,operation:'includes',type:'string',value:'curl/7.88'}]));
+          await put('ev_google', ev('h3',[{key:ORG,operation:'eq',type:'string',value:'Google LLC'},SEM_DO]));
+          await put('ev_head', ev('h4',[{key:'$workers.event.request.method',operation:'eq',type:'string',value:'HEAD'}]));
           JS
           sed -i 's/^          //' /tmp/cf.mjs
           node /tmp/cf.mjs 2>> $OUT
