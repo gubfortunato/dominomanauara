@@ -3823,7 +3823,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.52', data: '10/11/2026', itens: ['Sexta da Calçada: toda sexta, das 20h às 23h, experiência em dobro em todas as partidas (o nível sobe duas vezes mais rápido), com aviso no celular às 19h e às 20h.', 'Copa dos Sócios: a cada 3 meses, no último fim de semana de novembro, fevereiro, maio e agosto (a 1ª é de 27 a 29/11). Só sócios pontuam: o campeão leva o troféu na carteira e a Mesa do Campeão; 2º e 3º, medalha; quem jogar, a marca de participação.', 'Tempo de casa: a carteira de sócio mostra há quanto tempo você é sócio, com marcas aos 3 meses, 6 meses e 1 ano.'] },
+  { v: '3.52', data: '10/11/2026', itens: ['Sexta da Calçada: toda sexta, das 20h às 23h, moral em dobro em todas as partidas (o nível sobe duas vezes mais rápido), com aviso no celular às 19h e às 20h.', 'A experiência agora se chama moral: cada mão, galo, batida e vitória dá moral, e é a moral que sobe o seu nível na calçada.', 'Copa dos Sócios: a cada 3 meses, no último fim de semana de novembro, fevereiro, maio e agosto (a 1ª é de 27 a 29/11). Só sócios pontuam: o campeão leva o troféu na carteira e a Mesa do Campeão; 2º e 3º, medalha; quem jogar, a marca de participação.', 'Tempo de casa: a carteira de sócio mostra há quanto tempo você é sócio, com marcas aos 3 meses, 6 meses e 1 ano.'] },
   { v: '3.51.14', data: '10/11/2026', itens: ['Tela inicial: a saudação "Fala, ..." ficou maior.'] },
   { v: '3.51.13', data: '10/11/2026', itens: ['A mesa Branca saiu do jogo. Quem estava com ela volta para a de Madeira.'] },
   { v: '3.51.12', data: '10/11/2026', itens: ['Mesa Amazonas: a faixa branca e vermelha fica parada, mais grossa e mais transparente.'] },
@@ -10266,7 +10266,7 @@ function contarMissoes() {
   if (novas.length) track(tudo ? 'missoes-completas' : novas.some(m => m.nivel === 'bonus') ? 'desafio-cumprido' : 'missao-cumprida');
   // o aviso no alto da tela: missão cumprida (com som), ou o progresso de uma missão em andamento
   try {
-    if (tudo) misChip(`🔥 Missões do dia completas! <b>+${xp} de experiência</b>${offlineLimitado() ? ' · +1 partida offline hoje' : ''}`, 'ok', 3200);
+    if (tudo) misChip(`🔥 Missões do dia completas! <b>+${xp} de moral</b>${offlineLimitado() ? ' · +1 partida offline hoje' : ''}`, 'ok', 3200);
     else if (novas.length) { const m = novas[novas.length - 1]; misChip(`${m.nivel === 'bonus' ? '⭐ Desafio do dia cumprido' : '✓ Missão cumprida'}: ${esc(m.tx)} <b>+${MIS_XP[m.nivel]}</b>`, 'ok', 2800); }
     else if (andou.length) {
       // missão de somar pontos: avisa só ao passar de 1/4, 1/2 e 3/4 (para não aparecer a cada jogada)
@@ -10322,7 +10322,7 @@ function abrirMissoes() {
   openSheet('info', `<p class="eyebrow">Missões do dia</p><h2 id="sheetTitle">${s.completo ? (s.desafio ? 'Tudo cumprido hoje!' : 'Cumpridas! Bora o desafio?') : 'Bora cumprir?'}</h2>
     <ul class="mis-lista mis-folha" id="misFolha">${misLinhas(s, true)}</ul>
     <div class="mis-resumo"><div><b>🔥 ${s.seguidos}</b><small>${s.seguidos === 1 ? 'dia seguido' : 'dias seguidos'}</small></div><div><b>${total}</b><small>${total === 1 ? 'dia completo' : 'dias completos'}</small></div></div>
-    <p class="note">Cada missão cumprida dá experiência na hora. Cumprir as três vale <b>+50</b>${extra ? ' e <b>+1 partida no jogo offline hoje</b>' : ''}, e o desafio do dia vale <b>+60</b>. ${s.troca ? '' : 'Não gostou de uma? Dá para trocar uma por dia. '}${prox ? `Com ${prox.n} dias completos você ganha uma comida nova para o avatar: ${esc(prox.nome)} (faltam ${prox.n - total}).` : 'Você já ganhou todas as comidas das missões.'}</p>
+    <p class="note">Cada missão cumprida dá moral na hora. Cumprir as três vale <b>+50</b>${extra ? ' e <b>+1 partida no jogo offline hoje</b>' : ''}, e o desafio do dia vale <b>+60</b>. ${s.troca ? '' : 'Não gostou de uma? Dá para trocar uma por dia. '}${prox ? `Com ${prox.n} dias completos você ganha uma comida nova para o avatar: ${esc(prox.nome)} (faltam ${prox.n - total}).` : 'Você já ganhou todas as comidas das missões.'}</p>
     <p class="note">As missões mudam à meia-noite e valem no jogo offline e no online. Cumpra as três no mesmo dia para contar um dia completo; dias seguidos aumentam o foguinho.</p>
     <button type="button" class="primary" id="misJogar" style="width:100%">Jogar agora</button>
     <button type="button" class="secondary" id="misFechar" style="width:100%;margin-top:8px">Fechar</button>`);
@@ -10459,7 +10459,7 @@ trackOffline = function () { try { contarXP(); } catch (e) {} return trackOfflin
 function linhaXP(onde, como) {
   if (!xpDaMao || !onde) return;
   const v = nivelDe(nvEstado().xp);
-  onde.insertAdjacentHTML(como, `<p class="xp-linha"><b>+${xpDaMao}</b> de experiência · Nível ${v.n}${v.precisa ? ` <span>(${v.dentro}/${v.precisa})</span>` : ''}${xpSeqMsg ? `<small class="xp-seq">${esc(xpSeqMsg)}</small>` : ''}${xpSexta ? '<small class="xp-seq">🎲 Sexta da Calçada: experiência em dobro</small>' : ''}${xpMetade && xpMetadeAvisar() ? '<small class="xp-seq xp-metade">Contra a turma do bairro, vale a metade; contra pessoas, vale inteira.</small>' : ''}</p>`);
+  onde.insertAdjacentHTML(como, `<p class="xp-linha"><b>+${xpDaMao}</b> de moral · Nível ${v.n}${v.precisa ? ` <span>(${v.dentro}/${v.precisa})</span>` : ''}${xpSeqMsg ? `<small class="xp-seq">${esc(xpSeqMsg)}</small>` : ''}${xpSexta ? '<small class="xp-seq">🎲 Sexta da Calçada: moral em dobro</small>' : ''}${xpMetade && xpMetadeAvisar() ? '<small class="xp-seq xp-metade">Contra a turma do bairro, vale a metade; contra pessoas, vale inteira.</small>' : ''}</p>`);
   xpDaMao = 0; xpSeqMsg = ''; xpMetade = false; xpSexta = false;
 }
 const showResultNv = showResult;
@@ -10507,7 +10507,7 @@ function desenharFaixaNv() {
   $('#nvNum').textContent = v.n;
   $('#nvTit').textContent = `Nível ${v.n} · ${v.titulo}`;
   $('#nvBar').style.width = v.precisa ? `${Math.round(100 * v.dentro / v.precisa)}%` : '100%';
-  $('#nvFalta').textContent = v.precisa ? `Faltam ${v.precisa - v.dentro} de experiência para o nível ${v.n + 1}` : 'Nível máximo. Você é lenda!';
+  $('#nvFalta').textContent = v.precisa ? `Faltam ${v.precisa - v.dentro} de moral para o nível ${v.n + 1}` : 'Nível máximo. Você é lenda!';
 }
 function abrirNivel() {
   const v = nivelDe(nvEstado().xp);
@@ -10516,7 +10516,7 @@ function abrirNivel() {
   openSheet('info', `<p class="eyebrow">Seu nível</p><h2 id="sheetTitle">Nível ${v.n} · ${esc(v.titulo)}</h2>
     <div class="nv-grande"><span class="nv-barra"><i style="width:${v.precisa ? Math.round(100 * v.dentro / v.precisa) : 100}%"></i></span>
     <small>${v.precisa ? `${v.dentro} de ${v.precisa} para o nível ${v.n + 1}` : 'Nível máximo'}</small></div>
-    <p class="es-gk">Como ganhar experiência?</p><ul class="nv-lista">${regras}</ul>
+    <p class="es-gk">Como ganhar moral na calçada?</p><ul class="nv-lista">${regras}</ul>
     <p class="note nv-metade">Contra pessoas na mesa online, vale tudo isso. Contra a turma do bairro (no jogo offline ou sem nenhuma pessoa do outro lado da mesa), as jogadas valem metade. As missões do dia valem sempre +50.</p>
     <p class="es-gk">Títulos</p><ul class="nv-lista nv-titulos">${titulos}</ul>
     <p class="note">Na mesa online, todo mundo vê o seu nível na bolinha do avatar.</p>
@@ -13216,7 +13216,7 @@ renderHome = function () { renderHomePromo.apply(this, arguments); setTimeout(()
 //   Copa dos Sócios: de 3 em 3 meses (o dono achou que todo mês ficaria banal), no último fim de semana de novembro,
 //     fevereiro, maio e agosto, de sexta 20h a domingo 22h. Só sócios pontuam. Troféu, medalhas e participação na carteira;
 //     o campeão ganha a mesa do campeão até a próxima Copa.
-//   Sexta da Calçada: toda sexta, das 20h às 23h, experiência em dobro (todo mundo no mesmo horário: é assim que nasce a turma).
+//   Sexta da Calçada: toda sexta, das 20h às 23h, moral em dobro (a "experiência" virou "moral", pedido do dono; todo mundo no mesmo horário: é assim que nasce a turma).
 //   Tempo de casa: "sócio há 3 meses" na carteira, com marcas aos 3, 6 e 12 meses (zera se ficar mais de 7 dias vencido).
 const MAN_MS = 4 * 3600000, DIA_MS = 86400000;
 const manausDe = t => new Date(t - MAN_MS);   // campos UTC = horário de Manaus
@@ -13275,7 +13275,7 @@ function evCardDados() {
   if (c.fase === 'agora') return { tipo: 'copa', ir: 'copa', ck: 'Ao vivo · até domingo, 22h', ct: `🏆 ${ed.nome}`,
     cd: socio ? (eu ? `Você está em ${eu.pos}º, com ${rkPts(eu.pontos)}. Cada vitória online vale ponto: bora subir!` : 'Cada vitória online vale ponto para os sócios. Entre no ranking da Copa!')
       : 'Só sócios pontuam. Veja o ranking e seja sócio para disputar o troféu.' };
-  if (sx === 'agora') return { tipo: 'sexta', ir: 'rapida', ck: 'Sexta da Calçada · até as 23h', ct: '🎲 Experiência em dobro agora!', cd: 'Toda partida vale o dobro de experiência: o nível sobe duas vezes mais rápido. Bora pra mesa rápida?' };
+  if (sx === 'agora') return { tipo: 'sexta', ir: 'rapida', ck: 'Sexta da Calçada · até as 23h', ct: '🎲 Moral em dobro agora!', cd: 'Toda partida vale o dobro de moral: o nível sobe duas vezes mais rápido. Bora pra mesa rápida?' };
   if (c.fase === 'antes') return { tipo: 'copa', ir: 'copa', ck: 'Vem aí', ct: `🏆 ${ed.nome}`,
     cd: `${csQuando(ed).replace(/^d/, 'D')}. ${socio ? 'Você está dentro: o campeão leva o troféu na carteira e a mesa do campeão.' : 'Só sócios pontuam: o campeão leva o troféu na carteira e a mesa do campeão.'}` };
   if (c.fase === 'depois') {
@@ -13283,7 +13283,7 @@ function evCardDados() {
     return { tipo: 'copa', ir: 'copa', ck: 'Copa dos Sócios', ct: cp ? `🏆 ${cp.eu ? 'Você é o campeão!' : cp.nome + ' é o campeão!'}` : `🏆 A ${ed.nome} terminou`,
       cd: `Veja o pódio da ${ed.nome}. A próxima é em ${c.atual.mes}.` };
   }
-  if (sx === 'hoje') return { tipo: 'sexta', ir: 'sexta', ck: 'Hoje · das 20h às 23h', ct: '🎲 Sexta da Calçada', cd: 'Experiência em dobro em todas as partidas: o nível sobe duas vezes mais rápido. Chama a turma!' };
+  if (sx === 'hoje') return { tipo: 'sexta', ir: 'sexta', ck: 'Hoje · das 20h às 23h', ct: '🎲 Sexta da Calçada', cd: 'Moral em dobro em todas as partidas: o nível sobe duas vezes mais rápido. Chama a turma!' };
   return null;
 }
 function desenharEvCard() {
