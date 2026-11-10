@@ -1,5 +1,4 @@
-# Diagnóstico de robôs de fora (pedido do dono): só números agregados, sem apelido nem código de ninguém.
-# Roda à mão (Actions › diagnostico › Run workflow) e grava o resultado no ramo "diagnostico" (diagnostico.txt).
+# Diagnóstico privado: o resultado sai criptografado (só quem tem a chave privada lê). Nada de dado pessoal no log.
 name: diagnostico
 on:
   workflow_dispatch:
@@ -21,140 +20,52 @@ jobs:
         shell: bash
         run: |
           set +e
-          ST="$GITHUB_WORKSPACE/diagnostico.txt"; : > "$ST"
-          log() { echo "$*" | tee -a "$ST"; }
+          OUT=/tmp/priv.txt; : > $OUT
           npm i -g wrangler@4 > /dev/null 2>&1
           id=$(wrangler d1 list --json 2>/dev/null | jq -r '.[] | select(.name=="dominomanauara") | .uuid')
           sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
-          AGORA=$(($(date +%s) * 1000)); H=3600000; D=86400000
-          q() { r=$(wrangler d1 execute dominomanauara --remote --json --command "$2" 2>&1); log "$1: $(echo "$r" | jq -c '.[0].results' 2>/dev/null || echo "$r" | grep -iE 'error|✘' | head -2 | tr '\n' ' ')"; }
-          log "diagnóstico $(date -u +%FT%TZ) (horário UTC; Manaus = UTC-4)"
-          q "notificações por tipo de celular (assinaturas, envios que deram certo, último envio)" "SELECT CASE WHEN endpoint LIKE '%fcm.googleapis.com%' THEN 'android/chrome (FCM)' WHEN endpoint LIKE '%push.apple.com%' THEN 'iphone (Apple)' WHEN endpoint LIKE '%mozilla%' THEN 'firefox' ELSE 'outro' END AS tipo, COUNT(*) AS assinaturas, SUM(envios) AS envios_ok, SUM(envios > 0) AS receberam_alguma, MAX(ultimo_envio) AS ultimo_envio, MAX(criado_em) AS ultima_assinatura FROM avisos GROUP BY tipo"
-          q "aparelho do teste automático bloqueado? (quantos, motivo, quando)" "SELECT COUNT(*) AS n, MAX(motivo) AS motivo, MAX(em) AS em FROM bloqueios WHERE aparelho LIKE 'teste-%'"
-          q "bloqueados no total / nas últimas 24 h" "SELECT COUNT(*) AS total, SUM(em > $AGORA - $D) AS h24 FROM bloqueios"
-          q "jogaram online (24 h / 7 dias)" "SELECT SUM(visto_em > $AGORA - $D) AS h24, COUNT(*) AS d7 FROM jogadores_vistos WHERE visto_em > $AGORA - 7 * $D"
-          q "app aberto agora / nas últimas 24 h" "SELECT SUM(visto_em > $AGORA - 60000) AS agora, SUM(visto_em > $AGORA - $D) AS h24, SUM(visto_em = 0) AS sairam FROM presenca"
-          # A presença ("No app agora") só é limpa às 21, 22 e 23 h UTC; desde a última limpeza, todo aparelho que abriu o app
-          # tem uma linha nela. Quem entrou numa mesa online desde então sem linha nenhuma jogou sem o app (programa de fora).
-          H_UTC=$(date -u +%H); if [ "$H_UTC" -ge 21 ]; then LIMPA=$(date -u -d "today ${H_UTC}:05" +%s); else LIMPA=$(date -u -d "yesterday 23:05" +%s); fi; LIMPA=$((LIMPA * 1000))
-          log "janela sem limpeza da presença: desde $(date -u -d @$((LIMPA / 1000)) +%FT%TZ)"
-          q "entraram em mesa online na janela / sem o app aberto nenhuma vez" "SELECT COUNT(*) AS entraram, SUM(NOT EXISTS (SELECT 1 FROM presenca p WHERE p.aparelho = v.aparelho)) AS sem_app FROM jogadores_vistos v WHERE v.visto_em > $LIMPA"
-          for per in atual anterior; do
-            if [ $per = atual ]; then PSQL="(SELECT MAX(periodo) FROM calcada WHERE periodo LIKE 'S%')"; else PSQL="(SELECT MAX(periodo) FROM calcada WHERE periodo LIKE 'S%' AND periodo < (SELECT MAX(periodo) FROM calcada WHERE periodo LIKE 'S%'))"; fi
-            q "ranking semana $per" "SELECT periodo, COUNT(*) AS jogadores, SUM(jogadas) AS partidas, MAX(jogadas) AS mais_partidas, SUM(jogadas >= 60) AS com_60_ou_mais, MAX(CASE WHEN jogadas >= 20 THEN ROUND(1.0 * ganhas / jogadas, 2) END) AS maior_aproveitamento_20mais, SUM(jogadas >= 20 AND 1.0 * ganhas / jogadas >= 0.75) AS aproveitamento_75_20mais, SUM(jogadas_gente) AS partidas_com_gente FROM calcada WHERE periodo = $PSQL"
-            q "ranking semana $per: 8 maiores números de partidas" "SELECT jogadas, ganhas, jogadas_gente FROM calcada WHERE periodo = $PSQL ORDER BY jogadas DESC LIMIT 8"
-          done
-          q "contra robôs por dia (7 dias): maior / dias com 40+" "SELECT MAX(n) AS maior, SUM(n >= 40) AS com_40_ou_mais, COUNT(*) AS linhas FROM calcada_robo WHERE dia >= date('now', '-7 day')"
-          q "mesma dupla por dia (7 dias): maior / com 20+" "SELECT MAX(n) AS maior, SUM(n >= 20) AS com_20_ou_mais FROM calcada_par WHERE dia >= date('now', '-7 day')"
-          q "mesas criadas por endereço por dia (7 dias): maior" "SELECT MAX(c) AS maior, SUM(c >= 20) AS com_20_ou_mais FROM (SELECT marca, COUNT(*) AS c FROM mesas_criadas WHERE criado_em > $AGORA - 7 * $D GROUP BY marca)"
-          q "jogaram online por hora do dia (Manaus, 7 dias, pelo último jogo)" "SELECT CAST(((visto_em / $H) - 4 + 24) % 24 AS INTEGER) AS hora, COUNT(*) AS n FROM jogadores_vistos WHERE visto_em > $AGORA - 7 * $D GROUP BY hora ORDER BY hora"
+          AGORA=$(($(date +%s) * 1000)); D=86400000
+          p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
+          NOME="COALESCE((SELECT nome FROM presenca x WHERE x.aparelho = T.aparelho AND x.nome IS NOT NULL), (SELECT nome FROM jogadores_vistos x WHERE x.aparelho = T.aparelho), (SELECT nome FROM ranking x WHERE x.aparelho = T.aparelho ORDER BY atualizado DESC LIMIT 1))"
+          p socios "SELECT T.aparelho, T.ate, T.desde, T.codigo, ${NOME//T./T.} AS nome, (SELECT status FROM assinaturas s WHERE s.aparelho = T.aparelho ORDER BY rowid DESC LIMIT 1) AS assinatura FROM planos T ORDER BY T.desde"
+          p limites_de_socios "SELECT l.dia, l.aparelho, l.mesas, l.partidas, l.publicas, p.ate, p.desde FROM limites l JOIN planos p ON p.aparelho = l.aparelho WHERE l.dia >= '2026-11-05' AND (l.partidas > 0 OR l.publicas > 0 OR l.mesas > 0)"
+          p offline_de_socios "SELECT o.dia, o.aparelho, o.n, p.ate, p.desde FROM offline_uso o JOIN planos p ON p.aparelho = o.aparelho WHERE o.dia >= '2026-11-05'"
+          p rede_de_socios "SELECT r.dia, r.tipo, r.aparelho, r.em, p.ate FROM limites_rede r JOIN planos p ON p.aparelho = r.aparelho"
+          p desafio_de_socios "SELECT d.dia, d.aparelho, d.n FROM desafio_uso d JOIN planos p ON p.aparelho = d.aparelho"
+          p mensagens "SELECT T.id, T.criado_em, T.tipo, T.nome, T.versao, T.aparelho, T.status, substr(T.texto, 1, 300) AS texto, (SELECT ate FROM planos x WHERE x.aparelho = T.aparelho) AS plano_ate FROM mensagens T WHERE T.criado_em > $AGORA - 12 * $D ORDER BY T.criado_em DESC LIMIT 120"
+          p pedidos "SELECT T.id, T.aparelho, T.produto, T.valor, T.status, T.criado_em, T.pago_em, (SELECT ate FROM planos x WHERE x.aparelho = T.aparelho) AS plano_ate, ${NOME} AS nome FROM pedidos T WHERE T.criado_em > $AGORA - 20 * $D ORDER BY T.criado_em DESC LIMIT 300"
+          p cortesias "SELECT T.aparelho, T.nivel, T.desde, ${NOME} AS nome FROM cortesias T"
           rm -f wrangler.toml
-      - name: Saúde e consumo do Cloudflare (plano grátis)
-        working-directory: servidor
-        shell: bash
-        if: always()
-        run: |
-          set +e
-          ST="$GITHUB_WORKSPACE/diagnostico.txt"
-          log() { echo "$*" | tee -a "$ST"; }
-          url=https://api.gubfort.workers.dev
-          log ""
-          log "== saúde agora ($(date -u +%FT%TZ)) =="
-          log "saúde: $(curl -s -m 15 -w ' (http %{http_code})' $url/saude)"
-          log "mesa online (cria, entra pelo WebSocket e sai): $(timeout 40 node teste_publicado.mjs "$url" 2>&1 | tail -1)"
-          log "mesa online, de novo: $(timeout 40 node teste_publicado.mjs "$url" 2>&1 | tail -1)"
-          log ""
-          log "== consumo por dia (UTC; o dia vira às 20h de Manaus). Limites do plano grátis: Workers 100 mil pedidos/dia; Durable Objects 100 mil pedidos/dia e 13 mil GB-s/dia; D1 5 milhões de linhas lidas e 100 mil escritas/dia =="
-          gql() { curl -s -m 30 https://api.cloudflare.com/client/v4/graphql -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' \
-                    --data "$(jq -n --arg q "$1" --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg ini "$2" --arg fim "$3" --arg dini "${2%%T*}" --arg dfim "${3%%T*}" '{query:$q, variables:{acc:$acc, ini:$ini, fim:$fim, dini:$dini, dfim:$dfim}}')"; }
-          INI=$(date -u -d '6 days ago' +%Y-%m-%dT00:00:00Z); FIM=$(date -u +%FT%TZ)
-          r=$(gql 'query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) {
-              workersInvocationsAdaptive(limit: 500, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { requests errors subrequests } dimensions { date status } } } } }' "$INI" "$FIM")
-          log "Worker (pedidos por dia e situação): $(echo "$r" | jq -c '(.errors // []) as $e | if ($e|length) > 0 then {erro: [$e[].message]} else [.data.viewer.accounts[0].workersInvocationsAdaptive[] | {d: .dimensions.date, s: .dimensions.status, n: .sum.requests, err: .sum.errors}] | group_by(.d) | map({dia: .[0].d, pedidos: (map(.n) | add), erros: (map(.err) | add), situacoes: (map({(.s): .n}) | add)}) end' 2>/dev/null || echo "$r" | head -c 400)"
-          r=$(gql 'query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) {
-              durableObjectsInvocationsAdaptiveGroups(limit: 500, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { requests errors } dimensions { date status } } } } }' "$INI" "$FIM")
-          log "Mesas / Durable Objects (pedidos por dia): $(echo "$r" | jq -c '(.errors // []) as $e | if ($e|length) > 0 then {erro: [$e[].message]} else [.data.viewer.accounts[0].durableObjectsInvocationsAdaptiveGroups[] | {d: .dimensions.date, s: .dimensions.status, n: .sum.requests, err: .sum.errors}] | group_by(.d) | map({dia: .[0].d, pedidos: (map(.n) | add), erros: (map(.err) | add), situacoes: (map({(.s): .n}) | add)}) end' 2>/dev/null || echo "$r" | head -c 400)"
-          r=$(gql 'query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) {
-              durableObjectsPeriodicGroups(limit: 500, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { activeTime cpuTime exceededCpuErrors exceededMemoryErrors inboundWebsocketMsgCount outboundWebsocketMsgCount rowsRead rowsWritten } dimensions { date } } } } }' "$INI" "$FIM")
-          log "Mesas / Durable Objects (tempo e mensagens por dia): $(echo "$r" | jq -c '(.errors // []) as $e | if ($e|length) > 0 then {erro: [$e[].message]} else [.data.viewer.accounts[0].durableObjectsPeriodicGroups[] | {d: .dimensions.date} + .sum] | group_by(.d) | map({dia: .[0].d, gb_s: ((map(.activeTime) | add) / 1000000 * 0.125 | floor), msgs_entrada: (map(.inboundWebsocketMsgCount) | add), msgs_saida: (map(.outboundWebsocketMsgCount) | add), estouros_cpu: (map(.exceededCpuErrors) | add), estouros_memoria: (map(.exceededMemoryErrors) | add), linhas_lidas: (map(.rowsRead) | add), linhas_gravadas: (map(.rowsWritten) | add)}) end' 2>/dev/null || echo "$r" | head -c 400)"
-          DB=$(npx -y wrangler@4 d1 list --json 2>/dev/null | jq -r '.[] | select(.name=="dominomanauara") | .uuid')
-          r=$(curl -s -m 30 https://api.cloudflare.com/client/v4/graphql -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' \
-                --data "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg db "$DB" --arg dini "${INI%%T*}" --arg dfim "${FIM%%T*}" '{query: "query($acc: string!, $db: string!, $dini: Date!, $dfim: Date!) { viewer { accounts(filter: {accountTag: $acc}) { d1AnalyticsAdaptiveGroups(limit: 100, filter: {date_geq: $dini, date_leq: $dfim, databaseId: $db}) { sum { readQueries writeQueries rowsRead rowsWritten } dimensions { date } } } } }", variables: {acc: $acc, db: $db, dini: $dini, dfim: $dfim}}')")
-          log "Banco D1 (por dia): $(echo "$r" | jq -c '(.errors // []) as $e | if ($e|length) > 0 then {erro: [$e[].message]} else [.data.viewer.accounts[0].d1AnalyticsAdaptiveGroups[] | {dia: .dimensions.date} + .sum] | sort_by(.dia) end' 2>/dev/null || echo "$r" | head -c 400)"
-          INI2=$(date -u -d '30 hours ago' +%Y-%m-%dT%H:00:00Z)
-          r=$(gql 'query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) {
-              workersInvocationsAdaptive(limit: 2000, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { requests errors } dimensions { datetimeHour status } } } } }' "$INI2" "$FIM")
-          log "Worker por hora (últimas 30 h; hora UTC): $(echo "$r" | jq -c '(.errors // []) as $e | if ($e|length) > 0 then {erro: [$e[].message]} else [.data.viewer.accounts[0].workersInvocationsAdaptive[] | {h: .dimensions.datetimeHour[5:13], s: .dimensions.status, n: .sum.requests}] | group_by(.h) | map({h: .[0].h, n: (map(.n) | add), s: (map(select(.s != "success")) | map({(.s): .n}) | add)}) end' 2>/dev/null || echo "$r" | head -c 400)"
-      - name: Consumo hora a hora (últimos 4 dias)
-        working-directory: servidor
-        shell: bash
-        if: always()
-        run: |
-          set +e
-          ST="$GITHUB_WORKSPACE/diagnostico.txt"
-          log() { echo "$*" | tee -a "$ST"; }
-          gq() { curl -s -m 40 https://api.cloudflare.com/client/v4/graphql -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' --data "$1"; }
-          INI=$(date -u -d '3 days ago' +%Y-%m-%dT00:00:00Z); FIM=$(date -u +%FT%TZ)
-          log ""
-          log "== mesas (Durable Objects) hora a hora desde $INI (hora UTC; Manaus = UTC-4): pedidos ok / outros =="
-          r=$(gq "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg ini "$INI" --arg fim "$FIM" '{query: "query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) { durableObjectsInvocationsAdaptiveGroups(limit: 5000, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { requests } dimensions { datetimeHour status } } } } }", variables: {acc: $acc, ini: $ini, fim: $fim}}')")
-          log "$(echo "$r" | jq -r '(.errors // []) as $e | if ($e|length) > 0 then ([$e[].message] | join("; ")) else [.data.viewer.accounts[0].durableObjectsInvocationsAdaptiveGroups[] | {h: .dimensions.datetimeHour[5:13], ok: (if .dimensions.status == "success" then .sum.requests else 0 end), out: (if .dimensions.status == "success" then 0 else .sum.requests end)}] | group_by(.h) | map("\(.[0].h) \(map(.ok) | add)/\(map(.out) | add)") | join("  ") end' 2>/dev/null || echo "$r" | head -c 300)"
-          log "== Worker hora a hora: pedidos ok / outros =="
-          r=$(gq "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg ini "$INI" --arg fim "$FIM" '{query: "query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) { workersInvocationsAdaptive(limit: 5000, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { requests } dimensions { datetimeHour status } } } } }", variables: {acc: $acc, ini: $ini, fim: $fim}}')")
-          log "$(echo "$r" | jq -r '(.errors // []) as $e | if ($e|length) > 0 then ([$e[].message] | join("; ")) else [.data.viewer.accounts[0].workersInvocationsAdaptive[] | {h: .dimensions.datetimeHour[5:13], ok: (if .dimensions.status == "success" then .sum.requests else 0 end), out: (if .dimensions.status == "success" then 0 else .sum.requests end)}] | group_by(.h) | map("\(.[0].h) \(map(.ok) | add)/\(map(.out) | add)") | join("  ") end' 2>/dev/null || echo "$r" | head -c 300)"
-          DB=$(npx -y wrangler@4 d1 list --json 2>/dev/null | jq -r '.[] | select(.name=="dominomanauara") | .uuid')
-          log "== banco D1 hora a hora: linhas escritas / consultas de escrita =="
-          r=$(gq "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg db "$DB" --arg ini "$INI" --arg fim "$FIM" '{query: "query($acc: string!, $db: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) { d1AnalyticsAdaptiveGroups(limit: 2000, filter: {datetimeHour_geq: $ini, datetimeHour_leq: $fim, databaseId: $db}) { sum { rowsWritten writeQueries } dimensions { datetimeHour } } } } }", variables: {acc: $acc, db: $db, ini: $ini, fim: $fim}}')")
-          log "$(echo "$r" | jq -r '(.errors // []) as $e | if ($e|length) > 0 then ([$e[].message] | join("; ")) else [.data.viewer.accounts[0].d1AnalyticsAdaptiveGroups[] | "\(.dimensions.datetimeHour[5:13]) \(.sum.rowsWritten)/\(.sum.writeQueries)"] | sort | join("  ") end' 2>/dev/null || echo "$r" | head -c 300)"
-      - name: Campos de consumo das mesas (SQLite) e hoje até agora
-        working-directory: servidor
-        shell: bash
-        if: always()
-        run: |
-          set +e
-          ST="$GITHUB_WORKSPACE/diagnostico.txt"
-          log() { echo "$*" | tee -a "$ST"; }
-          gq() { curl -s -m 40 https://api.cloudflare.com/client/v4/graphql -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' --data "$1"; }
-          log ""
-          log "== campos que o Cloudflare tem para as mesas (Durable Objects) =="
-          for t in AccountDurableObjectsPeriodicGroupsSum AccountDurableObjectsSqlStorageGroupsMax AccountDurableObjectsStorageGroupsMax AccountDurableObjectsInvocationsAdaptiveGroupsDimensions AccountDurableObjectsSubrequestsAdaptiveGroupsDimensions AccountDurableObjectsSubrequestsAdaptiveGroupsSum; do
-            r=$(gq "$(jq -n --arg t "$t" '{query: "query($t: String!) { __type(name: $t) { fields { name } } }", variables: {t: $t}}')")
-            log "$t: $(echo "$r" | jq -c '[.data.__type.fields[]?.name]' 2>/dev/null)"
-          done
-          r=$(gq '{"query":"{ __type(name: \"account\") { fields { name } } }"}')
-          log "conjuntos com durable: $(echo "$r" | jq -c '[.data.__type.fields[]?.name | select(test("urable"))]' 2>/dev/null)"
-          HOJE=$(date -u +%Y-%m-%dT00:00:00Z); FIM=$(date -u +%FT%TZ)
-          ONTEM=$(date -u -d yesterday +%Y-%m-%dT00:00:00Z)
-          # Pedidos de ontem por mesa (identificador opaco cortado em 8 letras; nenhum dado de jogador): mostra se uma mesa só (a fila) puxa a conta
-          r=$(gq "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg ini "$ONTEM" --arg fim "$HOJE" '{query: "query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) { durableObjectsInvocationsAdaptiveGroups(limit: 8, orderBy: [sum_requests_DESC], filter: {datetime_geq: $ini, datetime_lt: $fim}) { sum { requests } dimensions { objectId } } } } }", variables: {acc: $acc, ini: $ini, fim: $fim}}')")
-          log "ontem, mesas que mais receberam pedidos: $(echo "$r" | jq -c '(.errors // []) as $e | if ($e|length) > 0 then {erro: [$e[].message]} else [.data.viewer.accounts[0].durableObjectsInvocationsAdaptiveGroups[] | {id: (.dimensions.objectId // "")[0:8], n: .sum.requests}] end' 2>/dev/null || echo "$r" | head -c 300)"
-          r=$(gq "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg ini "$ONTEM" --arg fim "$HOJE" '{query: "query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) { durableObjectsInvocationsAdaptiveGroups(limit: 50, filter: {datetime_geq: $ini, datetime_lt: $fim}) { sum { requests } dimensions { type status } } } } }", variables: {acc: $acc, ini: $ini, fim: $fim}}')")
-          log "ontem, pedidos das mesas por tipo: $(echo "$r" | jq -c '(.errors // []) as $e | if ($e|length) > 0 then {erro: [$e[].message]} else [.data.viewer.accounts[0].durableObjectsInvocationsAdaptiveGroups[] | {t: .dimensions.type, s: .dimensions.status, n: .sum.requests}] | sort_by(-.n) end' 2>/dev/null || echo "$r" | head -c 300)"
-          r=$(gq "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg ini "$ONTEM" --arg fim "$HOJE" '{query: "query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) { durableObjectsInvocationsAdaptiveGroups(limit: 40, orderBy: [sum_requests_DESC], filter: {datetime_geq: $ini, datetime_lt: $fim}) { sum { requests } dimensions { objectId type } } } } }", variables: {acc: $acc, ini: $ini, fim: $fim}}')")
-          log "ontem, maiores (mesa, tipo): $(echo "$r" | jq -c '[.data.viewer.accounts[0].durableObjectsInvocationsAdaptiveGroups[]? | "\((.dimensions.objectId // "")[0:6]) \(.dimensions.type) \(.sum.requests)"] | .[0:24]' 2>/dev/null | head -c 1200)"
-          r=$(gq "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg ini "$ONTEM" --arg fim "$HOJE" '{query: "query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) { durableObjectsInvocationsAdaptiveGroups(limit: 10000, filter: {datetime_geq: $ini, datetime_lt: $fim}) { sum { requests } dimensions { objectId } } } } }", variables: {acc: $acc, ini: $ini, fim: $fim}}')")
-          log "ontem, mesas diferentes com pedidos e soma: $(echo "$r" | jq -c '[.data.viewer.accounts[0].durableObjectsInvocationsAdaptiveGroups[]?] | {mesas: length, soma: (map(.sum.requests) | add), ate_50: (map(select(.sum.requests <= 50)) | length), de_51_a_500: (map(select(.sum.requests > 50 and .sum.requests <= 500)) | length), mais_de_500: (map(select(.sum.requests > 500)) | length), soma_mais_de_500: (map(select(.sum.requests > 500) | .sum.requests) | add)}' 2>/dev/null | head -c 400)"
-          r=$(gq "$(jq -n --arg acc "$CLOUDFLARE_ACCOUNT_ID" --arg ini "$HOJE" --arg fim "$FIM" '{query: "query($acc: string!, $ini: Time!, $fim: Time!) { viewer { accounts(filter: {accountTag: $acc}) { workersInvocationsAdaptive(limit: 100, filter: {datetime_geq: $ini, datetime_leq: $fim}) { sum { requests } } } } }", variables: {acc: $acc, ini: $ini, fim: $fim}}')")
-          log "Worker hoje (desde 00:00 UTC) até $FIM: $(echo "$r" | jq -c '[.data.viewer.accounts[0].workersInvocationsAdaptive[].sum.requests] | add' 2>/dev/null) pedidos (limite 100 mil)"
-      - name: Erro exato da mesa (wrangler tail durante um teste)
-        working-directory: servidor
-        shell: bash
-        if: always()
-        run: |
-          set +e
-          ST="$GITHUB_WORKSPACE/diagnostico.txt"
-          log() { echo "$*" | tee -a "$ST"; }
-          url=https://api.gubfort.workers.dev
-          log ""
-          log "== erro exato da mesa (só o resultado e a mensagem de erro de cada chamada que falhou) =="
-          timeout 40 npx -y wrangler@4 tail api --format json > /tmp/tail.json 2>/tmp/tail.err &
-          sleep 12
-          log "teste: $(timeout 30 node teste_publicado.mjs "$url" 2>&1 | tail -1)"
-          sleep 10
-          wait
-          log "chamadas vistas: $(grep -c '"outcome"' /tmp/tail.json 2>/dev/null)"
-          log "$(jq -c 'select(((.event.request.url // "") | test("/mesa/nova|/criar")) or .outcome != "ok" or ((.exceptions // []) | length) > 0) | {outcome, script: .scriptName, ent: .entrypoint, exc: [(.exceptions // [])[] | ((.name // "") + ": " + (.message // ""))[0:300]], logs: [(.logs // [])[] | (.message | tostring)[0:400]], url: ((.event.request.url // "") | sub("\\?.*"; ""))}' /tmp/tail.json 2>/dev/null | head -8)"
-          log "erro do tail: $(head -c 300 /tmp/tail.err)"
+          cat > /tmp/cert.pem <<'CERT'
+          -----BEGIN CERTIFICATE-----
+          MIID/zCCAmegAwIBAgIUQME67vF2YCFx4qbuKp7jtL5uF+AwDQYJKoZIhvcNAQEL
+          BQAwDzENMAsGA1UEAwwEZGlhZzAeFw0yNjExMTAxMTIxNDNaFw0yNjEyMTAxMTIx
+          NDNaMA8xDTALBgNVBAMMBGRpYWcwggGiMA0GCSqGSIb3DQEBAQUAA4IBjwAwggGK
+          AoIBgQCh+a3g8dvenYXkbxbqSEWpc2kIa8M3/sWAEildJeaX+xKJKJEDjkHliJNk
+          RLokpedKL8Gm34Q/liKO3cGNZ603gkCzfwoI44FFfhUf5WZtw3vy9WA3T8y+t/Ac
+          I+GdzEIL4HCKT7zKB+JAU2DtdLBFTlgJVAuGC0Aw3sfST7VriMYgNpdFRQ63175P
+          5zcvwic3Gi7Wz3v3i0Sje3/j/LDtUR3UakrGw6wNOUTzoNd9WjYxJJ7My1DBSMyq
+          /GpeOfKzqf15fzS42kDgnPpqxh//Q/01yKZ6IU8Ff2l4HLzUpjl44ysIMc4Xn2S3
+          PCRDsbOt37OK1N6OkBM1NjqH/eQTpwllSr6uuvP9XMIMNdEgZtG/DfluHqp941zJ
+          xPgMWTTrqfMQ18Nzd0c33CWAZMb7thoGnQuDOqPaBsTENPGXP0xHN+NsgxKVRl/Q
+          Lp7qhvGm4tJDjhBywtB0jU5NDLpvtZgnpa0NdlHIZb/vgVOBh1pnGl6NP8DALyF/
+          Qp7JhJECAwEAAaNTMFEwHQYDVR0OBBYEFNF4rl7COtkaQ708ieHQ7XqW33gIMB8G
+          A1UdIwQYMBaAFNF4rl7COtkaQ708ieHQ7XqW33gIMA8GA1UdEwEB/wQFMAMBAf8w
+          DQYJKoZIhvcNAQELBQADggGBAHQa3vjU6BeYLY6b0WP2Vxv/Q83jnLpmkeiobgeE
+          /qo8pzZ8jhEo8A3H/khiOZiK7VCcIyqcIFG2vC+3Yhw+tGKeEaGZAfo/29o3hLxD
+          5KF+lFSxtkj8ILgj3i51EQ/7YXOLUFsJ2tf0e+zE2Xr4FVVKqQ4dGe1Csdg4XuBh
+          oruwNMFqJj6aPT4EXV5TkJLdUD3wjgnlyKNmxcZFzrqkCwhPqKpAIwwZHA5FWgAi
+          ywkWWi+sVJW4M+I07nuFYyskSnHyOnLlViAe2WZQdc5oFjVaB/ZSIbvHIa4tCUvP
+          tzlALSBZsL2qKclCFJOZrax6IPrakcw6l7qbzVl8ZoHSaqALt6p84eJqbQChv7gu
+          wdqKNd6+UINb25CPaNLU+7Ap9tab5W4JlRvaqkMClhq1eiJsxH8FSPGy73thUoAz
+          C7NzFY8XbuNHH+E2mO8lIjNg5TRfZtAYkCmo3kc1ygD65DvdVJSQ9eyBjRxiZE2K
+          33QifeITDlCjzyrfhrGqS8FUfw==
+          -----END CERTIFICATE-----
+          CERT
+          sed -i 's/^ *//' /tmp/cert.pem
+          echo "linhas: $(wc -l < $OUT)"
+          openssl cms -encrypt -binary -aes256 -in $OUT -outform PEM -out "$GITHUB_WORKSPACE/diagnostico.txt" /tmp/cert.pem && echo criptografado
+          shred -u $OUT 2>/dev/null || rm -f $OUT
       - name: Guardar o resultado
         if: always()
         shell: bash
