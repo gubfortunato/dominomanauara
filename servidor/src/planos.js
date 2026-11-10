@@ -87,6 +87,62 @@ export const podeJogar = (c, env, publica, daSocio, desafio) => !c || c.bot || c
 const sha = async t => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(b => b.toString(16).padStart(2, '0')).join('');
 export async function marcaRede(ip, env) { return ip ? (await sha('rede|' + ip + '|' + diaBR() + '|' + ((env && env.ADMIN_HASH) || ''))).slice(0, 24) : null; }
 const nomeChave = n => String(n || '').toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
+// 10/11 (pedido do dono, depois da análise de 5 a 9/11): quem apaga os dados (ou troca de aparelho/navegador) e volta com
+// o MESMO apelido logo depois de bater o limite do dia fica com o limite também, em qualquer rede (antes, só na mesma
+// rede). Só vale para apelido pouco comum (até 3 jogadores online com ele), para não pegar dois "João" diferentes.
+// o apelido "limpo" no banco (o mesmo que nomeChave: minúsculo, sem acento, sem espaço nem pontuação)
+const CHAVE_SQL = (() => {
+  let e = 'lower(nome)';
+  const tr = { a: 'áàâãäÁÀÂÃÄ', e: 'éèêëÉÈÊË', i: 'íìîïÍÌÎÏ', o: 'óòôõöÓÒÔÕÖ', u: 'úùûüÚÙÛÜ', c: 'çÇ', n: 'ñÑ' };
+  for (const [k, v] of Object.entries(tr)) for (const ch of v) e = `replace(${e}, '${ch}', '${k}')`;
+  for (const ch of [' ', '.', '_', '-', "''", '!', '*', '🥸']) e = `replace(${e}, '${ch}', '')`;
+  return e;
+})();
+export async function limiteDoApelido(env, tipo, aparelho, nome) {
+  const n = nomeChave(nome); if (!aparelho || n.length < 4) return false;
+  try {
+    const desde = await aparelhoDesde(env, aparelho);
+    if (!(desde > Date.now() - DIA)) return false;   // aparelho que já existia: vale só o limite dele
+    const { results } = await env.DB.prepare('SELECT em FROM limites_rede WHERE dia = ? AND tipo = ? AND nome = ? AND aparelho <> ? LIMIT 5').bind(diaBR(), tipo, n, aparelho).all();
+    if (!(results || []).some(r => desde >= r.em)) return false;
+    const c = await env.DB.prepare(`SELECT COUNT(*) AS n FROM jogadores_vistos WHERE ${CHAVE_SQL} = ?`).bind(n).first();
+    return !(c && c.n > 3);
+  } catch (e) { return false; }
+}
+// cada limite herdado (pela rede ou pelo apelido) fica anotado para o painel do dono ("Possíveis burlas")
+export async function anotarBurla(env, tipo, via, aparelho, nome) {
+  try {
+    await env.DB.prepare('INSERT OR IGNORE INTO burlas (dia, aparelho, tipo, via, nome, em) VALUES (?, ?, ?, ?, ?, ?)').bind(diaBR(), aparelho, tipo, via, String(nome || '').slice(0, 40), Date.now()).run();
+    if (Math.random() < .05) await env.DB.prepare('DELETE FROM burlas WHERE dia < ?').bind(diaBR(Date.now() - 14 * DIA)).run();
+  } catch (e) {}
+}
+export async function limiteHerdado(env, rede, tipo, aparelho, nome) {
+  if (await limiteDaRede(env, rede, tipo, aparelho, nome)) { await anotarBurla(env, tipo, 'rede', aparelho, nome); return true; }
+  if (await limiteDoApelido(env, tipo, aparelho, nome)) { await anotarBurla(env, tipo, 'apelido', aparelho, nome); return true; }
+  return false;
+}
+// GET /dono/burlas: os limites herdados de hoje e de ontem, e os aparelhos novos de hoje com o apelido de quem bateu o
+// limite e que ainda assim jogaram (apelido comum, ou chegaram antes desta regra). Só para o administrador.
+export async function donoBurlas(req, env, origin, h) {
+  if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
+  const dia = diaBR(), ontem = diaBR(Date.now() - DIA), agora = Date.now();
+  const tudo = async (q, ...a) => { try { const { results } = await env.DB.prepare(q).bind(...a).all(); return results || []; } catch (e) { return []; } };
+  const barrados = await tudo('SELECT dia, tipo, via, nome, em FROM burlas WHERE dia IN (?, ?) ORDER BY em DESC LIMIT 100', dia, ontem);
+  const bateram = await tudo('SELECT aparelho, nome, tipo, MIN(em) AS em FROM limites_rede WHERE dia = ? GROUP BY aparelho, tipo', dia);
+  const novos = await tudo(`SELECT a.aparelho, a.desde, COALESCE((SELECT nome FROM jogadores_vistos v WHERE v.aparelho = a.aparelho), (SELECT nome FROM presenca p WHERE p.aparelho = a.aparelho)) AS nome,
+      (SELECT publicas FROM limites l WHERE l.dia = ? AND l.aparelho = a.aparelho) AS rapidas, (SELECT partidas FROM limites l WHERE l.dia = ? AND l.aparelho = a.aparelho) AS amigos,
+      (SELECT n FROM offline_uso o WHERE o.dia = ? AND o.aparelho = a.aparelho) AS offline, (SELECT 1 FROM planos x WHERE x.aparelho = a.aparelho AND x.ate > ?) AS socio
+    FROM aparelhos a WHERE a.desde > ?`, dia, dia, dia, agora, agora - DIA);
+  const ja = new Set(barrados.filter(b => b.dia === dia).map(b => nomeChave(b.nome)));
+  const suspeitos = [];
+  for (const x of novos) {
+    if (x.socio) continue;
+    const k = nomeChave(x.nome); if (k.length < 3) continue;
+    const b = bateram.find(r => r.nome === k && r.aparelho !== x.aparelho && x.desde > r.em);
+    if (b && !ja.has(k)) suspeitos.push({ nome: x.nome, tipo: b.tipo, bateu: b.em, novo: x.desde, rapidas: x.rapidas || 0, amigos: x.amigos || 0, offline: x.offline || 0 });
+  }
+  return h.json({ dia, bateram: new Set(bateram.map(r => r.aparelho)).size, novos: novos.filter(x => !x.socio).length, barrados, suspeitos: suspeitos.slice(0, 80) }, 200, origin);
+}
 // quando o aparelho apareceu pela primeira vez numa mesa online (anota agora, se for a primeira)
 export async function aparelhoDesde(env, aparelho) {
   if (!aparelho) return 0;
