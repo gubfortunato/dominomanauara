@@ -2588,8 +2588,8 @@ body.papo-aberto{overflow:hidden}
 .cart-dica{text-align:center;font-size:14px;color:var(--muted)}
 #sheet .cart{margin:4px 0 18px}
 #sheet .cart svg{box-shadow:0 10px 18px -12px rgba(0,0,0,.5)}   /* 10/11: a sombra mais curta não cai em cima do botão de baixo */
-.cart-foto-acoes{display:flex;align-items:center;justify-content:center;gap:14px;margin:0 0 6px}
-.cart-foto-acoes .secondary{flex:1}
+.cart-foto-acoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:10px;margin:0 0 6px}
+.cart-foto-acoes .secondary{width:100%;margin:0;min-height:48px;padding:10px 12px;font-size:16px;white-space:nowrap}   /* 10/11: os dois botões do mesmo tamanho */
 /* 03/11 (pedido do dono: o topo do papo mais suave): sem barra nem caixa. O título, quem está na mesa e o número dela no
    mesmo tom do painel; silenciar e fechar sem fundo; a conversa some num degradê suave antes de chegar no topo. */
 .papo-topo{margin:0 0 4px;gap:4px;padding-right:0}
@@ -3831,7 +3831,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.53', data: '10/11/2026', itens: ['Sair no meio da partida com outras pessoas na mesa conta como derrota no ranking e na Copa. Na mesa rápida, quem sai no meio de 3 partidas no dia fica 15 minutos sem a mesa rápida. Queda de internet não conta se a pessoa voltar antes de a partida acabar.', 'Mais 10 emojis para reagir e no papo de mesa: 🐓 🤣 😎 🙏 💪 🎉 😭 😡 🤔 👀.', 'Foto do sócio no lugar do avatar: para o sócio que coloca foto no perfil, a opção já vem ligada; aprovada, a foto aparece na mesa, na fila, no papo, no ranking, na Copa e nas mesas ao vivo. Desligando no perfil, volta o avatar. Quem já tinha foto é perguntado uma vez.', 'Recado da atualização, uma vez, para quem já tinha o app: bugs corrigidos, novidades, o áudio no papo para os sócios e o botão para chamar os amigos no WhatsApp.'] },
+  { v: '3.53', data: '10/11/2026', itens: ['Sair no meio da partida com outras pessoas na mesa conta como derrota no ranking e na Copa. Na mesa rápida, quem sai no meio de 3 partidas no dia fica 15 minutos sem a mesa rápida. Queda de internet não conta se a pessoa voltar antes de a partida acabar.', 'Mais 10 emojis para reagir e no papo de mesa: 🐓 🤣 😎 🙏 💪 🎉 😭 😡 🤔 👀.', 'Foto do sócio no lugar do avatar: para o sócio que coloca foto no perfil, a opção já vem ligada; aprovada, a foto aparece na mesa, na fila, no papo, no ranking, na Copa e nas mesas ao vivo. Desligando no perfil, volta o avatar. Quem já tinha foto é perguntado uma vez.', 'Carteira de sócio: os botões "Trocar a foto" e "Usar o avatar" ficaram do mesmo tamanho.', 'Recado da atualização, uma vez, para quem já tinha o app: bugs corrigidos, novidades, o áudio no papo para os sócios e o botão para chamar os amigos no WhatsApp.'] },
   { v: '3.52', data: '10/11/2026', itens: ['Sexta da Calçada: toda sexta, das 20h às 23h, moral em dobro em todas as partidas (o nível sobe duas vezes mais rápido), com aviso no celular às 19h e às 20h.', 'A experiência agora se chama moral: cada mão, galo, batida e vitória dá moral, e é a moral que sobe o seu nível na calçada.', 'Copa dos Sócios: a cada 3 meses, no último fim de semana de novembro, fevereiro, maio e agosto (a 1ª é de 27 a 29/11). Só sócios pontuam: o campeão leva o troféu na carteira e a Mesa do Campeão; 2º e 3º, medalha; quem jogar, a marca de participação.', 'Tempo de casa: a carteira de sócio mostra há quanto tempo você é sócio, com marcas aos 3 meses, 6 meses e 1 ano.'] },
   { v: '3.51.14', data: '10/11/2026', itens: ['Tela inicial: a saudação "Fala, ..." ficou maior.'] },
   { v: '3.51.13', data: '10/11/2026', itens: ['A mesa Branca saiu do jogo. Quem estava com ela volta para a de Madeira.'] },
@@ -7740,7 +7740,7 @@ function abrirCarteira() {
   const temFoto = !!cartFoto() || !!(profile && profile.av === 'foto' && photo);
   openSheet('carteira', `<p class="eyebrow">Sócio da Calçada${d.numero ? ` · nº ${d.numero}` : ''}</p><h2 id="sheetTitle">Sua carteira de sócio</h2>
     <div class="cart" id="cartJ">${carteiraSVG(d, '', 'J')}</div>
-    ${podeFoto ? `<div class="cart-foto-acoes"><button type="button" class="secondary" id="cartFotoPor">${temFoto ? 'Trocar a foto' : 'Colocar sua foto'}</button>${cartFoto() ? '<button type="button" class="linkbtn" id="cartFotoTirar">Usar o avatar</button>' : ''}</div>
+    ${podeFoto ? `<div class="cart-foto-acoes"><button type="button" class="secondary" id="cartFotoPor">${temFoto ? 'Trocar a foto' : 'Colocar sua foto'}</button>${cartFoto() ? '<button type="button" class="secondary" id="cartFotoTirar">Usar o avatar</button>' : ''}</div>
     <input type="file" id="cartFotoIn" accept="image/*" hidden>` : ''}
     <p class="note">Mostre para a turma: compartilhe no WhatsApp, no Instagram ou salve no celular.</p>
     <button type="button" class="primary" id="cartShareJ" style="width:100%">Compartilhar a carteira</button>
