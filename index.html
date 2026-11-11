@@ -160,6 +160,7 @@ a.card{text-decoration:none}
 .mt-nums b{display:block;font-family:var(--font-display);font-weight:400;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
 .mt-nums small{font-size:12px;color:var(--wood-muted)}
 .mt-share{justify-self:start;font-size:15px;font-weight:700;color:var(--wood-ink);text-decoration:none;padding:9px 14px;border-radius:999px;border:1px solid rgba(239,226,204,.3)}
+.rc-pedras{display:flex;justify-content:center;margin:4px 0 10px}.rc-pedras svg{width:150px;height:auto;transform:rotate(-6deg)}
 .rc-zap{display:flex !important;align-items:center;justify-content:center;gap:8px}.rc-zap svg{width:22px;height:22px}
 .share-wa{display:block;text-align:center;text-decoration:none;margin-top:14px;padding:13px 16px;border-radius:14px;font-weight:700;font-size:17px;background:#25d366;color:#0b2e17}
 
@@ -218,6 +219,13 @@ a.card{text-decoration:none}
 .t-div{stroke:var(--tile-shade);stroke-width:.04}
 .t-pip{fill:var(--pip)}
 .t-pin{fill:var(--pin)}
+/* 10/11: pedra de verdade — espessura, quina polida, risco gravado, furo nas pintas e pino de latão */
+.t-lado{fill:color-mix(in srgb,var(--tile-shade) 78%,#5a4630)}
+.t-brilho{fill:none;stroke:rgba(255,255,255,.6);stroke-width:.028}
+.t-div{stroke:rgba(70,52,30,.42);stroke-width:.034;stroke-linecap:round}
+.t-div2{stroke:rgba(255,255,255,.75);stroke-width:.02;stroke-linecap:round}
+.t-pip{fill:url(#pipg)}
+.t-pin{fill:url(#ping);stroke:rgba(90,62,24,.65);stroke-width:.014}
 .b-body{fill:url(#backg);stroke:var(--back-edge);stroke-width:.04}
 .b-line{fill:none;stroke:var(--back-line);stroke-width:.045}
 .b-dot{fill:var(--back-dot)}
@@ -2657,16 +2665,8 @@ body.papo-aberto{overflow:hidden}
 .bv-pontos span{width:8px;height:8px;border-radius:50%;background:var(--line)}
 .bv-pontos span.on{background:var(--glow);width:22px;border-radius:999px}
 .bv-ilu{display:block;width:min(260px,80%);height:auto;margin:4px auto 10px}
-.bv-mesa{position:relative;width:min(300px,88%);height:212px;margin:4px auto 10px}
-.bv-tab{position:absolute;left:21%;right:21%;top:44px;bottom:64px;border-radius:16px;background:#5a3a22;border:2px solid #c9a24a;display:grid;place-items:center;box-shadow:inset 0 2px 10px rgba(0,0,0,.35)}
-.bv-tab svg{width:56px;height:auto}
-.bv-s{position:absolute;margin:0;display:grid;justify-items:center;gap:4px;transform:translateX(-50%)}
-.bv-s img,.bv-vazio{width:58px;height:58px;border-radius:50%;border:3px solid #e5a650;background:#3a2716;box-shadow:0 4px 12px rgba(0,0,0,.3)}
-.bv-vazio{display:grid;place-items:center;font-weight:900;font-size:24px;color:#f3c063}
-.bv-s figcaption{padding:2px 10px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:#e5a650;color:#2a1606;line-height:1.5}
-.bv-s.eles img{border-color:#8fbcc2}.bv-s.eles figcaption{background:#8fbcc2;color:#10262b}
-.bv-s.cima{left:50%;top:0}.bv-s.baixo{left:50%;bottom:0}
-.bv-s.esq{left:9%;top:58px}.bv-s.dir{left:91%;top:58px}
+.bv-mesa{width:min(320px,92%);aspect-ratio:320/304;margin:2px auto 8px}
+.bv-mesa svg{display:block;overflow:visible}
 .bv-lista{margin:6px 0 12px;padding-left:20px;display:grid;gap:8px;font-size:16.5px;line-height:1.4}
 .bv-lista li::marker{color:var(--nos)}
 .apr-lista{list-style:none;margin:8px 0 12px;padding:0;display:grid;gap:8px}
@@ -2720,6 +2720,13 @@ body.papo-aberto{overflow:hidden}
     <linearGradient id="bone" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" class="stop1"/><stop offset="1" class="stop2"/>
     </linearGradient>
+    <!-- 10/11 (o dono: "a pedra precisa ser igual a uma de verdade"): furo da pinta e o pino de latão do meio -->
+    <radialGradient id="pipg" cx=".62" cy=".64" r=".62">
+      <stop offset="0" stop-color="#4a3a2e"/><stop offset=".55" stop-color="#1b130d"/><stop offset="1" stop-color="#050302"/>
+    </radialGradient>
+    <radialGradient id="ping" cx=".36" cy=".34" r=".72">
+      <stop offset="0" stop-color="#fff0c2"/><stop offset=".35" stop-color="#e2b764"/><stop offset=".8" stop-color="#a87a33"/><stop offset="1" stop-color="#6e4d1c"/>
+    </radialGradient>
   </defs>
 </svg>
 
@@ -3864,7 +3871,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.53', data: '10/11/2026', itens: ['Sair no meio da partida com outras pessoas na mesa conta como derrota no ranking e na Copa. Na mesa rápida, quem sai no meio de 3 partidas no dia fica 15 minutos sem a mesa rápida. Queda de internet não conta se a pessoa voltar antes de a partida acabar.', 'Mais 10 emojis para reagir e no papo de mesa: 🐓 🤣 😎 🙏 💪 🎉 😭 😡 🤔 👀.', 'Foto do sócio no lugar do avatar: para o sócio que coloca foto no perfil, a opção já vem ligada; aprovada, a foto aparece na mesa, na fila, no papo, no ranking, na Copa e nas mesas ao vivo. Desligando no perfil, volta o avatar. Quem já tinha foto é perguntado uma vez.', 'Carteira de sócio: os botões "Trocar a foto" e "Usar o avatar" ficaram do mesmo tamanho.', 'Desafio das Confrarias mais emocionante: brasão de cada Turma, pontos de hoje, seta de quem subiu ou caiu, barra de pontos, a sua Turma sempre à vista e quanto falta para passar a de cima. Reta final em dobro: de 14 a 20/12, cada vitória contra outra Turma vale 2 pontos. Na tela da Turma: os craques (quem mais trouxe pontos) e o placar contra a Turma rival. Avisos no celular (no máximo 1 por dia, às 18h) quando outra Turma passar a sua, quando a sua chegar ao pódio, na véspera da reta final e no último dia.', 'Convite, uma vez, para quem já tinha o app: chamar os amigos para jogar, com o botão do WhatsApp.'] },
+  { v: '3.53', data: '10/11/2026', itens: ['Sair no meio da partida com outras pessoas na mesa conta como derrota no ranking e na Copa. Na mesa rápida, quem sai no meio de 3 partidas no dia fica 15 minutos sem a mesa rápida. Queda de internet não conta se a pessoa voltar antes de a partida acabar.', 'Mais 10 emojis para reagir e no papo de mesa: 🐓 🤣 😎 🙏 💪 🎉 😭 😡 🤔 👀.', 'Foto do sócio no lugar do avatar: para o sócio que coloca foto no perfil, a opção já vem ligada; aprovada, a foto aparece na mesa, na fila, no papo, no ranking, na Copa e nas mesas ao vivo. Desligando no perfil, volta o avatar. Quem já tinha foto é perguntado uma vez.', 'Carteira de sócio: os botões "Trocar a foto" e "Usar o avatar" ficaram do mesmo tamanho.', 'Desafio das Confrarias mais emocionante: brasão de cada Turma, pontos de hoje, seta de quem subiu ou caiu, barra de pontos, a sua Turma sempre à vista e quanto falta para passar a de cima. Reta final em dobro: de 14 a 20/12, cada vitória contra outra Turma vale 2 pontos. Na tela da Turma: os craques (quem mais trouxe pontos) e o placar contra a Turma rival. Avisos no celular (no máximo 1 por dia, às 18h) quando outra Turma passar a sua, quando a sua chegar ao pódio, na véspera da reta final e no último dia.', 'Convite, uma vez, para quem já tinha o app: chamar os amigos para jogar, com o botão do WhatsApp.', 'Pedra de dominó mais parecida com a de verdade: espessura, quina polida, risco do meio gravado, pintas como furos e pino de latão.', 'Boas-vindas: a mesa vista de cima, com pedras de verdade no meio, as pedras de cada um na frente dele e os quatro em volta, sem nada por cima da mesa.', 'Sexta da Calçada: o emoji de dado saiu (dominó não é dado).'] },
   { v: '3.52', data: '10/11/2026', itens: ['Sexta da Calçada: toda sexta, das 20h às 23h, moral em dobro em todas as partidas (o nível sobe duas vezes mais rápido), com aviso no celular às 19h e às 20h.', 'A experiência agora se chama moral: cada mão, galo, batida e vitória dá moral, e é a moral que sobe o seu nível na calçada.', 'Copa dos Sócios: a cada 3 meses, no último fim de semana de novembro, fevereiro, maio e agosto (a 1ª é de 27 a 29/11). Só sócios pontuam: o campeão leva o troféu na carteira e a Mesa do Campeão; 2º e 3º, medalha; quem jogar, a marca de participação.', 'Tempo de casa: a carteira de sócio mostra há quanto tempo você é sócio, com marcas aos 3 meses, 6 meses e 1 ano.'] },
   { v: '3.51.14', data: '10/11/2026', itens: ['Tela inicial: a saudação "Fala, ..." ficou maior.'] },
   { v: '3.51.13', data: '10/11/2026', itens: ['A mesa Branca saiu do jogo. Quem estava com ela volta para a de Madeira.'] },
@@ -5001,7 +5008,7 @@ function renderMyTreino() {
 function gameShare() {
   const r = G.result; if (!r || r.gameWinner == null) return null;
   const tr = G.track || { b: 0, g: 0 }, a = r.series[0], b = r.series[1];
-  const head = r.gameWinner === 0 ? `🏆 Ganhei da turma do bairro por *${a} × ${b}* no Dominó Manauara!` : `🎲 A turma do bairro me pegou por *${b} × ${a}* no Dominó Manauara. Revanche já!`;
+  const head = r.gameWinner === 0 ? `🏆 Ganhei da turma do bairro por *${a} × ${b}* no Dominó Manauara!` : `💪 A turma do bairro me pegou por *${b} × ${a}* no Dominó Manauara. Revanche já!`;
   const txt = `${head} Fiz ${plural(tr.b, 'batida', 'batidas')} e ${plural(tr.g, 'galo', 'galos')}.\nJogue também: ${SITE_URL}`;
   return 'https://wa.me/?text=' + encodeURIComponent(txt);
 }
@@ -10595,7 +10602,7 @@ trackOffline = function () { try { contarXP(); } catch (e) {} return trackOfflin
 function linhaXP(onde, como) {
   if (!xpDaMao || !onde) return;
   const v = nivelDe(nvEstado().xp);
-  onde.insertAdjacentHTML(como, `<p class="xp-linha"><b>+${xpDaMao}</b> de moral · Nível ${v.n}${v.precisa ? ` <span>(${v.dentro}/${v.precisa})</span>` : ''}${xpSeqMsg ? `<small class="xp-seq">${esc(xpSeqMsg)}</small>` : ''}${xpSexta ? '<small class="xp-seq">🎲 Sexta da Calçada: moral em dobro</small>' : ''}${xpMetade && xpMetadeAvisar() ? '<small class="xp-seq xp-metade">Contra a turma do bairro, vale a metade; contra pessoas, vale inteira.</small>' : ''}</p>`);
+  onde.insertAdjacentHTML(como, `<p class="xp-linha"><b>+${xpDaMao}</b> de moral · Nível ${v.n}${v.precisa ? ` <span>(${v.dentro}/${v.precisa})</span>` : ''}${xpSeqMsg ? `<small class="xp-seq">${esc(xpSeqMsg)}</small>` : ''}${xpSexta ? '<small class="xp-seq">🔥 Sexta da Calçada: moral em dobro</small>' : ''}${xpMetade && xpMetadeAvisar() ? '<small class="xp-seq xp-metade">Contra a turma do bairro, vale a metade; contra pessoas, vale inteira.</small>' : ''}</p>`);
   xpDaMao = 0; xpSeqMsg = ''; xpMetade = false; xpSexta = false;
 }
 const showResultNv = showResult;
@@ -13416,7 +13423,7 @@ function evCardDados() {
   if (c.fase === 'agora') return { tipo: 'copa', ir: 'copa', ck: 'Ao vivo · até domingo, 22h', ct: `🏆 ${ed.nome}`,
     cd: socio ? (eu ? `Você está em ${eu.pos}º, com ${rkPts(eu.pontos)}. Cada vitória online vale ponto: bora subir!` : 'Cada vitória online vale ponto para os sócios. Entre no ranking da Copa!')
       : 'Só sócios pontuam. Veja o ranking e seja sócio para disputar o troféu.' };
-  if (sx === 'agora') return { tipo: 'sexta', ir: 'rapida', ck: 'Sexta da Calçada · até as 23h', ct: '🎲 Moral em dobro agora!', cd: 'Toda partida vale o dobro de moral: o nível sobe duas vezes mais rápido. Bora pra mesa rápida?' };
+  if (sx === 'agora') return { tipo: 'sexta', ir: 'rapida', ck: 'Sexta da Calçada · até as 23h', ct: '🔥 Moral em dobro agora!', cd: 'Toda partida vale o dobro de moral: o nível sobe duas vezes mais rápido. Bora pra mesa rápida?' };
   if (c.fase === 'antes') return { tipo: 'copa', ir: 'copa', ck: 'Vem aí', ct: `🏆 ${ed.nome}`,
     cd: `${csQuando(ed).replace(/^d/, 'D')}. ${socio ? 'Você está dentro: o campeão leva o troféu na carteira e a mesa do campeão.' : 'Só sócios pontuam: o campeão leva o troféu na carteira e a mesa do campeão.'}` };
   if (c.fase === 'depois') {
@@ -13424,7 +13431,7 @@ function evCardDados() {
     return { tipo: 'copa', ir: 'copa', ck: 'Copa dos Sócios', ct: cp ? `🏆 ${cp.eu ? 'Você é o campeão!' : cp.nome + ' é o campeão!'}` : `🏆 A ${ed.nome} terminou`,
       cd: `Veja o pódio da ${ed.nome}. A próxima é em ${c.atual.mes}.` };
   }
-  if (sx === 'hoje') return { tipo: 'sexta', ir: 'sexta', ck: 'Hoje · das 20h às 23h', ct: '🎲 Sexta da Calçada', cd: 'Moral em dobro em todas as partidas: o nível sobe duas vezes mais rápido. Chama a turma!' };
+  if (sx === 'hoje') return { tipo: 'sexta', ir: 'sexta', ck: 'Hoje · das 20h às 23h', ct: '🔥 Sexta da Calçada', cd: 'Moral em dobro em todas as partidas: o nível sobe duas vezes mais rápido. Chama a turma!' };
   return null;
 }
 function desenharEvCard() {
@@ -13556,7 +13563,9 @@ function recadoNaHome() {
   if (Date.now() > RECADO.ate || store.get('dmz-recado') === RECADO.id || store.get('dmz-recado-pend') !== RECADO.id) return false;
   store.set('dmz-recado', RECADO.id);
   track('recado-' + RECADO.id);
-  openSheet('recado', `<p class="eyebrow">Dominó Manauara</p><h2 id="sheetTitle">Bora chamar a turma? 🎲</h2>
+  // 10/11 (o dono: "por que um dado? tem que ser uma pedra de dominó"): as pedras de verdade do jogo, no lugar do emoji
+  openSheet('recado', `<div class="rc-pedras" aria-hidden="true"><svg viewBox="-0.15 -0.15 4.6 2.5">${tileSVG({ x: 1.05, y: 1.05, o: 'h', v1: 6, v2: 6 })}${tileSVG({ x: 3.25, y: 1.05, o: 'h', v1: 6, v2: 3 })}</svg></div>
+    <p class="eyebrow">Dominó Manauara</p><h2 id="sheetTitle">Bora chamar a turma?</h2>
     <p class="pr-lead">Dominó é melhor com os amigos. Chama a turma pra jogar com você: é só mandar o convite no WhatsApp.</p>
     <a class="share-wa rc-zap" id="rcZap" href="https://wa.me/?text=${encodeURIComponent(RECADO_ZAP + '\n' + SITE_URL)}" target="_blank" rel="noopener">${WA_IC}Chamar os amigos no WhatsApp</a>
     <button type="button" class="linkbtn" id="rcFechar" style="width:100%;margin-top:6px">Agora não</button>`);
@@ -13613,15 +13622,19 @@ function tileSVG(p, cls, shadow) {
   const x0 = p.x - w / 2, y0 = p.y - h / 2, g = 0.035;
   let s = `<g class="${cls || ''}">`;
   if (shadow !== false) s += `<rect x="${f2(x0 + g + .03)}" y="${f2(y0 + g + .07)}" width="${f2(w - 2 * g)}" height="${f2(h - 2 * g)}" rx=".13" class="t-shadow"/>`;
+  // 10/11 (o dono: "a pedra precisa ser igual a uma de verdade"): a espessura da pedra aparece embaixo, a quina tem
+  // brilho, o risco do meio é gravado (sombra e luz), as pintas são furos e o pino do meio é de latão
+  s += `<rect x="${f2(x0 + g)}" y="${f2(y0 + g + .045)}" width="${f2(w - 2 * g)}" height="${f2(h - 2 * g)}" rx=".13" class="t-lado"/>`;
   s += `<rect x="${f2(x0 + g)}" y="${f2(y0 + g)}" width="${f2(w - 2 * g)}" height="${f2(h - 2 * g)}" rx=".13" class="t-body"/>`;
-  if (p.o === 'h') s += `<line x1="${f2(p.x)}" y1="${f2(y0 + .15)}" x2="${f2(p.x)}" y2="${f2(y0 + h - .15)}" class="t-div"/>`;
-  else s += `<line x1="${f2(x0 + .15)}" y1="${f2(p.y)}" x2="${f2(x0 + w - .15)}" y2="${f2(p.y)}" class="t-div"/>`;
+  s += `<rect x="${f2(x0 + g + .035)}" y="${f2(y0 + g + .035)}" width="${f2(w - 2 * g - .07)}" height="${f2(h - 2 * g - .07)}" rx=".1" class="t-brilho"/>`;
+  if (p.o === 'h') s += `<line x1="${f2(p.x)}" y1="${f2(y0 + .15)}" x2="${f2(p.x)}" y2="${f2(y0 + h - .15)}" class="t-div"/><line x1="${f2(p.x + .022)}" y1="${f2(y0 + .17)}" x2="${f2(p.x + .022)}" y2="${f2(y0 + h - .17)}" class="t-div2"/>`;
+  else s += `<line x1="${f2(x0 + .15)}" y1="${f2(p.y)}" x2="${f2(x0 + w - .15)}" y2="${f2(p.y)}" class="t-div"/><line x1="${f2(x0 + .17)}" y1="${f2(p.y + .022)}" x2="${f2(x0 + w - .17)}" y2="${f2(p.y + .022)}" class="t-div2"/>`;
   const halves = p.o === 'h' ? [[x0, y0, p.v1], [x0 + 1, y0, p.v2]] : [[x0, y0, p.v1], [x0, y0 + 1, p.v2]];
   for (const [hx, hy, v] of halves) for (const [px, py] of PIPS[v]) {
     const [qx, qy] = p.o === 'h' ? [py, px] : [px, py];
     s += `<circle cx="${f2(hx + qx)}" cy="${f2(hy + qy)}" r=".108" class="t-pip"/>`;
   }
-  s += `<circle cx="${f2(p.x)}" cy="${f2(p.y)}" r=".065" class="t-pin"/>`;
+  s += `<circle cx="${f2(p.x)}" cy="${f2(p.y)}" r=".072" class="t-pin"/>`;
   return s + '</g>';
 }
 // costas da pedra: preta e lisa, só com o filete de acabamento
@@ -14725,12 +14738,44 @@ $('#menuBtn').addEventListener('click', e => {
 // ---------- boas-vindas (3 telas) ----------
 // 03/11 (dono: "coloque avatares no lugar das bolinhas"): a mesa das boas-vindas com rostos de verdade: você embaixo
 // (o seu avatar), o parceiro em frente e a dupla adversária dos lados (a turma misturada: galera nova e os de sempre)
+// 10/11 (o dono: "a pedra precisa ser igual a uma de verdade; os bonecos em volta da mesa devem ficar esteticamente
+// melhores"): a mesa vista de cima, de madeira, com um jogo começando no meio (pedras de verdade, as mesmas do jogo), as
+// pedras de cada um viradas na frente dele, e os quatro em volta com o anel da dupla e o nome embaixo, sem nada por cima da mesa
 function bvMesa() {
   const rosto = n => { try { return botFaceURI(n) || ''; } catch (e) { return ''; } };
   let eu = ''; try { eu = profile ? myFaceURI() : ''; } catch (e) {}
-  const cad = (cls, img, rot) => `<figure class="bv-s ${cls}">${img ? `<img src="${img}" alt="">` : '<span class="bv-vazio">?</span>'}<figcaption>${rot}</figcaption></figure>`;
-  return `<div class="bv-mesa" aria-hidden="true"><div class="bv-tab"><svg viewBox="0 0 52 28"><rect x="2" y="2" width="48" height="24" rx="5" fill="#f6ead6" stroke="#2a1a0c" stroke-width="1.4"/><line x1="26" y1="4" x2="26" y2="24" stroke="#2a1a0c" stroke-width="1.4"/><g fill="#2a1a0c"><circle cx="14" cy="10" r="2.6"/><circle cx="14" cy="18" r="2.6"/><circle cx="38" cy="14" r="2.6"/></g></svg></div>`
-    + cad('cima nos', rosto('Kauã'), 'Parceiro') + cad('esq eles', rosto('Raimundo'), 'Eles') + cad('dir eles', rosto('Yasmin'), 'Eles') + cad('baixo nos', eu, 'Você') + '</div>';
+  const W = 320, H = 304, mx = 88, my = 92, mw = 144, mh = 124, cx = mx + mw / 2, cy = my + mh / 2;
+  const NOS = '#e5a650', ELES = '#8fbcc2';
+  // as costas das pedras de cada jogador, na beirada da mesa à frente dele
+  const costas = (x, y, deitada, n) => {
+    let g = '';
+    for (let k = 0; k < n; k++) {
+      const dx = deitada ? 0 : (k - (n - 1) / 2) * 10.5, dy = deitada ? (k - (n - 1) / 2) * 10.5 : 0;
+      g += `<g transform="translate(${x + dx} ${y + dy}) scale(8.4)${deitada ? ' rotate(90)' : ''} translate(-.5 -1)">${backSVG}</g>`;
+    }
+    return g;
+  };
+  const pedra = (x, y, o, v1, v2) => `<g transform="translate(${x} ${y}) scale(18.5)">${tileSVG({ x: 0, y: 0, o, v1, v2 })}</g>`;
+  const pessoa = (x, y, img, rot, cor, id, lado) => {
+    const r = 25, ty = lado === 'cima' ? y - r - 9 : y + r + 15;
+    return `<g class="bv-p"><circle cx="${x}" cy="${y + 2.5}" r="${r + 4}" fill="rgba(0,0,0,.22)"/><circle cx="${x}" cy="${y}" r="${r + 4}" fill="${cor}"/><circle cx="${x}" cy="${y}" r="${r + 1}" fill="#fff8ea"/>
+      <clipPath id="bvc${id}"><circle cx="${x}" cy="${y}" r="${r - .5}"/></clipPath>
+      ${img ? `<image href="${img}" x="${x - r}" y="${y - r}" width="${2 * r}" height="${2 * r}" clip-path="url(#bvc${id})" preserveAspectRatio="xMidYMid slice"/>` : `<circle cx="${x}" cy="${y}" r="${r - .5}" fill="#3a2716"/><text x="${x}" y="${y + 8}" text-anchor="middle" font-size="22" font-weight="900" fill="#f3c063">?</text>`}
+      <rect x="${x - rot.length * 4.1 - 10}" y="${ty - 11}" width="${rot.length * 8.2 + 20}" height="18" rx="9" fill="${cor}"/>
+      <text x="${x}" y="${ty + 2.4}" text-anchor="middle" font-size="10.5" font-weight="800" letter-spacing=".9" fill="${cor === NOS ? '#2a1606' : '#10262b'}" font-family="Figtree, system-ui, sans-serif">${rot.toUpperCase()}</text></g>`;
+  };
+  return `<div class="bv-mesa" aria-hidden="true"><svg viewBox="0 0 ${W} ${H}" width="100%" height="100%">
+    <defs><linearGradient id="bvMad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a5a2e"/><stop offset="1" stop-color="#5b3a1d"/></linearGradient>
+      <linearGradient id="bvBorda" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9b06a"/><stop offset="1" stop-color="#9c7434"/></linearGradient></defs>
+    <rect x="${mx - 6}" y="${my - 3}" width="${mw + 12}" height="${mh + 12}" rx="20" fill="rgba(0,0,0,.25)"/>
+    <rect x="${mx - 6}" y="${my - 6}" width="${mw + 12}" height="${mh + 12}" rx="20" fill="url(#bvBorda)"/>
+    <rect x="${mx}" y="${my}" width="${mw}" height="${mh}" rx="15" fill="url(#bvMad)"/>
+    <g stroke="rgba(255,225,170,.09)" stroke-width="1.2" fill="none">${[18, 40, 63, 86, 108].map(k => `<path d="M${mx + 4} ${my + k} q ${mw / 3} ${k % 2 ? 5 : -5} ${mw - 8} 0"/>`).join('')}</g>
+    ${costas(cx, my + 11, false, 5)}${costas(cx, my + mh - 11, false, 5)}${costas(mx + 11, cy, true, 4)}${costas(mx + mw - 11, cy, true, 4)}
+    ${pedra(cx - 27.75, cy, 'h', 2, 6)}${pedra(cx, cy, 'v', 6, 6)}${pedra(cx + 27.75, cy, 'h', 6, 1)}
+    ${pessoa(cx, 48, rosto('Kauã'), 'Parceiro', NOS, 1, 'cima')}${pessoa(42, cy - 4, rosto('Raimundo'), 'Eles', ELES, 2, 'lado')}
+    ${pessoa(W - 42, cy - 4, rosto('Yasmin'), 'Eles', ELES, 3, 'lado')}${pessoa(cx, H - 48, eu, 'Você', NOS, 4, 'baixo')}
+  </svg></div>`;
 }
 const BV_TELAS = [
   { k: 'Bem-vindo à calçada', t: 'Dominó em duplas, do jeito de Manaus', get html() { return bvMesa() + this.texto; }, texto: `<p>Você joga com o <b>parceiro da sua frente</b> contra a dupla dos lados. Cada um recebe 7 pedras e a vez gira pela esquerda.</p><p>Na sua vez, encaixe uma pedra numa ponta da mesa: os números precisam ser iguais.</p>` },
