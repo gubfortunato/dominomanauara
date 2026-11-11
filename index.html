@@ -1220,6 +1220,30 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
   body:has(#scrGame:not([hidden])) .shell{max-width:min(1040px, 76vw)}
 }
 @media (orientation: landscape) and (min-width: 1100px) and (min-height: 900px){ :root{--tw:78px} }
+/* 11/11 (pedido do dono, foto do notebook): no notebook e no computador (tela deitada e larga), a mesa virava uma faixa
+   baixa entre o placar e a mão, e as pedras da mesa ficavam miúdas. Agora o placar e o "Você · Vez de" vão para uma
+   coluna à esquerda, a mesa ganha a altura toda da tela e a mão fica logo embaixo dela (iPad e celular: como antes). */
+@media (orientation: landscape) and (min-height: 561px) and (min-aspect-ratio: 8/5) and (min-width: 1000px){
+  :root:has(#scrGame:not([hidden])){--tw:clamp(34px,7.2vh,62px)}
+  body:has(#scrGame:not([hidden])) .shell{max-width:min(1560px, 97vw)}
+  #scrGame.game{grid-template-columns:clamp(190px,16vw,250px) minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:8px 18px;padding-block:12px 8px}
+  #scrGame .score{grid-column:1;grid-row:1 / span 2;align-self:start;grid-template-columns:1fr 1fr;align-content:start;align-items:start;gap:14px 14px;padding-top:4px}
+  #scrGame .team.L{order:1} #scrGame .team.R{order:2;text-align:left}
+  #scrGame .team.R .bar i{margin-left:0}
+  #scrGame .team.R .float,#scrGame .team.L .float{left:auto;right:0}
+  #scrGame .meta{order:3;grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:6px 10px}
+  #scrGame .table{grid-column:2;grid-row:1}
+  #scrGame .me{display:contents}
+  #scrGame .me-head{grid-column:1;grid-row:1 / span 2;grid-template-columns:1fr;align-self:end;gap:8px;padding-bottom:6px}
+  #scrGame .passbtn{justify-self:start}
+  #scrGame .hand{grid-column:2;grid-row:2;min-height:calc(var(--tw)*2 + 8px)}
+  #scrGame .tnum{font-size:40px}
+  /* "Mesa oferecida por" desce para a faixa de baixo da mesa (no meio, entre o lance e o Ampliar): nunca mais por cima das pedras */
+  #scrGame .mesa-patro{bottom:-40px}
+  #scrGame .tablefoot{position:relative;z-index:1}
+  #scrGame .feed{max-width:calc(50% - 130px)}
+  #scrGame .lupa{margin-left:auto}
+}
 /* 3.26: aviso de versão nova (sem travar o app) */
 .versao-nova{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:60;padding:10px 16px;border-radius:999px;border:0;background:var(--wood-2);color:var(--wood-ink);font:inherit;font-size:15.5px;box-shadow:0 6px 20px var(--shadow);cursor:pointer;white-space:nowrap}
 .versao-nova b{color:var(--glow)}
@@ -3935,6 +3959,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.11', data: '11/11/2026', itens: ['No notebook e no computador, a partida ficou do tamanho da tela: o placar e a sua vez vão para a esquerda, a mesa ocupa a altura toda e as pedras na mesa ficam bem maiores. O "Mesa oferecida por" saiu de cima das pedras.'] },
   { v: '3.53.10', data: '11/11/2026', itens: ['A marca d\'água com o nome nas pedras da partida online saiu.'] },
   { v: '3.53.9', data: '11/11/2026', itens: ['Na partida online (mesa rápida, mesa com os amigos e Desafio), as suas pedras levam uma marca d\'água bem fraca com o seu nome e o número da mesa: se alguém mandar print da mão, dá para ver de quem é.', 'Ao sair do app no meio da partida online, as suas pedras somem da tela até você voltar.'] },
   { v: '3.53.8', data: '11/11/2026', itens: ['Mesa nova para os sócios: Metrópole da Amazônia, os prédios de Manaus no meio da mata, com céu azul e sol.', 'Mesa Teatro Amazonas: o chão agora é a calçada de ondas pretas e brancas, igual à do Largo de São Sebastião.', 'A mesa Anavilhanas saiu.'] },
@@ -14531,7 +14556,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.10-40183b61';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.11-af5af25a';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
