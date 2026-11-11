@@ -1411,6 +1411,9 @@ export class Mesa {
     let res = null;
     try { res = await pontuar(this.env, ganhou.map(p => m.cad[p].id), perdeu.map(p => m.cad[p].id)); } catch (e) {}
     if (res && res.turmas.length) m.desafio = { seq: m.seq + 1, turmas: res.turmas, pontos: res.pontos || 1, cadeiras: ganhou.filter(p => res.ids.includes(m.cad[p].id)) };   // 10/11: na reta final, 2 pontos
+    // 11/11: ganhou de outra Turma, mas a Turma dele é só ele (precisa de pelo menos 2 pessoas para pontuar): o app avisa e chama a turma
+    const sos = res && res.sozinhos && res.sozinhos.length ? ganhou.filter(p => res.sozinhos.includes(m.cad[p].id)) : [];
+    if (sos.length) m.desafio = Object.assign(m.desafio && m.desafio.seq === m.seq + 1 ? m.desafio : { seq: m.seq + 1, turmas: [], pontos: 0, cadeiras: [] }, { sozinhos: sos });
   }
 
   // ---------- Conexões e envio ----------

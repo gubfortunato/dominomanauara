@@ -165,8 +165,13 @@ a.card{text-decoration:none}
 .sc-campea{font-size:12px}
 .brasao.campea{filter:drop-shadow(0 0 4px rgba(243,192,99,.75))}
 .dsc-vs{display:flex;align-items:center;justify-content:center;gap:14px;margin:4px 0 6px}.dsc-vs b{font-family:var(--font-display);font-size:28px;color:var(--muted)}
-.ds-nudge{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--glow) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--glow) 45%,var(--line));font-size:14.5px;line-height:1.35}
+.ds-nudge{margin:14px 0 0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--glow) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--glow) 45%,var(--line));font-size:14.5px;line-height:1.35}
 .ds-nudge button{display:inline;padding:0;margin:0;border:0;background:none;min-height:0;font:inherit;font-weight:800;color:var(--fg);text-decoration:underline;width:auto}
+.ds-nudge a{font-weight:800;color:var(--fg);text-decoration:underline}
+/* 11/11: Turma de 1 pessoa (precisa de pelo menos 2 para pontuar no Desafio) */
+.tm-solo{margin:12px 0 4px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--glow) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--glow) 45%,var(--line))}
+.tm-solo b{display:block;font-size:16px}.tm-solo p{margin:6px 0 0;font-size:14.5px;line-height:1.4}
+.tm-solo .share-wa{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px}.tm-solo .share-wa svg{width:22px;height:22px}
 .rc-pedras{display:flex;justify-content:center;margin:4px 0 10px}.rc-pedras svg{width:150px;height:auto;transform:rotate(-6deg)}
 .rc-zap{display:flex !important;align-items:center;justify-content:center;gap:8px}.rc-zap svg{width:22px;height:22px}
 .share-wa{display:block;text-align:center;text-decoration:none;margin-top:14px;padding:13px 16px;border-radius:14px;font-weight:700;font-size:17px;background:#25d366;color:#0b2e17}
@@ -1447,6 +1452,7 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .dc-rv-pl{display:flex;align-items:center;gap:8px;font-size:30px;font-weight:800}.dc-rv-pl i{font-style:normal;font-size:18px;color:var(--muted)}
 .dc-rv-n{margin-top:6px}
 .tc-faixa{display:block;padding:7px 11px;border-radius:12px;background:rgba(255,240,215,.08);border:1px solid rgba(255,220,160,.2);color:#f3d9a6;font-size:13.5px;font-weight:700}
+.tc-solo{display:block;padding:7px 11px;border-radius:12px;background:rgba(37,211,102,.16);border:1px solid rgba(37,211,102,.45);color:#d9f7e3;font-size:13.5px;font-weight:700}
 .tc-faixa.quente{background:linear-gradient(90deg,rgba(179,38,30,.85),rgba(224,102,42,.85));border-color:#f3a35e;color:#fff6e6}
 .tc-lin{grid-template-columns:auto auto minmax(0,1fr) auto auto !important;gap:8px !important}
 .tc-hoje{font-style:normal;font-size:12px;font-weight:800;color:#9fe0b0}
@@ -3910,6 +3916,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.5', data: '11/11/2026', itens: ['Desafio das Confrarias: para pontuar, a Turma precisa ter pelo menos 2 pessoas. Quem está sozinho na Turma vê o aviso com o botão para chamar a turma no WhatsApp (na Turma, no cartão do início e no fim da partida). Os pontos que a Turma já fez continuam.', 'Ranking do Desafio: a Turma que ficou sem ninguém sai do ranking. Os pontos ficam guardados e voltam se alguém entrar.'] },
   { v: '3.53.4', data: '10/11/2026', itens: ['Desafio das Confrarias mais divulgado: convite uma vez para quem ainda não tem Turma (o que é e como se joga), lembrete no fim das partidas online e avisos no celular para todos em 11/11, 28/11 e na véspera da reta final.', 'Quem assiste uma mesa com os amigos pelo número volta a ler o papo de mesa (na mesa de desafio ele tinha sumido). Quem assiste pelo Ao vivo do Desafio não lê o papo da turma.', 'Prêmios da Turma campeã do Desafio: além da estrela ★, o brasão dourado, a Mesa da Campeã (feltro vinho e ouro) e o selo 🏆 na mesa para quem estava na Turma, até o fim do Desafio seguinte.'] },
   { v: '3.53.3', data: '10/11/2026', itens: ['Sexta da Calçada: a moral em dobro passa a ser dos sócios; quem não é sócio vê o aviso e o convite.', 'Desafio das Confrarias: na reta final (14 a 20/12), a vitória vale 2 pontos quando tem sócio na dupla que ganhou (sem sócio, 1). O ranking mostra os pontos certos do dia.', 'A oferta de sócio mostra os dois benefícios novos.', 'Cadeira da mesa: a bolinha do avatar fica sempre centralizada (no iPhone, a imagem podia sair do centro).'] },
   { v: '3.53.2', data: '10/11/2026', itens: ['Escolha de mesa: a amostra da mesa Amazonas mostra a mesa nova, com as faixas a pincel atravessando o meio.'] },
@@ -9609,21 +9616,30 @@ async function copaComAmigos() {
 }
 // 10/11 (pedido do dono: divulgar o Desafio): no fim de uma partida online contra gente, quem não tem Turma vê que aquela
 // partida podia valer ponto no Desafio das Confrarias, com o atalho para montar a Turma
-const showResultDesafio = showResult;
-showResult = function () {
-  const r = showResultDesafio.apply(this, arguments);
+// 11/11: o lembrete entra quando a folha do resultado abre. Antes ele só olhava logo depois do showResult, mas na
+// partida decidida a festa aparece primeiro e o resultado abre depois (pelo "Continuar"), sem passar por aqui.
+function dsNudgeResultado() {
   try {
     const R = G && G.result, d = desafioAgora();
-    if (mode === 'on' && R && R.matchWinner != null && d.aberto && TM.em && !TM.info && ON.vista && ON.vista.cad.some((c, i) => c && !c.bot && i !== ON.vista.minha) && sheetKind === 'result') {
+    const solo = !!TM.info && turmaSozinha(TM.info, d);   // 11/11: Turma de 1 pessoa não pontua
+    if (mode === 'on' && R && R.matchWinner != null && d.aberto && TM.em && (!TM.info || solo) && ON.vista && ON.vista.cad.some((c, i) => c && !c.bot && i !== ON.vista.minha) && sheetKind === 'result') {
       const alvo = $('#sheet .res-side'); if (alvo && !alvo.querySelector('.ds-nudge')) {
         const ganhou = seatMe != null && TEAM(seatMe) === R.matchWinner;
-        alvo.insertAdjacentHTML('beforeend', `<p class="ds-nudge">⚔️ ${ganhou ? 'Essa vitória podia valer ponto' : 'Partidas como essa valem ponto'} no <b>Desafio das Confrarias</b>, jogando por uma Turma contra outra. <button type="button" id="dsNudge">Montar a minha Turma</button></p>`);
-        $('#dsNudge').addEventListener('click', () => { track('desafio-fim-partida'); closeSheet(); abrirTurma(); });   // fica na mesa (sair daqui poderia contar como saída no meio da próxima partida)
+        // 11/11: antes do anúncio (quando tem), para ser visto sem rolar
+        const pa = alvo.querySelector('.res-patro'), onde = pa ? 'beforebegin' : 'beforeend', el = pa || alvo;
+        if (solo) {
+          el.insertAdjacentHTML(onde, `<p class="ds-nudge">⚔️ ${ganhou ? 'Essa vitória podia valer ponto' : 'Partidas como essa valem ponto'} no <b>Desafio das Confrarias</b>, mas a sua Turma ainda é só você. Com 2 pessoas, ela já pontua. <a id="dsNudge" href="${esc(zapTurmaURL(TM.info))}" target="_blank" rel="noopener">Chamar a turma no WhatsApp</a></p>`);
+          $('#dsNudge').addEventListener('click', () => track('desafio-fim-solo'));   // abre o WhatsApp sem sair da mesa
+        } else {
+          el.insertAdjacentHTML(onde, `<p class="ds-nudge">⚔️ ${ganhou ? 'Essa vitória podia valer ponto' : 'Partidas como essa valem ponto'} no <b>Desafio das Confrarias</b>, jogando por uma Turma contra outra. <button type="button" id="dsNudge">Montar a minha Turma</button></p>`);
+          $('#dsNudge').addEventListener('click', () => { track('desafio-fim-partida'); closeSheet(); abrirTurma(); });   // fica na mesa (sair daqui poderia contar como saída no meio da próxima partida)
+        }
       }
     }
   } catch (e) {}
-  return r;
-};
+}
+const openSheetDesafio = openSheet;
+openSheet = function (kind) { const r = openSheetDesafio.apply(this, arguments); if (kind === 'result') queueMicrotask(dsNudgeResultado); return r; };
 const showResultCopa = showResult;
 showResult = function () { try { marcarCopa(); } catch (e) {} return showResultCopa.apply(this, arguments); };
 const renderHomeEstilo = renderHome;
@@ -10020,6 +10036,12 @@ function dcDatas(d) {
   return { fim: d.fim || Date.UTC(ano, 11, 21) + 4 * 3600000, dobroDesde: d.dobroDesde || Date.UTC(ano, 11, 14) + 4 * 3600000, mult: d.mult || 2 };
 }
 // a faixa de cima: quanto falta e a reta final
+// 11/11 (pedido do dono): no Desafio, a Turma precisa de pelo menos 2 pessoas para pontuar
+const turmaSozinha = (t, d) => !!t && (t.membros || []).length < ((d && d.minimo) || 2);
+function zapTurmaURL(t) {
+  const link = `${SITE_URL}#turma=${t.codigo}`;
+  return 'https://wa.me/?text=' + encodeURIComponent(`Entra na minha Turma "${t.nome}" no Dominó Manauara, para o Desafio das Confrarias (1º/11 a 20/12). Código: ${t.codigo}\n${link}`);
+}
 function dcFaixa(d) {
   const x = dcDatas(d), agora = Date.now(), dias = Math.ceil((x.fim - agora) / 86400000), dobro = d.dobro || (agora >= x.dobroDesde && agora < x.fim);
   const ddmm = ms => { const z = new Date(ms - 4 * 3600000); return String(z.getUTCDate()).padStart(2, '0') + '/' + String(z.getUTCMonth() + 1).padStart(2, '0'); };
@@ -10061,6 +10083,7 @@ function dcAoVivo() {
 // o que falta para a sua Turma subir
 function dcFalta(t, d) {
   if (!t || !d.aberto) return '';
+  if (turmaSozinha(t, d)) return '';   // 11/11: a folha já mostra o "chame a turma"
   if (t.pos === 1) return `<p class="dc-meu">👑 A ${esc(nomeTurma(t.nome))} lidera o Desafio! Segura essa posição.</p>`;
   if (t.acima) { const f = t.acima.falta + 1; return `<p class="dc-meu">Faltam <b>${f} ${f === 1 ? 'ponto' : 'pontos'}</b> para passar a ${esc(nomeTurma(t.acima.nome))}${d.dobro ? ` (com sócio na dupla, ${Math.ceil(f / (d.mult || 2))} ${Math.ceil(f / (d.mult || 2)) === 1 ? 'vitória' : 'vitórias'})` : ''}.</p>`; }
   if (!t.pontos) return `<p class="dc-meu">A sua Turma ainda não pontuou: a primeira vitória contra outra Turma já põe vocês no ranking.</p>`;
@@ -10087,9 +10110,9 @@ function desenharCartaoTurma() {
   card.classList.toggle('destaque', destaque);
   if (destaque) {
     const top = (d.ranking || []).slice(0, 3);
-    card.setAttribute('aria-label', t ? `Desafio das Confrarias: ${nomeTurma(t.nome)}. Desafiar outra Turma` : 'Desafio das Confrarias: montar a sua Turma');
+    card.setAttribute('aria-label', t ? `Desafio das Confrarias: ${nomeTurma(t.nome)}. ${turmaSozinha(t, d) ? 'Só você na Turma: chamar a turma' : 'Desafiar outra Turma'}` : 'Desafio das Confrarias: montar a sua Turma');
     card.innerHTML = `<span class="tc-cab"><span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 48 48"><defs><linearGradient id="tcOuro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3c4"/><stop offset=".45" stop-color="#f3c063"/><stop offset="1" stop-color="#b47519"/></linearGradient><linearGradient id="tcOuro2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eab552"/><stop offset="1" stop-color="#8a5612"/></linearGradient></defs><path d="M14 11.5H8v3.2c0 5 3.6 8.6 8.4 9" fill="none" stroke="url(#tcOuro2)" stroke-width="3.2" stroke-linecap="round"/><path d="M34 11.5h6v3.2c0 5-3.6 8.6-8.4 9" fill="none" stroke="url(#tcOuro2)" stroke-width="3.2" stroke-linecap="round"/><path d="M12.8 6.5h22.4v10c0 7.4-5 12.8-11.2 12.8S12.8 23.9 12.8 16.5z" fill="url(#tcOuro)" stroke="#8a5612" stroke-width="1"/><path d="M16.8 9.8v6.6c0 3.3 1.3 6.1 3.4 7.6" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="2" stroke-linecap="round"/><path d="M24 11.6l1.6 3.2 3.5.5-2.5 2.5.6 3.5-3.2-1.7-3.2 1.7.6-3.5-2.5-2.5 3.5-.5z" fill="#fff8de"/><path d="M21.4 29h5.2l-.9 5.6h-3.4z" fill="url(#tcOuro2)"/><rect x="16" y="34.4" width="16" height="4.2" rx="1.2" fill="url(#tcOuro)" stroke="#8a5612" stroke-width=".8"/><rect x="12.5" y="38.4" width="23" height="5.6" rx="1.6" fill="#4e2c0e" stroke="#d29a35" stroke-width="1.1"/></svg></span><span class="tc-tit"><span class="ct">Desafio das Confrarias</span><span class="tc-sub">${t ? esc(nomeTurma(t.nome)) + esc(estrelas(t.titulos)) : 'Monte a sua Turma'}</span></span><span class="tc-ate">até 20/12</span></span>
-      ${t ? `<span class="tc-pts"><b>${t.pontos}</b> ${t.pontos === 1 ? 'ponto' : 'pontos'}${t.pos ? ` · ${t.pos}º lugar` : ''}</span>`
+      ${t ? `<span class="tc-pts"><b>${t.pontos}</b> ${t.pontos === 1 ? 'ponto' : 'pontos'}${t.pos ? ` · ${t.pos}º lugar` : ''}</span>${turmaSozinha(t, d) ? '<span class="tc-solo">👥 Só você na Turma: chame mais 1 para pontuar</span>' : ''}`
           : `<span class="tc-passos"><span><b>1</b>Junte os amigos numa Turma</span><span><b>2</b>Desafie outra Turma</span><span><b>3</b>Ganhou: +1 ponto</span></span>`}
       ${(() => { const x = dcDatas(d), ag = Date.now(), dias = Math.ceil((x.fim - ag) / 86400000), dobro = d.dobro || (ag >= x.dobroDesde && ag < x.fim);
         return `<span class="tc-faixa${dobro ? ' quente' : ''}">${dobro ? `🔥 Reta final: vitória com sócio vale ${x.mult} pontos · ${dias <= 1 ? 'último dia' : `faltam ${dias} dias`}` : `${dias === 1 ? 'Falta 1 dia' : `Faltam ${dias} dias`} · 🔥 de 14/12, vitória com sócio vale ${x.mult}`}</span>`; })()}
@@ -10097,7 +10120,7 @@ function desenharCartaoTurma() {
           : '<span class="tc-vazio">Nenhuma Turma pontuou ainda. A primeira vitória já vale o topo do ranking.</span>'}
       ${(() => { const n = (typeof VIVO !== 'undefined' && VIVO.mesas || []).filter(v => v.desafio && v.desafio.ver && v.fase === 'jogo').length;
         return n ? `<span class="tc-vivo" role="link"><i aria-hidden="true"></i>${n === 1 ? '1 confronto ao vivo agora' : n + ' confrontos ao vivo agora'} · <b>Assistir</b></span>` : ''; })()}
-      <span class="tc-go">${t && t.renomeia ? 'Escolher o novo nome da Turma' : t ? 'Desafiar outra Turma' : 'Montar a minha Turma'}</span>`;
+      <span class="tc-go">${t && t.renomeia ? 'Escolher o novo nome da Turma' : t && turmaSozinha(t, d) ? 'Chamar a turma' : t ? 'Desafiar outra Turma' : 'Montar a minha Turma'}</span>`;
     return;
   }
   if (!$('#turmaCardT')) card.innerHTML = '<span class="ck">Desafio das Confrarias · 1º/11 a 20/12</span><span class="ct" id="turmaCardT"></span><span class="cd" id="turmaCardD"></span>';
@@ -10153,14 +10176,14 @@ function desenharTurma() {
   const t = TM.info, d = desafioAgora();
   const regra = `<ol class="tm-passos"><li><b>Monte a sua Turma</b> e mande o código para os amigos.</li><li><b>Desafie outra Turma:</b> o app cria a mesa e manda o convite pelo WhatsApp.</li><li><b>Ganhou, +1 ponto</b> (na reta final, de 14 a 20/12, +2 se tiver sócio na dupla). Em 20/12, a Turma com mais pontos é a campeã do ano: ganha uma estrela ★ ao lado do nome e, até o fim do próximo Desafio, o brasão dourado, a Mesa da Campeã e o selo 🏆 para cada um da Turma. Com 3 estrelas, ganha o troféu 🏆 da Grande Taça.</li></ol>
     <p class="tm-virtual">Os prêmios são do app: aparecem no nome e no brasão da Turma, no ranking e na mesa. Não é prêmio físico.</p>
-    <p class="note tm-regra">Vale de 1º/11 a 20/12, em partida online contra alguém de outra Turma (na mesa rápida também conta, se cair gente de outra Turma do outro lado). Contam até 5 vitórias por dia contra a mesma Turma.${planosValem() && !temPlano() ? ' Sem plano: até 2 desafios por dia, além da partida grátis.' : ''}</p>`;
+    <p class="note tm-regra">Vale de 1º/11 a 20/12, em partida online contra alguém de outra Turma (na mesa rápida também conta, se cair gente de outra Turma do outro lado). Contam até 5 vitórias por dia contra a mesma Turma. Para pontuar, a Turma precisa ter pelo menos 2 pessoas.${planosValem() && !temPlano() ? ' Sem plano: até 2 desafios por dia, além da partida grátis.' : ''}</p>`;
   const campeas = d.campeas && d.campeas.length ? `<p class="tm-k">Campeãs</p><ul class="tm-camp">${d.campeas.map(c => `<li><span>${c.ano}</span><b>${esc(c.nome)}</b></li>`).join('')}</ul>` : '';
   if (!t) {
     box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">Como funciona</h2>${regra}
       <div class="tm-box"><b>Entrar numa Turma</b><small>Peça o código para quem criou.</small>
         <input id="tmCod" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="Código: 6 letras e números" value="${esc(TM.convite || '')}">
         <button type="button" class="primary" id="tmEntrar">Entrar na Turma</button></div>
-      <div class="tm-box"><b>Criar uma Turma</b><small>Depois é só mandar o código para os amigos.</small>
+      <div class="tm-box"><b>Criar uma Turma</b><small>Depois é só mandar o código para os amigos: com 2 pessoas, a Turma já pontua.</small>
         <input id="tmNome" maxlength="24" autocomplete="off" placeholder="Nome da Turma (ex.: Os do Japiim)">
         <button type="button" class="secondary" id="tmCriar">Criar Turma</button></div>
       ${rankingHTML(d, null)}${campeas}
@@ -10173,16 +10196,18 @@ function desenharTurma() {
     });
     if (TM.convite) setTimeout(() => { const b = $('#tmEntrar'); if (b) b.focus(); }, 300);
   } else {
-    const link = `${SITE_URL}#turma=${t.codigo}`;
-    const zap = 'https://wa.me/?text=' + encodeURIComponent(`Entra na minha Turma "${t.nome}" no Dominó Manauara, para o Desafio das Confrarias (1º/11 a 20/12). Código: ${t.codigo}\n${link}`);
+    const zap = zapTurmaURL(t);
+    // 11/11 (pedido do dono): Turma de 1 pessoa não pontua; o chamado para a turma vem no alto, com o WhatsApp em destaque
+    const so = (d.aberto || d.antes) && turmaSozinha(t, d);
+    const solo = so ? `<div class="tm-solo" role="note"><b>👥 Por enquanto, só você na Turma</b><p>No Desafio, a Turma precisa de pelo menos ${d.minimo || 2} pessoas para pontuar. Chame mais 1 amigo e a próxima vitória já vale ponto.${t.pontos ? ' Os pontos que a Turma já fez continuam.' : ''}</p><a class="share-wa tm-zap" id="tmZap" href="${esc(zap)}" target="_blank" rel="noopener">${WA_IC}Chamar a turma no WhatsApp</a></div>` : '';
     const status = d.aberto ? `<b>${pts(t.pontos)}</b>${t.pos ? ` · ${t.pos}º lugar` : ''}${t.hoje ? ` · <span class="dc-hoje">+${t.hoje} hoje</span>` : ''}` : d.antes ? 'Começa em 1º de novembro.' : `Este ano a sua Turma fez ${pts(t.pontos)}.`;
     box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">${esc(nomeTurma(t.nome))}${estrelas(t.titulos)}</h2>
       ${t.retirado ? retiradoHTML(t) : ''}
       ${t.campea && d.campea ? `<p class="tm-campea">🏆 <b>${esc(nomeTurma(t.nome))} é a campeã de ${d.campea.ano}!</b> Brasão dourado, a Mesa da Campeã e o selo 🏆 para quem estava na Turma, até ${dataBR(d.campea.ate - 1)}.</p>` : souCampea() ? '<p class="tm-campea">🏆 Você tem a <b>Mesa da Campeã</b> e o selo 🏆 do Desafio das Confrarias.</p>' : ''}
       <p class="tm-status">${status}${t.taca ? ' · 🏆 Grande Taça' : t.titulos ? ` · ${t.titulos} ${t.titulos === 1 ? 'estrela' : 'estrelas'} de campeã` : ''}</p>
-      <div class="tm-cod"><small>Código da Turma</small><b>${esc(t.codigo)}</b></div>
-      ${d.aberto ? '<button type="button" class="primary tm-desafiar" id="tmDesafiar">Desafiar outra Turma</button><p class="note tm-desafiar-n">Cria uma mesa online e manda o convite para a outra Turma. Quem ganhar leva o ponto. A partida passa ao vivo na Calçada: todo mundo pode assistir.</p>' : ''}
-      <a class="${d.aberto ? 'secondary' : 'primary'} tm-zap" id="tmZap" href="${esc(zap)}" target="_blank" rel="noopener">Chamar a turma no WhatsApp</a>
+      ${solo}<div class="tm-cod"><small>Código da Turma</small><b>${esc(t.codigo)}</b></div>
+      ${d.aberto ? `<button type="button" class="${so ? 'secondary' : 'primary'} tm-desafiar" id="tmDesafiar">Desafiar outra Turma</button><p class="note tm-desafiar-n">Cria uma mesa online e manda o convite para a outra Turma. Quem ganhar leva o ponto${so ? ' (com pelo menos 2 pessoas na Turma)' : ''}. A partida passa ao vivo na Calçada: todo mundo pode assistir.</p>` : ''}
+      ${so ? '' : `<a class="${d.aberto ? 'secondary' : 'primary'} tm-zap" id="tmZap" href="${esc(zap)}" target="_blank" rel="noopener">Chamar a turma no WhatsApp</a>`}
       ${dcFalta(t, d)}
       ${craquesRivalHTML(t, d)}
       <p class="tm-k">Na Turma (${t.membros.length})</p><p class="tm-membros">${t.membros.map(n => esc(n)).join(', ')}</p>
@@ -10274,7 +10299,14 @@ receberOnline = function (m) {
   receberOnlineTurma(m);
   try {
     const d = m && m.t === 'mesa' && m.desafio;
-    if (!d || m.minha < 0 || !d.cadeiras.includes(m.minha)) return;
+    if (!d || m.minha < 0) return;
+    // 11/11: ganhou de outra Turma, mas a Turma é só ele (precisa de pelo menos 2 pessoas para pontuar)
+    if (d.sozinhos && d.sozinhos.includes(m.minha)) {
+      const ks = 's:' + m.codigo + ':' + d.seq;
+      let vs = []; try { vs = JSON.parse(store.get(TURMA_VISTOS) || '[]'); } catch (e) {}
+      if (!vs.includes(ks)) { store.set(TURMA_VISTOS, JSON.stringify(vs.concat(ks).slice(-20))); setTimeout(() => { if (!$('#dsNudge')) toast('Vitória contra outra Turma! Para valer ponto no Desafio, a sua Turma precisa de pelo menos 2 pessoas. Chame a turma.'); }, 1800); }
+    }
+    if (!d.cadeiras || !d.cadeiras.includes(m.minha)) return;
     const k = m.codigo + ':' + d.seq;
     let vistos = []; try { vistos = JSON.parse(store.get(TURMA_VISTOS) || '[]'); } catch (e) {}
     if (vistos.includes(k)) return;
@@ -14437,7 +14469,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.4-dbf6c83f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.5-2cd61839';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
