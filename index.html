@@ -2302,10 +2302,6 @@ body.assistindo #menuBtn,body.assistindo #passBtn{visibility:hidden}
 /* A pedra de costas na mão de quem assiste (classe "costas", 3.29.1): menor (é só para saber quantas faltam) e
    a mesa sobe para a faixa "Assistindo" não cobrir as pedras */
 #hand .ht.costas{cursor:default;width:calc(var(--tw)*.62)}
-/* 11/11 (pedido do dono): na partida online, a sua mão leva uma marca d'água bem fraca com o seu nome e o número da mesa
-   (o celular não deixa o site bloquear o print; com a marca, o print que alguém mandar mostra de quem é). Não pega o toque. */
-#hand.marcada{position:relative}
-#hand.marcada::after{content:"";position:absolute;inset:0;background:var(--marca) 0 4px/var(--marca-t) repeat;opacity:.12;pointer-events:none;z-index:3;border-radius:inherit}
 /* 11/11: saiu do app no meio da partida online: as pedras somem (a miniatura da troca de apps não mostra a mão) */
 html.mao-fora #hand > *{visibility:hidden}
 body.assistindo #scrGame .hand{display:none}   /* 03/11: quem assiste não vê as pedras de baixo: a mesa ganha a altura (a contagem vai na linha do nome) */
@@ -3939,6 +3935,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.10', data: '11/11/2026', itens: ['A marca d\'água com o nome nas pedras da partida online saiu.'] },
   { v: '3.53.9', data: '11/11/2026', itens: ['Na partida online (mesa rápida, mesa com os amigos e Desafio), as suas pedras levam uma marca d\'água bem fraca com o seu nome e o número da mesa: se alguém mandar print da mão, dá para ver de quem é.', 'Ao sair do app no meio da partida online, as suas pedras somem da tela até você voltar.'] },
   { v: '3.53.8', data: '11/11/2026', itens: ['Mesa nova para os sócios: Metrópole da Amazônia, os prédios de Manaus no meio da mata, com céu azul e sol.', 'Mesa Teatro Amazonas: o chão agora é a calçada de ondas pretas e brancas, igual à do Largo de São Sebastião.', 'A mesa Anavilhanas saiu.'] },
   { v: '3.53.7', data: '11/11/2026', itens: ['Corrigido: na mesa online, o aviso da sua vez (como "Comece com a carroça de sena") ficava cortado ao lado do "Papo de mesa" ou do "Reagir". Agora ele quebra em duas linhas quando precisa, sem mexer na mesa nem na mão.', 'Corrigido: os segundos do relógio da sua vez (nos últimos 10 s) voltam a aparecer no fim do aviso. Antes ficavam apagados no canto.', 'Tela do Sócio da Calçada: a tabela Grátis × Sócio agora mostra a Sexta da Calçada com moral em dobro, a reta final do Desafio com 2 pontos por vitória, o áudio no papo e a foto no lugar do avatar.'] },
@@ -14024,32 +14021,7 @@ function renderHand() {
     return `<button type="button" class="${cls}" data-i="${i}" aria-label="Pedra ${t[0]} e ${t[1]}"><svg viewBox="-0.04 -0.04 1.08 2.08">${tileSVG({ x: .5, y: 1, o: 'v', v1: t[0], v2: t[1] }, '', false)}</svg></button>`;
   }).join('');
 }
-// 11/11 (pedido do dono): marca d'água na mão da partida online (nome e número da mesa) e a mão some ao sair do app.
-// O site não consegue saber nem bloquear o print (iPhone e Android não deixam); isso só desestimula passar as pedras.
-let marcaFeita = '';
-function marcaMao() {
-  const h = $('#hand'); if (!h) return;
-  let txt = '';
-  try {
-    if (mode === 'on' && ON.ativo && ON.cod && seatMe != null && !document.body.classList.contains('assistindo')) {
-      const v = ON.vista, c = v && v.cad && v.cad[v.minha != null ? v.minha : seatMe];
-      txt = (((c && c.nome) || (profile && profile.name) || '').trim() + ' · mesa ' + ON.cod).replace(/^ · /, '');
-    }
-  } catch (e) {}
-  if (txt === marcaFeita) return;
-  marcaFeita = txt;
-  if (!txt) { h.classList.remove('marcada'); h.style.removeProperty('--marca'); return; }
-  // fileiras retas, uma deslocada da outra; o texto que passa da borda continua do outro lado (sem corte no meio)
-  let w = txt.length * 6.6;
-  try { const cx = document.createElement('canvas').getContext('2d'); cx.font = '700 11px -apple-system,system-ui,sans-serif'; w = cx.measureText(txt).width; } catch (e) {}
-  const W = Math.ceil(w + 40), H = 42, t = esc(txt);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><g font-family="-apple-system,system-ui,sans-serif" font-size="11" font-weight="700" fill="#151515"><text x="4" y="13">${t}</text><text x="${4 + W / 2}" y="34">${t}</text><text x="${4 - W / 2}" y="34">${t}</text></g></svg>`;
-  h.style.setProperty('--marca', `url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
-  h.style.setProperty('--marca-t', `${W}px ${H}px`);
-  h.classList.add('marcada');
-}
-const renderHandSemMarca = renderHand;
-renderHand = function () { renderHandSemMarca.apply(this, arguments); marcaMao(); };
+// 11/11 (pedido do dono): ao sair do app no meio da partida online, a mão some (a marca d'água saiu no mesmo dia, pedido do dono)
 function maoFora(sim) {
   try { document.documentElement.classList.toggle('mao-fora', !!sim && mode === 'on' && screen === 'game'); } catch (e) {}
 }
@@ -14559,7 +14531,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.9-505deba5';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.10-40183b61';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
