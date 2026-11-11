@@ -8,6 +8,10 @@ import { nomeOfensivo } from './motor.js';
 
 const LETRAS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const MAX_MEMBROS = 40, MAX_POR_PAR_DIA = 5;
+// 11/11 (pedido do dono): para pontuar no Desafio, a Turma precisa de pelo menos 2 pessoas (a Turma de 1 não pontua;
+// os pontos que já tinha ficam). A Turma sem ninguém sai do ranking (os pontos ficam guardados e voltam se alguém entrar).
+const MIN_PONTUAR = 2;
+const COM_GENTE = 'EXISTS (SELECT 1 FROM turma_membros m WHERE m.turma = t.codigo)';
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
 const codOk = v => new RegExp(`^[${LETRAS}]{6}$`).test(String(v || ''));
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
@@ -45,7 +49,7 @@ export async function fecharDesafio(env, agora) {
   const e = edicao(env, agora);
   if (!e.depois) return null;
   if (await env.DB.prepare('SELECT 1 FROM desafio_campeas WHERE edicao = ?').bind(e.ano).first()) return null;
-  const top = await env.DB.prepare('SELECT turma, pontos FROM desafio_pontos WHERE edicao = ? AND pontos > 0 ORDER BY pontos DESC, ultimo ASC LIMIT 1').bind(e.ano).first();
+  const top = await env.DB.prepare(`SELECT p.turma, p.pontos FROM desafio_pontos p JOIN turmas t ON t.codigo = p.turma WHERE p.edicao = ? AND p.pontos > 0 AND ${COM_GENTE} ORDER BY p.pontos DESC, p.ultimo ASC LIMIT 1`).bind(e.ano).first();   // 11/11: a Turma sem ninguém não leva o título
   const r = await env.DB.prepare('INSERT OR IGNORE INTO desafio_campeas (edicao, turma, pontos, fechada_em) VALUES (?, ?, ?, ?)').bind(e.ano, top ? top.turma : null, top ? top.pontos : 0, Date.now()).run();
   const mudou = r && ((r.meta && r.meta.changes) || r.changes);
   if (top && mudou) await env.DB.prepare('UPDATE turmas SET titulos = titulos + 1 WHERE codigo = ?').bind(top.turma).run();
@@ -69,16 +73,20 @@ async function campeaAtual(env, e) {
   try { const r = await env.DB.prepare('SELECT c.turma, t.nome FROM desafio_campeas c JOIN turmas t ON t.codigo = c.turma WHERE c.edicao = ?').bind(v.ed).first(); return r ? { codigo: r.turma, nome: nomeSeguro(r.nome), ano: v.ed, ate: v.ate } : null; } catch (er) { return null; }
 }
 // Fim de uma partida online: quem ganhou leva ponto para a Turma se perdeu alguém de outra Turma
-// -> { turmas: nomes das Turmas que pontuaram, ids: quem ganhou e trouxe o ponto }
+// -> { turmas: nomes das Turmas que pontuaram, ids: quem ganhou e trouxe o ponto, sozinhos: quem ganhou mas a Turma é de 1 pessoa }
 export async function pontuar(env, vencedores, perdedores) {
   const e = edicao(env);
-  const nada = { turmas: [], ids: [], pontos: 0 };
+  const nada = { turmas: [], ids: [], pontos: 0, sozinhos: [] };
   if (!e.aberto) return nada;
   const ids = [...new Set([...vencedores, ...perdedores].filter(idOk))];
   if (!ids.length) return nada;
   const { results } = await env.DB.prepare(`SELECT m.aparelho, t.codigo, t.nome FROM turma_membros m JOIN turmas t ON t.codigo = m.turma WHERE m.aparelho IN (${ids.map(() => '?').join(',')})`).bind(...ids).all();
   const de = new Map((results || []).map(r => [r.aparelho, r]));
   const contra = new Set(perdedores.map(id => de.get(id)).filter(Boolean).map(r => r.codigo));
+  // 11/11: quantas pessoas tem cada Turma de quem ganhou (a de 1 pessoa não pontua)
+  const tam = new Map();
+  const tws = [...new Set(vencedores.map(id => de.get(id)).filter(Boolean).map(r => r.codigo))];
+  if (tws.length) { const { results: tm } = await env.DB.prepare(`SELECT turma, COUNT(*) AS n FROM turma_membros WHERE turma IN (${tws.map(() => '?').join(',')}) GROUP BY turma`).bind(...tws).all(); (tm || []).forEach(r => tam.set(r.turma, r.n)); }
   const feitas = new Map(), dia = diaManaus(e.agora), mult = multDe(e.ano, dia);
   // 10/11 (pedido do dono): na reta final, o dobro é de quem tem sócio na dupla
   const socios = new Set();
@@ -89,6 +97,7 @@ export async function pontuar(env, vencedores, perdedores) {
   for (const id of vencedores) {
     const t = de.get(id); if (!t || feitas.has(t.codigo)) continue;
     const outra = [...contra].find(c => c !== t.codigo); if (!outra) continue;
+    if ((tam.get(t.codigo) || 0) < MIN_PONTUAR) continue;
     const delta = mult > 1 && vencedores.some(w => de.get(w) && de.get(w).codigo === t.codigo && socios.has(w)) ? mult : 1;
     const j = await env.DB.prepare('SELECT n FROM desafio_jogos WHERE edicao = ? AND dia = ? AND vencedora = ? AND perdedora = ?').bind(e.ano, dia, t.codigo, outra).first();
     if (j && j.n >= MAX_POR_PAR_DIA) continue;
@@ -102,11 +111,12 @@ export async function pontuar(env, vencedores, perdedores) {
     }
     feitas.set(t.codigo, { nome: t.nome, delta });
   }
-  return { turmas: [...feitas.values()].map(x => x.nome), ids: vencedores.filter(id => de.get(id) && feitas.has(de.get(id).codigo)), pontos: feitas.size ? Math.max(...[...feitas.values()].map(x => x.delta)) : 0 };
+  return { turmas: [...feitas.values()].map(x => x.nome), ids: vencedores.filter(id => de.get(id) && feitas.has(de.get(id).codigo)), pontos: feitas.size ? Math.max(...[...feitas.values()].map(x => x.delta)) : 0,
+    sozinhos: vencedores.filter(id => idOk(id) && de.get(id) && !feitas.has(de.get(id).codigo) && (tam.get(de.get(id).codigo) || 0) < MIN_PONTUAR && [...contra].some(c => c !== de.get(id).codigo)) };
 }
 async function ranking(env, ano, n) {
   const { results } = await env.DB.prepare(`SELECT t.codigo, t.nome, t.titulos, p.pontos, p.ultimo, (SELECT COUNT(*) FROM turma_membros m WHERE m.turma = t.codigo) AS membros
-    FROM desafio_pontos p JOIN turmas t ON t.codigo = p.turma WHERE p.edicao = ? AND p.pontos > 0 ORDER BY p.pontos DESC, p.ultimo ASC LIMIT ?`).bind(ano, n).all();
+    FROM desafio_pontos p JOIN turmas t ON t.codigo = p.turma WHERE p.edicao = ? AND p.pontos > 0 AND ${COM_GENTE} ORDER BY p.pontos DESC, p.ultimo ASC LIMIT ?`).bind(ano, n).all();   // 11/11: sem a Turma vazia
   return results || [];
 }
 // 10/11: os pontos de hoje de cada Turma (pelas vitórias do dia) e a posição de ontem, para a seta de subiu/caiu
@@ -142,7 +152,7 @@ async function resumo(env, ap) {
   const linha = (r, i) => ({ pos: i + 1, nome: nomeSeguro(r.nome), pontos: r.pontos, titulos: r.titulos, membros: r.membros, hoje: ho.hoje.get(r.codigo) || 0, campea: !!campea && campea.codigo === r.codigo,
     mov: ho.posOntem.has(r.codigo) ? ho.posOntem.get(r.codigo) - (i + 1) : (ho.hoje.get(r.codigo) ? 'novo' : 0) });
   const campeas = (await env.DB.prepare('SELECT c.edicao, c.pontos, t.nome FROM desafio_campeas c LEFT JOIN turmas t ON t.codigo = c.turma ORDER BY c.edicao DESC LIMIT 10').all()).results || [];
-  const desafio = { ano: e.ano, inicio: e.inicio, fim: e.fim, aberto: e.aberto, antes: e.antes, depois: e.depois, dobroDesde: e.dobroDesde, dobro: e.dobro, mult: RETA.mult,
+  const desafio = { ano: e.ano, inicio: e.inicio, fim: e.fim, aberto: e.aberto, antes: e.antes, depois: e.depois, dobroDesde: e.dobroDesde, dobro: e.dobro, mult: RETA.mult, minimo: MIN_PONTUAR,
     campea: campea ? { nome: campea.nome, ano: campea.ano, ate: campea.ate } : null,
     total: rk.length, ranking: rk.slice(0, 10).map(linha),
     campeas: campeas.filter(c => c.nome).map(c => ({ ano: c.edicao, nome: nomeSeguro(c.nome), pontos: c.pontos })) };
