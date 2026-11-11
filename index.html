@@ -2244,6 +2244,9 @@ body.com-abas #profileBack{display:none}
 
 /* Mais */
 .mais-lista{display:grid;gap:10px}
+.ga-barra{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:60;max-width:520px;margin:0 auto;padding:13px 14px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.ga-barra p{margin:0 0 10px;font-size:15px;line-height:1.4}.ga-barra p a{color:inherit;font-weight:700}
+.ga-barra .ga-bts{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ga-barra button{min-height:44px;margin:0}
 .mais-it{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:14px;min-height:66px;padding:11px 16px 11px 12px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;text-align:left;text-decoration:none;cursor:pointer;box-sizing:border-box;width:100%}
 .mais-it:active{transform:scale(.99)}
 .mais-ic{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--bg);color:var(--nos)}
@@ -3884,6 +3887,9 @@ const CONFIG = {
   // Ex.: { nome: 'Açaí do Bairro', texto: 'Peça pelo WhatsApp', link: 'https://wa.me/55...', logo: 'patrocinio/acai.png' }
   // Estatística anônima (Umami Cloud): o "Website ID" do painel. Vazio: nada é contado.
   umamiId: '52db3c75-c2b5-4f28-b0b4-eb0fce4cecb0',
+  // 11/11 (pedido do dono): Google Analytics 4, o "ID da métrica" (G-...). Vazio: o Google não entra. Só conta quem aceitou
+  // na barra do início, nunca menor de idade nem o aparelho do administrador.
+  gaId: '',
   api: 'https://api.gubfort.workers.dev',
   pagamentos: true,   // Plano Apoiador e doação ligados para todos desde a 3.20.4 (chave do Asaas no ar e pagamento real testado)    // Servidor do jogo (Cloudflare): mensagens do Fale com a gente; depois ranking e mesa online
   // Área do dono: o link do painel do Umami, cifrado. Só abre com a senha do dono (nunca fica no código).
@@ -11455,6 +11461,7 @@ const ABA_IC = {
   mais: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="ic-c" x="3.5" y="3.5" width="7" height="7" rx="2"/><rect class="ic-c" x="13.5" y="3.5" width="7" height="7" rx="2"/><rect class="ic-c" x="3.5" y="13.5" width="7" height="7" rx="2"/><rect class="ic-c" x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>'
 };
 const MAIS_IC = {
+  estat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19.5V12M10 19.5V6M15 19.5v-9M20 19.5V9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
   carteira: '<svg viewBox="0 0 24 24"><rect x="2.8" y="5.5" width="18.4" height="13" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="8.4" cy="10.8" r="2.1" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 15.7c.6-1.4 1.6-2.1 2.9-2.1s2.3.7 2.9 2.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M13.8 10h4.2M13.8 13.4h2.8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',   // 10/11
   codigo: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12.5" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M6.8 10.2h5M6.8 13.9h3.4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M16.6 9.4l.8 1.7 1.9.2-1.4 1.3.4 1.9-1.7-1-1.7 1 .4-1.9-1.4-1.3 1.9-.2z" fill="currentColor"/></svg>',   // 10/11
   dono: '<svg viewBox="0 0 24 24"><path d="M4 19V10m5.3 9V5m5.4 14v-7M20 19V8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
@@ -11551,6 +11558,7 @@ function renderMais() {
     { k: 'aprender', ic: 'aprender', t: 'Aprender a jogar', s: 'Lições curtas e partida treino com dicas' },   // 03/11
     { k: 'regras', ic: 'regras', t: 'Regras', s: 'Bucho, garagem, passe e galo, explicados' },
     { k: 'som', ic: 'som', t: 'Som e vibração', s: typeof somRotulo === 'function' ? somRotulo() : '' },   // 03/11
+    typeof gaMostraNoMais === 'function' && gaMostraNoMais() && { k: 'estat', ic: 'estat', t: 'Estatísticas do Google', s: gaLigado() ? 'Ligadas · toque para desligar' : 'Desligadas · toque para ligar' },   // 11/11
     // 10/11 (pedido do dono: sócios não achavam o código): o código fica aqui, à vista
     temPlano() && { k: 'carteira', ic: 'carteira', t: 'Sua carteira de sócio', s: (() => { const d = carteiraDados() || {}; return (d.numero ? `Sócio nº ${String(d.numero).padStart(4, '0')} · ` : '') + 'mostre e compartilhe'; })() },   // 10/11
     temPlano() && { k: 'codigo', ic: 'codigo', t: 'Seu código de sócio', s: (() => { const p = planoLocal() || {}, d = carteiraDados() || {}; return (p.codigo ? codigoBonito(p.codigo) : 'Toque para ver') + (d.numero ? ` · Sócio nº ${d.numero}` : ''); })(), destaque: true },
@@ -11623,6 +11631,7 @@ function abasMaisClique(k) {
   $('#maisLista').addEventListener('click', e => {
     const b = e.target.closest('[data-k]'); if (!b) return;
     if (b.dataset.k === 'insta') { track('instagram-mais'); return; }
+    if (b.dataset.k === 'estat') { gaAlternar(); return; }   // 11/11
     abasMaisClique(b.dataset.k);
   });
   // histórico do celular: vai para o Perfil, logo abaixo do título
@@ -14682,6 +14691,61 @@ function loadUmami() {
   // quem está no app agora, em tempo real, vem do nosso servidor ("No app agora" e o painel do administrador)
 }
 loadUmami();
+// ===== 11/11 (pedido do dono): Google Analytics 4, junto com o Umami =====
+// Só conta quem aceitou na barra do início (LGPD: o Google guarda um cookie no aparelho). Nunca conta menor de idade
+// nem o aparelho do administrador. Sem anúncios: os sinais do Google e a personalização de anúncios ficam desligados.
+// Os mesmos eventos do Umami vão para o Google (com "_" no lugar de "-"), e cada tela vira uma página vista.
+const GA_KEY = 'dmz-ga';
+function gaLigado() { return store.get(GA_KEY) === 'sim'; }
+function gaMostraNoMais() { return !!CONFIG.gaId && !menorDeIdade() && !semContar(); }
+function gaPode() { return !!CONFIG.gaId && (location.protocol === 'https:' || window.__gaTeste) && !semContar() && !menorDeIdade() && gaLigado(); }
+const GA_TELAS = { who: 'Entrada', home: 'Início', calcada: 'Calçada', profile: 'Perfil', mais: 'Mais', game: 'Mesa', sala: 'Mesa com os amigos', setup: 'Jogo offline', apoio: 'Sócio da Calçada', estilo: 'Personalizar', fale: 'Fale com a gente', anuncie: 'Anuncie', instalar: 'Instalar', patro: 'Patrocínio', dono: 'Administrador' };
+function gaTela(name) {
+  if (!window.__gaOn || !name) return;
+  gtag('event', 'page_view', { page_title: GA_TELAS[name] || name, page_location: location.origin + '/' + name, page_path: '/' + name });
+}
+function loadGA() {
+  if (window.__gaOn || !gaPode()) return;
+  window.__gaOn = true;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function () { dataLayer.push(arguments); };
+  gtag('js', new Date());
+  gtag('config', CONFIG.gaId, { send_page_view: false, allow_google_signals: false, allow_ad_personalization_signals: false });
+  gtag('set', 'user_properties', { socio: temPlano() ? 'sim' : 'nao', instalado: isStandalone() ? 'sim' : 'nao' });
+  const s = document.createElement('script');
+  s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(CONFIG.gaId);
+  document.head.appendChild(s);
+  gaTela(screen);
+}
+function gaEvento(ev, data) {
+  if (!window.__gaOn || !window.gtag || semContar()) return;
+  const nome = String(ev).replace(/[^A-Za-z0-9_]/g, '_').replace(/^[^A-Za-z]+/, '').slice(0, 40) || 'evento';
+  const p = {};
+  if (data && typeof data === 'object') for (const [k, v] of Object.entries(data).slice(0, 20)) p[String(k).replace(/[^A-Za-z0-9_]/g, '_').slice(0, 40)] = typeof v === 'number' ? v : String(v).slice(0, 100);
+  gtag('event', nome, p);
+}
+const trackSemGA = track;
+track = function (ev, data) { trackSemGA(ev, data); try { gaEvento(ev, data); } catch (e) {} };
+const showSemGA = show;
+show = function (name) { const r = showSemGA.apply(this, arguments); try { gaTela(name); if (name !== 'home') gaBarraFecha(); } catch (e) {} return r; };
+// a pergunta: uma vez, no início, sem atrapalhar (nada aberto por cima)
+function gaBarraFecha() { const b = $('#gaBarra'); if (b) b.remove(); }
+function gaPerguntar() {
+  if (!CONFIG.gaId || store.get(GA_KEY) || $('#gaBarra') || screen !== 'home' || sheetKind || !profile || menorDeIdade() || semContar()) return;
+  document.body.insertAdjacentHTML('beforeend', `<div class="ga-barra" id="gaBarra" role="dialog" aria-label="Estatísticas do Google">
+    <p>Podemos usar o <b>Google Analytics</b> para entender como o jogo é usado e deixá-lo melhor? Ele guarda um cookie neste aparelho. Seu nome e sua foto nunca vão. <a href="privacidade.html" target="_blank" rel="noopener">Saiba mais</a></p>
+    <div class="ga-bts"><button type="button" class="secondary" id="gaNao">Não</button><button type="button" class="primary" id="gaSim">Pode usar</button></div></div>`);
+  $('#gaSim').addEventListener('click', () => { store.set(GA_KEY, 'sim'); gaBarraFecha(); loadGA(); track('ga-aceitou'); });
+  $('#gaNao').addEventListener('click', () => { store.set(GA_KEY, 'nao'); gaBarraFecha(); track('ga-recusou'); });
+}
+function gaAlternar() {
+  if (gaLigado()) { store.set(GA_KEY, 'nao'); track('ga-desligou'); toast('Estatísticas do Google desligadas. A partir da próxima vez que abrir o app, nada vai para o Google.'); }
+  else { store.set(GA_KEY, 'sim'); loadGA(); track('ga-ligou'); toast('Estatísticas do Google ligadas. Obrigado!'); }
+  try { renderMais(); } catch (e) {}
+}
+const renderHomeGA = renderHome;
+renderHome = function () { const r = renderHomeGA.apply(this, arguments); setTimeout(() => { try { gaPerguntar(); } catch (e) {} }, 2500); return r; };
+loadGA();
 show(telaInicial());
 if (pedirDono) openDonoLogin();
 addEventListener('hashchange', () => {
