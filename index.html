@@ -168,6 +168,10 @@ a.card{text-decoration:none}
 .game{display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;padding-block:10px 12px}
 .score{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:10px}
 .team{position:relative;display:grid;gap:3px;min-width:0}
+/* 10/11: brasão da Turma na mesa (junto do nome e, no confronto, no placar) */
+.sn-br{display:inline-block;vertical-align:-3px;margin-right:4px}.sn-br .brasao{display:inline-block}
+.tturma{display:block;min-width:0;font-size:11.5px;font-weight:800;line-height:1.2;color:var(--fg);opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tturma .brasao{display:inline-block;vertical-align:-3px;margin-right:4px}
 .team.R{text-align:right}
 .tlabel{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;line-height:1.25}
 .team.L .tlabel{color:var(--nos)}
@@ -3885,7 +3889,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.53.1', data: '10/11/2026', itens: ['Ao vivo no Desafio: na Calçada, os confrontos entre Turmas acontecendo agora, com o placar e o botão Assistir, para qualquer um, sem o número da mesa (só assiste, não senta). O convite do desafio avisa que a partida passa ao vivo.'] },
+  { v: '3.53.1', data: '10/11/2026', itens: ['Ao vivo no Desafio: na Calçada, os confrontos entre Turmas acontecendo agora, com o placar e o botão Assistir, para qualquer um, sem o número da mesa (só assiste, não senta). O convite do desafio avisa que a partida passa ao vivo.', 'Na mesa online, o brasão da Turma aparece junto do nome de quem joga; no confronto entre Turmas, o placar mostra o brasão e o nome de cada Turma embaixo da dupla.'] },
   { v: '3.53', data: '10/11/2026', itens: ['Sair no meio da partida com outras pessoas na mesa conta como derrota no ranking e na Copa. Na mesa rápida, quem sai no meio de 3 partidas no dia fica 15 minutos sem a mesa rápida. Queda de internet não conta se a pessoa voltar antes de a partida acabar.', 'Mais 10 emojis para reagir e no papo de mesa: 🐓 🤣 😎 🙏 💪 🎉 😭 😡 🤔 👀.', 'Foto do sócio no lugar do avatar: para o sócio que coloca foto no perfil, a opção já vem ligada; aprovada, a foto aparece na mesa, na fila, no papo, no ranking, na Copa e nas mesas ao vivo. Desligando no perfil, volta o avatar. Quem já tinha foto é perguntado uma vez.', 'Carteira de sócio: os botões "Trocar a foto" e "Usar o avatar" ficaram do mesmo tamanho.', 'Desafio das Confrarias mais emocionante: brasão de cada Turma, pontos de hoje, seta de quem subiu ou caiu, barra de pontos, a sua Turma sempre à vista e quanto falta para passar a de cima. Reta final em dobro: de 14 a 20/12, cada vitória contra outra Turma vale 2 pontos. Na tela da Turma: os craques (quem mais trouxe pontos) e o placar contra a Turma rival. Avisos no celular (no máximo 1 por dia, às 18h) quando outra Turma passar a sua, quando a sua chegar ao pódio, na véspera da reta final e no último dia.', 'Convite, uma vez, para quem já tinha o app: chamar os amigos para jogar, com o botão do WhatsApp.', 'Pedra de dominó mais parecida com a de verdade: espessura, quina polida, risco do meio gravado, pintas como furos e pino de latão.', 'Boas-vindas: a mesa vista de cima, com pedras de verdade no meio, as pedras de cada um na frente dele e os quatro em volta, sem nada por cima da mesa.', 'Sexta da Calçada: o emoji de dado saiu (dominó não é dado).'] },
   { v: '3.52', data: '10/11/2026', itens: ['Sexta da Calçada: toda sexta, das 20h às 23h, moral em dobro em todas as partidas (o nível sobe duas vezes mais rápido), com aviso no celular às 19h e às 20h.', 'A experiência agora se chama moral: cada mão, galo, batida e vitória dá moral, e é a moral que sobe o seu nível na calçada.', 'Copa dos Sócios: a cada 3 meses, no último fim de semana de novembro, fevereiro, maio e agosto (a 1ª é de 27 a 29/11). Só sócios pontuam: o campeão leva o troféu na carteira e a Mesa do Campeão; 2º e 3º, medalha; quem jogar, a marca de participação.', 'Tempo de casa: a carteira de sócio mostra há quanto tempo você é sócio, com marcas aos 3 meses, 6 meses e 1 ano.'] },
   { v: '3.51.14', data: '10/11/2026', itens: ['Tela inicial: a saudação "Fala, ..." ficou maior.'] },
@@ -6805,7 +6809,19 @@ render = function () {
     if (sc) { const r = sc.querySelector('.sc-robo'); if (r) r.remove(); if (porRobo) sc.insertAdjacentHTML('afterbegin', '<span class="sc-robo">robô</span> '); }
     if (c.rei) el.dataset.rei = '1'; else delete el.dataset.rei;   // 3.37: coroa do Rei da Calçada em cima do avatar
     if (c.campeao) el.dataset.campeao = '1'; else delete el.dataset.campeao;   // 10/11: troféu do campeão da Copa dos Sócios
+    // 10/11 (pedido do dono): o brasão da Turma junto do nome de quem joga (a base reescreve o nome a cada desenho)
+    if (sn && c.turma && !c.bot && typeof brasao === 'function') sn.insertAdjacentHTML('afterbegin', `<span class="sn-br" title="${esc(nomeTurma(c.turma))}">${brasao(c.turma, 15)}</span>`);
   }
+  // 10/11 (pedido do dono): no confronto entre Turmas, o brasão e o nome de cada Turma embaixo do nome da dupla, no placar
+  try {
+    const tu = ps => { for (const p of ps) { const c = cadDe(p); if (c && !c.bot && c.turma) return c.turma; } return null; };
+    const tL = tu([0, 2]), tR = tu([1, 3]), conf = !!(tL && tR && tL !== tR);
+    [['#tL', tL], ['#tR', tR]].forEach(([sel, t]) => {
+      const lb = $(sel); if (!lb) return;
+      const velho = lb.parentNode.querySelector('.tturma'); if (velho) velho.remove();
+      if (conf) lb.insertAdjacentHTML('afterend', `<span class="tturma">${brasao(t, 15)}<span>${esc(t)}</span></span>`);
+    });
+  } catch (e) {}
 };
 const leaveGameBase = leaveGame;
 leaveGame = function () { if (mode === 'on') pausarOnline(); leaveGameBase(); };
@@ -11918,7 +11934,7 @@ render = function () {
         // 3.39.2: o selo (★ Apoiador, ♥ doador) de quem está embaixo também aparece para quem assiste
         const selo0 = c0.bot ? '' : seloSVG(c0.apoiador, c0.doador);
         const nb = G.hands && G.hands[0] ? G.hands[0].length : 0;   // 03/11: as pedras de baixo não aparecem para quem assiste: a contagem vai na linha do nome
-        me.innerHTML = `${src ? `<img class="fotoimg" src="${src}" alt="">` : ''}${esc(c0.nome)}${selo0 ? ` <span class="me-selo">${selo0}</span>` : ''} <small>· ${nb === 1 ? '1 pedra' : nb + ' pedras'} · parceiro de ${esc((cadDe(2) || {}).nome || '')}</small>`;
+        me.innerHTML = `${src ? `<img class="fotoimg" src="${src}" alt="">` : ''}${!c0.bot && c0.turma && typeof brasao === 'function' ? `<span class="sn-br">${brasao(c0.turma, 16)}</span>` : ''}${esc(c0.nome)}${selo0 ? ` <span class="me-selo">${selo0}</span>` : ''} <small>· ${nb === 1 ? '1 pedra' : nb + ' pedras'} · parceiro de ${esc((cadDe(2) || {}).nome || '')}</small>`;
       }
       $('#prompt').textContent = G.phase === 'play' ? `Vez de ${G.names[G.turn] || ''}` : 'Fim da mão';
     } else if (ON.vista && ON.vista.assistindo > 0) {
