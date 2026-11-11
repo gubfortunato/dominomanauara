@@ -160,11 +160,6 @@ a.card{text-decoration:none}
 .mt-nums b{display:block;font-family:var(--font-display);font-weight:400;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
 .mt-nums small{font-size:12px;color:var(--wood-muted)}
 .mt-share{justify-self:start;font-size:15px;font-weight:700;color:var(--wood-ink);text-decoration:none;padding:9px 14px;border-radius:999px;border:1px solid rgba(239,226,204,.3)}
-.rc-dest{display:flex;gap:12px;align-items:flex-start;background:var(--bg-2);border:1.5px solid var(--line);border-radius:16px;padding:12px 14px;margin:14px 0 10px}
-.rc-dest p{margin:0;font-size:15.5px;line-height:1.4}.rc-dest b{display:block;font-size:16.5px;margin-bottom:2px}
-.rc-dest .rc-ic{flex:0 0 42px;width:42px;height:42px;min-width:42px;max-width:42px;border-radius:50%;display:grid;place-items:center;font-size:21px;line-height:1;padding:0;margin:0;background:var(--glow,#e8b04a)}
-.note .rc-link{display:inline;padding:0;margin:0;border:0;background:none;min-height:0;font:inherit;font-weight:700;color:var(--fg);text-decoration:underline;width:auto;border-radius:0}
-.rc-chama{margin:14px 0 0;font-size:16px}
 .rc-zap{display:flex !important;align-items:center;justify-content:center;gap:8px}.rc-zap svg{width:22px;height:22px}
 .share-wa{display:block;text-align:center;text-decoration:none;margin-top:14px;padding:13px 16px;border-radius:14px;font-weight:700;font-size:17px;background:#25d366;color:#0b2e17}
 
@@ -3869,7 +3864,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.53', data: '10/11/2026', itens: ['Sair no meio da partida com outras pessoas na mesa conta como derrota no ranking e na Copa. Na mesa rápida, quem sai no meio de 3 partidas no dia fica 15 minutos sem a mesa rápida. Queda de internet não conta se a pessoa voltar antes de a partida acabar.', 'Mais 10 emojis para reagir e no papo de mesa: 🐓 🤣 😎 🙏 💪 🎉 😭 😡 🤔 👀.', 'Foto do sócio no lugar do avatar: para o sócio que coloca foto no perfil, a opção já vem ligada; aprovada, a foto aparece na mesa, na fila, no papo, no ranking, na Copa e nas mesas ao vivo. Desligando no perfil, volta o avatar. Quem já tinha foto é perguntado uma vez.', 'Carteira de sócio: os botões "Trocar a foto" e "Usar o avatar" ficaram do mesmo tamanho.', 'Desafio das Confrarias mais emocionante: brasão de cada Turma, pontos de hoje, seta de quem subiu ou caiu, barra de pontos, a sua Turma sempre à vista e quanto falta para passar a de cima. Reta final em dobro: de 14 a 20/12, cada vitória contra outra Turma vale 2 pontos. Na tela da Turma: os craques (quem mais trouxe pontos) e o placar contra a Turma rival. Avisos no celular (no máximo 1 por dia, às 18h) quando outra Turma passar a sua, quando a sua chegar ao pódio, na véspera da reta final e no último dia.', 'Recado da atualização, uma vez, para quem já tinha o app: bugs corrigidos, novidades, o áudio no papo para os sócios e o botão para chamar os amigos no WhatsApp.'] },
+  { v: '3.53', data: '10/11/2026', itens: ['Sair no meio da partida com outras pessoas na mesa conta como derrota no ranking e na Copa. Na mesa rápida, quem sai no meio de 3 partidas no dia fica 15 minutos sem a mesa rápida. Queda de internet não conta se a pessoa voltar antes de a partida acabar.', 'Mais 10 emojis para reagir e no papo de mesa: 🐓 🤣 😎 🙏 💪 🎉 😭 😡 🤔 👀.', 'Foto do sócio no lugar do avatar: para o sócio que coloca foto no perfil, a opção já vem ligada; aprovada, a foto aparece na mesa, na fila, no papo, no ranking, na Copa e nas mesas ao vivo. Desligando no perfil, volta o avatar. Quem já tinha foto é perguntado uma vez.', 'Carteira de sócio: os botões "Trocar a foto" e "Usar o avatar" ficaram do mesmo tamanho.', 'Desafio das Confrarias mais emocionante: brasão de cada Turma, pontos de hoje, seta de quem subiu ou caiu, barra de pontos, a sua Turma sempre à vista e quanto falta para passar a de cima. Reta final em dobro: de 14 a 20/12, cada vitória contra outra Turma vale 2 pontos. Na tela da Turma: os craques (quem mais trouxe pontos) e o placar contra a Turma rival. Avisos no celular (no máximo 1 por dia, às 18h) quando outra Turma passar a sua, quando a sua chegar ao pódio, na véspera da reta final e no último dia.', 'Convite, uma vez, para quem já tinha o app: chamar os amigos para jogar, com o botão do WhatsApp.'] },
   { v: '3.52', data: '10/11/2026', itens: ['Sexta da Calçada: toda sexta, das 20h às 23h, moral em dobro em todas as partidas (o nível sobe duas vezes mais rápido), com aviso no celular às 19h e às 20h.', 'A experiência agora se chama moral: cada mão, galo, batida e vitória dá moral, e é a moral que sobe o seu nível na calçada.', 'Copa dos Sócios: a cada 3 meses, no último fim de semana de novembro, fevereiro, maio e agosto (a 1ª é de 27 a 29/11). Só sócios pontuam: o campeão leva o troféu na carteira e a Mesa do Campeão; 2º e 3º, medalha; quem jogar, a marca de participação.', 'Tempo de casa: a carteira de sócio mostra há quanto tempo você é sócio, com marcas aos 3 meses, 6 meses e 1 ano.'] },
   { v: '3.51.14', data: '10/11/2026', itens: ['Tela inicial: a saudação "Fala, ..." ficou maior.'] },
   { v: '3.51.13', data: '10/11/2026', itens: ['A mesa Branca saiu do jogo. Quem estava com ela volta para a de Madeira.'] },
@@ -13551,26 +13546,21 @@ function copaComemorar() {
   $('#cpFechar').addEventListener('click', closeSheet);
   return true;
 }
-// 10/11 (pedido do dono): recado único para quem já usava o app e abriu a versão nova: bugs corrigidos, melhorias e
-// novidades, o áudio no papo para os sócios e o convite para chamar os amigos no WhatsApp. Aparece uma vez por celular,
-// só para quem já tinha o app antes desta versão (quem acabou de chegar não vê), e só até 1º/12.
+// 10/11 (pedido do dono, reformulado: "somente o convite para chamar os amigos"): recado único, só com o convite para
+// chamar os amigos no WhatsApp. Aparece uma vez por celular, só para quem já tinha o app antes desta versão (quem acabou
+// de chegar não vê), e só até 1º/12.
 const WA_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.3 14.8L2.3 21.8l4.9-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-3-.4-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1l-.5-.3Z"/></svg>';
 const RECADO = { id: '2026-11-10', ate: Date.parse('2026-12-01T04:00:00Z') };
 const RECADO_ZAP = 'Bora jogar dominó comigo? É o Dominó Manauara: bucho, garagem, passe e galo, do jeito de Manaus, no celular. Dá para montar a mesa só com a nossa turma.';
 function recadoNaHome() {
   if (Date.now() > RECADO.ate || store.get('dmz-recado') === RECADO.id || store.get('dmz-recado-pend') !== RECADO.id) return false;
   store.set('dmz-recado', RECADO.id);
-  const socio = temPlano(), pode = !socio && typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !(profile && profile.idade === 'menor');
   track('recado-' + RECADO.id);
-  openSheet('recado', `<p class="eyebrow">Novidades na calçada</p><h2 id="sheetTitle">O jogo foi atualizado! 🎉</h2>
-    <p class="pr-lead">Corrigimos vários bugs e trouxemos um monte de melhorias e novidades. Muita coisa veio das ideias e dos avisos de vocês no Fale com a gente: obrigado, turma!</p>
-    <div class="rc-dest"><div class="rc-ic" aria-hidden="true">🎤</div><p><b>Áudio no papo de mesa${socio ? '' : ', para os sócios'}</b>Na mesa com os amigos, ${socio ? 'agora você manda' : 'o sócio agora manda'} áudio no papo: toque no microfone e fale até 10 segundos. Zoar o parceiro ficou muito mais fácil.</p></div>
-    ${pode ? '<p class="note">Ainda não é sócio? <button type="button" class="linkbtn rc-link" id="rcSocio">Conheça o plano</button> e libere o áudio, as partidas sem limite e todas as mesas de Manaus.</p>' : ''}
-    <p class="rc-chama"><b>A calçada fica melhor com a turma toda.</b> Chama os amigos pra jogar!</p>
+  openSheet('recado', `<p class="eyebrow">Dominó Manauara</p><h2 id="sheetTitle">Bora chamar a turma? 🎲</h2>
+    <p class="pr-lead">Dominó é melhor com os amigos. Chama a turma pra jogar com você: é só mandar o convite no WhatsApp.</p>
     <a class="share-wa rc-zap" id="rcZap" href="https://wa.me/?text=${encodeURIComponent(RECADO_ZAP + '\n' + SITE_URL)}" target="_blank" rel="noopener">${WA_IC}Chamar os amigos no WhatsApp</a>
     <button type="button" class="linkbtn" id="rcFechar" style="width:100%;margin-top:6px">Agora não</button>`);
   $('#rcZap').addEventListener('click', () => { track('recado-zap'); setTimeout(closeSheet, 300); });
-  if ($('#rcSocio')) $('#rcSocio').addEventListener('click', () => { track('recado-socio'); closeSheet(); abrirApoio('home', 'plano'); });
   $('#rcFechar').addEventListener('click', closeSheet);
   return true;
 }
