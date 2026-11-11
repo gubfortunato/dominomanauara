@@ -60,7 +60,7 @@ const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pont
   'roxoacai', 'floresta', 'pordosol',   // 03/11: Cor de Açaí, Floresta e Sol de setembro
   'araraazul', 'tucano', 'peixeboi',   // 04/11: Arara-Azul, Tucano e Peixe-boi
   'pianoblack', 'amazonas',   // 10/11: Black Piano e Amazonas (a Branca saiu no mesmo dia, pedido do dono)
-  'metropole'];   // 11/11: Manaus Metrópole
+  'metropole'];   // 11/11: Metrópole da Amazônia
 // 28/10 (regras do dono): a partir de 5/11, a mesa com os amigos de quem não é sócio só usa as mesas grátis (Madeira,
 // Vermelha e Azul): no sorteio e na troca. Na mesa rápida o sorteio continua entre todas.
 export const TEMAS_GRATIS = ['madeira', 'garantido', 'caprichoso'];
