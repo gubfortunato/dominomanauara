@@ -270,7 +270,7 @@ export class Mesa {
         // 3.37.1 (pedido do dono): aparece o apelido, o avatar desenhado e o nível de quem está jogando — menos de quem
         // tem menos de 18 anos, que continua só na conta ("1 pessoa"); robô continua sem nome
         else mesas.push({ publica: false, existe: true, fase: 'jogo', tema: j.tema || null, on: j.on, livres: 0,
-          cad: (j.cad || []).map(c => !c ? null : c.bot || c.menor ? { bot: !!c.bot, tipo: c.tipo } : { nome: c.nome, bot: false, av: c.av || null, nv: c.nv || 1, tipo: c.tipo }),
+          cad: (j.cad || []).map(c => !c ? null : c.bot || c.menor ? { bot: !!c.bot, tipo: c.tipo } : { nome: c.nome, bot: false, av: c.av || null, foto: c.foto || null, nv: c.nv || 1, tipo: c.tipo }),
           partida: j.partida, mao: j.mao, placar: j.placar,
           lance: j.lance ? { type: j.lance.type, pts: j.lance.pts, carroca: j.lance.carroca, voided: j.lance.voided } : null });
       }
@@ -318,7 +318,7 @@ export class Mesa {
     if (!m) return { existe: false, fase: null };
     if (!m.G) return { existe: true, fase: m.fase, publica: !!m.publica, tema: m.tema || null,   // 3.35: sala, antes da 1ª partida
       on: m.cad.filter((c, p) => c && !c.bot && this.conectado(p)).length, livres: 0,
-      cad: m.cad.map((c, p) => c ? { nome: nomeVisivel(c), bot: !!c.bot, av: c.bot ? null : c.av || null, tipo: c.bot ? 'robo' : this.conectado(p) ? 'pessoa' : 'fora', nv: c.bot ? null : c.nv || 1, bairro: null } : null),
+      cad: m.cad.map((c, p) => c ? { nome: nomeVisivel(c), bot: !!c.bot, av: c.bot ? null : c.av || null, foto: c.bot || c.menor ? null : c.foto || null, tipo: c.bot ? 'robo' : this.conectado(p) ? 'pessoa' : 'fora', nv: c.bot ? null : c.nv || 1, bairro: null } : null),
       partida: 0, mao: 0, criada: m.criada || null, placar: [0, 0], lance: null, fila: this.filaVivo(m) };
     const G = m.G, evs = G.events || [];
     const ev = ['galo', 'batida', 'play', 'pass'].map(t => evs.find(e => e.type === t)).find(Boolean) || null;
@@ -327,7 +327,7 @@ export class Mesa {
       livres: m.cad.filter(c => c && c.bot).length,
       // 3.25.1: quem é quem na cadeira — pessoa conectada, pessoa sem conexão (o robô joga por ela na vez), quem saiu
       // (o robô ficou no lugar) e robô da turma
-      cad: m.cad.map((c, p) => c ? { nome: nomeVisivel(c), bot: !!c.bot, av: c.bot ? null : c.av || null,
+      cad: m.cad.map((c, p) => c ? { nome: nomeVisivel(c), bot: !!c.bot, av: c.bot ? null : c.av || null, foto: c.bot || c.menor ? null : c.foto || null,   // 10/11: foto do sócio
         tipo: c.bot ? (c.saiu ? 'saiu' : 'robo') : this.conectado(p) ? 'pessoa' : 'fora',
         nv: c.bot ? null : c.nv || 1, bairro: c.bot ? null : c.bairro || null, menor: !c.bot && !!c.menor } : null),
       partida: G.partida || 1, mao: G.handNo || 1, criada: m.criada || null,
@@ -1406,7 +1406,8 @@ export class Mesa {
       return agora - visto < SILENCIO;
     });
   }
-  // id vazio = quem só assiste (3.28): sem foto e sem bairro de ninguém (a foto é só para quem joga na mesa)
+  // id vazio = quem só assiste (3.28): sem bairro de ninguém. 10/11 (pedido do dono): a foto aprovada do sócio aparece
+  // no lugar do avatar em todo lugar, inclusive para quem assiste e na fila
   vista(id) {
     const m = this.m, G = m.G;
     const minha = id ? m.cad.findIndex(c => c && c.id === id) : -1;
@@ -1420,9 +1421,9 @@ export class Mesa {
     }
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
       leituraMs: G && G.phase === 'handEnd' ? Math.max(0, Math.round(m.turnoDesde + this.T.leitura - Date.now())) : 0, proximaPedida: !!(G && G.phase === 'handEnd' && m.proximaPedida === m.seq),   // 28/10
-      naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
+      naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, foto: c.menor ? null : c.foto || null, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
-      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || !id ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
+      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || c.menor ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
       tempos: minha >= 0 && m.tempos ? m.tempos[minha] || 0 : 0, tolerado: TEMPO_TOLERADO,   // 03/11
       jogo, agora: Date.now(), assistindo: this.quantosAssistem() };

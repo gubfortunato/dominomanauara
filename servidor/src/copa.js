@@ -13,6 +13,7 @@
 //
 // SEXTA DA CALÇADA — toda sexta, das 20h às 23h: moral em dobro (a experiência do jogo se chama "moral"; o nível sobe duas vezes mais rápido) e aviso às 19h e às 20h.
 import { ordenados, lista, periodos } from './ranking.js';
+import { fotosDe } from './fotos.js';
 
 const MANAUS = 4 * 3600000, DIA = 86400000;
 export const COPA_HORA = { inicio: 20, fim: 22 };
@@ -114,8 +115,9 @@ export async function copaInfo(req, env, origin, h, url) {
   if (c.anterior) {
     try {
       const p = await podioDe(env, c.anterior);
-      campeao = p.length ? { n: c.anterior.n, nome: p[0].nome, av: p[0].av || null, eu: !!ap && p[0].aparelho === ap,
-        podio: p.map(x => ({ pos: x.pos, nome: x.nome, av: x.av || null, eu: !!ap && x.aparelho === ap })) } : null;
+      let fts = new Map(); try { fts = await fotosDe(env, p.map(x => x.aparelho)); } catch (e) {}   // 10/11: foto do sócio no lugar do avatar
+      campeao = p.length ? { n: c.anterior.n, nome: p[0].nome, av: p[0].av || null, foto: fts.get(p[0].aparelho) || null, eu: !!ap && p[0].aparelho === ap,
+        podio: p.map(x => ({ pos: x.pos, nome: x.nome, av: x.av || null, foto: fts.get(x.aparelho) || null, eu: !!ap && x.aparelho === ap })) } : null;
     } catch (e) {}
   }
   let socio = false; if (ap) { try { const p = await env.DB.prepare('SELECT ate FROM planos WHERE aparelho = ?').bind(ap).first(); socio = !!(p && p.ate > agora); } catch (e) {} }

@@ -16,6 +16,7 @@
 // Apelido genérico ("Anonimous", "Jogador"...) não aparece no ranking: a pessoa vê o aviso para escolher um apelido.
 import { nomeGenerico, nomeOfensivo } from './motor.js';
 import { limitesValem, temPlano } from './planos.js';   // 28/10: ranking completo é dos sócios
+import { fotosDe } from './fotos.js';   // 10/11: foto do sócio no lugar do avatar
 import { somarCopa } from './copa.js';   // 10/11: Copa dos Sócios (só sócios, de 3 em 3 meses)
 
 const DIA = 86400000, MANAUS = 4 * 3600000;
@@ -120,8 +121,9 @@ export async function ordenados(env, per) {
 export async function lista(env, per, fim, eu, reiAp) {
   const pts = usaPontos(env, per), todos = await ordenados(env, per);
   const soc = await socios(env, todos.slice(0, TOP).map(x => x.aparelho));   // 03/11: a ★ de sócio aparece no ranking
+  let fts = new Map(); try { fts = await fotosDe(env, todos.slice(0, TOP).map(x => x.aparelho)); } catch (e) {}   // 10/11: a foto do sócio no lugar do avatar
   const top = todos.slice(0, TOP).map((x, i) => Object.assign({ pos: i + 1, nome: x.nome, av: x.av, nv: x.nv, ganhas: x.ganhas, jogadas: x.jogadas },
-    pts ? { pontos: x.pontos } : {}, { eu: !!eu && x.aparelho === eu, rei: !!reiAp && x.aparelho === reiAp, socio: soc.has(x.aparelho) }));
+    pts ? { pontos: x.pontos } : {}, { eu: !!eu && x.aparelho === eu, rei: !!reiAp && x.aparelho === reiAp, socio: soc.has(x.aparelho), foto: fts.get(x.aparelho) || null }));
   let meu = null;
   if (eu && !top.some(x => x.eu)) {
     const me = await env.DB.prepare(`SELECT nome, ${pts ? 'pontos, ' : ''}ganhas, jogadas, atualizado FROM ${pts ? 'calcada' : 'ranking'} WHERE periodo = ? AND aparelho = ?`)
@@ -183,11 +185,12 @@ export async function ranking(req, env, origin, h, url) {
   let rei = null; try { rei = await reiDaSemana(env); } catch (e) {}
   const eu = fora ? null : ap, reiAp = rei && rei.aparelho;
   const completo = !limitesValem(env) || (!!ap && await temPlano(env, ap));
+  let reiFoto = null; if (rei) { try { reiFoto = (await fotosDe(env, [rei.aparelho])).get(rei.aparelho) || null; } catch (e) {} }
   const semana = await lista(env, p.sem, p.fimSem, eu, reiAp);
   const mes = completo ? await lista(env, p.mes, p.fimMes, eu, reiAp) : { top: [], eu: null, fim: p.fimMes, pontos: usaPontos(env, p.mes), trancado: true };
   if (!completo) { semana.top = semana.top.slice(0, TOP_GRATIS); semana.eu = null; semana.trancado = true; }
   return h.json({ semana, mes, fora, completo, topGratis: TOP_GRATIS,
-    rei: rei ? { nome: rei.nome, av: rei.av, nv: rei.nv, eu: !!ap && ap === reiAp } : null, quaseRei: !!ap && REI.quase === ap,
+    rei: rei ? { nome: rei.nome, av: rei.av, nv: rei.nv, foto: reiFoto, eu: !!ap && ap === reiAp } : null, quaseRei: !!ap && REI.quase === ap,
     regras: { pontosDesde: pontosDesde(env), ...PTS, roboPorDia: ROBO_POR_DIA, parPorDia: PAR_POR_DIA } }, 200, origin);
 }
 // POST /ranking/fora {aparelho, fora: true|false} — não aparecer (ou voltar a aparecer) no ranking
