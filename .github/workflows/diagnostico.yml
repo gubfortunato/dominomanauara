@@ -26,30 +26,21 @@ jobs:
           sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
           AGORA=$(($(date +%s) * 1000))
           p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
-          # visão geral de cada aparelho (sem filtrar por apelido aqui: o filtro é feito depois, no resultado criptografado)
-          p vistos "SELECT * FROM jogadores_vistos"
-          p presenca "SELECT * FROM presenca"
-          p jogadores "SELECT * FROM jogadores"
-          p calcada "SELECT * FROM calcada WHERE periodo LIKE 'S2026-1%' OR periodo LIKE 'M2026-1%'"
-          p planos "SELECT * FROM planos"
-          p pedidos "SELECT aparelho, produto, valor, status, criado_em, pago_em FROM pedidos"
-          p cortesias "SELECT * FROM cortesias"
-          p presentes "SELECT * FROM presentes"
-          p burlas "SELECT * FROM burlas"
-          p limites "SELECT * FROM limites"
-          p limites_rede "SELECT * FROM limites_rede"
-          p partidas_dia "SELECT * FROM partidas_dia WHERE dia >= '2026-11-01'"
-          p offline_uso "SELECT * FROM offline_uso"
-          p desafio_uso "SELECT * FROM desafio_uso"
-          p denuncias "SELECT id, em, mesa, autor, autor_nome, denunciante, texto FROM papo_denuncias"
-          p bloqueios "SELECT * FROM bloqueios"
-          p turma_membros "SELECT * FROM turma_membros"
-          p turmas "SELECT * FROM turmas"
-          p apelidos_trocar "SELECT * FROM apelidos_trocar"
-          p ranking_fora "SELECT * FROM ranking_fora"
-          p mesas_criadas "SELECT * FROM mesas_criadas"
-          p avisos_id "SELECT * FROM avisos_id"
-          p progresso "SELECT * FROM progresso"
+          # 10/11 (pedido do dono): bloqueio de quem burlou o limite grátis com vários aparelhos. Os aparelhos vêm só por
+          # resumo (sha256): nem o código nem o apelido aparecem aqui. Desfaz no app: Área do administrador > Jogadores.
+          ALVOS="6003d23cdd6a4dc58ab2887b63b08618365479c99ecd54f4455241210eaa8bcc dfbd52d37ab6be7c43e7fae052c9b43b753425f4305c7a9f1f11b61dbbeaa9b8 cc6148dfc39f17856a76998ca081b5709a65bab1670ac10c2717b8938039ce5d c424e53c5089819881846bcca3df666b617551e1ba2f3cddb3d04ef5e6808ce2 e7050f68432248b18d2c3006c6fd9a099cfcc9aaacf27ec2bd19a50fa737e086"
+          wrangler d1 execute dominomanauara --remote --json --command "SELECT aparelho FROM jogadores UNION SELECT aparelho FROM jogadores_vistos UNION SELECT aparelho FROM presenca" 2>/dev/null | jq -r '.[0].results[].aparelho' > /tmp/aps.txt
+          n=0
+          while read -r ap; do
+            case "$ap" in *[!a-z0-9-]*|"") continue;; esac
+            h=$(printf '%s' "$ap" | sha256sum | cut -c1-64)
+            case " $ALVOS " in *" $h "*)
+              wrangler d1 execute dominomanauara --remote --command "INSERT INTO bloqueios (aparelho, nome, motivo, em) VALUES ('$ap', COALESCE((SELECT nome FROM presenca WHERE aparelho = '$ap'), (SELECT nome FROM jogadores_vistos WHERE aparelho = '$ap')), 'burla do limite grátis (vários aparelhos)', $AGORA) ON CONFLICT (aparelho) DO UPDATE SET motivo = excluded.motivo, em = excluded.em" > /dev/null 2>&1 && n=$((n+1));;
+            esac
+          done < /tmp/aps.txt
+          echo "== bloqueados_agora" >> $OUT; echo "[{\"n\":$n,\"lidos\":$(wc -l < /tmp/aps.txt)}]" >> $OUT
+          p bloqueios "SELECT aparelho, nome, motivo, em FROM bloqueios ORDER BY em DESC"
+          p presenca_agora "SELECT aparelho, nome, tela, modo, detalhe, visto_em FROM presenca WHERE visto_em > $AGORA - 600000"
           rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
