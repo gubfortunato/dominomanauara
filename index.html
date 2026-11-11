@@ -161,6 +161,9 @@ a.card{text-decoration:none}
 .mt-nums b{display:block;font-family:var(--font-display);font-weight:400;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
 .mt-nums small{font-size:12px;color:var(--wood-muted)}
 .mt-share{justify-self:start;font-size:15px;font-weight:700;color:var(--wood-ink);text-decoration:none;padding:9px 14px;border-radius:999px;border:1px solid rgba(239,226,204,.3)}
+.dsc-vs{display:flex;align-items:center;justify-content:center;gap:14px;margin:4px 0 6px}.dsc-vs b{font-family:var(--font-display);font-size:28px;color:var(--muted)}
+.ds-nudge{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--glow) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--glow) 45%,var(--line));font-size:14.5px;line-height:1.35}
+.ds-nudge button{display:inline;padding:0;margin:0;border:0;background:none;min-height:0;font:inherit;font-weight:800;color:var(--fg);text-decoration:underline;width:auto}
 .rc-pedras{display:flex;justify-content:center;margin:4px 0 10px}.rc-pedras svg{width:150px;height:auto;transform:rotate(-6deg)}
 .rc-zap{display:flex !important;align-items:center;justify-content:center;gap:8px}.rc-zap svg{width:22px;height:22px}
 .share-wa{display:block;text-align:center;text-decoration:none;margin-top:14px;padding:13px 16px;border-radius:14px;font-weight:700;font-size:17px;background:#25d366;color:#0b2e17}
@@ -3901,6 +3904,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.4', data: '10/11/2026', itens: ['Desafio das Confrarias mais divulgado: convite uma vez para quem ainda não tem Turma (o que é e como se joga), lembrete no fim das partidas online e avisos no celular para todos em 11/11, 28/11 e na véspera da reta final.'] },
   { v: '3.53.3', data: '10/11/2026', itens: ['Sexta da Calçada: a moral em dobro passa a ser dos sócios; quem não é sócio vê o aviso e o convite.', 'Desafio das Confrarias: na reta final (14 a 20/12), a vitória vale 2 pontos quando tem sócio na dupla que ganhou (sem sócio, 1). O ranking mostra os pontos certos do dia.', 'A oferta de sócio mostra os dois benefícios novos.', 'Cadeira da mesa: a bolinha do avatar fica sempre centralizada (no iPhone, a imagem podia sair do centro).'] },
   { v: '3.53.2', data: '10/11/2026', itens: ['Escolha de mesa: a amostra da mesa Amazonas mostra a mesa nova, com as faixas a pincel atravessando o meio.'] },
   { v: '3.53.1', data: '10/11/2026', itens: ['Ao vivo no Desafio: na Calçada, os confrontos entre Turmas acontecendo agora, com o placar e o botão Assistir, para qualquer um, sem o número da mesa (só assiste, não senta). O convite do desafio avisa que a partida passa ao vivo.', 'Na mesa online, o brasão da Turma aparece junto do nome de quem joga; no confronto entre Turmas, o placar mostra o brasão e o nome de cada Turma embaixo da dupla.', 'Quem acabou de chegar joga primeiro: a oferta de sócio só aparece na primeira vez que a pessoa usa o limite grátis (na hora, com o motivo em cima).', 'Foto no perfil é só para sócio (sem plano, aparece trancada); o sócio tem os botões Trocar a foto e Excluir a foto.', 'Cartão do Desafio: o título do tamanho dos outros cartões e uma taça nova.', 'Início: uma carroça de sena inclinada, grande, colada no nome Dominó Manauara.', 'Tela de entrada: mesa quadrada, um pouco mais para baixo (o balão de quem está em cima não cobre mais o nome do jogo).', 'Som de embaralhar as pedras mais caprichado (o arrasto na mesa e as pedras batendo), e dá para ouvir em Som e vibração.', 'Som e vibração: os botões de ouvir não travam mais (um toque com o dedo mexendo um pouco virava arrastar a folha).', 'Mesa Amazonas: as faixas agora são pinceladas (com as cerdas e as falhas do pincel), paradas.'] },
@@ -9593,6 +9597,23 @@ async function copaComAmigos() {
   toast('Mesa da Copa criada! Agora chame a turma no WhatsApp.');
   const z = $('#salaConvite'); if (z) { z.classList.add('pulsa'); setTimeout(() => z.classList.remove('pulsa'), 7000); }
 }
+// 10/11 (pedido do dono: divulgar o Desafio): no fim de uma partida online contra gente, quem não tem Turma vê que aquela
+// partida podia valer ponto no Desafio das Confrarias, com o atalho para montar a Turma
+const showResultDesafio = showResult;
+showResult = function () {
+  const r = showResultDesafio.apply(this, arguments);
+  try {
+    const R = G && G.result, d = desafioAgora();
+    if (mode === 'on' && R && R.matchWinner != null && d.aberto && TM.em && !TM.info && ON.vista && ON.vista.cad.some((c, i) => c && !c.bot && i !== ON.vista.minha) && sheetKind === 'result') {
+      const alvo = $('#sheet .res-side'); if (alvo && !alvo.querySelector('.ds-nudge')) {
+        const ganhou = seatMe != null && TEAM(seatMe) === R.matchWinner;
+        alvo.insertAdjacentHTML('beforeend', `<p class="ds-nudge">⚔️ ${ganhou ? 'Essa vitória podia valer ponto' : 'Partidas como essa valem ponto'} no <b>Desafio das Confrarias</b>, jogando por uma Turma contra outra. <button type="button" id="dsNudge">Montar a minha Turma</button></p>`);
+        $('#dsNudge').addEventListener('click', () => { track('desafio-fim-partida'); closeSheet(); abrirTurma(); });   // fica na mesa (sair daqui poderia contar como saída no meio da próxima partida)
+      }
+    }
+  } catch (e) {}
+  return r;
+};
 const showResultCopa = showResult;
 showResult = function () { try { marcarCopa(); } catch (e) {} return showResultCopa.apply(this, arguments); };
 const renderHomeEstilo = renderHome;
@@ -13704,13 +13725,43 @@ function fotoAvisoNaHome() {
   $('#faNao').addEventListener('click', () => { track('foto-aviso-nao'); store.set(FOTOON, '0'); closeSheet(); toast('Tudo bem: os outros continuam vendo o seu avatar.'); });
   return true;
 }
+// 10/11 (pedido do dono: "vamos divulgar mais o Desafio das Confrarias"): uma vez por aparelho, para quem ainda não está
+// numa Turma, com o Desafio valendo: o que é, como se joga, a reta final em dobro e o ao vivo, e o botão de montar a Turma.
+// Nunca na mesma abertura do app em que apareceu outro recado.
+let dsConviteHoje = false;
+function desafioConviteNaHome() {
+  const d = desafioAgora();
+  if (!d.aberto || !TM.em || TM.info || store.get('dmz-desafio-convite') || !onlineAtivo() || !profile) return false;
+  store.set('dmz-desafio-convite', String(Date.now())); dsConviteHoje = true;
+  track('desafio-convite');
+  const top = (d.ranking || []).slice(0, 2);
+  openSheet('desafio', `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">Sua Turma contra as Turmas de Manaus</h2>
+    <div class="dsc-vs" aria-hidden="true">${brasao(top[0] ? top[0].nome : 'Os da Calçada', 54)}<b>×</b>${brasao(top[1] ? top[1].nome : 'Outra Turma', 54)}</div>
+    <ul class="pr-lista">
+      <li>${CHECK}<span><b>Monte a sua Turma</b> e chame os amigos pelo código</span></li>
+      <li>${CHECK}<span><b>Cada vitória online</b> contra alguém de outra Turma vale ponto</span></li>
+      <li>${CHECK}<span><b>Reta final, de 14 a 20/12:</b> com sócio na dupla, a vitória vale o dobro</span></li>
+      <li>${CHECK}<span><b>Ao vivo na Calçada:</b> todo mundo pode assistir aos confrontos</span></li>
+      <li>${CHECK}<span>A campeã ganha a <b>estrela ★</b> no nome da Turma</span></li>
+    </ul>
+    <p class="note">Vale até 20/12.${d.total ? ` ${d.total === 1 ? '1 Turma já está' : d.total + ' Turmas já estão'} na disputa.` : ''}</p>
+    <button type="button" class="primary" id="dscMontar" style="width:100%">Montar a minha Turma</button>
+    <button type="button" class="secondary" id="dscCodigo" style="width:100%;margin-top:8px">Tenho o código de uma Turma</button>
+    <button type="button" class="linkbtn" id="dscFechar" style="width:100%;margin-top:6px">Agora não</button>`);
+  const vai = () => { closeSheet(); abrirTurma(); };
+  $('#dscMontar').addEventListener('click', () => { track('desafio-convite-montar'); vai(); });
+  $('#dscCodigo').addEventListener('click', () => { track('desafio-convite-codigo'); vai(); setTimeout(() => { const i = $('#tmCod'); if (i) i.focus(); }, 400); });
+  $('#dscFechar').addEventListener('click', closeSheet);
+  return true;
+}
 function pertencimentoNaHome() {
   try { desenharEvCard(); } catch (e) {}
   if (screen !== 'home' || sheetKind || !profile) return;
   try { if (copaComemorar()) return; } catch (e) {}
   try { if (casaComemorar()) return; } catch (e) {}
-  try { if (recadoNaHome()) return; } catch (e) {}
-  try { fotoAvisoNaHome(); } catch (e) {}
+  try { if (recadoNaHome()) { dsConviteHoje = true; return; } } catch (e) {}
+  try { if (fotoAvisoNaHome()) { dsConviteHoje = true; return; } } catch (e) {}
+  try { if (!dsConviteHoje) desafioConviteNaHome(); } catch (e) {}
 }
 const renderHomeCasa = renderHome;
 renderHome = function () {
@@ -14372,7 +14423,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.3-a6ae2b1f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.4-dbf6c83f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

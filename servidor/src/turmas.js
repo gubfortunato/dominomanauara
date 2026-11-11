@@ -231,13 +231,20 @@ export async function nomeDaTurma(env, ap) {
 // na véspera da reta final e no último dia, para todas as Turmas; nos outros dias, só para a Turma que mudou de posição desde
 // o aviso anterior: entrou no pódio, ou outra Turma passou a sua (até o 10º lugar).
 const nomeT = n => /^turma\b/i.test(String(n || '').trim()) ? n : 'Turma ' + n;
+// as chamadas do Desafio para todo mundo (às 19h do dia), uma vez cada
+const DIVULGA = {
+  '2026-11-11': { titulo: '⚔️ Desafio das Confrarias: monte a sua Turma!', texto: 'Junte os amigos, desafie as outras Turmas de Manaus e leve a estrela de campeã. Os confrontos agora passam ao vivo na Calçada. Vale até 20/12.', url: '/?abrir=turma' },
+  '2026-11-28': { titulo: '⚔️ Sua Turma já está no Desafio?', texto: 'Faltam 3 semanas para o fim do Desafio das Confrarias. Cada vitória online contra outra Turma vale ponto. Monte a sua e chame a turma!', url: '/?abrir=turma' }
+};
 export async function avisosDesafio(env, agora) {
   const e = edicao(env, agora); if (!e.aberto) return [];
-  const d = new Date(e.agora - MANAUS), dia = d.toISOString().slice(0, 10);
-  if (d.getUTCHours() !== 18) return [];
+  const d = new Date(e.agora - MANAUS), dia = d.toISOString().slice(0, 10), h = d.getUTCHours();
   const dd = n => `${e.ano}-12-${String(n).padStart(2, '0')}`;
-  if (dia === dd(RETA.dia - 1)) return [{ chave: `ds:${e.ano}:vespera`, para: 'turmas',
-    msg: { titulo: 'Amanhã começa a reta final! 🔥', texto: `Do dia ${RETA.dia}/12 até 20/12, a vitória contra outra Turma com sócio na dupla vale ${RETA.mult} pontos no Desafio das Confrarias. Dá para virar!`, url: '/?abrir=turma' } }];
+  // 10/11 (pedido do dono: "vamos divulgar mais o Desafio"): chamada para todo mundo, com guarda na caixa de mensagens
+  if (h === 19 && DIVULGA[dia]) return [{ chave: `ds:${dia}:divulga`, para: 'todos', caixa: true, msg: DIVULGA[dia] }];
+  if (h !== 18) return [];
+  if (dia === dd(RETA.dia - 1)) return [{ chave: `ds:${e.ano}:vespera`, para: 'todos', caixa: true,
+    msg: { titulo: 'Amanhã começa a reta final do Desafio! 🔥', texto: `De ${RETA.dia}/12 a 20/12, a vitória contra outra Turma com sócio na dupla vale ${RETA.mult} pontos. Ainda não tem Turma? Monte a sua e chame os amigos.`, url: '/?abrir=turma' } }];
   if (dia === dd(20)) return [{ chave: `ds:${e.ano}:ultimo`, para: 'turmas',
     msg: { titulo: 'Último dia do Desafio das Confrarias! ⚔️', texto: `Hoje até meia-noite, a vitória contra outra Turma com sócio na dupla ainda vale ${RETA.mult} pontos. Bora fechar com chave de ouro!`, url: '/?abrir=turma' } }];
   const rk = await ranking(env, e.ano, 50), out = [];
