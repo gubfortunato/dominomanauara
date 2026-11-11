@@ -1257,7 +1257,11 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
    O texto não quebra nem é cortado: a letra diminui até caber (ajustarPrompt) */
 #scrGame #prompt.you{white-space:nowrap;overflow:hidden;max-width:100%}
 .prompt.you.com-relogio{background:linear-gradient(90deg,var(--glow) calc(var(--resto,1) * 100%),#a77b35 0)}
-.prompt.you[data-s]::after{content:attr(data-s) " s";margin-left:.45em;padding:1px 7px;border-radius:999px;background:rgba(42,26,8,.16);font-variant-numeric:tabular-nums;font-size:.86em}
+/* 11/11: quando não cabe numa linha (ajustarPrompt), duas linhas, sem cortar */
+#scrGame #prompt.you.duas{white-space:normal;height:36px;min-height:0;margin-top:-3px;margin-bottom:1px;line-height:1.1;padding-block:2px;padding-inline:11px;border-radius:13px;text-wrap:balance}   /* mesma altura de linha da barra: a mão e a mesa não pulam */
+/* 11/11: os segundos vão no ::before (com order, ficam no fim): o ::after é o brilho da vez, e os dois juntos jogavam
+   os segundos apagados no canto de cima */
+.prompt.you[data-s]::before{content:attr(data-s) " s";order:2;flex:none;margin-left:.45em;padding:1px 7px;border-radius:999px;background:rgba(42,26,8,.16);font-variant-numeric:tabular-nums;font-size:.86em;white-space:nowrap}
 .prompt.you.com-relogio.pouco{background:linear-gradient(90deg,#ff8a6b calc(var(--resto,1) * 100%),#a8432f 0);color:#2a0d05}
 /* 3.41 (pedido do dono): antes de começar o jogo, a mesa aparece mais clara (dá para ver bem o desenho dela); quando as
    pedras começam a ser embaralhadas, escurece devagar até o tom de sempre, que deixa as pedras em destaque. A luz é uma
@@ -2072,7 +2076,7 @@ html[data-mesa="pordosol"] .table.wood{--wood-1:#3a0703;--wood-2:#3a0703;--wood-
 .ap-cmp-cab span{padding:10px 12px;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .ap-cmp-cab span:first-child{display:none}
 .ap-cmp-cab .ap-cmp-s{color:var(--nos)}
-.ap-cmp-l{border-top:1.5px solid color-mix(in srgb,var(--fg) 14%,transparent)}
+.ap-cmp-l{border-top:1.5px solid color-mix(in srgb,var(--fg) 14%,transparent)}.ap-cmp-l[hidden]{display:none}
 .ap-cmp-l b{grid-column:1;grid-row:1;padding:11px 12px 2px;font-size:16.5px;line-height:1.3}
 .ap-cmp-l > span{padding:2px 12px 11px;font-size:15px;line-height:1.35;color:var(--muted);display:flex;align-items:flex-start}
 .ap-cmp-l > .ap-cmp-g{grid-column:1;grid-row:2}
@@ -3050,11 +3054,14 @@ body.papo-aberto{overflow:hidden}
         <div class="ap-cmp-l" role="row"><b role="rowheader">Mesa rápida online</b><span role="cell" class="ap-cmp-g">3 partidas por dia</span><span role="cell" class="ap-cmp-s">Sem limite</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Mesas com os amigos</b><span role="cell" class="ap-cmp-g">1 partida por dia, ou 3 na mesa de um sócio</span><span role="cell" class="ap-cmp-s">Sem limite, e crie quantas mesas quiser</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Jogo offline</b><span role="cell" class="ap-cmp-g">5 partidas por dia</span><span role="cell" class="ap-cmp-s">Sem limite</span></div>
-        <div class="ap-cmp-l" role="row"><b role="rowheader">Papo de mesa (com os amigos)</b><span role="cell" class="ap-cmp-g">Na partida do dia</span><span role="cell" class="ap-cmp-s">Em todas as partidas</span></div>
+        <div class="ap-cmp-l" role="row"><b role="rowheader">Papo de mesa (com os amigos)</b><span role="cell" class="ap-cmp-g">Na partida do dia, e ouve os áudios</span><span role="cell" class="ap-cmp-s">Em todas as partidas, e manda áudio</span></div>
+        <!-- 11/11 (pedido do dono): a tabela mostra também a Sexta e a reta final do Desafio, como a oferta e a carta -->
+        <div class="ap-cmp-l" role="row"><b role="rowheader">Sexta da Calçada (20h às 23h)</b><span role="cell" class="ap-cmp-g">Moral normal</span><span role="cell" class="ap-cmp-s">Moral em dobro</span></div>
+        <div class="ap-cmp-l" role="row" id="apCmpDesafio"><b role="rowheader">Desafio das Confrarias: reta final (14 a 20/12)</b><span role="cell" class="ap-cmp-g">1 ponto por vitória, ou 2 com um sócio na dupla</span><span role="cell" class="ap-cmp-s">2 pontos por vitória para a Turma</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Ranking</b><span role="cell" class="ap-cmp-g">Pontua e vê o Rei e os 3 primeiros da semana</span><span role="cell" class="ap-cmp-s">Completo, da semana e do mês, com a sua posição</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Coroa de Rei da Calçada</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s">Pode ser sua</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Estatísticas detalhadas</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s"><svg class="ap-ok" viewBox="0 0 24 24" aria-label="sim"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-        <div class="ap-cmp-l" role="row"><b role="rowheader">Sua foto na mesa online</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s"><svg class="ap-ok" viewBox="0 0 24 24" aria-label="sim"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <div class="ap-cmp-l" role="row"><b role="rowheader">Sua foto no lugar do avatar</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s"><svg class="ap-ok" viewBox="0 0 24 24" aria-label="sim"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Selo de sócio ao lado do nome</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s"><svg class="selo-ic selo-estrela" viewBox="-0.3 0 24.6 24" aria-label="sim"><path d="M12 1.3L14.88 8.94 23.03 9.32 16.66 14.41 18.82 22.28 12 17.8 5.18 22.28 7.34 14.41 0.97 9.32 9.12 8.94Z"/></svg></span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Mesas</b><span role="cell" class="ap-cmp-g">Madeira, Vermelha e Azul</span><span role="cell" class="ap-cmp-s">Todas</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Avatar</b><span role="cell" class="ap-cmp-g">Os avatares prontos</span><span role="cell" class="ap-cmp-s">Monte o seu, mais os exclusivos</span></div>
@@ -3920,6 +3927,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.7', data: '11/11/2026', itens: ['Corrigido: na mesa online, o aviso da sua vez (como "Comece com a carroça de sena") ficava cortado ao lado do "Papo de mesa" ou do "Reagir". Agora ele quebra em duas linhas quando precisa, sem mexer na mesa nem na mão.', 'Corrigido: os segundos do relógio da sua vez (nos últimos 10 s) voltam a aparecer no fim do aviso. Antes ficavam apagados no canto.', 'Tela do Sócio da Calçada: a tabela Grátis × Sócio agora mostra a Sexta da Calçada com moral em dobro, a reta final do Desafio com 2 pontos por vitória, o áudio no papo e a foto no lugar do avatar.'] },
   { v: '3.53.6', data: '11/11/2026', itens: ['Carta de boas-vindas do sócio renovada: mostra tudo o que o sócio tem hoje (moral em dobro na Sexta, vitória em dobro na reta final do Desafio, papo com áudio, a chance de ser o Rei da Calçada e a foto no lugar do avatar) e leva direto para pôr a sua foto.'] },
   { v: '3.53.5', data: '11/11/2026', itens: ['Desafio das Confrarias: para pontuar, a Turma precisa ter pelo menos 2 pessoas. Quem está sozinho na Turma vê o aviso com o botão para chamar a turma no WhatsApp (na Turma, no cartão do início e no fim da partida). Os pontos que a Turma já fez continuam.', 'Ranking do Desafio: a Turma que ficou sem ninguém sai do ranking. Os pontos ficam guardados e voltam se alguém entrar.', 'Fim da partida online: o lembrete do Desafio passa a aparecer depois da comemoração da vitória, logo abaixo dos botões.'] },
   { v: '3.53.4', data: '10/11/2026', itens: ['Desafio das Confrarias mais divulgado: convite uma vez para quem ainda não tem Turma (o que é e como se joga), lembrete no fim das partidas online e avisos no celular para todos em 11/11, 28/11 e na véspera da reta final.', 'Quem assiste uma mesa com os amigos pelo número volta a ler o papo de mesa (na mesa de desafio ele tinha sumido). Quem assiste pelo Ao vivo do Desafio não lê o papo da turma.', 'Prêmios da Turma campeã do Desafio: além da estrela ★, o brasão dourado, a Mesa da Campeã (feltro vinho e ouro) e o selo 🏆 na mesa para quem estava na Turma, até o fim do Desafio seguinte.'] },
@@ -7672,6 +7680,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 let gatilhoSocio = '';   // 10/11: o último convite tocado antes de abrir a tela do sócio
 function abrirApoio(deOnde, rolarPara) {
   if (!pagamentosAtivos()) return;
+  try { const dz = desafioAgora(), l = $('#apCmpDesafio'); if (l) l.hidden = !!dz.depois; } catch (e) {}   // 11/11: a linha da reta final some depois do Desafio
   apoioVolta = deOnde || 'home';
   track('apoio-aberto');
   if (!temPlano()) store.set('dmz-socio-origem', gatilhoSocio || ('tela-' + (deOnde || 'home')));
@@ -9813,12 +9822,19 @@ setInterval(() => {
 // 3.41 (o dono viu "Comece com a carroça de se…" cortado): o aviso da sua vez diminui a letra até caber na linha
 function ajustarPrompt() {
   const p = $('#prompt'); if (!p) return;
-  p.style.fontSize = '';
+  p.style.fontSize = ''; p.classList.remove('duas');
   if (!p.classList.contains('you') || screen !== 'game' || p.offsetParent === null) return;
   let fs = parseFloat(getComputedStyle(p).fontSize) || 18;
   for (let k = 0; k < 8 && p.scrollWidth > p.clientWidth + 1 && fs > 12.5; k++) { fs -= 1; p.style.fontSize = fs + 'px'; }
+  if (p.scrollWidth <= p.clientWidth + 1) return;
+  // 11/11 (o dono viu "Comece com a carroça d" cortado de novo): com o "Papo de mesa" ou o "Reagir" ao lado e o relógio
+  // dos últimos 10 s, nem a letra menor cabe numa linha. Aí o aviso quebra em duas linhas, sem cortar nada.
+  p.classList.add('duas'); fs = 14; p.style.fontSize = fs + 'px';
+  for (let k = 0; k < 5 && (p.scrollWidth > p.clientWidth + 1 || p.scrollHeight > p.clientHeight + 1) && fs > 11.5; k++) { fs -= .5; p.style.fontSize = fs + 'px'; }
 }
 addEventListener('resize', () => { try { ajustarPrompt(); } catch (e) {} });
+// 11/11: o espaço do aviso muda quando o "Papo de mesa" ou o "Reagir" aparece ou some ao lado: ajusta de novo
+try { const mt = $('#scrGame .me-txt'); if (mt && 'ResizeObserver' in window) { let w = 0; new ResizeObserver(en => { const nw = Math.round(en[0].contentRect.width); if (nw !== w) { w = nw; requestAnimationFrame(() => { try { ajustarPrompt(); } catch (e) {} }); } }).observe(mt); } } catch (e) {}
 // No alto da mesa: "Partida 1 · até 200 · Torneio"
 const renderTorneio = render;
 render = function () {
@@ -14486,7 +14502,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.6-40773a6c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.7-e5ba2b4f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
