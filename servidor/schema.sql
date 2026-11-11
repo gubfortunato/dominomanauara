@@ -74,6 +74,9 @@ CREATE TABLE IF NOT EXISTS desafio_campeas (edicao INTEGER PRIMARY KEY, turma TE
 -- 10/11: o craque de cada Turma (quem trouxe os pontos na edição) e a posição de cada Turma no último aviso das 18h
 CREATE TABLE IF NOT EXISTS desafio_membros (edicao INTEGER NOT NULL, turma TEXT NOT NULL, aparelho TEXT NOT NULL, pontos INTEGER NOT NULL DEFAULT 0, ultimo INTEGER, PRIMARY KEY (edicao, turma, aparelho));
 CREATE TABLE IF NOT EXISTS desafio_pos (edicao INTEGER NOT NULL, turma TEXT NOT NULL, pos INTEGER NOT NULL, em INTEGER NOT NULL, PRIMARY KEY (edicao, turma));
+-- 10/11 (pedido do dono): quem era da Turma campeã quando o Desafio fechou (brasão dourado, selo 🏆 e a Mesa da Campeã
+-- até o fim do Desafio seguinte)
+CREATE TABLE IF NOT EXISTS desafio_campeas_membros (edicao INTEGER NOT NULL, aparelho TEXT NOT NULL, PRIMARY KEY (edicao, aparelho));
 -- 10/11: os pontos de cada Turma por dia (na reta final, a vitória vale 1 ou 2, conforme tenha sócio na dupla)
 CREATE TABLE IF NOT EXISTS desafio_dia (edicao INTEGER NOT NULL, dia TEXT NOT NULL, turma TEXT NOT NULL, pontos INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (edicao, dia, turma));
 -- 04/11 (dono): sem plano, as partidas de desafio entre Turmas não gastam a partida grátis do dia (até 2 por dia, contadas aqui)
