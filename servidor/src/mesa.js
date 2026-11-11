@@ -573,7 +573,7 @@ export class Mesa {
     const n = this.ctx.getWebSockets().filter(w => (w.deserializeAttachment() || {}).assiste).length;
     if (n >= ASSISTIR_MAX) return this.recusar(ws, 'plateia-cheia');
     att.assiste = true; att.menor = !!(msg && msg.menor); ws.serializeAttachment(att);   // 3.42: menor que assiste não recebe o texto livre
-    this.enviar(ws, this.vista(null));
+    this.enviar(ws, this.vista(null, !!att.so));
     this.mandarPapo(ws, att);
     this.espalhar(ws);   // quem está jogando vê que tem gente assistindo
   }
@@ -1081,6 +1081,7 @@ export class Mesa {
   }
   podeLer(it, a, menores) {
     if (!(a.id || a.assiste)) return false;
+    if (a.so) return false;   // 10/11: quem assiste pelo Desafio ao vivo (sem o número da mesa) não lê o papo da turma
     if (it.au && !a.id) return false;   // 10/11: quem assiste não recebe áudio
     if (it.txt == null) return true;
     return !(a.assiste ? a.menor : menores.has(a.id));
@@ -1428,7 +1429,7 @@ export class Mesa {
   }
   // id vazio = quem só assiste (3.28): sem bairro de ninguém. 10/11 (pedido do dono): a foto aprovada do sócio aparece
   // no lugar do avatar em todo lugar, inclusive para quem assiste e na fila
-  vista(id) {
+  vista(id, so) {
     const m = this.m, G = m.G;
     const minha = id ? m.cad.findIndex(c => c && c.id === id) : -1;
     const naFila = id ? (m.fila || []).findIndex(c => c.id === id) : -1;
@@ -1439,8 +1440,8 @@ export class Mesa {
         hands: G.hands.map((h, p) => p === minha || G.phase === 'handEnd' ? h : h.map(() => [-1, -1]))
       });
     }
-    // 10/11: no Desafio ao vivo, quem assiste não recebe o número da mesa
-    return { t: 'mesa', codigo: !id && this.mesaDesafio() ? null : m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
+    // 10/11: quem assiste pelo Desafio ao vivo (so) não recebe o número da mesa; quem assiste pelo número recebe, como antes
+    return { t: 'mesa', codigo: so ? null : m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
       leituraMs: G && G.phase === 'handEnd' ? Math.max(0, Math.round(m.turnoDesde + this.T.leitura - Date.now())) : 0, proximaPedida: !!(G && G.phase === 'handEnd' && m.proximaPedida === m.seq),   // 28/10
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, foto: c.menor ? null : c.foto || null, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
@@ -1452,11 +1453,12 @@ export class Mesa {
   enviar(ws, obj) { try { ws.send(JSON.stringify(obj)); } catch (e) {} }
   espalhar(menos) {
     if (!this.m) return;
-    let deFora = null;   // a vista de quem assiste é a mesma para todos
+    let deFora = null, deForaSo = null;   // a vista de quem assiste é a mesma para todos (a do Desafio ao vivo vem sem o número)
     for (const ws of this.ctx.getWebSockets()) {
       if (ws === menos) continue;
       const a = ws.deserializeAttachment() || {};
       if (a.id) this.enviar(ws, this.vista(a.id));
+      else if (a.assiste && a.so) this.enviar(ws, deForaSo || (deForaSo = this.vista(null, true)));
       else if (a.assiste) this.enviar(ws, deFora || (deFora = this.vista(null)));
     }
   }
