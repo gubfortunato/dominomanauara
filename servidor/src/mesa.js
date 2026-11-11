@@ -55,15 +55,16 @@ const temaOk = v => typeof v === 'string' && /^[a-z][a-z0-9]{2,15}$/.test(v) ? v
 // (sem repetir o da partida anterior). Quem criou continua trocando como sempre; trocou, fica a escolha dele.
 // (De fora: a Manaus 357, que é prêmio da Copa, e a Igreja de São Sebastião, que é da época de janeiro.)
 const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pontanegra', 'acai', 'acairoxo', 'ponte', 'rionegro',
-  'tucuma', 'arena', 'mercado', 'vitoria', 'calcadao', 'centro', 'relogio', 'teatro', 'palacio', 'chamine', 'anavilhanas',
+  'tucuma', 'arena', 'mercado', 'vitoria', 'calcadao', 'centro', 'relogio', 'teatro', 'palacio', 'chamine',   // 11/11: a Anavilhanas saiu (pedido do dono)
   'arara', 'boto', 'beiradao', 'barco', 'skylinenoite',   // 28/10: Manaus Skyline
   'roxoacai', 'floresta', 'pordosol',   // 03/11: Cor de Açaí, Floresta e Sol de setembro
   'araraazul', 'tucano', 'peixeboi',   // 04/11: Arara-Azul, Tucano e Peixe-boi
-  'pianoblack', 'amazonas'];   // 10/11: Black Piano e Amazonas (a Branca saiu no mesmo dia, pedido do dono)
+  'pianoblack', 'amazonas',   // 10/11: Black Piano e Amazonas (a Branca saiu no mesmo dia, pedido do dono)
+  'metropole'];   // 11/11: Metrópole da Amazônia
 // 28/10 (regras do dono): a partir de 5/11, a mesa com os amigos de quem não é sócio só usa as mesas grátis (Madeira,
 // Vermelha e Azul): no sorteio e na troca. Na mesa rápida o sorteio continua entre todas.
 export const TEMAS_GRATIS = ['madeira', 'garantido', 'caprichoso'];
-const TEMAS_FORA = ['manaus357', 'branca'];   // mesas que saíram do jogo (app antigo ainda pode pedir)
+const TEMAS_FORA = ['manaus357', 'branca', 'anavilhanas'];   // mesas que saíram do jogo (app antigo ainda pode pedir)
 // 05/11 (pedido do dono): de 5/11 a 19/11, mais 2 mesas grátis por dia (planos.js, mesasDoDia)
 const temasGratis = () => TEMAS_GRATIS.concat(mesasDoDia());
 const sortearTema = (atual, so) => { const l = (so || TEMAS).filter(t => t !== atual); return l[Math.floor(Math.random() * l.length)]; };
