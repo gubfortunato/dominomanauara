@@ -165,9 +165,12 @@ a.card{text-decoration:none}
 .sc-campea{font-size:12px}
 .brasao.campea{filter:drop-shadow(0 0 4px rgba(243,192,99,.75))}
 .dsc-vs{display:flex;align-items:center;justify-content:center;gap:14px;margin:4px 0 6px}.dsc-vs b{font-family:var(--font-display);font-size:28px;color:var(--muted)}
-.ds-nudge{margin:14px 0 0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--glow) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--glow) 45%,var(--line));font-size:14.5px;line-height:1.35}
+.ds-nudge,.sheet .ds-nudge{margin:18px 0 0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--glow) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--glow) 45%,var(--line));font-size:16px;line-height:1.45}
 .ds-nudge button{display:inline;padding:0;margin:0;border:0;background:none;min-height:0;font:inherit;font-weight:800;color:var(--fg);text-decoration:underline;width:auto}
 .ds-nudge a{font-weight:800;color:var(--fg);text-decoration:underline}
+/* 11/11 (dono): o botão do WhatsApp sozinho na linha, logo abaixo do texto */
+.ds-nudge .share-wa{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;padding:11px 14px;font-size:16px;color:#0b2e17;text-decoration:none}.ds-nudge .share-wa svg{width:20px;height:20px}
+.ds-nudge button.ds-linha{display:block;margin-top:8px}
 /* 11/11: Turma de 1 pessoa (precisa de pelo menos 2 para pontuar no Desafio) */
 .tm-solo{margin:12px 0 4px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--glow) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--glow) 45%,var(--line))}
 .tm-solo b{display:block;font-size:16px}.tm-solo p{margin:6px 0 0;font-size:14.5px;line-height:1.4}
@@ -9628,10 +9631,10 @@ function dsNudgeResultado() {
         // 11/11: antes do anúncio (quando tem), para ser visto sem rolar
         const pa = alvo.querySelector('.res-patro'), onde = pa ? 'beforebegin' : 'beforeend', el = pa || alvo;
         if (solo) {
-          el.insertAdjacentHTML(onde, `<p class="ds-nudge">⚔️ ${ganhou ? 'Essa vitória podia valer ponto' : 'Partidas como essa valem ponto'} no <b>Desafio das Confrarias</b>, mas a sua Turma ainda é só você. Com 2 pessoas, ela já pontua. <a id="dsNudge" href="${esc(zapTurmaURL(TM.info))}" target="_blank" rel="noopener">Chamar a turma no WhatsApp</a></p>`);
+          el.insertAdjacentHTML(onde, `<p class="ds-nudge">⚔️ ${ganhou ? 'Essa vitória podia valer ponto' : 'Partidas como essa valem ponto'} no <b>Desafio das Confrarias</b>, mas a sua Turma ainda é só você. Com 2 pessoas, ela já pontua.<a class="share-wa" id="dsNudge" href="${esc(zapTurmaURL(TM.info))}" target="_blank" rel="noopener">${WA_IC}Chamar a turma no WhatsApp</a></p>`);
           $('#dsNudge').addEventListener('click', () => track('desafio-fim-solo'));   // abre o WhatsApp sem sair da mesa
         } else {
-          el.insertAdjacentHTML(onde, `<p class="ds-nudge">⚔️ ${ganhou ? 'Essa vitória podia valer ponto' : 'Partidas como essa valem ponto'} no <b>Desafio das Confrarias</b>, jogando por uma Turma contra outra. <button type="button" id="dsNudge">Montar a minha Turma</button></p>`);
+          el.insertAdjacentHTML(onde, `<p class="ds-nudge">⚔️ ${ganhou ? 'Essa vitória podia valer ponto' : 'Partidas como essa valem ponto'} no <b>Desafio das Confrarias</b>, jogando por uma Turma contra outra.<button type="button" class="ds-linha" id="dsNudge">Montar a minha Turma</button></p>`);
           $('#dsNudge').addEventListener('click', () => { track('desafio-fim-partida'); closeSheet(); abrirTurma(); });   // fica na mesa (sair daqui poderia contar como saída no meio da próxima partida)
         }
       }
