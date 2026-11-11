@@ -525,6 +525,16 @@ export default {
       if (url.pathname === '/mesa/rapida/status' && req.method === 'GET') {
         return json(await daFila(env, '/fila/status'), 200, origin);
       }
+      // 10/11: assistir uma partida do Desafio das Confrarias pela Calçada, sem o número da mesa (só assiste)
+      const mv = url.pathname.match(/^\/mesa\/ver\/([0-9a-f]{16})\/ws$/);
+      if (mv && req.method === 'GET') {
+        if ((req.headers.get('upgrade') || '').toLowerCase() !== 'websocket') return json({ erro: 'ws' }, 426, origin);
+        if ((origin || exigeApp(env)) && !origemOk(origin)) return new Response('origem', { status: 403 });
+        const r = await daFila(env, '/fila/ver?t=' + mv[1]);
+        if (!r || !r.codigo) return json({ erro: 'nao-existe' }, 404, origin);
+        const hd = new Headers(req.headers); hd.delete('cf-connecting-ip'); hd.set('x-so-assistir', '1'); hd.set('x-cod', ''); hd.set('x-trava', ''); hd.set('x-rede', '');
+        return env.MESA.get(env.MESA.idFromName(r.codigo)).fetch(new Request(req, { headers: hd }));
+      }
       const mc = url.pathname.match(/^\/mesa\/(\d{5})(\/ws)?$/);
       if (mc && req.method === 'GET') return await rotaMesa(req, env, origin, mc[1], !!mc[2]);
       // 10/11: registro de passo do app (áudio do papo no iPhone): só vai para o log do Cloudflare (3 dias), nada fica no banco
