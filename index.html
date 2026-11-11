@@ -2639,6 +2639,7 @@ body.papo-aberto{overflow:hidden}
 .folha-x.pr-travado{opacity:.25;pointer-events:none}
 .carta-lista{margin:2px 0 4px;padding-left:20px;display:grid;gap:5px;font-size:16.5px;line-height:1.35}
 .carta-lista li::marker{color:var(--nos)}
+.carta-lista2{margin:6px 0 14px}
 #board .zone.nao{opacity:0;pointer-events:none}   /* 03/11: ponta onde a pedra arrastada não encaixa (só para a conta de onde soltou) */
 /* 03/11: números do administrador (do nosso servidor) */
 .dn-num{display:flex;flex-direction:column;gap:18px}
@@ -3919,6 +3920,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.6', data: '11/11/2026', itens: ['Carta de boas-vindas do sócio renovada: mostra tudo o que o sócio tem hoje (moral em dobro na Sexta, vitória em dobro na reta final do Desafio, papo com áudio, a chance de ser o Rei da Calçada e a foto no lugar do avatar) e leva direto para pôr a sua foto.'] },
   { v: '3.53.5', data: '11/11/2026', itens: ['Desafio das Confrarias: para pontuar, a Turma precisa ter pelo menos 2 pessoas. Quem está sozinho na Turma vê o aviso com o botão para chamar a turma no WhatsApp (na Turma, no cartão do início e no fim da partida). Os pontos que a Turma já fez continuam.', 'Ranking do Desafio: a Turma que ficou sem ninguém sai do ranking. Os pontos ficam guardados e voltam se alguém entrar.', 'Fim da partida online: o lembrete do Desafio passa a aparecer depois da comemoração da vitória, logo abaixo dos botões.'] },
   { v: '3.53.4', data: '10/11/2026', itens: ['Desafio das Confrarias mais divulgado: convite uma vez para quem ainda não tem Turma (o que é e como se joga), lembrete no fim das partidas online e avisos no celular para todos em 11/11, 28/11 e na véspera da reta final.', 'Quem assiste uma mesa com os amigos pelo número volta a ler o papo de mesa (na mesa de desafio ele tinha sumido). Quem assiste pelo Ao vivo do Desafio não lê o papo da turma.', 'Prêmios da Turma campeã do Desafio: além da estrela ★, o brasão dourado, a Mesa da Campeã (feltro vinho e ouro) e o selo 🏆 na mesa para quem estava na Turma, até o fim do Desafio seguinte.'] },
   { v: '3.53.3', data: '10/11/2026', itens: ['Sexta da Calçada: a moral em dobro passa a ser dos sócios; quem não é sócio vê o aviso e o convite.', 'Desafio das Confrarias: na reta final (14 a 20/12), a vitória vale 2 pontos quando tem sócio na dupla que ganhou (sem sócio, 1). O ranking mostra os pontos certos do dia.', 'A oferta de sócio mostra os dois benefícios novos.', 'Cadeira da mesa: a bolinha do avatar fica sempre centralizada (no iPhone, a imagem podia sair do centro).'] },
@@ -13444,15 +13446,27 @@ function cartaApoiador(forcar) {
   const p = planoLocal() || {}, cod = p.codigo ? codigoBonito(p.codigo) : null;
   const nome = profile && profile.name ? esc(profile.name) : '';
   // 03/11 (pedido do dono): boas-vindas ao sócio (não é mais "apoio"): o que ele tem agora, sem o coração de doação
-  openSheet('fb', `<p class="eyebrow">Sócio da Calçada</p><h2 id="sheetTitle">Bem-vindo à Calçada${nome ? ', ' + nome : ''}!<span class="carta-estrela">${seloEstrela()}</span></h2>
-    <p>Agora você é Sócio da Calçada do Dominó Manauara. Sua cadeira na calçada está garantida:</p>
-    <ul class="carta-lista"><li>Partidas sem limite na mesa rápida</li><li>Mesas com os amigos sem limite: crie quantas quiser e jogue quantas partidas quiser</li><li>Papo de mesa sem limite nas mesas com os amigos</li><li>Partidas offline ilimitadas, inclusive sem internet</li><li>Ranking completo da semana e do mês, com a sua posição, e as suas estatísticas</li><li>Todas as mesas: Teatro Amazonas, Encontro das Águas, Manaus Skyline e muitas outras</li><li>Sua foto na mesa online e o selo de sócio ao lado do seu nome</li><li>Avatares exclusivos e tudo do Personalizar liberado na hora</li><li>Seu progresso guardado com a gente: nível, conquistas, avatar e histórico</li></ul>
+  // 11/11 (pedido do dono: reavaliar a carta): os benefícios de hoje (Sexta e reta final do Desafio em dobro, áudio no papo,
+  // Rei da Calçada, foto no lugar do avatar), agrupados e com destaque, como na oferta; título que serve para todos
+  const dz = typeof desafioAgora === 'function' ? desafioAgora() : null;
+  const temFoto = !!(profile && profile.av === 'foto' && photo);
+  openSheet('fb', `<p class="eyebrow">Sócio da Calçada</p><h2 id="sheetTitle">Boas-vindas à Calçada${nome ? ', ' + nome : ''}!<span class="carta-estrela">${seloEstrela()}</span></h2>
+    <p>Agora você é Sócio da Calçada. Sua cadeira está garantida, e a calçada é sua o dia inteiro:</p>
+    <ul class="pr-lista carta-lista2">
+      <li>${CHECK}<span><b>Jogue sem limite</b> na mesa rápida, nas mesas com os amigos e no offline (até sem internet)</span></li>
+      <li>${CHECK}<span><b>Moral em dobro</b> na Sexta da Calçada, toda sexta das 20h às 23h</span></li>
+      ${dz && !dz.depois ? `<li>${CHECK}<span><b>Vitória em dobro</b> na reta final do Desafio das Confrarias (14 a 20/12): a sua dupla leva 2 pontos para a Turma</span></li>` : ''}
+      <li>${CHECK}<span><b>Ranking completo</b> da semana e do mês, as suas estatísticas e a chance de ser o Rei da Calçada</span></li>
+      <li>${CHECK}<span><b>Papo de mesa</b> com os amigos em todas as partidas, com áudio</span></li>
+      <li>${CHECK}<span><b>Sua cara no jogo:</b> a sua foto no lugar do avatar, o selo ★, os avatares exclusivos e todas as mesas de Manaus</span></li>
+      <li>${CHECK}<span><b>Seu progresso guardado</b> com a gente: nível, conquistas e histórico, até se trocar de celular</span></li>
+    </ul>
     ${p.renova ? '<p>Seu plano renova sozinho no cartão. Para parar, toque em "Cancelar a renovação" na tela do Sócio da Calçada.</p>' : ''}
     ${cod ? '<p>Se trocar de celular, é só usar o seu código em "Sócio da Calçada › Já sou sócio em outro celular":</p>' : ''}
     ${cod ? `<div class="carta-cod"><b>${esc(cod)}</b><button type="button" class="linkbtn" id="cartaCopiar">Copiar</button></div><p class="note">Guarde o código (um print da tela já serve).</p>` : ''}
     <p class="carta-ass">Boa diversão.<br>Time Dominó Manauara</p>
     <button type="button" class="primary" id="cartaOk">Bora pra mesa!</button>
-    <button type="button" class="secondary" id="cartaPerso" style="width:100%;margin-top:10px">Montar meu avatar de sócio</button>`);
+    <button type="button" class="secondary" id="cartaPerso" style="width:100%;margin-top:10px">${temFoto ? 'Escolher a mesa e o avatar' : 'Pôr a minha foto'}</button>`);
   track('carta-apoiador');
   try { confete(['#f0b45e', '#e5a650', '#ffd27a', '#f6eedf', '#86c98f'], 3500); } catch (e) {}
   const cp = $('#cartaCopiar');
@@ -13460,7 +13474,7 @@ function cartaApoiador(forcar) {
     try { await navigator.clipboard.writeText(p.codigo ? codigoBonito(p.codigo) : ''); toast('Código copiado.'); } catch (e) { toast('Não deu para copiar. Tire um print da tela.'); }
   });
   $('#cartaOk').addEventListener('click', closeSheet);
-  $('#cartaPerso').addEventListener('click', () => { closeSheet(); abrirEstilo(screen === 'apoio' ? 'apoio' : 'home'); });
+  $('#cartaPerso').addEventListener('click', () => { closeSheet(); if (temFoto) abrirEstilo(screen === 'apoio' ? 'apoio' : 'home'); else openProfile('home'); });   // 11/11: sem foto, leva ao perfil, onde se põe a foto
   nuvemGuardar(true);
 }
 const renderHomeCarta = renderHome;
@@ -14472,7 +14486,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.5-2cd61839';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.6-40773a6c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
