@@ -3662,13 +3662,11 @@ function layoutTable(T, Xmax) {
   const toMain = (t, p) => { res.main[t.idx] = p; };
   if (c.a === c.b) {
     res.main[center] = { x: 0, y: 0, o: 'v', v1: c.a, v2: c.b };
-    // 11/11: a fileira que volta para o meio para meia casa antes (a coluna da curva fica longe do bucho, que tem carroça atravessada)
-    armLayout(right, { x: 0.5, y: 0, dir: 1, vdir: 1, lo: 2.5, hi: Xmax }, toMain);
-    armLayout(left, { x: -0.5, y: 0, dir: -1, vdir: -1, lo: -Xmax, hi: -2.5 }, toMain);
+    armLayout(right, { x: 0.5, y: 0, dir: 1, vdir: 1, lo: 2, hi: Xmax }, toMain);
+    armLayout(left, { x: -0.5, y: 0, dir: -1, vdir: -1, lo: -Xmax, hi: -2 }, toMain);
     const asArm = arr => (arr || []).map(t => ({ near: t.n, far: t.f }));
-    // 11/11: as fileiras do bucho vão até onde vão as das pontas (antes passavam uma casa: a mesa ficava mais larga)
-    armLayout(asArm(bu.D), { mode: 'col', colX: 0, colEnd: 1, dir: 1, vdir: 1, lo: -Xmax + 1, hi: -0.5, firstNeed: colunaBucho(Xmax) }, (t, p) => res.D.push(p));
-    armLayout(asArm(bu.U), { mode: 'col', colX: 0, colEnd: -1, dir: -1, vdir: -1, lo: 0.5, hi: Xmax - 1, firstNeed: colunaBucho(Xmax) }, (t, p) => res.U.push(p));
+    armLayout(asArm(bu.D), { mode: 'col', colX: 0, colEnd: 1, dir: 1, vdir: 1, lo: -Xmax, hi: -0.5, firstNeed: colunaBucho(Xmax), viraNaCarroca: true }, (t, p) => res.D.push(p));
+    armLayout(asArm(bu.U), { mode: 'col', colX: 0, colEnd: -1, dir: -1, vdir: -1, lo: 0.5, hi: Xmax, firstNeed: colunaBucho(Xmax), viraNaCarroca: true }, (t, p) => res.U.push(p));
   } else {
     res.main[center] = { x: 0, y: 0, o: 'h', v1: c.a, v2: c.b };
     armLayout(right, { x: 1, y: 0, dir: 1, vdir: 1, lo: -Xmax, hi: Xmax }, toMain);
@@ -3684,66 +3682,56 @@ function layoutTable(T, Xmax) {
 let mesaA = 0.83;
 function colunaBucho(Xmax) { return 3; }
 function layoutChain(chain, center, Xmax) { return layoutTable({ chain, center }, Xmax).main; }
-// Carroça sempre atravessada e centrada na pedra em que encaixou, e a pedra seguinte encaixa normalmente: com a ponta
-// no meio da carroça, seguindo reto do outro lado. A linha só vira numa pedra comum (nunca na carroça nem na pedra que
-// sai dela). 11/11 (o dono: "quando uma pedra é jogada numa carroça, às vezes ela encaixa na ponta, e não no meio"):
-// antes, com a carroça no fim da fileira (ou na coluna do bucho), a pedra seguinte saía da ponta dela. Agora a fileira
-// olha as pedras que vêm: se vem carroça e não cabem ela e a pedra que sai dela, a linha vira uma pedra antes (essa
-// pedra gira quando a carroça chega). Perto do meio a linha não vira (a coluna encostaria no bucho), e na curva da
-// coluna, se a fileira nova não cabe para dentro, ela sai para fora (escada). Simulação de 2 mil mãos no celular em pé:
-// nenhuma pedra fora do meio da carroça (antes, em 94% das mãos) e nenhuma por cima de outra em nenhum momento.
+// Carroça sempre atravessada e centrada na pedra em que encaixou; a linha segue reto do outro lado dela.
+// Se a fileira acaba logo depois de uma carroça, a linha desce (ou sobe) a partir da ponta da carroça.
 function armLayout(tiles, o, put) {
-  let x = o.x || 0, y = o.y || 0, dir = o.dir, mode = o.mode || 'row', colX = o.colX || 0, colEnd = o.colEnd || 0, rows = 0, preso = false;
+  let x = o.x || 0, y = o.y || 0, dir = o.dir, mode = o.mode || 'row', colX = o.colX || 0, colEnd = o.colEnd || 0, rows = 0;
+  let lastDbl = null, colAfterDbl = false;
   const vdir = o.vdir, lo = o.lo, hi = o.hi, eps = 1e-9;
   const out = v => v > hi + eps || v < lo - eps;
-  // a borda de fora (sem nada depois dela) aceita uma casa a mais para uma sequência de carroças
-  const fora = lo + hi > 0, outLarga = v => v > hi + (fora ? 1 : 0) + eps || v < lo - (fora ? 0 : 1) - eps;
-  const ehDbl = j => !!tiles[j] && tiles[j].near === tiles[j].far;
-  // quanto a linha tem de seguir reto a partir da pedra k: ela e, para cada carroça logo depois, a carroça e a pedra que sai dela
-  const corrida = k => { let L = 2, j = k + 1; while (ehDbl(j)) { L += 3; j += 2; } return L; };
-  for (let k = 0; k < tiles.length; k++) {
-    const t = tiles[k], dbl = t.near === t.far;
+  for (const t of tiles) {
+    const dbl = t.near === t.far;
     const vert = () => ({ v1: vdir > 0 ? t.near : t.far, v2: vdir > 0 ? t.far : t.near });
-    const hor = () => ({ v1: dir > 0 ? t.near : t.far, v2: dir > 0 ? t.far : t.near });
     if (mode === 'row') {
       if (dbl) {
-        // carroça em pé (atravessada na fileira), centrada na pedra anterior
+        // carroça em pé (atravessada na fileira), centrada na pedra anterior — mesmo no fim da fileira
         put(t, { x: x + dir * 0.5, y, o: 'v', v1: t.near, v2: t.far });
-        x += dir; preso = true; continue;
+        lastDbl = { x: x + dir * 0.5, y }; x += dir; continue;
       }
-      const L = corrida(k);
-      const pertoDoMeio = Math.sign(dir) === Math.sign(x || dir) && Math.abs(x + dir * 0.5) < 2 - eps;
-      // segue reto: a pedra que sai da carroça (sempre), perto do meio, ou quando ela e as carroças que vêm cabem
-      if (preso || pertoDoMeio || !(L > 2 ? outLarga : out)(x + dir * L)) {
-        put(t, Object.assign({ x: x + dir, y, o: 'h' }, hor()));
-        x += dir * 2; preso = false; continue;
+      if (!out(x + dir * 2)) {
+        put(t, { x: x + dir, y, o: 'h', v1: dir > 0 ? t.near : t.far, v2: dir > 0 ? t.far : t.near });
+        lastDbl = null; x += dir * 2; continue;
       }
-      // vira para a coluna
-      const cx = x + dir * 0.5;
-      put(t, Object.assign({ x: cx, y: y + vdir * 0.5, o: 'v' }, vert()));
-      colX = cx; colEnd = y + vdir * 1.5; mode = 'col'; continue;
+      // a fileira acabou: vira para a coluna
+      if (lastDbl) { colX = lastDbl.x; colEnd = y + vdir * 1; mode = 'col'; colAfterDbl = true; lastDbl = null; }
+      else {
+        const cx = x + dir * 0.5;
+        put(t, Object.assign({ x: cx, y: y + vdir * 0.5, o: 'v' }, vert()));
+        colX = cx; colEnd = y + vdir * 1.5; mode = 'col'; colAfterDbl = false; continue;
+      }
     }
     // coluna
     if (dbl) {
       // carroça deitada (atravessada na coluna), centrada na pedra anterior
       put(t, { x: colX, y: colEnd + vdir * 0.5, o: 'h', v1: t.near, v2: t.far });
-      colEnd += vdir; preso = true; continue;
+      colEnd += vdir; colAfterDbl = true; continue;
     }
-    if (preso) { put(t, Object.assign({ x: colX, y: colEnd + vdir, o: 'v' }, vert())); colEnd += vdir * 2; preso = false; continue; }
     const need = rows === 0 && o.firstNeed ? o.firstNeed : Math.abs(y) + 2;
-    const ny = colEnd + vdir * 0.5, L = corrida(k);
-    // para que lado sai a fileira nova: volta para dentro (o normal); se lá não cabe nem a pedra da curva, sai para fora
-    let nd = -dir;
-    if (out(colX + nd * 1.5) && !out(colX - nd * 1.5)) nd = -nd;
-    // vem carroça e ela (com a pedra que sai dela) não cabe na fileira nova: a coluna segue mais uma pedra
-    const cabe = L <= 2 || !out(colX + nd * (L - 0.5));
-    if (Math.abs(ny) < need - eps || !cabe) {
-      put(t, Object.assign({ x: colX, y: colEnd + vdir, o: 'v' }, vert()));
-      colEnd += vdir * 2; continue;
+    const ny = colEnd + vdir * 0.5;
+    if (o.viraNaCarroca && colAfterDbl && Math.abs(ny) >= need - eps) {
+      // vira na carroça (só no bucho, cada um no seu canto): a fileira sai da ponta dela, na altura dela
+      const dy = colEnd - vdir * 0.5;
+      dir = -dir;
+      put(t, { x: colX + dir * 2, y: dy, o: 'h', v1: dir > 0 ? t.near : t.far, v2: dir > 0 ? t.far : t.near });
+      x = colX + dir * 3; y = dy; mode = 'row'; rows++; lastDbl = null; colAfterDbl = false; continue;
     }
-    dir = nd;
-    put(t, Object.assign({ x: colX + dir * 0.5, y: ny, o: 'h' }, hor()));
-    x = colX + dir * 1.5; y = ny; mode = 'row'; rows++;
+    if (Math.abs(ny) < need - eps || colAfterDbl) {
+      put(t, Object.assign({ x: colX, y: colEnd + vdir, o: 'v' }, vert()));
+      colEnd += vdir * 2; colAfterDbl = false; continue;
+    }
+    dir = -dir;
+    put(t, { x: colX + dir * 0.5, y: ny, o: 'h', v1: dir > 0 ? t.near : t.far, v2: dir > 0 ? t.far : t.near });
+    x = colX + dir * 1.5; y = ny; mode = 'row'; rows++; lastDbl = null;
   }
 }
 
@@ -3939,7 +3927,6 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.53.8', data: '11/11/2026', itens: ['Mesa: a pedra jogada numa carroça agora encaixa sempre do jeito certo, com a ponta no meio da carroça e seguindo reto, nunca na ponta da carroça. Quando a linha precisa virar perto da borda, ela vira uma pedra antes, para a carroça caber.', 'Mesa: nenhuma pedra por cima da outra, e o bucho ocupa menos espaço dos lados.'] },
   { v: '3.53.7', data: '11/11/2026', itens: ['Corrigido: na mesa online, o aviso da sua vez (como "Comece com a carroça de sena") ficava cortado ao lado do "Papo de mesa" ou do "Reagir". Agora ele quebra em duas linhas quando precisa, sem mexer na mesa nem na mão.', 'Corrigido: os segundos do relógio da sua vez (nos últimos 10 s) voltam a aparecer no fim do aviso. Antes ficavam apagados no canto.', 'Tela do Sócio da Calçada: a tabela Grátis × Sócio agora mostra a Sexta da Calçada com moral em dobro, a reta final do Desafio com 2 pontos por vitória, o áudio no papo e a foto no lugar do avatar.'] },
   { v: '3.53.6', data: '11/11/2026', itens: ['Carta de boas-vindas do sócio renovada: mostra tudo o que o sócio tem hoje (moral em dobro na Sexta, vitória em dobro na reta final do Desafio, papo com áudio, a chance de ser o Rei da Calçada e a foto no lugar do avatar) e leva direto para pôr a sua foto.'] },
   { v: '3.53.5', data: '11/11/2026', itens: ['Desafio das Confrarias: para pontuar, a Turma precisa ter pelo menos 2 pessoas. Quem está sozinho na Turma vê o aviso com o botão para chamar a turma no WhatsApp (na Turma, no cartão do início e no fim da partida). Os pontos que a Turma já fez continuam.', 'Ranking do Desafio: a Turma que ficou sem ninguém sai do ranking. Os pontos ficam guardados e voltam se alguém entrar.', 'Fim da partida online: o lembrete do Desafio passa a aparecer depois da comemoração da vitória, logo abaixo dos botões.'] },
@@ -14515,7 +14502,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.8-10215c98';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.7-e5ba2b4f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
