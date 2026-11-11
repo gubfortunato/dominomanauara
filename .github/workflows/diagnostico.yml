@@ -26,15 +26,13 @@ jobs:
           sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
           AGORA=$(($(date +%s) * 1000))
           p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
-          # 10/11 (pedido do dono): devolve a derrota por saída de quem foi pego pelo erro da publicação das 22:50 (Manaus).
-          # Quem teve saída anotada entre 22:48 e 22:56: +1 ponto por saída e -1 partida no ranking da semana e do mês, e a
-          # anotação de saída de hoje é apagada. Aqui só aparecem contagens (nenhum código de aparelho, nenhum apelido).
-          ALVO="SELECT aparelho FROM abandonos WHERE dia = '2026-11-10' AND ultimo BETWEEN 1794365280000 AND 1794365760000"
-          NA="(SELECT n FROM abandonos a WHERE a.dia = '2026-11-10' AND a.aparelho"
-          p antes "SELECT COUNT(*) AS aparelhos, SUM(n) AS saidas FROM abandonos WHERE dia = '2026-11-10' AND ultimo BETWEEN 1794365280000 AND 1794365760000"
-          p calcada "UPDATE calcada SET pontos = pontos + $NA = calcada.aparelho), jogadas = MAX(0, jogadas - $NA = calcada.aparelho)), jogadas_gente = MAX(0, jogadas_gente - $NA = calcada.aparelho)) WHERE periodo IN ('S2026-11-09', 'M2026-11') AND aparelho IN ($ALVO) RETURNING periodo"
-          p ranking "UPDATE ranking SET jogadas = MAX(ganhas, jogadas - $NA = ranking.aparelho)) WHERE periodo IN ('S2026-11-09', 'M2026-11') AND aparelho IN ($ALVO) RETURNING periodo"
-          p apagou "DELETE FROM abandonos WHERE dia = '2026-11-10' AND ultimo BETWEEN 1794365280000 AND 1794365760000 RETURNING n"
+          # 11/11 (pergunta do dono): tamanho das Turmas — só contagens (nenhum código, nenhum nome de Turma ou de pessoa)
+          TM="(SELECT t.codigo, (SELECT COUNT(*) FROM turma_membros m WHERE m.turma = t.codigo) AS membros FROM turmas t)"
+          p tamanhos "SELECT membros, COUNT(*) AS turmas FROM $TM GROUP BY membros ORDER BY membros"
+          p desafio_por_tamanho "SELECT x.membros, COUNT(*) AS turmas_com_ponto, SUM(p.pontos) AS pontos FROM desafio_pontos p JOIN $TM x ON x.codigo = p.turma WHERE p.edicao = 2026 AND p.pontos > 0 GROUP BY x.membros ORDER BY x.membros"
+          p top10 "SELECT x.membros, p.pontos FROM desafio_pontos p JOIN $TM x ON x.codigo = p.turma WHERE p.edicao = 2026 AND p.pontos > 0 ORDER BY p.pontos DESC, p.ultimo ASC LIMIT 10"
+          p solo_socio "SELECT COUNT(*) AS turmas_de_1, SUM(CASE WHEN EXISTS (SELECT 1 FROM planos pl WHERE pl.aparelho = m.aparelho AND pl.ate > $AGORA) THEN 1 ELSE 0 END) AS dono_socio FROM turma_membros m WHERE m.turma IN (SELECT codigo FROM $TM WHERE membros = 1)"
+          p solo_idade "SELECT COUNT(*) AS turmas_de_1, SUM(CASE WHEN t.criada > $AGORA - 7*86400000 THEN 1 ELSE 0 END) AS criadas_7_dias FROM turmas t WHERE t.codigo IN (SELECT codigo FROM $TM WHERE membros = 1)"
           rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
