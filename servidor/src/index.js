@@ -16,6 +16,7 @@ import { donoPapo, donoPapoApagar } from './papo.js';
 import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
 import { travaCodigo, anotarCodigoErrado, limparCodigos } from './codigos.js';
 import { saudeVoz, donoPapoVoz, limparVozesDenunciadas } from './voz.js';
+import { copaInfo, apurarCopa, avisosAgendados } from './copa.js';   // 10/11: Copa dos Sócios, Sexta da Calçada e tempo de casa
 export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
@@ -345,6 +346,7 @@ async function mandarPara(lista, msgDe, env) {
 async function lembretesDoDia(env) {
   // faxina: registros do limite de mesas com mais de 2 dias
   try { await env.DB.prepare('DELETE FROM mesas_criadas WHERE criado_em < ?').bind(Date.now() - 2 * 86400000).run(); } catch (e) {}
+  try { await env.DB.prepare('DELETE FROM avisos_ev WHERE em < ?').bind(Date.now() - 30 * 86400000).run(); } catch (e) {}   // 10/11
   await limparCodigos(env);   // 10/11: números de mesa errados (mais de 2 horas)
   await limparVozesDenunciadas(env);   // 10/11: áudios denunciados (mais de 30 dias)
   if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return { ok: 0, falhas: 0, motivo: 'sem-chaves' };
@@ -426,6 +428,52 @@ async function lembretesPlano(env) {
   for (const s of lf) await env.DB.prepare('INSERT OR IGNORE INTO lembretes_plano_fim (aparelho, ate, enviado_em) VALUES (?, ?, ?)').bind(s.aparelho, s.ate, agora).run();
   const r2 = await mandarPara(lf, () => ({ titulo: 'Seu tempo de sócio acabou', texto: 'Renove para voltar às partidas sem limite, ao ranking completo e aos extras de sócio. A tradição agradece!', url: '/?apoio=renovar' }), env);
   return { ok: r1.ok + r2.ok, falhas: r1.falhas + r2.falhas, fim: r2.ok };
+}
+// 10/11 (pedido do dono: tudo automático): avisos da Sexta da Calçada, da Copa dos Sócios e do tempo de casa. O copa.js
+// diz o que sai em cada hora e para quem; aqui cada aviso sai uma vez por inscrição (avisos_ev), mesmo que outro aviso
+// já tenha saído no dia. Os da Copa para todos também ficam na caixa de notificações do app.
+const EV_POR_RODADA = 400;   // plano pago do Cloudflare: bem abaixo do limite de envios por rodada
+async function avisosDeEvento(env, agora) {
+  agora = agora || Date.now();
+  const lista = await avisosAgendados(env, agora);
+  const temChave = !!(env.VAPID_PRIVATE_JWK && env.VAPID_PUBLIC);
+  let ok = 0, falhas = 0, sobra = EV_POR_RODADA;
+  const naoFoi = 'NOT EXISTS (SELECT 1 FROM avisos_ev e WHERE e.aviso = a.id AND e.chave = ?)';
+  for (const ev of lista) {
+    try {
+      if (ev.marca) await env.DB.prepare('INSERT OR IGNORE INTO socio_marcas (codigo, marca, em) VALUES (?, ?, ?)').bind(ev.marca.codigo, ev.marca.marca, agora).run();
+      const caixa = ev.caixa ? await guardarNaCaixa(env, ev.chave, ev.msg) : null;
+      if (!temChave || sobra <= 0) continue;
+      let sql, binds;
+      if (ev.para === 'todos') {
+        const menos = ev.menos || [];
+        sql = `SELECT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a WHERE ${naoFoi}`
+          + (menos.length ? ` AND a.endpoint NOT IN (SELECT endpoint FROM avisos_id WHERE aparelho IN (${menos.map(() => '?').join(',')}))` : '') + ' ORDER BY a.id LIMIT ?';
+        binds = [ev.chave, ...menos, sobra];
+      } else if (ev.para === 'socios') {
+        sql = `SELECT DISTINCT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a JOIN avisos_id i ON i.endpoint = a.endpoint JOIN planos p ON p.aparelho = i.aparelho
+          WHERE p.ate > ? AND ${naoFoi} ORDER BY a.id LIMIT ?`;
+        binds = [agora, ev.chave, sobra];
+      } else {
+        const aps = (ev.para && ev.para.aparelhos) || []; if (!aps.length) continue;
+        sql = `SELECT DISTINCT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a JOIN avisos_id i ON i.endpoint = a.endpoint
+          WHERE i.aparelho IN (${aps.map(() => '?').join(',')}) AND ${naoFoi} LIMIT 5`;
+        binds = [...aps, ev.chave];
+      }
+      const { results } = await env.DB.prepare(sql).bind(...binds).all();
+      const para = results || [];
+      if (!para.length) continue;
+      const st = env.DB.prepare('INSERT OR IGNORE INTO avisos_ev (aviso, chave, em) VALUES (?, ?, ?)');
+      await env.DB.batch(para.map(x => st.bind(x.id, ev.chave, agora)));   // anota antes: se a rodada cair, ninguém recebe duas vezes
+      const r = await mandarPara(para, () => Object.assign(caixa ? { id: caixa } : {}, ev.msg), env);
+      ok += r.ok; falhas += r.falhas; sobra -= para.length;
+    } catch (e) { falhas++; }
+  }
+  return { eventos: lista.map(x => x.chave), ok, falhas };
+}
+async function rotinaEventos(env) {
+  try { await apurarCopa(env); } catch (e) {}
+  try { return await avisosDeEvento(env); } catch (e) { return null; }
 }
 async function donoAvisos(req, env, origin) {
   if (!(await ehDono(req, env))) return json({ erro: 'nao-autorizado' }, 401, origin);
@@ -539,6 +587,7 @@ export default {
       // Ranking da calçada (3.29)
       if (url.pathname === '/ranking' && req.method === 'GET') return await rk.ranking(req, env, origin, H, url);
       if (url.pathname === '/ranking/fora' && req.method === 'POST') return await rk.sairDoRanking(req, env, origin, H);
+      if (url.pathname === '/copa' && req.method === 'GET') return await copaInfo(req, env, origin, H, url);   // 10/11: Copa dos Sócios
       if (url.pathname === '/dono/presenca' && req.method === 'GET') return await presenca.donoPresenca(req, env, origin, H);
       if (url.pathname === '/dono/numeros' && req.method === 'GET') return await donoNumeros(req, env, origin, H);   // 03/11
       if (url.pathname === '/dono/burlas' && req.method === 'GET') return await donoBurlas(req, env, origin, H);   // 10/11: possíveis burlas dos limites
@@ -572,9 +621,12 @@ export default {
   // 3.37.2: de manhã (9h às 11h em Manaus) só os avisos de evento (data especial, Desafio, Rei da Calçada).
   async scheduled(evento, env, ctx) {
     const hora = new Date((evento && evento.scheduledTime) || Date.now()).getUTCHours();
+    // 10/11: sexta às 20h (Manaus) só para a Sexta da Calçada e o começo da Copa
+    if (evento && evento.cron === '0 0 * * 6') { ctx.waitUntil(rotinaEventos(env)); return; }
+    ctx.waitUntil(rotinaEventos(env));   // 10/11: Copa (apuração e avisos), Sexta da Calçada e tempo de casa
     ctx.waitUntil(limparNumeros(env));   // 03/11: acessos por hora guardados por 60 dias
     if (hora >= 12 && hora < 18) { ctx.waitUntil((async () => { try { await lembreteDaData(env, EVENTO_POR_RODADA.manha); } catch (e) {} try { await reajustesPendentes(env); } catch (e) {} })()); return; }
     ctx.waitUntil((async () => { try { await reajustesPendentes(env); } catch (e) {} try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env, EVENTO_POR_RODADA.tarde); } catch (e) {} try { await fotos.moderarPendentes(env); } catch (e) {} try { await turmas.fecharDesafio(env); } catch (e) {} try { await manterChaveAsaas(env); } catch (e) {} try { await vivo.limparVivo(env); } catch (e) {} try { await limparVistos(env); } catch (e) {} try { await presenca.limparPresenca(env); } catch (e) {} await lembretesDoDia(env);  try { await rk.limparRanking(env); } catch (e) {} })());
   }
 };
-export { lembretesDoDia, lembretesPlano, lembreteDaData };
+export { lembretesDoDia, lembretesPlano, lembreteDaData, avisosDeEvento, rotinaEventos };

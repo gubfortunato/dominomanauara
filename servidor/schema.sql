@@ -255,3 +255,37 @@ UPDATE planos SET ate = CAST(strftime('%s', 'now') AS INTEGER) * 1000 + 3650 * 8
 
 -- 04/11 (dono): Turma com nome de baixo calão ("Pombona") renomeada; os pontos ficam
 UPDATE turmas SET nome = 'Turma sem nome' WHERE lower(nome) LIKE '%pombon%' OR lower(nome) LIKE '%pombao%' OR lower(nome) LIKE '%pombão%';
+
+-- 10/11 (pedido do dono: pertencimento dos sócios, tudo automático)
+-- Copa dos Sócios (de 3 em 3 meses): o resultado de cada edição. pos 1 a 3 = pódio, 0 = participou, -1 = edição sem ninguém
+CREATE TABLE IF NOT EXISTS copa_premios (
+  edicao TEXT NOT NULL,          -- C2026-11
+  n INTEGER NOT NULL,            -- 1 = 1ª Copa
+  aparelho TEXT NOT NULL,
+  codigo TEXT,                   -- código do plano (o prêmio vai junto para outro celular)
+  nome TEXT,
+  pos INTEGER NOT NULL,
+  pontos INTEGER NOT NULL DEFAULT 0,
+  em INTEGER NOT NULL,
+  PRIMARY KEY (edicao, aparelho)
+);
+CREATE INDEX IF NOT EXISTS copa_premios_codigo ON copa_premios (codigo);
+-- Tempo de casa: desde quando a conta de sócio (código) está seguida, sem ficar mais de 7 dias vencida
+CREATE TABLE IF NOT EXISTS socio_casa (
+  codigo TEXT PRIMARY KEY,
+  desde INTEGER NOT NULL
+);
+-- marcas de tempo de casa (3, 6, 12 meses) que já tiveram aviso
+CREATE TABLE IF NOT EXISTS socio_marcas (
+  codigo TEXT NOT NULL,
+  marca INTEGER NOT NULL,
+  em INTEGER NOT NULL,
+  PRIMARY KEY (codigo, marca)
+);
+-- avisos automáticos de evento (Sexta da Calçada, Copa, tempo de casa): cada um sai uma vez por inscrição
+CREATE TABLE IF NOT EXISTS avisos_ev (
+  aviso INTEGER NOT NULL,        -- avisos.id
+  chave TEXT NOT NULL,
+  em INTEGER NOT NULL,
+  PRIMARY KEY (aviso, chave)
+);

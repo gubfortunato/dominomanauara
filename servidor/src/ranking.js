@@ -16,6 +16,7 @@
 // Apelido genérico ("Anonimous", "Jogador"...) não aparece no ranking: a pessoa vê o aviso para escolher um apelido.
 import { nomeGenerico, nomeOfensivo } from './motor.js';
 import { limitesValem, temPlano } from './planos.js';   // 28/10: ranking completo é dos sócios
+import { somarCopa } from './copa.js';   // 10/11: Copa dos Sócios (só sócios, de 3 em 3 meses)
 
 const DIA = 86400000, MANAUS = 4 * 3600000;
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
@@ -77,11 +78,12 @@ export async function somarRanking(env, quem) {
           jogadas_gente = jogadas_gente + excluded.jogadas_gente, atualizado = CASE WHEN ? != 0 THEN excluded.atualizado ELSE atualizado END`)
         .bind(per, q.id, nome, av, nv, delta, q.ganhou ? 1 : 0, gente && q.ganhou ? 1 : 0, gente ? 1 : 0, agora, delta, delta).run();
     }
+    try { await somarCopa(env, Object.assign({}, q, { nome, nv }), delta, gente, agora); } catch (e) {}   // 10/11: no fim de semana da Copa
   }
 }
 const FILTRO = 'NOT EXISTS (SELECT 1 FROM ranking_fora f WHERE f.aparelho = r.aparelho) AND NOT EXISTS (SELECT 1 FROM bloqueios b WHERE b.aparelho = r.aparelho)';
 // a lista do período em ordem (já sem quem pediu para sair, bloqueados e apelidos genéricos)
-async function ordenados(env, per) {
+export async function ordenados(env, per) {
   const sql = usaPontos(env, per)
     ? `SELECT aparelho, nome, av, nv, pontos, ganhas, jogadas, atualizado FROM calcada r WHERE periodo = ? AND pontos > 0 AND ${FILTRO}
         ORDER BY pontos DESC, (ganhas * 1.0 / jogadas) DESC, atualizado ASC LIMIT ${LER}`
@@ -90,7 +92,7 @@ async function ordenados(env, per) {
   const { results } = await env.DB.prepare(sql).bind(per).all();
   return (results || []).filter(x => !nomeGenerico(x.nome) && !nomeOfensivo(x.nome));   // 3.38.2: apelido ofensivo também fica de fora
 }
-async function lista(env, per, fim, eu, reiAp) {
+export async function lista(env, per, fim, eu, reiAp) {
   const pts = usaPontos(env, per), todos = await ordenados(env, per);
   const soc = await socios(env, todos.slice(0, TOP).map(x => x.aparelho));   // 03/11: a ★ de sócio aparece no ranking
   const top = todos.slice(0, TOP).map((x, i) => Object.assign({ pos: i + 1, nome: x.nome, av: x.av, nv: x.nv, ganhas: x.ganhas, jogadas: x.jogadas },
