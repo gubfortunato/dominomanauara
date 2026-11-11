@@ -123,6 +123,7 @@ export class Mesa {
     if (url.pathname === '/reservar' && req.method === 'POST') return this.reservar(await req.json());
     if (url.pathname === '/fila' && req.method === 'POST') return this.naFila(await req.json());
     if (url.pathname === '/fila/status') return Response.json(await this.statusFila());
+    if (url.pathname === '/fila/ver') return Response.json(await this.mesaPeloVer(url.searchParams.get('t')));   // 10/11
     if (url.pathname === '/fila/vivo') return Response.json(await this.mesasAoVivo(!!url.searchParams.get('todas')));
     if (url.pathname === '/fila/ativa' && req.method === 'POST') return Response.json(await this.mesaAtiva(await req.json()));
     if (url.pathname === '/expulsar' && req.method === 'POST') return Response.json(await this.expulsar(await req.json()));
@@ -135,16 +136,16 @@ export class Mesa {
     if ((req.headers.get('upgrade') || '').toLowerCase() === 'websocket') {
       const par = new WebSocketPair();
       const [cli, srv] = Object.values(par);
-      this.aceitar(srv, req.headers.get('x-rede'), req.headers.get('x-cod'), req.headers.get('x-trava'));
+      this.aceitar(srv, req.headers.get('x-rede'), req.headers.get('x-cod'), req.headers.get('x-trava'), req.headers.get('x-so-assistir') === '1');
       return new Response(null, { status: 101, webSocket: cli });
     }
     return new Response('nao-encontrado', { status: 404 });
   }
-  aceitar(ws, rede, cod, trava) {
+  aceitar(ws, rede, cod, trava, so) {
     this.ctx.acceptWebSocket(ws);
     ws.serializeAttachment({ id: null, visto: Date.now(), rede: /^[0-9a-f]{24}$/.test(String(rede || '')) ? rede : null,   // 28/10: resumo da rede (planos)
       cod: /^[0-9a-f]{24}:\d{5}$/.test(String(cod || '')) ? cod : null,   // 10/11: para anotar número de mesa errado (codigos.js)
-      trava: trava === '1' });   // 10/11: rede que errou muitos números: só volta quem já está na mesa (sentado, na fila ou com o robô no lugar)
+      trava: trava === '1', so: !!so });   // 10/11: so = entrou pelo "Ao vivo no Desafio": só assiste, nunca senta   // 10/11: rede que errou muitos números: só volta quem já está na mesa (sentado, na fila ou com o robô no lugar)
   }
   jaNaMesa(id) {
     const m = this.m; if (!m || !id) return false;
@@ -255,6 +256,12 @@ export class Mesa {
     try { await this.ctx.storage.put('q:' + codigo, v); if (fora.length) await this.ctx.storage.delete(fora.map(c => 'q:' + c)); } catch (e) {}
     return { ok: true };
   }
+  async mesaPeloVer(t) {
+    if (!/^[0-9a-f]{16}$/.test(String(t || ''))) return { codigo: null };
+    const agora = Date.now(), q = await this.quadro();
+    for (const x of q.values()) if (x.info && x.info.desafio && x.info.desafio.ver === t && x.info.fase === 'jogo' && agora - x.t < QUADRO.validade) return { codigo: x.codigo };
+    return { codigo: null };
+  }
   async mesasAoVivo(todas) {
     const agora = Date.now(), q = await this.quadro();
     const l = [...q.values()].filter(x => x.info && agora - x.t < QUADRO.validade).reverse();   // a que deu notícia por último primeiro
@@ -271,7 +278,7 @@ export class Mesa {
         // tem menos de 18 anos, que continua só na conta ("1 pessoa"); robô continua sem nome
         else mesas.push({ publica: false, existe: true, fase: 'jogo', tema: j.tema || null, on: j.on, livres: 0,
           cad: (j.cad || []).map(c => !c ? null : c.bot || c.menor ? { bot: !!c.bot, tipo: c.tipo } : { nome: c.nome, bot: false, av: c.av || null, foto: c.foto || null, nv: c.nv || 1, tipo: c.tipo }),
-          partida: j.partida, mao: j.mao, placar: j.placar,
+          partida: j.partida, mao: j.mao, placar: j.placar, desafio: j.desafio || null,
           lance: j.lance ? { type: j.lance.type, pts: j.lance.pts, carroca: j.lance.carroca, voided: j.lance.voided } : null });
       }
       if (mesas.length >= 16) break;
@@ -313,6 +320,16 @@ export class Mesa {
   async registrarAtiva() { await this.contarAFila(); }
   // 28/10 (pedido do dono): a fila do ganha-chama, para o administrador ver (a lista pública não leva)
   filaVivo(m) { return (m.fila || []).map(c => ({ nome: nomeVisivel(c), av: c.av || null, nv: c.nv || 1, on: this.conectadoId(c.id), menor: !!c.menor })); }
+  // 10/11 (pedido do dono): partida do Desafio das Confrarias (Turma contra Turma) pode ser assistida por todos pela
+  // Calçada, sem o número da mesa: a mesa ganha um código de assistir (só serve para assistir; não dá para sentar)
+  confrontoVivo(m) {
+    if (!this.mesaDesafio() || !m.G || !this.confronto()) return null;
+    if (m.cad.some(c => c && !c.bot && c.menor)) return null;   // com menor na mesa, só pelo número (como antes)
+    if (!m.verId) m.verId = [...crypto.getRandomValues(new Uint8Array(8))].map(b => b.toString(16).padStart(2, '0')).join('');
+    const lado = w => { for (let p = w; p < 4; p += 2) { const c = m.cad[p]; if (c && !c.bot && c.turma) return c.turma; } return null; };
+    const a = lado(0), b = lado(1);
+    return a && b && a !== b ? { ver: m.verId, a, b } : null;
+  }
   infoVivo() {
     const m = this.viva();
     if (!m) return { existe: false, fase: null };
@@ -330,7 +347,7 @@ export class Mesa {
       cad: m.cad.map((c, p) => c ? { nome: nomeVisivel(c), bot: !!c.bot, av: c.bot ? null : c.av || null, foto: c.bot || c.menor ? null : c.foto || null,   // 10/11: foto do sócio
         tipo: c.bot ? (c.saiu ? 'saiu' : 'robo') : this.conectado(p) ? 'pessoa' : 'fora',
         nv: c.bot ? null : c.nv || 1, bairro: c.bot ? null : c.bairro || null, menor: !c.bot && !!c.menor } : null),
-      partida: G.partida || 1, mao: G.handNo || 1, criada: m.criada || null,
+      partida: G.partida || 1, mao: G.handNo || 1, criada: m.criada || null, desafio: this.confrontoVivo(m),
       placar: G.score, lance: ev ? { type: ev.type, p: ev.p, pts: ev.pts || 0, carroca: !!ev.carroca, voided: !!ev.voided } : null, fila: this.filaVivo(m) };
   }
 
@@ -404,6 +421,7 @@ export class Mesa {
       if (att.cod) { const [mk, cd] = att.cod.split(':'); await anotarCodigoErrado(this.env, mk, cd); }   // 10/11: número que não tem mesa conta no limite da rede
       this.enviar(ws, { t: 'erro', cod: 'nao-existe' }); try { ws.close(4004, 'nao-existe'); } catch (e) {} return;
     }
+    if (att.so && msg.t !== 'assistir') return;   // 10/11: quem entrou pelo Desafio ao vivo só assiste
     const p = att.id ? m.cad.findIndex(c => c && c.id === att.id) : -1;
     switch (msg.t) {
       case 'entrar': return this.entrar(ws, att, msg);
@@ -1419,7 +1437,7 @@ export class Mesa {
         hands: G.hands.map((h, p) => p === minha || G.phase === 'handEnd' ? h : h.map(() => [-1, -1]))
       });
     }
-    return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
+    return { t: 'mesa', codigo: !id && this.mesaDesafio() ? null : m.codigo, fase: m.fase,   // 10/11: no Desafio ao vivo, quem assiste não recebe o número seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
       leituraMs: G && G.phase === 'handEnd' ? Math.max(0, Math.round(m.turnoDesde + this.T.leitura - Date.now())) : 0, proximaPedida: !!(G && G.phase === 'handEnd' && m.proximaPedida === m.seq),   // 28/10
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, foto: c.menor ? null : c.foto || null, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
