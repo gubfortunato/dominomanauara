@@ -438,6 +438,7 @@ const EV_POR_RODADA = 400;   // plano pago do Cloudflare: bem abaixo do limite d
 async function avisosDeEvento(env, agora) {
   agora = agora || Date.now();
   const lista = await avisosAgendados(env, agora);
+  try { lista.push(...await turmas.avisosDesafio(env, agora)); } catch (e) {}   // 10/11: avisos do Desafio das Confrarias
   const temChave = !!(env.VAPID_PRIVATE_JWK && env.VAPID_PUBLIC);
   let ok = 0, falhas = 0, sobra = EV_POR_RODADA;
   const naoFoi = 'NOT EXISTS (SELECT 1 FROM avisos_ev e WHERE e.aviso = a.id AND e.chave = ?)';
@@ -456,11 +457,15 @@ async function avisosDeEvento(env, agora) {
         sql = `SELECT DISTINCT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a JOIN avisos_id i ON i.endpoint = a.endpoint JOIN planos p ON p.aparelho = i.aparelho
           WHERE p.ate > ? AND ${naoFoi} ORDER BY a.id LIMIT ?`;
         binds = [agora, ev.chave, sobra];
+      } else if (ev.para === 'turmas') {   // 10/11: quem está numa Turma (Desafio das Confrarias)
+        sql = `SELECT DISTINCT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a JOIN avisos_id i ON i.endpoint = a.endpoint JOIN turma_membros m ON m.aparelho = i.aparelho
+          WHERE ${naoFoi} ORDER BY a.id LIMIT ?`;
+        binds = [ev.chave, sobra];
       } else {
         const aps = (ev.para && ev.para.aparelhos) || []; if (!aps.length) continue;
         sql = `SELECT DISTINCT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a JOIN avisos_id i ON i.endpoint = a.endpoint
-          WHERE i.aparelho IN (${aps.map(() => '?').join(',')}) AND ${naoFoi} LIMIT 5`;
-        binds = [...aps, ev.chave];
+          WHERE i.aparelho IN (${aps.map(() => '?').join(',')}) AND ${naoFoi} LIMIT ?`;
+        binds = [...aps, ev.chave, Math.min(sobra, aps.length * 3 + 2)];   // 10/11: uma Turma tem até 40 pessoas
       }
       const { results } = await env.DB.prepare(sql).bind(...binds).all();
       const para = results || [];

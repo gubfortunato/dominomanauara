@@ -1378,6 +1378,44 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .tm-passos li::marker{font-weight:800;color:var(--nos)}
 .tm-virtual{margin:-2px 0 10px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,var(--nos) 10%,transparent);font-size:14.5px;line-height:1.35;color:var(--muted)}
 #dcCard .dc-ate{color:var(--muted);font-weight:700}
+/* 10/11: Desafio das Confrarias mais rico (brasão, hoje, seta, barra, reta final) */
+.brasao{display:block;flex:none;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.25))}
+.dc-faixa{margin:2px 0 10px;padding:9px 12px;border-radius:12px;background:color-mix(in srgb,var(--glow) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--glow) 45%,var(--line));font-size:14.5px;line-height:1.35;color:var(--ink)}
+.dc-faixa.quente{background:linear-gradient(90deg,#b3261e,#e0662a);border-color:#f3a35e;color:#fff6e6}
+.dc-ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.dc-li{display:grid;grid-template-columns:30px 34px minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 10px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
+.dc-li.p1{background:color-mix(in srgb,#f3c063 22%,var(--bg));border-color:color-mix(in srgb,#f3c063 70%,var(--line))}
+.dc-li.p2,.dc-li.p3{background:color-mix(in srgb,var(--glow) 10%,var(--bg))}
+.dc-li.eu{box-shadow:0 0 0 2px var(--nos) inset}
+.dc-pos{font-size:15px;font-weight:800;text-align:center;color:var(--muted)}
+.dc-li.p1 .dc-pos,.dc-li.p2 .dc-pos,.dc-li.p3 .dc-pos{font-size:21px}
+.dc-meio{display:grid;gap:3px;min-width:0}
+.dc-nome{font-size:16px;font-weight:800;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.dc-meio small{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:12.5px;color:var(--muted);font-weight:700}
+.dc-meio small:empty{display:none}
+.dc-hoje{font-style:normal;padding:1px 7px;border-radius:999px;background:color-mix(in srgb,var(--ok,#2e9d5b) 16%,transparent);color:var(--ok,#2e9d5b);font-weight:800}
+.dc-mov{font-style:normal;font-weight:800}.dc-mov.up{color:var(--ok,#2e9d5b)}.dc-mov.down{color:#c0392b}.dc-mov.novo{color:var(--nos);text-transform:uppercase;font-size:11px;letter-spacing:.06em}
+.dc-barra{display:block;height:5px;border-radius:999px;background:color-mix(in srgb,var(--line) 70%,transparent);overflow:hidden}
+.dc-barra i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#d9965a,#f3c063)}
+.dc-pts{display:grid;justify-items:end;line-height:1.05}
+.dc-pts b{font-size:20px;font-weight:800}
+.dc-pts small{font-size:11.5px;color:var(--muted);font-weight:700}
+.dc-sep{text-align:center;color:var(--muted);font-weight:800;letter-spacing:.3em;line-height:.6}
+.dc-meu{margin:12px 0 0;font-size:15px;line-height:1.35;color:var(--ink)}
+.dc-total{margin:8px 0 0;font-size:13px;color:var(--muted);text-align:center;font-weight:700}
+.dc-craques{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.dc-craques li{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:var(--bg-2);border:1px solid var(--line)}
+.dc-craques span{font-size:19px;text-align:center}.dc-craques b{font-size:16.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dc-craques small{font-weight:800;color:var(--muted);font-size:14px}
+.dc-rival{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;padding:12px 10px;border-radius:16px;background:var(--bg-2);border:1.5px solid var(--line)}
+.dc-rv-t{display:grid;justify-items:center;gap:4px;min-width:0;text-align:center}
+.dc-rv-t b{font-size:14px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.dc-rv-pl{display:flex;align-items:center;gap:8px;font-size:30px;font-weight:800}.dc-rv-pl i{font-style:normal;font-size:18px;color:var(--muted)}
+.dc-rv-n{margin-top:6px}
+.tc-faixa{display:block;padding:7px 11px;border-radius:12px;background:rgba(255,240,215,.08);border:1px solid rgba(255,220,160,.2);color:#f3d9a6;font-size:13.5px;font-weight:700}
+.tc-faixa.quente{background:linear-gradient(90deg,rgba(179,38,30,.85),rgba(224,102,42,.85));border-color:#f3a35e;color:#fff6e6}
+.tc-lin{grid-template-columns:auto auto minmax(0,1fr) auto auto !important;gap:8px !important}
+.tc-hoje{font-style:normal;font-size:12px;font-weight:800;color:#9fe0b0}
+
 .tm-regra{margin:8px 0 12px}
 .tm-box{display:grid;gap:8px;margin:12px 0;padding:14px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2)}
 .tm-box b{font-size:18px}
@@ -3831,7 +3869,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.53', data: '10/11/2026', itens: ['Sair no meio da partida com outras pessoas na mesa conta como derrota no ranking e na Copa. Na mesa rápida, quem sai no meio de 3 partidas no dia fica 15 minutos sem a mesa rápida. Queda de internet não conta se a pessoa voltar antes de a partida acabar.', 'Mais 10 emojis para reagir e no papo de mesa: 🐓 🤣 😎 🙏 💪 🎉 😭 😡 🤔 👀.', 'Foto do sócio no lugar do avatar: para o sócio que coloca foto no perfil, a opção já vem ligada; aprovada, a foto aparece na mesa, na fila, no papo, no ranking, na Copa e nas mesas ao vivo. Desligando no perfil, volta o avatar. Quem já tinha foto é perguntado uma vez.', 'Carteira de sócio: os botões "Trocar a foto" e "Usar o avatar" ficaram do mesmo tamanho.', 'Recado da atualização, uma vez, para quem já tinha o app: bugs corrigidos, novidades, o áudio no papo para os sócios e o botão para chamar os amigos no WhatsApp.'] },
+  { v: '3.53', data: '10/11/2026', itens: ['Sair no meio da partida com outras pessoas na mesa conta como derrota no ranking e na Copa. Na mesa rápida, quem sai no meio de 3 partidas no dia fica 15 minutos sem a mesa rápida. Queda de internet não conta se a pessoa voltar antes de a partida acabar.', 'Mais 10 emojis para reagir e no papo de mesa: 🐓 🤣 😎 🙏 💪 🎉 😭 😡 🤔 👀.', 'Foto do sócio no lugar do avatar: para o sócio que coloca foto no perfil, a opção já vem ligada; aprovada, a foto aparece na mesa, na fila, no papo, no ranking, na Copa e nas mesas ao vivo. Desligando no perfil, volta o avatar. Quem já tinha foto é perguntado uma vez.', 'Carteira de sócio: os botões "Trocar a foto" e "Usar o avatar" ficaram do mesmo tamanho.', 'Desafio das Confrarias mais emocionante: brasão de cada Turma, pontos de hoje, seta de quem subiu ou caiu, barra de pontos, a sua Turma sempre à vista e quanto falta para passar a de cima. Reta final em dobro: de 14 a 20/12, cada vitória contra outra Turma vale 2 pontos. Na tela da Turma: os craques (quem mais trouxe pontos) e o placar contra a Turma rival. Avisos no celular (no máximo 1 por dia, às 18h) quando outra Turma passar a sua, quando a sua chegar ao pódio, na véspera da reta final e no último dia.', 'Recado da atualização, uma vez, para quem já tinha o app: bugs corrigidos, novidades, o áudio no papo para os sócios e o botão para chamar os amigos no WhatsApp.'] },
   { v: '3.52', data: '10/11/2026', itens: ['Sexta da Calçada: toda sexta, das 20h às 23h, moral em dobro em todas as partidas (o nível sobe duas vezes mais rápido), com aviso no celular às 19h e às 20h.', 'A experiência agora se chama moral: cada mão, galo, batida e vitória dá moral, e é a moral que sobe o seu nível na calçada.', 'Copa dos Sócios: a cada 3 meses, no último fim de semana de novembro, fevereiro, maio e agosto (a 1ª é de 27 a 29/11). Só sócios pontuam: o campeão leva o troféu na carteira e a Mesa do Campeão; 2º e 3º, medalha; quem jogar, a marca de participação.', 'Tempo de casa: a carteira de sócio mostra há quanto tempo você é sócio, com marcas aos 3 meses, 6 meses e 1 ano.'] },
   { v: '3.51.14', data: '10/11/2026', itens: ['Tela inicial: a saudação "Fala, ..." ficou maior.'] },
   { v: '3.51.13', data: '10/11/2026', itens: ['A mesa Branca saiu do jogo. Quem estava com ela volta para a de Madeira.'] },
@@ -9873,6 +9911,56 @@ function desafioAgora() {
 const nomeTurma = n => /^turma\b/i.test(String(n || '').trim()) ? n : 'Turma ' + n;   // "Turma do Bar" não vira "Turma Turma do Bar"
 const estrelas = t => t ? ' ' + (t >= 3 ? '🏆' : '') + '★'.repeat(Math.min(t, 6)) : '';
 const pts = n => `${n} ${n === 1 ? 'ponto' : 'pontos'}`;
+// 10/11 (o dono: "tá meio pobre esse ranking... quero o Desafio mais emocionante e atrativo"):
+// brasão de cada Turma (escudo com as iniciais e uma cor tirada do nome, sempre a mesma), pontos de hoje, seta de quem
+// subiu ou caiu desde ontem, barra de pontos, a sua Turma sempre à vista, a contagem para o fim e a reta final em dobro.
+const BRASAO_CORES = [['#b3261e', '#f7d27d'], ['#1f5fa8', '#ffe2a0'], ['#1e7a4a', '#fff1d6'], ['#6b3fa0', '#f7d27d'], ['#c4561b', '#fff1d6'], ['#0f6e7a', '#ffe2a0'], ['#8a1c4a', '#fff1d6'], ['#4a5a12', '#f7d27d'], ['#2b2b2b', '#f3c063']];
+function brasao(nome, tam) {
+  const n = String(nome || '').replace(/^turma\s+/i, '').trim();
+  const pal = n.split(/\s+/).filter(w => w && !/^(d[aeo]s?|e|of?|the|o|a|os|as)$/i.test(w));
+  const pri = w => [...w].find(ch => /[\p{L}\p{N}]/u.test(ch)) || '';
+  let ini = pal.length >= 2 ? pri(pal[0]) + pri(pal[1]) : [...(pal[0] || '')].filter(ch => /[\p{L}\p{N}]/u.test(ch)).slice(0, 2).join('');
+  ini = (ini || '?').toUpperCase();
+  let h = 7; for (const ch of n.toLowerCase()) h = (h * 31 + ch.codePointAt(0)) >>> 0;
+  const [c1, c2] = BRASAO_CORES[h % BRASAO_CORES.length], w = tam || 34, hh = Math.round(w * 46 / 40);
+  return `<svg class="brasao" viewBox="0 0 40 46" width="${w}" height="${hh}" aria-hidden="true"><path d="M20 2.2 36.8 8.2v13.6c0 11-7.4 18.4-16.8 21.9C10.6 40.2 3.2 32.8 3.2 21.8V8.2z" fill="${c1}" stroke="${c2}" stroke-width="2.6" stroke-linejoin="round"/><path d="M20 6.6 32.8 11.2v10.6c0 8.4-5.4 14.4-12.8 17.4z" fill="rgba(255,255,255,.13)"/><text x="20" y="27.6" text-anchor="middle" font-size="${ini.length > 1 ? 14.5 : 18}" font-weight="800" fill="${c2}" font-family="Figtree, system-ui, sans-serif">${esc(ini)}</text></svg>`;
+}
+function dcDatas(d) {
+  const ano = d.ano || +diaManaus().slice(0, 4);
+  return { fim: d.fim || Date.UTC(ano, 11, 21) + 4 * 3600000, dobroDesde: d.dobroDesde || Date.UTC(ano, 11, 14) + 4 * 3600000, mult: d.mult || 2 };
+}
+// a faixa de cima: quanto falta e a reta final
+function dcFaixa(d) {
+  const x = dcDatas(d), agora = Date.now(), dias = Math.ceil((x.fim - agora) / 86400000), dobro = d.dobro || (agora >= x.dobroDesde && agora < x.fim);
+  const ddmm = ms => { const z = new Date(ms - 4 * 3600000); return String(z.getUTCDate()).padStart(2, '0') + '/' + String(z.getUTCMonth() + 1).padStart(2, '0'); };
+  if (dobro) return `<p class="dc-faixa quente"><b>🔥 Reta final:</b> cada vitória contra outra Turma vale ${x.mult} pontos · ${dias <= 1 ? 'termina hoje, à meia-noite' : `faltam ${dias} dias`}</p>`;
+  return `<p class="dc-faixa"><b>${dias === 1 ? 'Falta 1 dia' : `Faltam ${dias} dias`}</b> · 🔥 de ${ddmm(x.dobroDesde)} a 20/12, cada vitória vale ${x.mult} pontos</p>`;
+}
+const dcMov = m => m === 'novo' ? '<i class="dc-mov novo">novo</i>' : m > 0 ? `<i class="dc-mov up" aria-label="subiu ${m}">▲${m}</i>` : m < 0 ? `<i class="dc-mov down" aria-label="caiu ${-m}">▼${-m}</i>` : '';
+// a lista das Turmas (Calçada e folha da Turma): as primeiras e, se a sua ficou de fora, ela no fim
+function dcLista(d, t, n) {
+  const top = (d.ranking || []).slice(0, n), lider = Math.max(1, ...(d.ranking || []).map(r => r.pontos));
+  const med = ['🥇', '🥈', '🥉'];
+  const lin = (r, eu) => `<li class="dc-li${eu ? ' eu' : ''}${r.pos && r.pos <= 3 ? ' p' + r.pos : ''}">
+      <span class="dc-pos">${r.pos && r.pos <= 3 ? med[r.pos - 1] : r.pos ? r.pos + 'º' : '–'}</span>
+      <span class="dc-br">${brasao(r.nome, 34)}</span>
+      <span class="dc-meio"><b class="dc-nome">${esc(r.nome)}${esc(estrelas(r.titulos))}</b>
+        <small>${r.membros ? (r.membros === 1 ? '1 pessoa' : r.membros + ' pessoas') : ''}${r.hoje ? `<i class="dc-hoje">+${r.hoje} hoje</i>` : ''}${dcMov(r.mov)}</small>
+        <span class="dc-barra"><i style="width:${Math.max(4, Math.round(r.pontos / lider * 100))}%"></i></span></span>
+      <span class="dc-pts"><b>${r.pontos}</b><small>${r.pontos === 1 ? 'ponto' : 'pontos'}</small></span></li>`;
+  const minha = t && top.some(r => r.nome === t.nome);
+  let html = top.map(r => lin(r, t && r.nome === t.nome)).join('');
+  if (t && !minha && t.pontos > 0) html += `<li class="dc-sep" aria-hidden="true">···</li>` + lin({ pos: t.pos, nome: t.nome, titulos: t.titulos, pontos: t.pontos, membros: (t.membros || []).length, hoje: t.hoje, mov: t.mov }, true);
+  return `<ol class="dc-ol">${html}</ol>`;
+}
+// o que falta para a sua Turma subir
+function dcFalta(t, d) {
+  if (!t || !d.aberto) return '';
+  if (t.pos === 1) return `<p class="dc-meu">👑 A ${esc(nomeTurma(t.nome))} lidera o Desafio! Segura essa posição.</p>`;
+  if (t.acima) { const f = t.acima.falta + 1; return `<p class="dc-meu">Faltam <b>${f} ${f === 1 ? 'ponto' : 'pontos'}</b> para passar a ${esc(nomeTurma(t.acima.nome))}${d.dobro ? ` (na reta final, ${Math.ceil(f / (d.mult || 2))} ${Math.ceil(f / (d.mult || 2)) === 1 ? 'vitória' : 'vitórias'})` : ''}.</p>`; }
+  if (!t.pontos) return `<p class="dc-meu">A sua Turma ainda não pontuou: a primeira vitória contra outra Turma já põe vocês no ranking.</p>`;
+  return '';
+}
 // Cartão no início (depois do jogo offline)
 (function () {
   const alvo = $('#goResume'); if (!alvo) return;   // depois do jogo offline (e do "Continuar")
@@ -9896,7 +9984,9 @@ function desenharCartaoTurma() {
       <span class="ct">${t ? esc(nomeTurma(t.nome)) + esc(estrelas(t.titulos)) : 'Monte a sua Turma'}</span>
       ${t ? `<span class="tc-pts"><b>${t.pontos}</b> ${t.pontos === 1 ? 'ponto' : 'pontos'}${t.pos ? ` · ${t.pos}º lugar` : ''}</span>`
           : `<span class="tc-passos"><span><b>1</b>Junte os amigos numa Turma</span><span><b>2</b>Desafie outra Turma</span><span><b>3</b>Ganhou: +1 ponto</span></span>`}
-      ${top.length ? `<span class="tc-rank">${top.map(r => `<span class="tc-lin${t && r.nome === t.nome ? ' eu' : ''}"><i class="m${r.pos}">${r.pos}º</i><span>${esc(nomeTurma(r.nome))}</span><b>${r.pontos}</b></span>`).join('')}</span>`
+      ${(() => { const x = dcDatas(d), ag = Date.now(), dias = Math.ceil((x.fim - ag) / 86400000), dobro = d.dobro || (ag >= x.dobroDesde && ag < x.fim);
+        return `<span class="tc-faixa${dobro ? ' quente' : ''}">${dobro ? `🔥 Reta final: vitória vale ${x.mult} pontos · ${dias <= 1 ? 'último dia' : `faltam ${dias} dias`}` : `${dias === 1 ? 'Falta 1 dia' : `Faltam ${dias} dias`} · 🔥 reta final em dobro a partir de 14/12`}</span>`; })()}
+      ${top.length ? `<span class="tc-rank">${top.map(r => `<span class="tc-lin${t && r.nome === t.nome ? ' eu' : ''}"><i class="m${r.pos}">${r.pos}º</i>${brasao(r.nome, 24)}<span>${esc(nomeTurma(r.nome))}</span><em class="tc-hoje">${r.hoje ? `+${r.hoje} hoje` : ''}</em><b>${r.pontos}</b></span>`).join('')}</span>`
           : '<span class="tc-vazio">Nenhuma Turma pontuou ainda. A primeira vitória já vale o topo do ranking.</span>'}
       <span class="tc-go">${t && t.renomeia ? 'Escolher o novo nome da Turma' : t ? 'Desafiar outra Turma' : 'Montar a minha Turma'}</span>`;
     return;
@@ -9936,14 +10026,25 @@ function abrirTurma(codigo) {
 }
 function rankingHTML(d, minha) {
   if (!d.ranking || !d.ranking.length) return d.antes ? '' : '<p class="note">Ninguém pontuou ainda.</p>';
-  return `<p class="tm-k">Ranking ${d.ano}</p><ol class="tm-rank">${d.ranking.map(r => `<li class="${minha && r.nome === minha.nome ? 'eu' : ''}"><span class="tm-pos">${r.pos}º</span><b>${esc(r.nome)}${estrelas(r.titulos)}</b><span class="tm-pts">${r.pontos}</span></li>`).join('')}</ol>`;
+  return `<p class="tm-k">Ranking ${d.ano}</p>${d.aberto ? dcFaixa(d) : ''}${dcLista(d, minha, 10)}`;   // 10/11: a mesma lista da Calçada
+}
+// 10/11: na folha da Turma, o craque (quem mais trouxe pontos) e o confronto com a Turma rival
+function craquesRivalHTML(t, d) {
+  if (!t || d.antes) return '';
+  let h = '';
+  if (t.craques && t.craques.length) h += `<p class="tm-k">Craques da Turma</p><ol class="dc-craques">${t.craques.map((c, i) => `<li><span>${['🥇', '🥈', '🥉'][i]}</span><b>${esc(c.nome)}</b><small>${pts(c.pontos)}</small></li>`).join('')}</ol>`;
+  if (t.rival) {
+    const g = t.rival.ganhou, p = t.rival.perdeu, ld = g > p ? 'Vocês estão na frente.' : g < p ? 'Eles estão na frente: hora da revanche!' : 'Empatado: o próximo desempata.';
+    h += `<p class="tm-k">Rival</p><div class="dc-rival"><span class="dc-rv-t">${brasao(t.nome, 40)}<b>${esc(nomeTurma(t.nome))}</b></span><span class="dc-rv-pl"><b>${g}</b><i>×</i><b>${p}</b></span><span class="dc-rv-t">${brasao(t.rival.nome, 40)}<b>${esc(nomeTurma(t.rival.nome))}</b></span></div><p class="note dc-rv-n">Vitórias que valeram ponto, uma contra a outra. ${ld}</p>`;
+  }
+  return h;
 }
 function desenharTurma() {
   const box = $('#turmaFolha'); if (!box) return;
   const t = TM.info, d = desafioAgora();
-  const regra = `<ol class="tm-passos"><li><b>Monte a sua Turma</b> e mande o código para os amigos.</li><li><b>Desafie outra Turma:</b> o app cria a mesa e manda o convite pelo WhatsApp.</li><li><b>Ganhou, +1 ponto.</b> Em 20/12, a Turma com mais pontos é a campeã do ano e ganha uma estrela ★ ao lado do nome. Com 3 estrelas, ganha o troféu 🏆 da Grande Taça.</li></ol>
+  const regra = `<ol class="tm-passos"><li><b>Monte a sua Turma</b> e mande o código para os amigos.</li><li><b>Desafie outra Turma:</b> o app cria a mesa e manda o convite pelo WhatsApp.</li><li><b>Ganhou, +1 ponto</b> (na reta final, de 14 a 20/12, +2). Em 20/12, a Turma com mais pontos é a campeã do ano e ganha uma estrela ★ ao lado do nome. Com 3 estrelas, ganha o troféu 🏆 da Grande Taça.</li></ol>
     <p class="tm-virtual">A estrela e o troféu são do app: aparecem no nome da Turma, no ranking e na mesa. Não é prêmio físico.</p>
-    <p class="note tm-regra">Vale de 1º/11 a 20/12, em partida online contra alguém de outra Turma (na mesa rápida também conta, se cair gente de outra Turma do outro lado). Até 5 pontos por dia contra a mesma Turma.${planosValem() && !temPlano() ? ' Sem plano: até 2 desafios por dia, além da partida grátis.' : ''}</p>`;
+    <p class="note tm-regra">Vale de 1º/11 a 20/12, em partida online contra alguém de outra Turma (na mesa rápida também conta, se cair gente de outra Turma do outro lado). Contam até 5 vitórias por dia contra a mesma Turma.${planosValem() && !temPlano() ? ' Sem plano: até 2 desafios por dia, além da partida grátis.' : ''}</p>`;
   const campeas = d.campeas && d.campeas.length ? `<p class="tm-k">Campeãs</p><ul class="tm-camp">${d.campeas.map(c => `<li><span>${c.ano}</span><b>${esc(c.nome)}</b></li>`).join('')}</ul>` : '';
   if (!t) {
     box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">Como funciona</h2>${regra}
@@ -9965,13 +10066,15 @@ function desenharTurma() {
   } else {
     const link = `${SITE_URL}#turma=${t.codigo}`;
     const zap = 'https://wa.me/?text=' + encodeURIComponent(`Entra na minha Turma "${t.nome}" no Dominó Manauara, para o Desafio das Confrarias (1º/11 a 20/12). Código: ${t.codigo}\n${link}`);
-    const status = d.aberto ? `<b>${pts(t.pontos)}</b>${t.pos ? ` · ${t.pos}º lugar` : ''}` : d.antes ? 'Começa em 1º de novembro.' : `Este ano a sua Turma fez ${pts(t.pontos)}.`;
+    const status = d.aberto ? `<b>${pts(t.pontos)}</b>${t.pos ? ` · ${t.pos}º lugar` : ''}${t.hoje ? ` · <span class="dc-hoje">+${t.hoje} hoje</span>` : ''}` : d.antes ? 'Começa em 1º de novembro.' : `Este ano a sua Turma fez ${pts(t.pontos)}.`;
     box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">${esc(nomeTurma(t.nome))}${estrelas(t.titulos)}</h2>
       ${t.retirado ? retiradoHTML(t) : ''}
       <p class="tm-status">${status}${t.taca ? ' · 🏆 Grande Taça' : t.titulos ? ` · ${t.titulos} ${t.titulos === 1 ? 'estrela' : 'estrelas'} de campeã` : ''}</p>
       <div class="tm-cod"><small>Código da Turma</small><b>${esc(t.codigo)}</b></div>
       ${d.aberto ? '<button type="button" class="primary tm-desafiar" id="tmDesafiar">Desafiar outra Turma</button><p class="note tm-desafiar-n">Cria uma mesa online e manda o convite para a outra Turma. Quem ganhar leva o ponto.</p>' : ''}
       <a class="${d.aberto ? 'secondary' : 'primary'} tm-zap" id="tmZap" href="${esc(zap)}" target="_blank" rel="noopener">Chamar a turma no WhatsApp</a>
+      ${dcFalta(t, d)}
+      ${craquesRivalHTML(t, d)}
       <p class="tm-k">Na Turma (${t.membros.length})</p><p class="tm-membros">${t.membros.map(n => esc(n)).join(', ')}</p>
       ${rankingHTML(d, t)}${regra}${campeas}
       <button type="button" class="secondary tm-fechar" id="tmFechar">Fechar</button>
@@ -10068,7 +10171,8 @@ receberOnline = function (m) {
     store.set(TURMA_VISTOS, JSON.stringify(vistos.concat(k).slice(-20)));
     const minha = m.cad[m.minha] && m.cad[m.minha].turma, nome = d.turmas.includes(minha) ? minha : d.turmas[0];
     TM.em = 0;
-    setTimeout(() => toast(`+1 ponto para a ${nomeTurma(nome)} no Desafio das Confrarias!`), 1800);
+    const n = d.pontos || 1;
+    setTimeout(() => toast(`+${n} ${n === 1 ? 'ponto' : 'pontos'} para a ${nomeTurma(nome)} no Desafio das Confrarias!${n > 1 ? ' 🔥 Reta final em dobro.' : ''}`), 1800);
   } catch (e) {}
 };
 
@@ -12738,8 +12842,10 @@ function desenharDesafioCalcada() {
   if (box.hidden) return;
   const top = (d.ranking || []).slice(0, 5);
   box.innerHTML = `<div class="rk-cab"><h3>⚔️ Desafio das Confrarias</h3><small class="dc-ate">até 20/12</small></div>
-    ${top.length ? `<ol class="rk-ol">${top.map(r => `<li class="${t && r.nome === t.nome ? 'eu' : ''}${r.pos <= 3 ? ' podio' : ''}"><span class="rk-pos">${r.pos}º</span><span class="rk-nome">${esc(nomeTurma(r.nome))}${esc(estrelas(r.titulos))}</span><span class="rk-pts">${pts(r.pontos)}</span></li>`).join('')}</ol>`
+    ${dcFaixa(d)}
+    ${top.length ? dcLista(d, t, 5) + dcFalta(t, d)
       : '<p class="rk-vazio"><b>Nenhuma Turma pontuou ainda.</b><span>A primeira vitória contra outra Turma já põe a sua no topo.</span></p>'}
+    ${d.total > 5 ? `<p class="dc-total">${d.total} Turmas na disputa</p>` : ''}
     <button type="button" class="primary" id="${t ? 'dcDesafiar' : 'dcTurma'}" style="width:100%">${t ? 'Desafiar outra Turma' : 'Montar a minha Turma'}</button>
     ${t ? '<button type="button" class="linkbtn" id="dcTurma" style="width:100%">Ver a minha Turma</button>' : ''}`;
 }

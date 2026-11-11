@@ -25,12 +25,17 @@ async function responsavel(env, t) {
 }
 function codigoNovo() { const b = crypto.getRandomValues(new Uint8Array(6)); return [...b].map(x => LETRAS[x % LETRAS.length]).join(''); }
 // A edição do ano: começa 1º/11 0h e termina no fim de 20/12 (Manaus = UTC-4)
+// 10/11 (pedido do dono: Desafio mais emocionante): reta final em dobro — de 14/12 até o fim, cada vitória contra
+// outra Turma vale 2 pontos (o limite de 5 vitórias por dia contra a mesma Turma continua contando partidas).
+export const RETA = { mes: 11, dia: 14, mult: 2 };
 export function edicao(env, agora) {
   agora = agora ?? (Number(env.DESAFIO_AGORA) || Date.now());
   const ano = +diaManaus(agora).slice(0, 4);
-  const inicio = Date.UTC(ano, 10, 1) + MANAUS, fim = Date.UTC(ano, 11, 21) + MANAUS;
-  return { ano, inicio, fim, aberto: agora >= inicio && agora < fim, antes: agora < inicio, depois: agora >= fim, agora };
+  const inicio = Date.UTC(ano, 10, 1) + MANAUS, fim = Date.UTC(ano, 11, 21) + MANAUS, dobroDesde = Date.UTC(ano, RETA.mes, RETA.dia) + MANAUS;
+  const aberto = agora >= inicio && agora < fim;
+  return { ano, inicio, fim, dobroDesde, dobro: aberto && agora >= dobroDesde, aberto, antes: agora < inicio, depois: agora >= fim, agora };
 }
+const multDe = (ano, dia) => dia >= `${ano}-12-${String(RETA.dia).padStart(2, '0')}` ? RETA.mult : 1;
 async function turmaDoAparelho(env, ap) {
   return await env.DB.prepare('SELECT t.codigo, t.nome, t.titulos, t.criador FROM turma_membros m JOIN turmas t ON t.codigo = m.turma WHERE m.aparelho = ?').bind(ap).first();
 }
@@ -49,38 +54,66 @@ export async function fecharDesafio(env, agora) {
 // -> { turmas: nomes das Turmas que pontuaram, ids: quem ganhou e trouxe o ponto }
 export async function pontuar(env, vencedores, perdedores) {
   const e = edicao(env);
-  const nada = { turmas: [], ids: [] };
+  const nada = { turmas: [], ids: [], pontos: 0 };
   if (!e.aberto) return nada;
   const ids = [...new Set([...vencedores, ...perdedores].filter(idOk))];
   if (!ids.length) return nada;
   const { results } = await env.DB.prepare(`SELECT m.aparelho, t.codigo, t.nome FROM turma_membros m JOIN turmas t ON t.codigo = m.turma WHERE m.aparelho IN (${ids.map(() => '?').join(',')})`).bind(...ids).all();
   const de = new Map((results || []).map(r => [r.aparelho, r]));
   const contra = new Set(perdedores.map(id => de.get(id)).filter(Boolean).map(r => r.codigo));
-  const feitas = new Map();
+  const feitas = new Map(), dia = diaManaus(e.agora), delta = multDe(e.ano, dia);
   for (const id of vencedores) {
     const t = de.get(id); if (!t || feitas.has(t.codigo)) continue;
     const outra = [...contra].find(c => c !== t.codigo); if (!outra) continue;
-    const dia = diaManaus(e.agora);
     const j = await env.DB.prepare('SELECT n FROM desafio_jogos WHERE edicao = ? AND dia = ? AND vencedora = ? AND perdedora = ?').bind(e.ano, dia, t.codigo, outra).first();
     if (j && j.n >= MAX_POR_PAR_DIA) continue;
     await env.DB.prepare('INSERT INTO desafio_jogos (edicao, dia, vencedora, perdedora, n) VALUES (?, ?, ?, ?, 1) ON CONFLICT(edicao, dia, vencedora, perdedora) DO UPDATE SET n = n + 1').bind(e.ano, dia, t.codigo, outra).run();
-    await env.DB.prepare('INSERT INTO desafio_pontos (edicao, turma, pontos, ultimo) VALUES (?, ?, 1, ?) ON CONFLICT(edicao, turma) DO UPDATE SET pontos = pontos + 1, ultimo = excluded.ultimo').bind(e.ano, t.codigo, Date.now()).run();
+    await env.DB.prepare('INSERT INTO desafio_pontos (edicao, turma, pontos, ultimo) VALUES (?, ?, ?, ?) ON CONFLICT(edicao, turma) DO UPDATE SET pontos = pontos + excluded.pontos, ultimo = excluded.ultimo').bind(e.ano, t.codigo, delta, Date.now()).run();
+    // 10/11: o craque da Turma — quem trouxe os pontos (os dois parceiros da mesma Turma levam)
+    for (const w of vencedores) {
+      const tw = de.get(w); if (!tw || tw.codigo !== t.codigo) continue;
+      try { await env.DB.prepare('INSERT INTO desafio_membros (edicao, turma, aparelho, pontos, ultimo) VALUES (?, ?, ?, ?, ?) ON CONFLICT(edicao, turma, aparelho) DO UPDATE SET pontos = pontos + excluded.pontos, ultimo = excluded.ultimo').bind(e.ano, t.codigo, w, delta, Date.now()).run(); } catch (er) {}
+    }
     feitas.set(t.codigo, t.nome);
   }
-  return { turmas: [...feitas.values()], ids: vencedores.filter(id => de.get(id) && feitas.has(de.get(id).codigo)) };
+  return { turmas: [...feitas.values()], ids: vencedores.filter(id => de.get(id) && feitas.has(de.get(id).codigo)), pontos: feitas.size ? delta : 0 };
 }
 async function ranking(env, ano, n) {
-  const { results } = await env.DB.prepare(`SELECT t.codigo, t.nome, t.titulos, p.pontos, (SELECT COUNT(*) FROM turma_membros m WHERE m.turma = t.codigo) AS membros
+  const { results } = await env.DB.prepare(`SELECT t.codigo, t.nome, t.titulos, p.pontos, p.ultimo, (SELECT COUNT(*) FROM turma_membros m WHERE m.turma = t.codigo) AS membros
     FROM desafio_pontos p JOIN turmas t ON t.codigo = p.turma WHERE p.edicao = ? AND p.pontos > 0 ORDER BY p.pontos DESC, p.ultimo ASC LIMIT ?`).bind(ano, n).all();
   return results || [];
+}
+// 10/11: os pontos de hoje de cada Turma (pelas vitórias do dia) e a posição de ontem, para a seta de subiu/caiu
+async function hojeEOntem(env, e, rk) {
+  const dia = diaManaus(e.agora), mult = multDe(e.ano, dia);
+  const { results } = await env.DB.prepare('SELECT vencedora, SUM(n) AS n FROM desafio_jogos WHERE edicao = ? AND dia = ? GROUP BY vencedora').bind(e.ano, dia).all();
+  const hoje = new Map((results || []).map(r => [r.vencedora, r.n * mult]));
+  const ontem = rk.map(r => ({ codigo: r.codigo, p: r.pontos - (hoje.get(r.codigo) || 0), u: r.ultimo || 0 })).filter(x => x.p > 0)
+    .sort((a, b) => b.p - a.p || a.u - b.u);
+  const posOntem = new Map(ontem.map((x, i) => [x.codigo, i + 1]));
+  return { hoje, posOntem };
+}
+// 10/11: o craque da Turma (quem mais trouxe pontos nesta edição; conta desde 10/11) e o confronto com a Turma rival
+async function craquesERival(env, e, t) {
+  const { results: cr } = await env.DB.prepare(`SELECT m.nome AS nome, d.pontos FROM desafio_membros d JOIN turma_membros m ON m.aparelho = d.aparelho AND m.turma = d.turma
+    WHERE d.edicao = ? AND d.turma = ? AND d.pontos > 0 ORDER BY d.pontos DESC, d.ultimo ASC LIMIT 3`).bind(e.ano, t.codigo).all();
+  const { results: jg } = await env.DB.prepare(`SELECT CASE WHEN vencedora = ? THEN perdedora ELSE vencedora END AS outra, SUM(CASE WHEN vencedora = ? THEN n ELSE 0 END) AS ganhou,
+    SUM(CASE WHEN perdedora = ? THEN n ELSE 0 END) AS perdeu FROM desafio_jogos WHERE edicao = ? AND (vencedora = ? OR perdedora = ?) GROUP BY outra ORDER BY (ganhou + perdeu) DESC LIMIT 1`)
+    .bind(t.codigo, t.codigo, t.codigo, e.ano, t.codigo, t.codigo).all();
+  let rival = null;
+  if (jg && jg[0]) { const o = await env.DB.prepare('SELECT nome FROM turmas WHERE codigo = ?').bind(jg[0].outra).first(); if (o) rival = { nome: nomeSeguro(o.nome), ganhou: jg[0].ganhou || 0, perdeu: jg[0].perdeu || 0 }; }
+  return { craques: (cr || []).map(r => ({ nome: nomeOfensivo(r.nome) ? 'Jogador' : r.nome, pontos: r.pontos })), rival };
 }
 async function resumo(env, ap) {
   try { await fecharDesafio(env); } catch (e) {}
   const e = edicao(env);
   const rk = await ranking(env, e.ano, 50);
+  let ho = { hoje: new Map(), posOntem: new Map() }; try { if (e.aberto) ho = await hojeEOntem(env, e, rk); } catch (er) {}
+  const linha = (r, i) => ({ pos: i + 1, nome: nomeSeguro(r.nome), pontos: r.pontos, titulos: r.titulos, membros: r.membros, hoje: ho.hoje.get(r.codigo) || 0,
+    mov: ho.posOntem.has(r.codigo) ? ho.posOntem.get(r.codigo) - (i + 1) : (ho.hoje.get(r.codigo) ? 'novo' : 0) });
   const campeas = (await env.DB.prepare('SELECT c.edicao, c.pontos, t.nome FROM desafio_campeas c LEFT JOIN turmas t ON t.codigo = c.turma ORDER BY c.edicao DESC LIMIT 10').all()).results || [];
-  const desafio = { ano: e.ano, inicio: e.inicio, fim: e.fim, aberto: e.aberto, antes: e.antes, depois: e.depois,
-    ranking: rk.slice(0, 10).map((r, i) => ({ pos: i + 1, nome: nomeSeguro(r.nome), pontos: r.pontos, titulos: r.titulos, membros: r.membros })),
+  const desafio = { ano: e.ano, inicio: e.inicio, fim: e.fim, aberto: e.aberto, antes: e.antes, depois: e.depois, dobroDesde: e.dobroDesde, dobro: e.dobro, mult: RETA.mult,
+    total: rk.length, ranking: rk.slice(0, 10).map(linha),
     campeas: campeas.filter(c => c.nome).map(c => ({ ano: c.edicao, nome: nomeSeguro(c.nome), pontos: c.pontos })) };
   let turma = null;
   if (idOk(ap)) {
@@ -90,6 +123,8 @@ async function resumo(env, ap) {
       const p = await env.DB.prepare('SELECT pontos FROM desafio_pontos WHERE edicao = ? AND turma = ?').bind(e.ano, t.codigo).first();
       const i = rk.findIndex(r => r.codigo === t.codigo);
       turma = { codigo: t.codigo, nome: nomeSeguro(t.nome), titulos: t.titulos, taca: t.titulos >= 3, membros: (results || []).map(r => r.nome), pontos: (p && p.pontos) || 0, pos: i >= 0 ? i + 1 : null };
+      if (i >= 0) { const l = linha(rk[i], i); turma.hoje = l.hoje; turma.mov = l.mov; turma.acima = i > 0 ? { nome: nomeSeguro(rk[i - 1].nome), falta: rk[i - 1].pontos - rk[i].pontos } : null; }
+      try { Object.assign(turma, await craquesERival(env, e, t)); } catch (er) {}
       if (nomeRetirado(t.nome)) {
         const r = await responsavel(env, t);
         turma.retirado = true; turma.renomeia = !!(r && r.aparelho === ap); turma.quemRenomeia = r ? r.nome : null; turma.quemCriou = !!(r && r.aparelho === t.criador);
@@ -166,6 +201,7 @@ export async function sair(req, env, origin, h) {
   if (!idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
   if (await bloqueado(env, b.aparelho)) return h.json({ erro: 'bloqueado' }, 403, origin);   // 3.25
   await env.DB.prepare('DELETE FROM turma_membros WHERE aparelho = ?').bind(b.aparelho).run();
+  try { await env.DB.prepare('DELETE FROM desafio_membros WHERE aparelho = ?').bind(b.aparelho).run(); } catch (e) {}   // 10/11: os pontos ficam na Turma; o nome sai do craque
   return h.json(await resumo(env, b.aparelho), 200, origin);
 }
 // Apelido na Turma acompanha o perfil (quando a pessoa joga online com outro apelido)
@@ -177,4 +213,40 @@ export async function apelido(env, ap, nome) {
 export async function nomeDaTurma(env, ap) {
   const t = idOk(ap) ? await turmaDoAparelho(env, ap) : null;
   return t ? nomeSeguro(t.nome) : null;
+}
+
+// 10/11 (pedido do dono): avisos do Desafio no celular, no máximo 1 por dia, às 18h (Manaus), só para quem está numa Turma:
+// na véspera da reta final e no último dia, para todas as Turmas; nos outros dias, só para a Turma que mudou de posição desde
+// o aviso anterior: entrou no pódio, ou outra Turma passou a sua (até o 10º lugar).
+const nomeT = n => /^turma\b/i.test(String(n || '').trim()) ? n : 'Turma ' + n;
+export async function avisosDesafio(env, agora) {
+  const e = edicao(env, agora); if (!e.aberto) return [];
+  const d = new Date(e.agora - MANAUS), dia = d.toISOString().slice(0, 10);
+  if (d.getUTCHours() !== 18) return [];
+  const dd = n => `${e.ano}-12-${String(n).padStart(2, '0')}`;
+  if (dia === dd(RETA.dia - 1)) return [{ chave: `ds:${e.ano}:vespera`, para: 'turmas',
+    msg: { titulo: 'Amanhã começa a reta final! 🔥', texto: `Do dia ${RETA.dia}/12 até 20/12, cada vitória contra outra Turma vale ${RETA.mult} pontos no Desafio das Confrarias. Dá para virar!`, url: '/?abrir=turma' } }];
+  if (dia === dd(20)) return [{ chave: `ds:${e.ano}:ultimo`, para: 'turmas',
+    msg: { titulo: 'Último dia do Desafio das Confrarias! ⚔️', texto: `Hoje até meia-noite, cada vitória contra outra Turma ainda vale ${RETA.mult} pontos. Bora fechar com chave de ouro!`, url: '/?abrir=turma' } }];
+  const rk = await ranking(env, e.ano, 50), out = [];
+  const { results } = await env.DB.prepare('SELECT turma, pos FROM desafio_pos WHERE edicao = ?').bind(e.ano).all();
+  const antes = new Map((results || []).map(r => [r.turma, r.pos]));
+  if (antes.size) {
+    for (let i = 0; i < rk.length; i++) {
+      const r = rk[i], pos = i + 1, ant = antes.get(r.codigo);
+      let msg = null;
+      if (pos <= 3 && (!ant || ant > 3)) msg = { titulo: `${nomeT(nomeSeguro(r.nome))} no pódio! 🏆`, texto: `Vocês estão em ${pos}º lugar no Desafio das Confrarias, com ${r.pontos} pontos. Segura essa posição!`, url: '/?abrir=turma' };
+      else if (ant && pos > ant && ant <= 10 && i > 0) msg = { titulo: `A ${nomeT(nomeSeguro(rk[i - 1].nome))} passou vocês! ⚔️`, texto: `A ${nomeT(nomeSeguro(r.nome))} caiu para ${pos}º no Desafio das Confrarias. Faltam ${rk[i - 1].pontos - r.pontos + 1} ${rk[i - 1].pontos - r.pontos + 1 === 1 ? 'ponto' : 'pontos'} para recuperar. Bora pra mesa?`, url: '/?abrir=turma' };
+      if (!msg) continue;
+      const { results: ms } = await env.DB.prepare('SELECT aparelho FROM turma_membros WHERE turma = ?').bind(r.codigo).all();
+      const aps = (ms || []).map(x => x.aparelho);
+      if (aps.length) out.push({ chave: `ds:${dia}:${r.codigo}`, para: { aparelhos: aps }, msg });
+    }
+  }
+  // guarda as posições de agora para comparar amanhã
+  try {
+    const st = env.DB.prepare('INSERT INTO desafio_pos (edicao, turma, pos, em) VALUES (?, ?, ?, ?) ON CONFLICT(edicao, turma) DO UPDATE SET pos = excluded.pos, em = excluded.em');
+    if (rk.length) await env.DB.batch(rk.map((r, i) => st.bind(e.ano, r.codigo, i + 1, e.agora)));
+  } catch (er) {}
+  return out;
 }

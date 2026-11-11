@@ -1389,7 +1389,7 @@ export class Mesa {
     if (!ganhou.length || !perdeu.length) return;
     let res = null;
     try { res = await pontuar(this.env, ganhou.map(p => m.cad[p].id), perdeu.map(p => m.cad[p].id)); } catch (e) {}
-    if (res && res.turmas.length) m.desafio = { seq: m.seq + 1, turmas: res.turmas, cadeiras: ganhou.filter(p => res.ids.includes(m.cad[p].id)) };
+    if (res && res.turmas.length) m.desafio = { seq: m.seq + 1, turmas: res.turmas, pontos: res.pontos || 1, cadeiras: ganhou.filter(p => res.ids.includes(m.cad[p].id)) };   // 10/11: na reta final, 2 pontos
   }
 
   // ---------- Conexões e envio ----------
