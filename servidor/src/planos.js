@@ -18,7 +18,7 @@ export function bonusConfig(env) { const v = Number(env && env.BONUS_ATE); if (N
 export const LIMITE = { mesas: 1, get partidas() { return bonusValendo() ? 2 : 1; }, partidasSocio: 3, get publicas() { return bonusValendo() ? 5 : 3; }, desafios: 2 };
 // as 2 mesas a mais de cada dia (a ordem é a mesma no app: index.html, MESAS_RODIZIO)
 export const MESAS_RODIZIO = ['teatro', 'tucano', 'encontro', 'boto', 'peixeboi', 'mercado', 'araraazul', 'pontanegra', 'arena', 'vitoria', 'arara', 'centro', 'floresta', 'ponte',
-  'calcadao', 'acairoxo', 'noitesmanaus', 'relogio', 'skylinenoite', 'acai', 'palacio', 'beiradao', 'rionegro', 'tucuma', 'chamine', 'barco', 'roxoacai', 'pordosol', 'feltro'];
+  'calcadao', 'acairoxo', 'amazonas', 'relogio', 'skylinenoite', 'acai', 'palacio', 'beiradao', 'rionegro', 'tucuma', 'chamine', 'barco', 'roxoacai', 'pordosol', 'feltro'];
 export function mesasDoDia(agora) {
   const t = agora || Date.now(); if (!bonusValendo(t)) return [];
   const k = Math.floor((t - BONUS_INI) / DIA), n = MESAS_RODIZIO.length;
