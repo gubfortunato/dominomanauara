@@ -125,7 +125,7 @@ a.card{text-decoration:none}
 .entry-head{display:grid;justify-items:center;gap:6px}
 .entry-title{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(42px,12.5vw,60px);line-height:.92;letter-spacing:-.01em;text-wrap:balance}
 .entry-title span{display:block;color:var(--nos)}
-.rt-wrap{position:relative;width:min(70vw,40vh,330px);aspect-ratio:1;max-width:100%;margin:58px auto 54px;flex:none}
+.rt-wrap{position:relative;width:min(70vw,40vh,330px);aspect-ratio:1;max-width:100%;margin:96px auto 54px;flex:none}   /* 10/11: mais para baixo (o balão de quem está em cima não cobre o nome) */
 .rt{position:absolute;inset:7%;border-radius:22px;   /* 10/11 (pedido do dono): mesa quadrada */
   background:
     repeating-linear-gradient(90deg, rgba(0,0,0,.10) 0 1.5px, transparent 1.5px 25%),
@@ -399,8 +399,9 @@ body{touch-action:manipulation}
 .res-patro.has-banner{display:block;text-align:center}
 .res-patro.has-banner .sp-k{display:block;margin-bottom:6px}
 .res-patro.has-banner .sp-slides{margin:0 auto}
-.brand-linha{display:flex;align-items:center;gap:12px;min-width:0}
-.brand-pedra{flex:none;display:block;width:34px;height:68px;transform:rotate(17deg);margin-left:2px;filter:drop-shadow(1px 3px 4px rgba(0,0,0,.28))}   /* 10/11: carroça de sena ao lado do nome */
+.brand-linha{display:flex;align-items:center;gap:6px;min-width:0}
+.brand-linha .brand{flex:0 1 auto;min-width:0}.brand-linha .brand em{display:block}   /* a caixa do nome fica do tamanho do nome: a pedra encosta nele */
+.brand-pedra{flex:none;display:block;width:44px;height:88px;transform:rotate(17deg);margin:-4px 0 0 2px;filter:drop-shadow(1px 3px 4px rgba(0,0,0,.28))}   /* 10/11: carroça de sena ao lado do nome */
 .brand-pedra svg{display:block;width:100%;height:100%}
 .brandlink{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;text-align:left;cursor:pointer;letter-spacing:inherit;line-height:inherit;-webkit-tap-highlight-color:transparent}
 .brandlink:active{opacity:.75}
@@ -624,7 +625,7 @@ body{touch-action:manipulation}
 .caixa-x:active{background:var(--line)}
 /* 3.41: em tela bem estreita (320 px), o título do início diminui um pouco para caber o sino, o claro/escuro e a foto */
 
-@media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:13px} .brand{font-size:32px} .rt-wrap{margin:50px auto 48px} }
+@media (max-height:640px){ .tnum{font-size:26px} .seat{padding:4px 4px} .av{width:28px;height:28px;font-size:13px} .brand{font-size:32px} .rt-wrap{margin:84px auto 44px} }
 /* Celular deitado: placar e sua vez na coluna da esquerda, mesa grande no meio, mão embaixo */
 @media (orientation: landscape) and (max-height: 560px){
   :root{--tw:clamp(28px,11vh,44px)}
@@ -964,9 +965,6 @@ body{touch-action:manipulation}
 /* falas da turma em volta da mesa */
 .friend .fala{position:absolute;bottom:calc(100% - 4px);left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--tile);color:var(--pip);font-size:15px;font-weight:800;padding:6px 11px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,.35);pointer-events:none;animation:fala 2.6s ease both;z-index:3}
 .friend .fala::after{content:'';position:absolute;left:50%;top:100%;margin-left:-6px;border:6px solid transparent;border-top-color:var(--tile)}
-.friend .fala.lado{bottom:auto;top:12%;left:calc(100% + 10px);animation-name:falaLado}
-.friend .fala.lado::after{left:auto;right:100%;top:50%;margin:-6px 0 0;border-top-color:transparent;border-right-color:var(--tile)}
-@keyframes falaLado{0%{opacity:0;transform:translateX(-6px) scale(.85)}12%,82%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-6px)}}
 @keyframes fala{0%{opacity:0;transform:translateX(-50%) translateY(6px) scale(.8)}12%,82%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(-6px)}}
 @media (prefers-reduced-motion:reduce){.entra *,.friend .fp,.friend .fi,#enterBtn::after{animation:none!important}}
 /* iPhone com o app instalado: no iOS 26 a janela do app vem uma barra de status mais curta embaixo e sobra uma faixa vazia.
@@ -3902,7 +3900,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.53.1', data: '10/11/2026', itens: ['Ao vivo no Desafio: na Calçada, os confrontos entre Turmas acontecendo agora, com o placar e o botão Assistir, para qualquer um, sem o número da mesa (só assiste, não senta). O convite do desafio avisa que a partida passa ao vivo.', 'Na mesa online, o brasão da Turma aparece junto do nome de quem joga; no confronto entre Turmas, o placar mostra o brasão e o nome de cada Turma embaixo da dupla.', 'Quem acabou de chegar joga primeiro: a oferta de sócio só aparece na primeira vez que a pessoa usa o limite grátis (na hora, com o motivo em cima).', 'Foto no perfil é só para sócio (sem plano, aparece trancada); o sócio tem os botões Trocar a foto e Excluir a foto.', 'Cartão do Desafio: o título do tamanho dos outros cartões e uma taça nova.', 'Início: uma carroça de sena inclinada ao lado do nome Dominó Manauara.', 'Tela de entrada: mesa quadrada e o balão de quem está em cima sai para o lado (não cobre mais o nome do jogo).', 'Som de embaralhar as pedras mais caprichado (o arrasto na mesa e as pedras batendo), e dá para ouvir em Som e vibração.', 'Som e vibração: os botões de ouvir não travam mais (um toque com o dedo mexendo um pouco virava arrastar a folha).', 'Mesa Amazonas: as faixas agora são pinceladas (com as cerdas e as falhas do pincel), paradas.'] },
+  { v: '3.53.1', data: '10/11/2026', itens: ['Ao vivo no Desafio: na Calçada, os confrontos entre Turmas acontecendo agora, com o placar e o botão Assistir, para qualquer um, sem o número da mesa (só assiste, não senta). O convite do desafio avisa que a partida passa ao vivo.', 'Na mesa online, o brasão da Turma aparece junto do nome de quem joga; no confronto entre Turmas, o placar mostra o brasão e o nome de cada Turma embaixo da dupla.', 'Quem acabou de chegar joga primeiro: a oferta de sócio só aparece na primeira vez que a pessoa usa o limite grátis (na hora, com o motivo em cima).', 'Foto no perfil é só para sócio (sem plano, aparece trancada); o sócio tem os botões Trocar a foto e Excluir a foto.', 'Cartão do Desafio: o título do tamanho dos outros cartões e uma taça nova.', 'Início: uma carroça de sena inclinada, grande, colada no nome Dominó Manauara.', 'Tela de entrada: mesa quadrada, um pouco mais para baixo (o balão de quem está em cima não cobre mais o nome do jogo).', 'Som de embaralhar as pedras mais caprichado (o arrasto na mesa e as pedras batendo), e dá para ouvir em Som e vibração.', 'Som e vibração: os botões de ouvir não travam mais (um toque com o dedo mexendo um pouco virava arrastar a folha).', 'Mesa Amazonas: as faixas agora são pinceladas (com as cerdas e as falhas do pincel), paradas.'] },
   { v: '3.53', data: '10/11/2026', itens: ['Sair no meio da partida com outras pessoas na mesa conta como derrota no ranking e na Copa. Na mesa rápida, quem sai no meio de 3 partidas no dia fica 15 minutos sem a mesa rápida. Queda de internet não conta se a pessoa voltar antes de a partida acabar.', 'Mais 10 emojis para reagir e no papo de mesa: 🐓 🤣 😎 🙏 💪 🎉 😭 😡 🤔 👀.', 'Foto do sócio no lugar do avatar: para o sócio que coloca foto no perfil, a opção já vem ligada; aprovada, a foto aparece na mesa, na fila, no papo, no ranking, na Copa e nas mesas ao vivo. Desligando no perfil, volta o avatar. Quem já tinha foto é perguntado uma vez.', 'Carteira de sócio: os botões "Trocar a foto" e "Usar o avatar" ficaram do mesmo tamanho.', 'Desafio das Confrarias mais emocionante: brasão de cada Turma, pontos de hoje, seta de quem subiu ou caiu, barra de pontos, a sua Turma sempre à vista e quanto falta para passar a de cima. Reta final em dobro: de 14 a 20/12, cada vitória contra outra Turma vale 2 pontos. Na tela da Turma: os craques (quem mais trouxe pontos) e o placar contra a Turma rival. Avisos no celular (no máximo 1 por dia, às 18h) quando outra Turma passar a sua, quando a sua chegar ao pódio, na véspera da reta final e no último dia.', 'Convite, uma vez, para quem já tinha o app: chamar os amigos para jogar, com o botão do WhatsApp.', 'Pedra de dominó mais parecida com a de verdade: espessura, quina polida, risco do meio gravado, pintas como furos e pino de latão.', 'Boas-vindas: a mesa vista de cima, com pedras de verdade no meio, as pedras de cada um na frente dele e os quatro em volta, sem nada por cima da mesa.', 'Sexta da Calçada: o emoji de dado saiu (dominó não é dado).'] },
   { v: '3.52', data: '10/11/2026', itens: ['Sexta da Calçada: toda sexta, das 20h às 23h, moral em dobro em todas as partidas (o nível sobe duas vezes mais rápido), com aviso no celular às 19h e às 20h.', 'A experiência agora se chama moral: cada mão, galo, batida e vitória dá moral, e é a moral que sobe o seu nível na calçada.', 'Copa dos Sócios: a cada 3 meses, no último fim de semana de novembro, fevereiro, maio e agosto (a 1ª é de 27 a 29/11). Só sócios pontuam: o campeão leva o troféu na carteira e a Mesa do Campeão; 2º e 3º, medalha; quem jogar, a marca de participação.', 'Tempo de casa: a carteira de sócio mostra há quanto tempo você é sócio, com marcas aos 3 meses, 6 meses e 1 ano.'] },
   { v: '3.51.14', data: '10/11/2026', itens: ['Tela inicial: a saudação "Fala, ..." ficou maior.'] },
@@ -4755,7 +4753,7 @@ const ENTRY_SEATS = [{ ang: -90, bot: 'Ryan' }, { ang: 0, bot: 'Raimundo' }, { a
 function renderEntry() {
   const html = ENTRY_SEATS.map((s, i) => {
     const a = s.ang * Math.PI / 180, style = `left:${f2(50 + 50 * Math.cos(a))}%;top:${f2(50 + 50 * Math.sin(a))}%;--i:${i}`;
-    if (!s.you) return `<div class="friend bot${s.ang === -90 ? ' topo' : ''}" style="${style}">${faceImg(botFaceURI(s.bot), 'fp')}<span class="fn">${esc(s.bot)}</span></div>`;
+    if (!s.you) return `<div class="friend bot" style="${style}">${faceImg(botFaceURI(s.bot), 'fp')}<span class="fn">${esc(s.bot)}</span></div>`;
     const face = profile ? `<span class="fpw">${faceImg(myFaceURI(), 'fp')}<span class="edit" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span></span>` : '<span class="fi">?</span>';
     return `<button type="button" class="friend${profile ? ' you' : ''}" id="meSeat" style="${style}" aria-label="${profile ? 'Trocar nome ou foto' : 'Criar seu perfil'}">${face}<span class="fn">${profile ? esc(me) : 'Você'}</span></button>`;
   }).join('');
@@ -6109,11 +6107,9 @@ function encaixarBalao(f, centro, m) {
   }
 }
 function mostrarFala(b, t) {
-  // 10/11 (o dono: "o balão tá em cima do nome do jogo"): quem senta em cima fala para o lado, não para cima
-  const topo = b.classList.contains('topo');
-  b.insertAdjacentHTML('beforeend', `<span class="fala${topo ? ' lado' : ''}" aria-hidden="true">${esc(t)}</span>`);
+  b.insertAdjacentHTML('beforeend', `<span class="fala" aria-hidden="true">${esc(t)}</span>`);
   const f = b.querySelector('.fala');
-  if (!topo) encaixarBalao(f, b);
+  encaixarBalao(f, b);
   return f;
 }
 // Na mesa: o balão de cada cadeira (lances e reações) também chega para dentro nos lados
