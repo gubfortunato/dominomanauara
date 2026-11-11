@@ -26,17 +26,30 @@ jobs:
           sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
           AGORA=$(($(date +%s) * 1000))
           p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
-          NOME="COALESCE((SELECT nome FROM presenca x WHERE x.aparelho = T.aparelho AND x.nome IS NOT NULL), (SELECT nome FROM jogadores_vistos x WHERE x.aparelho = T.aparelho), (SELECT nome FROM calcada x WHERE x.aparelho = T.aparelho ORDER BY atualizado DESC LIMIT 1))"
-          # ranking de novembro (semana e mês) com a situação do plano de cada aparelho
-          p calcada_nov "SELECT T.periodo, T.aparelho, T.nome, T.nv, T.pontos, T.ganhas, T.jogadas, (SELECT ate FROM planos x WHERE x.aparelho = T.aparelho) AS plano_ate, (SELECT desde FROM planos x WHERE x.aparelho = T.aparelho) AS plano_desde, (SELECT 1 FROM cortesias x WHERE x.aparelho = T.aparelho) AS cortesia FROM calcada T WHERE T.periodo LIKE 'S2026-11%' OR T.periodo = 'M2026-11' ORDER BY T.periodo, T.pontos DESC"
-          # todos os planos, com o apelido de cada aparelho
-          p planos "SELECT T.aparelho, T.ate, T.desde, $NOME AS nome FROM planos T"
-          p pedidos "SELECT aparelho, produto, valor, status, criado_em, pago_em FROM pedidos ORDER BY criado_em DESC LIMIT 200"
-          # mesmo apelido em outro aparelho que tem plano (trocou de celular ou de navegador)
-          p mesmo_nome_vistos "SELECT DISTINCT c.aparelho AS ap_ranking, v.aparelho AS ap_outro, p.ate FROM calcada c JOIN jogadores_vistos v ON lower(trim(v.nome)) = lower(trim(c.nome)) AND v.aparelho <> c.aparelho JOIN planos p ON p.aparelho = v.aparelho WHERE c.periodo = 'M2026-11'"
-          p mesmo_nome_presenca "SELECT DISTINCT c.aparelho AS ap_ranking, v.aparelho AS ap_outro, p.ate FROM calcada c JOIN presenca v ON lower(trim(v.nome)) = lower(trim(c.nome)) AND v.aparelho <> c.aparelho JOIN planos p ON p.aparelho = v.aparelho WHERE c.periodo = 'M2026-11'"
-          p mesmo_nome_calcada "SELECT DISTINCT c.aparelho AS ap_ranking, v.aparelho AS ap_outro, p.ate FROM calcada c JOIN calcada v ON lower(trim(v.nome)) = lower(trim(c.nome)) AND v.aparelho <> c.aparelho JOIN planos p ON p.aparelho = v.aparelho WHERE c.periodo = 'M2026-11'"
-          p burlas "SELECT * FROM burlas ORDER BY em DESC LIMIT 100"
+          # visão geral de cada aparelho (sem filtrar por apelido aqui: o filtro é feito depois, no resultado criptografado)
+          p vistos "SELECT * FROM jogadores_vistos"
+          p presenca "SELECT * FROM presenca"
+          p jogadores "SELECT * FROM jogadores"
+          p calcada "SELECT * FROM calcada WHERE periodo LIKE 'S2026-1%' OR periodo LIKE 'M2026-1%'"
+          p planos "SELECT * FROM planos"
+          p pedidos "SELECT aparelho, produto, valor, status, criado_em, pago_em FROM pedidos"
+          p cortesias "SELECT * FROM cortesias"
+          p presentes "SELECT * FROM presentes"
+          p burlas "SELECT * FROM burlas"
+          p limites "SELECT * FROM limites"
+          p limites_rede "SELECT * FROM limites_rede"
+          p partidas_dia "SELECT * FROM partidas_dia WHERE dia >= '2026-11-01'"
+          p offline_uso "SELECT * FROM offline_uso"
+          p desafio_uso "SELECT * FROM desafio_uso"
+          p denuncias "SELECT id, em, mesa, autor, autor_nome, denunciante, texto FROM papo_denuncias"
+          p bloqueios "SELECT * FROM bloqueios"
+          p turma_membros "SELECT * FROM turma_membros"
+          p turmas "SELECT * FROM turmas"
+          p apelidos_trocar "SELECT * FROM apelidos_trocar"
+          p ranking_fora "SELECT * FROM ranking_fora"
+          p mesas_criadas "SELECT * FROM mesas_criadas"
+          p avisos_id "SELECT * FROM avisos_id"
+          p progresso "SELECT * FROM progresso"
           rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
