@@ -167,6 +167,7 @@ async function mesaRapida(req, env, origin) {
   try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
   if (await bloqueado(env, b && b.id)) return json({ erro: 'bloqueado' }, 403, origin);
   if (await apelidoBarrado(env, b && b.id, b && b.nome)) return json({ erro: 'apelido' }, 403, origin);   // 3.41
+  { const ate = await rk.travaAbandono(env, b && b.id); if (ate) return json({ erro: 'abandonos', ate, porDia: rk.ABANDONO.porDia }, 403, origin); }   // 10/11: quem abandona partidas
   // 3.41: só pelo app aberto (robôs de fora não passam)
   if (exigeApp(env) && (!origemOk(origin) || !(await appAberto(env, b && b.id)))) { await anotarRitmo(env, b && b.id, { semApp: 1 }); return json({ erro: 'app' }, 403, origin); }
   const marca = await marcaDoDia(req, env);
@@ -347,6 +348,7 @@ async function lembretesDoDia(env) {
   // faxina: registros do limite de mesas com mais de 2 dias
   try { await env.DB.prepare('DELETE FROM mesas_criadas WHERE criado_em < ?').bind(Date.now() - 2 * 86400000).run(); } catch (e) {}
   try { await env.DB.prepare('DELETE FROM avisos_ev WHERE em < ?').bind(Date.now() - 30 * 86400000).run(); } catch (e) {}   // 10/11
+  try { await rk.limparAbandonos(env); } catch (e) {}
   await limparCodigos(env);   // 10/11: números de mesa errados (mais de 2 horas)
   await limparVozesDenunciadas(env);   // 10/11: áudios denunciados (mais de 30 dias)
   if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return { ok: 0, falhas: 0, motivo: 'sem-chaves' };
@@ -436,6 +438,7 @@ const EV_POR_RODADA = 400;   // plano pago do Cloudflare: bem abaixo do limite d
 async function avisosDeEvento(env, agora) {
   agora = agora || Date.now();
   const lista = await avisosAgendados(env, agora);
+  try { lista.push(...await turmas.avisosDesafio(env, agora)); } catch (e) {}   // 10/11: avisos do Desafio das Confrarias
   const temChave = !!(env.VAPID_PRIVATE_JWK && env.VAPID_PUBLIC);
   let ok = 0, falhas = 0, sobra = EV_POR_RODADA;
   const naoFoi = 'NOT EXISTS (SELECT 1 FROM avisos_ev e WHERE e.aviso = a.id AND e.chave = ?)';
@@ -454,11 +457,15 @@ async function avisosDeEvento(env, agora) {
         sql = `SELECT DISTINCT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a JOIN avisos_id i ON i.endpoint = a.endpoint JOIN planos p ON p.aparelho = i.aparelho
           WHERE p.ate > ? AND ${naoFoi} ORDER BY a.id LIMIT ?`;
         binds = [agora, ev.chave, sobra];
+      } else if (ev.para === 'turmas') {   // 10/11: quem está numa Turma (Desafio das Confrarias)
+        sql = `SELECT DISTINCT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a JOIN avisos_id i ON i.endpoint = a.endpoint JOIN turma_membros m ON m.aparelho = i.aparelho
+          WHERE ${naoFoi} ORDER BY a.id LIMIT ?`;
+        binds = [ev.chave, sobra];
       } else {
         const aps = (ev.para && ev.para.aparelhos) || []; if (!aps.length) continue;
         sql = `SELECT DISTINCT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a JOIN avisos_id i ON i.endpoint = a.endpoint
-          WHERE i.aparelho IN (${aps.map(() => '?').join(',')}) AND ${naoFoi} LIMIT 5`;
-        binds = [...aps, ev.chave];
+          WHERE i.aparelho IN (${aps.map(() => '?').join(',')}) AND ${naoFoi} LIMIT ?`;
+        binds = [...aps, ev.chave, Math.min(sobra, aps.length * 3 + 2)];   // 10/11: uma Turma tem até 40 pessoas
       }
       const { results } = await env.DB.prepare(sql).bind(...binds).all();
       const para = results || [];

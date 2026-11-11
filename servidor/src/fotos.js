@@ -118,6 +118,29 @@ export async function denunciar(req, env, origin, h, ctx) {
   }
   return h.json({ ok: true }, 200, origin);
 }
+// 10/11 (pedido do dono): a foto aprovada aparece no lugar do avatar em todo lugar (ranking, Copa, Calçada ao vivo).
+// -> Map aparelho -> código público da foto, só de quem pode mostrar (mesma regra de fotoPublica), em poucas consultas.
+export async function fotosDe(env, aparelhos) {
+  const out = new Map(), ids = [...new Set((aparelhos || []).filter(idOk))];
+  const pega = async (sql, lista, extra) => {
+    const r = [];
+    for (let i = 0; i < lista.length; i += 90) {
+      const parte = lista.slice(i, i + 90);
+      try { const { results } = await env.DB.prepare(sql.replace('#', parte.map(() => '?').join(','))).bind(...parte, ...(extra || [])).all(); r.push(...(results || [])); } catch (e) {}
+    }
+    return r;
+  };
+  const fotos = await pega("SELECT aparelho, pub, criado_em FROM fotos WHERE status = 'aprovada' AND aparelho IN (#)", ids);
+  if (!fotos.length) return out;
+  const novas = fotos.filter(f => f.criado_em >= corte(env)).map(f => f.aparelho), pode = new Set();
+  if (novas.length) {
+    (await pega('SELECT aparelho FROM planos WHERE aparelho IN (#) AND ate > ?', novas, [Date.now()])).forEach(r => pode.add(r.aparelho));
+    const resto = novas.filter(a => !pode.has(a));
+    if (resto.length) (await pega("SELECT DISTINCT aparelho FROM pedidos WHERE aparelho IN (#) AND status = 'pago' AND produto LIKE 'doacao%' AND pago_em < ?", resto, [corteDoacao(env)])).forEach(r => pode.add(r.aparelho));
+  }
+  fotos.forEach(f => { if (f.criado_em < corte(env) || pode.has(f.aparelho)) out.set(f.aparelho, f.pub); });
+  return out;
+}
 // Para a mesa: a foto que os outros podem ver (aprovada)
 export async function fotoPublica(env, aparelho) {
   const f = await env.DB.prepare("SELECT pub, criado_em FROM fotos WHERE aparelho = ? AND status = 'aprovada'").bind(aparelho).first();

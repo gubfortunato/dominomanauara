@@ -71,6 +71,9 @@ CREATE INDEX IF NOT EXISTS turma_membros_turma ON turma_membros (turma, entrou);
 CREATE TABLE IF NOT EXISTS desafio_pontos (edicao INTEGER NOT NULL, turma TEXT NOT NULL, pontos INTEGER NOT NULL DEFAULT 0, ultimo INTEGER, PRIMARY KEY (edicao, turma));
 CREATE TABLE IF NOT EXISTS desafio_jogos (edicao INTEGER NOT NULL, dia TEXT NOT NULL, vencedora TEXT NOT NULL, perdedora TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (edicao, dia, vencedora, perdedora));
 CREATE TABLE IF NOT EXISTS desafio_campeas (edicao INTEGER PRIMARY KEY, turma TEXT, pontos INTEGER, fechada_em INTEGER);
+-- 10/11: o craque de cada Turma (quem trouxe os pontos na edição) e a posição de cada Turma no último aviso das 18h
+CREATE TABLE IF NOT EXISTS desafio_membros (edicao INTEGER NOT NULL, turma TEXT NOT NULL, aparelho TEXT NOT NULL, pontos INTEGER NOT NULL DEFAULT 0, ultimo INTEGER, PRIMARY KEY (edicao, turma, aparelho));
+CREATE TABLE IF NOT EXISTS desafio_pos (edicao INTEGER NOT NULL, turma TEXT NOT NULL, pos INTEGER NOT NULL, em INTEGER NOT NULL, PRIMARY KEY (edicao, turma));
 -- 04/11 (dono): sem plano, as partidas de desafio entre Turmas não gastam a partida grátis do dia (até 2 por dia, contadas aqui)
 CREATE TABLE IF NOT EXISTS desafio_uso (dia TEXT NOT NULL, aparelho TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (dia, aparelho));
 -- 04/11 (dono): trava do jogo offline: quantas partidas offline cada aparelho jogou no dia (o app confere a cada 48 h, no máximo)
@@ -281,6 +284,14 @@ CREATE TABLE IF NOT EXISTS socio_marcas (
   marca INTEGER NOT NULL,
   em INTEGER NOT NULL,
   PRIMARY KEY (codigo, marca)
+);
+-- 10/11: partidas abandonadas no dia por aparelho (a 3ª deixa 15 min sem mesa rápida), guardadas por 2 dias
+CREATE TABLE IF NOT EXISTS abandonos (
+  dia TEXT NOT NULL,
+  aparelho TEXT NOT NULL,
+  n INTEGER NOT NULL DEFAULT 0,
+  ultimo INTEGER NOT NULL,
+  PRIMARY KEY (dia, aparelho)
 );
 -- avisos automáticos de evento (Sexta da Calçada, Copa, tempo de casa): cada um sai uma vez por inscrição
 CREATE TABLE IF NOT EXISTS avisos_ev (

@@ -16,6 +16,7 @@
 // Apelido genérico ("Anonimous", "Jogador"...) não aparece no ranking: a pessoa vê o aviso para escolher um apelido.
 import { nomeGenerico, nomeOfensivo } from './motor.js';
 import { limitesValem, temPlano } from './planos.js';   // 28/10: ranking completo é dos sócios
+import { fotosDe } from './fotos.js';   // 10/11: foto do sócio no lugar do avatar
 import { somarCopa } from './copa.js';   // 10/11: Copa dos Sócios (só sócios, de 3 em 3 meses)
 
 const DIA = 86400000, MANAUS = 4 * 3600000;
@@ -42,6 +43,31 @@ export function periodos(agora) {
 // quando começa a semana (S2026-10-26) ou o mês (M2026-11), no horário de Manaus
 function inicio(per) { const s = per.slice(1); return Date.parse((per[0] === 'S' ? s : s + '-01') + 'T00:00:00-04:00'); }
 export function usaPontos(env, per) { return inicio(per) >= pontosDesde(env); }
+
+// 10/11 (pedido do dono): trava da mesa rápida para quem abandona partidas. A 3ª partida abandonada no dia (com outras
+// pessoas na mesa) deixa a pessoa 15 minutos sem entrar na mesa rápida; cada abandono a mais, outros 15 minutos. Guarda
+// só o código do aparelho e a contagem do dia, por 2 dias. Mesa com os amigos e jogo offline continuam liberados.
+export const ABANDONO = { porDia: 3, trava: 15 * 60000 };
+export async function anotarAbandono(env, id) {
+  if (!idOk(id)) return;
+  const agora = Date.now(), dia = diaManaus(agora);
+  await env.DB.prepare('INSERT INTO abandonos (dia, aparelho, n, ultimo) VALUES (?, ?, 1, ?) ON CONFLICT (dia, aparelho) DO UPDATE SET n = n + 1, ultimo = excluded.ultimo')
+    .bind(dia, id, agora).run();
+}
+// -> até quando a mesa rápida está travada para esse aparelho (0 = liberada). Falha do banco não trava ninguém.
+export async function travaAbandono(env, id) {
+  if (!idOk(id)) return 0;
+  try {
+    const agora = Date.now();
+    const r = await env.DB.prepare('SELECT n, ultimo FROM abandonos WHERE dia = ? AND aparelho = ?').bind(diaManaus(agora), id).first();
+    if (!r || r.n < ABANDONO.porDia) return 0;
+    const ate = r.ultimo + ABANDONO.trava;
+    return ate > agora ? ate : 0;
+  } catch (e) { return 0; }
+}
+export async function limparAbandonos(env) {
+  try { await env.DB.prepare('DELETE FROM abandonos WHERE dia < ?').bind(diaManaus(Date.now() - 2 * DIA)).run(); } catch (e) {}
+}
 
 // Fim de partida online: quem jogou a partida inteira
 // (quem: [{ id, nome, av, nv, menor, ganhou, gente, oponente }]; gente = tinha pessoa do outro lado; oponente = o código dela)
@@ -95,8 +121,9 @@ export async function ordenados(env, per) {
 export async function lista(env, per, fim, eu, reiAp) {
   const pts = usaPontos(env, per), todos = await ordenados(env, per);
   const soc = await socios(env, todos.slice(0, TOP).map(x => x.aparelho));   // 03/11: a ★ de sócio aparece no ranking
+  let fts = new Map(); try { fts = await fotosDe(env, todos.slice(0, TOP).map(x => x.aparelho)); } catch (e) {}   // 10/11: a foto do sócio no lugar do avatar
   const top = todos.slice(0, TOP).map((x, i) => Object.assign({ pos: i + 1, nome: x.nome, av: x.av, nv: x.nv, ganhas: x.ganhas, jogadas: x.jogadas },
-    pts ? { pontos: x.pontos } : {}, { eu: !!eu && x.aparelho === eu, rei: !!reiAp && x.aparelho === reiAp, socio: soc.has(x.aparelho) }));
+    pts ? { pontos: x.pontos } : {}, { eu: !!eu && x.aparelho === eu, rei: !!reiAp && x.aparelho === reiAp, socio: soc.has(x.aparelho), foto: fts.get(x.aparelho) || null }));
   let meu = null;
   if (eu && !top.some(x => x.eu)) {
     const me = await env.DB.prepare(`SELECT nome, ${pts ? 'pontos, ' : ''}ganhas, jogadas, atualizado FROM ${pts ? 'calcada' : 'ranking'} WHERE periodo = ? AND aparelho = ?`)
@@ -158,11 +185,12 @@ export async function ranking(req, env, origin, h, url) {
   let rei = null; try { rei = await reiDaSemana(env); } catch (e) {}
   const eu = fora ? null : ap, reiAp = rei && rei.aparelho;
   const completo = !limitesValem(env) || (!!ap && await temPlano(env, ap));
+  let reiFoto = null; if (rei) { try { reiFoto = (await fotosDe(env, [rei.aparelho])).get(rei.aparelho) || null; } catch (e) {} }
   const semana = await lista(env, p.sem, p.fimSem, eu, reiAp);
   const mes = completo ? await lista(env, p.mes, p.fimMes, eu, reiAp) : { top: [], eu: null, fim: p.fimMes, pontos: usaPontos(env, p.mes), trancado: true };
   if (!completo) { semana.top = semana.top.slice(0, TOP_GRATIS); semana.eu = null; semana.trancado = true; }
   return h.json({ semana, mes, fora, completo, topGratis: TOP_GRATIS,
-    rei: rei ? { nome: rei.nome, av: rei.av, nv: rei.nv, eu: !!ap && ap === reiAp } : null, quaseRei: !!ap && REI.quase === ap,
+    rei: rei ? { nome: rei.nome, av: rei.av, nv: rei.nv, foto: reiFoto, eu: !!ap && ap === reiAp } : null, quaseRei: !!ap && REI.quase === ap,
     regras: { pontosDesde: pontosDesde(env), ...PTS, roboPorDia: ROBO_POR_DIA, parPorDia: PAR_POR_DIA } }, 200, origin);
 }
 // POST /ranking/fora {aparelho, fora: true|false} — não aparecer (ou voltar a aparecer) no ranking

@@ -9,7 +9,7 @@ import { nivelDoador, cortesiaDe } from './pagamentos.js';
 import { fotoPublica } from './fotos.js';
 import { pontuar, nomeDaTurma, apelido as apelidoNaTurma, edicao } from './turmas.js';
 import { somarVivo } from './vivo.js';
-import { somarRanking, reiDaSemana } from './ranking.js';
+import { somarRanking, reiDaSemana, anotarAbandono } from './ranking.js';
 import { bloqueado, visto, apelidoBarrado, exigeApp, appAberto, anotarRitmo, RAPIDA_MS } from './bloqueio.js';
 import { PAPO, limparPapo, tamanho, papoRuim } from './papo.js';
 import { anotarCodigoErrado } from './codigos.js';
@@ -41,7 +41,7 @@ const FILA = { mesas: 20, idade: 60 * 60 * 1000 };   // mesas rápidas lembradas
 const QUADRO = { validade: 30 * 60000, guarda: 3 * 3600000, max: 80, renova: 5 * 60000 };
 const SILENCIO = 50000;
 const TEMPO_TOLERADO = 3;   // 03/11: quantas vezes por partida quem está conectado pode passar dos 20 s sem a partida deixar de contar
-const REACAO = { intervalo: 2000, porMinuto: 8, maior: 23 };   // reações: só o número de uma frase pronta, nunca texto              // sem sinal do celular há 50 s: conta como desconectado
+const REACAO = { intervalo: 2000, porMinuto: 8, maior: 33 };   // reações: só o número de uma frase pronta, nunca texto              // sem sinal do celular há 50 s: conta como desconectado
 const VIDA = 24 * 60 * 60 * 1000;    // a mesa some 24 h depois da última ação
 const ASSISTIR_MAX = 30;           // 3.28: quantas pessoas podem assistir a mesma mesa
 
@@ -81,6 +81,25 @@ export function quemContaNoRanking(m, vencedor) {
     quem.push({ id: c.id, nome: c.nome, av: c.av, nv: c.nv, menor: !!c.menor, ganhou: p % 2 === vencedor, gente: ops.length > 0, oponente: ops[0] || null });
   });
   return quem;
+}
+// 10/11 (pedido do dono, ideia de um jogador: "que tal punir quem sai da mesa? muito chato ficar jogando com robô"):
+// quem começou a partida e não estava mais na cadeira quando ela acabou (saiu, ou a conexão caiu e não voltou até o fim)
+// abandonou. Conta como derrota contra pessoas no ranking e na Copa (-1). Só vale se havia outra pessoa na partida:
+// largar uma mesa só com a turma do bairro não prejudica ninguém. Quem cai e volta antes do fim não perde nada.
+export function quemAbandonou(m) {
+  if (!m || !m.naPartida) return [];
+  const info = m.naPartidaInfo || [], out = [];
+  m.naPartida.forEach((id, p) => {
+    if (!id) return;
+    const c = m.cad[p];
+    if (c && !c.bot && !c.saiu && c.id === id) return;   // continua (ou voltou) na cadeira
+    const outros = m.naPartida.map((x, q) => q !== p && x && x !== id ? x : null).filter(Boolean).sort();
+    if (!outros.length) return;
+    const i = info[p] || {};
+    const adv = m.naPartida.map((x, q) => q % 2 !== p % 2 && x && x !== id ? x : null).filter(Boolean).sort();
+    out.push({ id, nome: i.nome || 'Jogador', av: i.av || null, nv: i.nv || 1, menor: !!i.menor, ganhou: false, gente: true, oponente: adv[0] || outros[0], abandono: true });
+  });
+  return out;
 }
 export class Mesa {
   constructor(ctx, env) {
@@ -251,7 +270,7 @@ export class Mesa {
         // 3.37.1 (pedido do dono): aparece o apelido, o avatar desenhado e o nível de quem está jogando — menos de quem
         // tem menos de 18 anos, que continua só na conta ("1 pessoa"); robô continua sem nome
         else mesas.push({ publica: false, existe: true, fase: 'jogo', tema: j.tema || null, on: j.on, livres: 0,
-          cad: (j.cad || []).map(c => !c ? null : c.bot || c.menor ? { bot: !!c.bot, tipo: c.tipo } : { nome: c.nome, bot: false, av: c.av || null, nv: c.nv || 1, tipo: c.tipo }),
+          cad: (j.cad || []).map(c => !c ? null : c.bot || c.menor ? { bot: !!c.bot, tipo: c.tipo } : { nome: c.nome, bot: false, av: c.av || null, foto: c.foto || null, nv: c.nv || 1, tipo: c.tipo }),
           partida: j.partida, mao: j.mao, placar: j.placar,
           lance: j.lance ? { type: j.lance.type, pts: j.lance.pts, carroca: j.lance.carroca, voided: j.lance.voided } : null });
       }
@@ -299,7 +318,7 @@ export class Mesa {
     if (!m) return { existe: false, fase: null };
     if (!m.G) return { existe: true, fase: m.fase, publica: !!m.publica, tema: m.tema || null,   // 3.35: sala, antes da 1ª partida
       on: m.cad.filter((c, p) => c && !c.bot && this.conectado(p)).length, livres: 0,
-      cad: m.cad.map((c, p) => c ? { nome: nomeVisivel(c), bot: !!c.bot, av: c.bot ? null : c.av || null, tipo: c.bot ? 'robo' : this.conectado(p) ? 'pessoa' : 'fora', nv: c.bot ? null : c.nv || 1, bairro: null } : null),
+      cad: m.cad.map((c, p) => c ? { nome: nomeVisivel(c), bot: !!c.bot, av: c.bot ? null : c.av || null, foto: c.bot || c.menor ? null : c.foto || null, tipo: c.bot ? 'robo' : this.conectado(p) ? 'pessoa' : 'fora', nv: c.bot ? null : c.nv || 1, bairro: null } : null),
       partida: 0, mao: 0, criada: m.criada || null, placar: [0, 0], lance: null, fila: this.filaVivo(m) };
     const G = m.G, evs = G.events || [];
     const ev = ['galo', 'batida', 'play', 'pass'].map(t => evs.find(e => e.type === t)).find(Boolean) || null;
@@ -308,7 +327,7 @@ export class Mesa {
       livres: m.cad.filter(c => c && c.bot).length,
       // 3.25.1: quem é quem na cadeira — pessoa conectada, pessoa sem conexão (o robô joga por ela na vez), quem saiu
       // (o robô ficou no lugar) e robô da turma
-      cad: m.cad.map((c, p) => c ? { nome: nomeVisivel(c), bot: !!c.bot, av: c.bot ? null : c.av || null,
+      cad: m.cad.map((c, p) => c ? { nome: nomeVisivel(c), bot: !!c.bot, av: c.bot ? null : c.av || null, foto: c.bot || c.menor ? null : c.foto || null,   // 10/11: foto do sócio
         tipo: c.bot ? (c.saiu ? 'saiu' : 'robo') : this.conectado(p) ? 'pessoa' : 'fora',
         nv: c.bot ? null : c.nv || 1, bairro: c.bot ? null : c.bairro || null, menor: !c.bot && !!c.menor } : null),
       partida: G.partida || 1, mao: G.handNo || 1, criada: m.criada || null,
@@ -1335,13 +1354,22 @@ export class Mesa {
     m.robo.mao[p] = true; if (!soMao) m.robo.partida[p] = true;
   }
   // Ranking (3.29): quem estava em cada cadeira quando a partida começou (só conta quem jogou a partida inteira)
-  inicioDePartida() { const m = this.m; m.naPartida = m.cad.map(c => c && !c.bot && c.id ? c.id : null); }
+  inicioDePartida() {
+    const m = this.m; m.naPartida = m.cad.map(c => c && !c.bot && c.id ? c.id : null);
+    m.naPartidaInfo = m.cad.map(c => c && !c.bot && c.id ? { nome: c.nome, av: c.av || null, nv: c.nv || 1, menor: !!c.menor } : null);   // 10/11: para quem abandonar
+  }
   async contarRanking() {
     const m = this.m, G = m.G, r = G && G.result;
     if (!G || G.phase !== 'handEnd' || !r || r.matchWinner == null || r.ranking) return;
     r.ranking = true;
     const quem = quemContaNoRanking(m, r.matchWinner);
     if (quem.length) { try { await somarRanking(this.env, quem); } catch (e) {} }
+    // 10/11: quem abandonou a partida perde como se tivesse perdido para pessoas; na mesa rápida, conta para a trava do dia
+    const sairam = quemAbandonou(m);
+    if (sairam.length) {
+      try { await somarRanking(this.env, sairam); } catch (e) {}
+      if (m.publica) for (const q of sairam) { try { await anotarAbandono(this.env, q.id); } catch (e) {} }
+    }
   }
   novaMaoRobo(novaPartida) {
     const m = this.m;
@@ -1361,7 +1389,7 @@ export class Mesa {
     if (!ganhou.length || !perdeu.length) return;
     let res = null;
     try { res = await pontuar(this.env, ganhou.map(p => m.cad[p].id), perdeu.map(p => m.cad[p].id)); } catch (e) {}
-    if (res && res.turmas.length) m.desafio = { seq: m.seq + 1, turmas: res.turmas, cadeiras: ganhou.filter(p => res.ids.includes(m.cad[p].id)) };
+    if (res && res.turmas.length) m.desafio = { seq: m.seq + 1, turmas: res.turmas, pontos: res.pontos || 1, cadeiras: ganhou.filter(p => res.ids.includes(m.cad[p].id)) };   // 10/11: na reta final, 2 pontos
   }
 
   // ---------- Conexões e envio ----------
@@ -1378,7 +1406,8 @@ export class Mesa {
       return agora - visto < SILENCIO;
     });
   }
-  // id vazio = quem só assiste (3.28): sem foto e sem bairro de ninguém (a foto é só para quem joga na mesa)
+  // id vazio = quem só assiste (3.28): sem bairro de ninguém. 10/11 (pedido do dono): a foto aprovada do sócio aparece
+  // no lugar do avatar em todo lugar, inclusive para quem assiste e na fila
   vista(id) {
     const m = this.m, G = m.G;
     const minha = id ? m.cad.findIndex(c => c && c.id === id) : -1;
@@ -1392,9 +1421,9 @@ export class Mesa {
     }
     return { t: 'mesa', codigo: m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
       leituraMs: G && G.phase === 'handEnd' ? Math.max(0, Math.round(m.turnoDesde + this.T.leitura - Date.now())) : 0, proximaPedida: !!(G && G.phase === 'handEnd' && m.proximaPedida === m.seq),   // 28/10
-      naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
+      naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, foto: c.menor ? null : c.foto || null, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
-      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || !id ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
+      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || c.menor ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
       tempos: minha >= 0 && m.tempos ? m.tempos[minha] || 0 : 0, tolerado: TEMPO_TOLERADO,   // 03/11
       jogo, agora: Date.now(), assistindo: this.quantosAssistem() };
