@@ -26,21 +26,21 @@ jobs:
           sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
           AGORA=$(($(date +%s) * 1000))
           p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
-          # 10/11 (pedido do dono): bloqueio de quem burlou o limite grátis com vários aparelhos. Os aparelhos vêm só por
-          # resumo (sha256): nem o código nem o apelido aparecem aqui. Desfaz no app: Área do administrador > Jogadores.
-          ALVOS="6003d23cdd6a4dc58ab2887b63b08618365479c99ecd54f4455241210eaa8bcc dfbd52d37ab6be7c43e7fae052c9b43b753425f4305c7a9f1f11b61dbbeaa9b8 cc6148dfc39f17856a76998ca081b5709a65bab1670ac10c2717b8938039ce5d c424e53c5089819881846bcca3df666b617551e1ba2f3cddb3d04ef5e6808ce2 e7050f68432248b18d2c3006c6fd9a099cfcc9aaacf27ec2bd19a50fa737e086"
-          wrangler d1 execute dominomanauara --remote --json --command "SELECT aparelho FROM jogadores UNION SELECT aparelho FROM jogadores_vistos UNION SELECT aparelho FROM presenca" 2>/dev/null | jq -r '.[0].results[].aparelho' > /tmp/aps.txt
-          n=0
-          while read -r ap; do
-            case "$ap" in *[!a-z0-9-]*|"") continue;; esac
-            h=$(printf '%s' "$ap" | sha256sum | cut -c1-64)
-            case " $ALVOS " in *" $h "*)
-              wrangler d1 execute dominomanauara --remote --command "INSERT INTO bloqueios (aparelho, nome, motivo, em) VALUES ('$ap', COALESCE((SELECT nome FROM presenca WHERE aparelho = '$ap'), (SELECT nome FROM jogadores_vistos WHERE aparelho = '$ap')), 'burla do limite grátis (vários aparelhos)', $AGORA) ON CONFLICT (aparelho) DO UPDATE SET motivo = excluded.motivo, em = excluded.em" > /dev/null 2>&1 && n=$((n+1));;
-            esac
-          done < /tmp/aps.txt
-          echo "== bloqueados_agora" >> $OUT; echo "[{\"n\":$n,\"lidos\":$(wc -l < /tmp/aps.txt)}]" >> $OUT
-          p bloqueios "SELECT aparelho, nome, motivo, em FROM bloqueios ORDER BY em DESC"
-          p presenca_agora "SELECT aparelho, nome, tela, modo, detalhe, visto_em FROM presenca WHERE visto_em > $AGORA - 600000"
+          # 10/11 (pedido do dono): números dos limites e da conversão (só contagens, nada de código de aparelho nem apelido)
+          # e o efeito do erro da publicação das 22:50 (abandonos de hoje, só os horários).
+          DEZ="date('now','-10 day')"
+          p limites_dia "SELECT dia, COUNT(*) AS jogaram_online, SUM(publicas >= 1) AS rapida_jogou, SUM(publicas >= 3) AS rapida_bateu3, SUM(publicas >= 5) AS rapida_bateu5, SUM(partidas >= 1) AS amigos_1, SUM(partidas >= 2) AS amigos_2, SUM(mesas >= 1) AS criou_mesa FROM limites WHERE dia >= $DEZ GROUP BY dia ORDER BY dia"
+          p offline_dia "SELECT dia, COUNT(*) AS jogaram, SUM(n >= 5) AS bateram5, ROUND(AVG(n), 1) AS media FROM offline_uso WHERE dia >= $DEZ GROUP BY dia ORDER BY dia"
+          p desafio_dia "SELECT dia, COUNT(*) AS jogaram, SUM(n >= 2) AS bateram2 FROM desafio_uso WHERE dia >= $DEZ GROUP BY dia ORDER BY dia"
+          LIM="SELECT aparelho, dia FROM limites WHERE publicas >= 3 OR partidas >= 1 UNION SELECT aparelho, dia FROM offline_uso WHERE n >= 5 UNION SELECT aparelho, dia FROM desafio_uso WHERE n >= 2"
+          p conversao "WITH lim AS (SELECT aparelho, MIN(dia) AS d FROM ($LIM) GROUP BY aparelho) SELECT COUNT(*) AS bateram_alguma_vez, SUM(EXISTS (SELECT 1 FROM planos p WHERE p.aparelho = lim.aparelho AND p.ate > $AGORA)) AS socios_hoje, SUM(EXISTS (SELECT 1 FROM planos p WHERE p.aparelho = lim.aparelho AND p.desde > (strftime('%s', lim.d) * 1000))) AS viraram_socio_depois FROM lim"
+          p voltaram "WITH lim AS ($LIM), ativ AS (SELECT aparelho, dia FROM limites UNION SELECT aparelho, dia FROM offline_uso UNION SELECT aparelho, dia FROM desafio_uso) SELECT lim.dia, COUNT(*) AS bateram, SUM(EXISTS (SELECT 1 FROM ativ a WHERE a.aparelho = lim.aparelho AND a.dia = date(lim.dia, '+1 day'))) AS voltaram_no_dia_seguinte FROM lim WHERE lim.dia >= $DEZ GROUP BY lim.dia ORDER BY lim.dia"
+          p socios "SELECT COUNT(*) AS ativos, SUM(desde > $AGORA - 7*86400000) AS entraram_7d FROM planos WHERE ate > $AGORA"
+          p socios_dia "SELECT date((desde - 14400000) / 1000, 'unixepoch') AS dia, COUNT(*) AS novos FROM planos WHERE desde > $AGORA - 15*86400000 GROUP BY dia ORDER BY dia"
+          p pagos_dia "SELECT date((pago_em - 14400000) / 1000, 'unixepoch') AS dia, produto, COUNT(*) AS n, ROUND(SUM(valor), 2) AS total FROM pedidos WHERE status = 'pago' AND pago_em > $AGORA - 15*86400000 GROUP BY dia, produto ORDER BY dia"
+          p novos_aparelhos "SELECT date((primeiro - 14400000) / 1000, 'unixepoch') AS dia, COUNT(*) AS novos FROM jogadores WHERE primeiro > $AGORA - 10*86400000 GROUP BY dia ORDER BY dia"
+          p abandonos_hoje "SELECT n, strftime('%H:%M', (ultimo - 14400000) / 1000, 'unixepoch') AS ultimo_manaus FROM abandonos WHERE dia = date(($AGORA - 14400000) / 1000, 'unixepoch') ORDER BY ultimo"
+          p na_mesa_agora "SELECT tela, modo, COUNT(*) AS n FROM presenca WHERE visto_em > $AGORA - 300000 GROUP BY tela, modo"
           rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
