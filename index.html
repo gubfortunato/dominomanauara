@@ -13747,7 +13747,7 @@ function desafioConviteNaHome() {
     <p class="note">Vale até 20/12.${d.total ? ` ${d.total === 1 ? '1 Turma já está' : d.total + ' Turmas já estão'} na disputa.` : ''}</p>
     <button type="button" class="primary" id="dscMontar" style="width:100%">Montar a minha Turma</button>
     <button type="button" class="secondary" id="dscCodigo" style="width:100%;margin-top:8px">Tenho o código de uma Turma</button>
-    <button type="button" class="linkbtn" id="dscFechar" style="width:100%;margin-top:6px">Agora não</button>`);
+    <button type="button" class="secondary" id="dscFechar" style="width:100%;margin-top:8px">Agora não</button>`);
   const vai = () => { closeSheet(); abrirTurma(); };
   $('#dscMontar').addEventListener('click', () => { track('desafio-convite-montar'); vai(); });
   $('#dscCodigo').addEventListener('click', () => { track('desafio-convite-codigo'); vai(); setTimeout(() => { const i = $('#tmCod'); if (i) i.focus(); }, 400); });
