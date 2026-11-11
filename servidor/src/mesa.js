@@ -1437,7 +1437,8 @@ export class Mesa {
         hands: G.hands.map((h, p) => p === minha || G.phase === 'handEnd' ? h : h.map(() => [-1, -1]))
       });
     }
-    return { t: 'mesa', codigo: !id && this.mesaDesafio() ? null : m.codigo, fase: m.fase,   // 10/11: no Desafio ao vivo, quem assiste não recebe o número seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
+    // 10/11: no Desafio ao vivo, quem assiste não recebe o número da mesa
+    return { t: 'mesa', codigo: !id && this.mesaDesafio() ? null : m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
       leituraMs: G && G.phase === 'handEnd' ? Math.max(0, Math.round(m.turnoDesde + this.T.leitura - Date.now())) : 0, proximaPedida: !!(G && G.phase === 'handEnd' && m.proximaPedida === m.seq),   // 28/10
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, foto: c.menor ? null : c.foto || null, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
