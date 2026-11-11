@@ -49,7 +49,24 @@ export async function fecharDesafio(env, agora) {
   const r = await env.DB.prepare('INSERT OR IGNORE INTO desafio_campeas (edicao, turma, pontos, fechada_em) VALUES (?, ?, ?, ?)').bind(e.ano, top ? top.turma : null, top ? top.pontos : 0, Date.now()).run();
   const mudou = r && ((r.meta && r.meta.changes) || r.changes);
   if (top && mudou) await env.DB.prepare('UPDATE turmas SET titulos = titulos + 1 WHERE codigo = ?').bind(top.turma).run();
+  // 10/11 (pedido do dono): quem está na Turma campeã agora leva o selo 🏆 e a Mesa da Campeã até o fim do próximo Desafio
+  if (top) { try { await env.DB.prepare('INSERT OR IGNORE INTO desafio_campeas_membros (edicao, aparelho) SELECT ?, aparelho FROM turma_membros WHERE turma = ?').bind(e.ano, top.turma).run(); } catch (er) {} }
   return top;
+}
+// A campeã que vale agora: a do ano, depois que o Desafio fecha (até o fim do Desafio do ano seguinte); antes disso, a do
+// ano anterior (até o fim do Desafio deste ano). -> { ed, ate }
+function campeaVigente(e) { return e.depois ? { ed: e.ano, ate: Date.UTC(e.ano + 1, 11, 21) + MANAUS } : { ed: e.ano - 1, ate: e.fim }; }
+// -> até quando esse aparelho tem o selo 🏆 e a Mesa da Campeã (0 = não tem)
+export async function campeaDesafioAte(env, aparelho, agora) {
+  if (!idOk(aparelho)) return 0;
+  const e = edicao(env, agora); if (e.depois) { try { await fecharDesafio(env, agora); } catch (er) {} }
+  const v = campeaVigente(e);
+  try { const r = await env.DB.prepare('SELECT 1 AS x FROM desafio_campeas_membros WHERE edicao = ? AND aparelho = ?').bind(v.ed, aparelho).first(); return r ? v.ate : 0; } catch (er) { return 0; }
+}
+// -> a Turma campeã que vale agora { codigo, nome, ano, ate } (ou null)
+async function campeaAtual(env, e) {
+  const v = campeaVigente(e);
+  try { const r = await env.DB.prepare('SELECT c.turma, t.nome FROM desafio_campeas c JOIN turmas t ON t.codigo = c.turma WHERE c.edicao = ?').bind(v.ed).first(); return r ? { codigo: r.turma, nome: nomeSeguro(r.nome), ano: v.ed, ate: v.ate } : null; } catch (er) { return null; }
 }
 // Fim de uma partida online: quem ganhou leva ponto para a Turma se perdeu alguém de outra Turma
 // -> { turmas: nomes das Turmas que pontuaram, ids: quem ganhou e trouxe o ponto }
@@ -121,10 +138,12 @@ async function resumo(env, ap) {
   const e = edicao(env);
   const rk = await ranking(env, e.ano, 50);
   let ho = { hoje: new Map(), posOntem: new Map() }; try { if (e.aberto) ho = await hojeEOntem(env, e, rk); } catch (er) {}
-  const linha = (r, i) => ({ pos: i + 1, nome: nomeSeguro(r.nome), pontos: r.pontos, titulos: r.titulos, membros: r.membros, hoje: ho.hoje.get(r.codigo) || 0,
+  const campea = await campeaAtual(env, e);
+  const linha = (r, i) => ({ pos: i + 1, nome: nomeSeguro(r.nome), pontos: r.pontos, titulos: r.titulos, membros: r.membros, hoje: ho.hoje.get(r.codigo) || 0, campea: !!campea && campea.codigo === r.codigo,
     mov: ho.posOntem.has(r.codigo) ? ho.posOntem.get(r.codigo) - (i + 1) : (ho.hoje.get(r.codigo) ? 'novo' : 0) });
   const campeas = (await env.DB.prepare('SELECT c.edicao, c.pontos, t.nome FROM desafio_campeas c LEFT JOIN turmas t ON t.codigo = c.turma ORDER BY c.edicao DESC LIMIT 10').all()).results || [];
   const desafio = { ano: e.ano, inicio: e.inicio, fim: e.fim, aberto: e.aberto, antes: e.antes, depois: e.depois, dobroDesde: e.dobroDesde, dobro: e.dobro, mult: RETA.mult,
+    campea: campea ? { nome: campea.nome, ano: campea.ano, ate: campea.ate } : null,
     total: rk.length, ranking: rk.slice(0, 10).map(linha),
     campeas: campeas.filter(c => c.nome).map(c => ({ ano: c.edicao, nome: nomeSeguro(c.nome), pontos: c.pontos })) };
   let turma = null;
@@ -134,7 +153,7 @@ async function resumo(env, ap) {
       const { results } = await env.DB.prepare('SELECT nome FROM turma_membros WHERE turma = ? ORDER BY entrou LIMIT ?').bind(t.codigo, MAX_MEMBROS).all();
       const p = await env.DB.prepare('SELECT pontos FROM desafio_pontos WHERE edicao = ? AND turma = ?').bind(e.ano, t.codigo).first();
       const i = rk.findIndex(r => r.codigo === t.codigo);
-      turma = { codigo: t.codigo, nome: nomeSeguro(t.nome), titulos: t.titulos, taca: t.titulos >= 3, membros: (results || []).map(r => r.nome), pontos: (p && p.pontos) || 0, pos: i >= 0 ? i + 1 : null };
+      turma = { codigo: t.codigo, nome: nomeSeguro(t.nome), titulos: t.titulos, taca: t.titulos >= 3, membros: (results || []).map(r => r.nome), pontos: (p && p.pontos) || 0, pos: i >= 0 ? i + 1 : null, campea: !!campea && campea.codigo === t.codigo };
       if (i >= 0) { const l = linha(rk[i], i); turma.hoje = l.hoje; turma.mov = l.mov; turma.acima = i > 0 ? { nome: nomeSeguro(rk[i - 1].nome), falta: rk[i - 1].pontos - rk[i].pontos } : null; }
       try { Object.assign(turma, await craquesERival(env, e, t)); } catch (er) {}
       if (nomeRetirado(t.nome)) {
@@ -143,7 +162,8 @@ async function resumo(env, ap) {
       }
     }
   }
-  return { desafio, turma };
+  let campeaAte = 0; if (idOk(ap)) { try { campeaAte = await campeaDesafioAte(env, ap); } catch (er) {} }
+  return { desafio, turma, campeaAte };
 }
 // GET /turma?aparelho=  e  GET /desafio
 export async function ver(env, origin, h, url) { return h.json(await resumo(env, url.searchParams.get('aparelho')), 200, origin); }
@@ -231,13 +251,20 @@ export async function nomeDaTurma(env, ap) {
 // na véspera da reta final e no último dia, para todas as Turmas; nos outros dias, só para a Turma que mudou de posição desde
 // o aviso anterior: entrou no pódio, ou outra Turma passou a sua (até o 10º lugar).
 const nomeT = n => /^turma\b/i.test(String(n || '').trim()) ? n : 'Turma ' + n;
+// as chamadas do Desafio para todo mundo (às 19h do dia), uma vez cada
+const DIVULGA = {
+  '2026-11-11': { titulo: '⚔️ Desafio das Confrarias: monte a sua Turma!', texto: 'Junte os amigos, desafie as outras Turmas de Manaus e leve a estrela de campeã. Os confrontos agora passam ao vivo na Calçada. Vale até 20/12.', url: '/?abrir=turma' },
+  '2026-11-28': { titulo: '⚔️ Sua Turma já está no Desafio?', texto: 'Faltam 3 semanas para o fim do Desafio das Confrarias. Cada vitória online contra outra Turma vale ponto. Monte a sua e chame a turma!', url: '/?abrir=turma' }
+};
 export async function avisosDesafio(env, agora) {
   const e = edicao(env, agora); if (!e.aberto) return [];
-  const d = new Date(e.agora - MANAUS), dia = d.toISOString().slice(0, 10);
-  if (d.getUTCHours() !== 18) return [];
+  const d = new Date(e.agora - MANAUS), dia = d.toISOString().slice(0, 10), h = d.getUTCHours();
   const dd = n => `${e.ano}-12-${String(n).padStart(2, '0')}`;
-  if (dia === dd(RETA.dia - 1)) return [{ chave: `ds:${e.ano}:vespera`, para: 'turmas',
-    msg: { titulo: 'Amanhã começa a reta final! 🔥', texto: `Do dia ${RETA.dia}/12 até 20/12, a vitória contra outra Turma com sócio na dupla vale ${RETA.mult} pontos no Desafio das Confrarias. Dá para virar!`, url: '/?abrir=turma' } }];
+  // 10/11 (pedido do dono: "vamos divulgar mais o Desafio"): chamada para todo mundo, com guarda na caixa de mensagens
+  if (h === 19 && DIVULGA[dia]) return [{ chave: `ds:${dia}:divulga`, para: 'todos', caixa: true, msg: DIVULGA[dia] }];
+  if (h !== 18) return [];
+  if (dia === dd(RETA.dia - 1)) return [{ chave: `ds:${e.ano}:vespera`, para: 'todos', caixa: true,
+    msg: { titulo: 'Amanhã começa a reta final do Desafio! 🔥', texto: `De ${RETA.dia}/12 a 20/12, a vitória contra outra Turma com sócio na dupla vale ${RETA.mult} pontos. Ainda não tem Turma? Monte a sua e chame os amigos.`, url: '/?abrir=turma' } }];
   if (dia === dd(20)) return [{ chave: `ds:${e.ano}:ultimo`, para: 'turmas',
     msg: { titulo: 'Último dia do Desafio das Confrarias! ⚔️', texto: `Hoje até meia-noite, a vitória contra outra Turma com sócio na dupla ainda vale ${RETA.mult} pontos. Bora fechar com chave de ouro!`, url: '/?abrir=turma' } }];
   const rk = await ranking(env, e.ano, 50), out = [];
