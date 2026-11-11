@@ -282,6 +282,14 @@ CREATE TABLE IF NOT EXISTS socio_marcas (
   em INTEGER NOT NULL,
   PRIMARY KEY (codigo, marca)
 );
+-- 10/11: partidas abandonadas no dia por aparelho (a 3ª deixa 15 min sem mesa rápida), guardadas por 2 dias
+CREATE TABLE IF NOT EXISTS abandonos (
+  dia TEXT NOT NULL,
+  aparelho TEXT NOT NULL,
+  n INTEGER NOT NULL DEFAULT 0,
+  ultimo INTEGER NOT NULL,
+  PRIMARY KEY (dia, aparelho)
+);
 -- avisos automáticos de evento (Sexta da Calçada, Copa, tempo de casa): cada um sai uma vez por inscrição
 CREATE TABLE IF NOT EXISTS avisos_ev (
   aviso INTEGER NOT NULL,        -- avisos.id

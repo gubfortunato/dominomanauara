@@ -160,6 +160,12 @@ a.card{text-decoration:none}
 .mt-nums b{display:block;font-family:var(--font-display);font-weight:400;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
 .mt-nums small{font-size:12px;color:var(--wood-muted)}
 .mt-share{justify-self:start;font-size:15px;font-weight:700;color:var(--wood-ink);text-decoration:none;padding:9px 14px;border-radius:999px;border:1px solid rgba(239,226,204,.3)}
+.rc-dest{display:flex;gap:12px;align-items:flex-start;background:var(--bg-2);border:1.5px solid var(--line);border-radius:16px;padding:12px 14px;margin:14px 0 10px}
+.rc-dest p{margin:0;font-size:15.5px;line-height:1.4}.rc-dest b{display:block;font-size:16.5px;margin-bottom:2px}
+.rc-dest .rc-ic{flex:0 0 42px;width:42px;height:42px;min-width:42px;max-width:42px;border-radius:50%;display:grid;place-items:center;font-size:21px;line-height:1;padding:0;margin:0;background:var(--glow,#e8b04a)}
+.note .rc-link{display:inline;padding:0;margin:0;border:0;background:none;min-height:0;font:inherit;font-weight:700;color:var(--fg);text-decoration:underline;width:auto;border-radius:0}
+.rc-chama{margin:14px 0 0;font-size:16px}
+.rc-zap{display:flex !important;align-items:center;justify-content:center;gap:8px}.rc-zap svg{width:22px;height:22px}
 .share-wa{display:block;text-align:center;text-decoration:none;margin-top:14px;padding:13px 16px;border-radius:14px;font-weight:700;font-size:17px;background:#25d366;color:#0b2e17}
 
 /* Jogo */
@@ -234,7 +240,10 @@ a.card{text-decoration:none}
 
 /* Mão */
 .me{display:grid;gap:8px}
-.me-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;min-height:44px}
+.me-head{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;min-height:44px}
+.ordbtn{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--muted);border-radius:999px;padding:7px 12px 7px 9px;font:600 14px/1 var(--font-body);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ordbtn svg{width:16px;height:16px}
+.ordbtn[hidden]{display:none}   /* 10/11: botão Organizar a mão */
 .me-txt{display:grid;gap:2px;min-width:0}
 .passbtn{border:2px solid var(--nos);background:transparent;color:var(--nos);border-radius:999px;padding:9px 20px;font-family:var(--font-display);font-size:17px;letter-spacing:.02em;cursor:pointer}
 .passbtn:active{background:var(--nos);color:var(--bg-2)}
@@ -3207,7 +3216,7 @@ body.papo-aberto{overflow:hidden}
       <div class="tablefoot"><p class="feed" id="feed" aria-live="polite"></p><span class="ends" id="ends" hidden></span></div>
     </main>
     <footer class="me">
-      <div class="me-head"><div class="me-txt"><span class="me-name" id="meName">Você</span><span class="prompt" id="prompt"></span></div><button type="button" class="passbtn" id="passBtn" hidden>Passo</button></div>
+      <div class="me-head"><div class="me-txt"><span class="me-name" id="meName">Você</span><span class="prompt" id="prompt"></span></div><button type="button" class="ordbtn" id="ordBtn" aria-label="Organizar as pedras" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v15M3.5 15.5 7 19l3.5-3.5M17 20V5M13.5 8.5 17 5l3.5 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Organizar</button><button type="button" class="passbtn" id="passBtn" hidden>Passo</button></div>
       <div class="hand" id="hand"></div>
     </footer>
   </section>
@@ -3823,6 +3832,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53', data: '10/11/2026', itens: ['Sair no meio da partida com outras pessoas na mesa conta como derrota no ranking e na Copa. Na mesa rápida, quem sai no meio de 3 partidas no dia fica 15 minutos sem a mesa rápida. Queda de internet não conta se a pessoa voltar antes de a partida acabar.', 'Botão Organizar na mão: do menor para o maior, mais pesadas primeiro ou carroças primeiro (a escolha fica guardada).', 'Mais 10 emojis para reagir e no papo de mesa: 🐓 🤣 😎 🙏 💪 🎉 😭 😡 🤔 👀.', 'Recado da atualização, uma vez, para quem já tinha o app: bugs corrigidos, novidades, o áudio no papo para os sócios e o botão para chamar os amigos no WhatsApp.'] },
   { v: '3.52', data: '10/11/2026', itens: ['Sexta da Calçada: toda sexta, das 20h às 23h, moral em dobro em todas as partidas (o nível sobe duas vezes mais rápido), com aviso no celular às 19h e às 20h.', 'A experiência agora se chama moral: cada mão, galo, batida e vitória dá moral, e é a moral que sobe o seu nível na calçada.', 'Copa dos Sócios: a cada 3 meses, no último fim de semana de novembro, fevereiro, maio e agosto (a 1ª é de 27 a 29/11). Só sócios pontuam: o campeão leva o troféu na carteira e a Mesa do Campeão; 2º e 3º, medalha; quem jogar, a marca de participação.', 'Tempo de casa: a carteira de sócio mostra há quanto tempo você é sócio, com marcas aos 3 meses, 6 meses e 1 ano.'] },
   { v: '3.51.14', data: '10/11/2026', itens: ['Tela inicial: a saudação "Fala, ..." ficou maior.'] },
   { v: '3.51.13', data: '10/11/2026', itens: ['A mesa Branca saiu do jogo. Quem estava com ela volta para a de Madeira.'] },
@@ -6515,7 +6525,8 @@ const ERROS_MESA = {
 // Reações rápidas: a ordem nunca muda (o servidor manda só o número). Para acrescentar, ponha no fim.
 const REACOES = ['Boa, parceiro!', 'Vô mermo!', 'Leseira baré!', 'Bate logo!', 'Segura essa!', 'Tá fácil!', 'Hoje tem galo!', 'Bora, bora!', '👏', '😂', '😮', '🔥',
   'Ê, caroço!', 'Chibata!', 'Telezé!', 'Tá de bubuia?', 'Bom jogo, turma!', 'Bora um tacacá?',   // 3.25: no lugar de "Joga logo, caboco!" (mesma posição, para os celulares que ainda não atualizaram)
-  'Deu galo!', 'Comeu abiu?', 'Nem com nojo!', 'Vou pegar o beco!', 'Até o tucupi!'];
+  'Deu galo!', 'Comeu abiu?', 'Nem com nojo!', 'Vou pegar o beco!', 'Até o tucupi!',
+  '🐓', '🤣', '😎', '🙏', '💪', '🎉', '😭', '😡', '🤔', '👀'];   // 10/11 (ideia de um jogador): mais emojis (sempre no fim: os números antigos não mudam)
 const FALA_MS = 2800;
 let falaMinhaT = null, reagiuEm = 0;
 function mostrarReacao(pos, txt) {
@@ -6791,16 +6802,35 @@ function resultadoOnline() {
     });
   }
 }
+// 10/11 (pedido do dono): sair no meio da partida, com outras pessoas na mesa, conta como derrota no ranking e na Copa;
+// a 3ª no dia deixa 15 minutos sem mesa rápida. Queda de internet não conta se a pessoa voltar antes de a partida acabar.
+function meioDaPartidaComGente() {
+  try {
+    const v = ON.vista; if (!v || v.fase !== 'jogo' || !G) return false;
+    if (G.result && G.result.matchWinner != null) return false;
+    return v.cad.some((c, i) => c && !c.bot && !c.saiu && i !== v.minha);
+  } catch (e) { return false; }
+}
+function avisoAbandonos(j) {
+  const ate = new Date(Number(j.ate) || Date.now()), hh = String(ate.getHours()).padStart(2, '0') + ':' + String(ate.getMinutes()).padStart(2, '0');
+  track('abandonos-trava');
+  openSheet('info', `<p class="eyebrow">Mesa rápida</p><h2 id="sheetTitle">Pausa até as ${hh}</h2>
+    <p class="pr-lead">Hoje você saiu no meio de ${Number(j.porDia) || 3} partidas, e a turma ficou jogando com robô no seu lugar. A mesa rápida libera de novo às <b>${hh}</b>.</p>
+    <p class="note">Enquanto isso, dá para jogar com os amigos ou no jogo offline. Sair no meio da partida também conta como derrota no ranking.</p>
+    <div class="tr-bts"><button type="button" class="primary" id="abOk">Entendi</button></div>`);
+  $('#abOk').addEventListener('click', closeSheet);
+}
 function menuOnline() {
   if (sheetKind !== 'rules') return;
   const rb = $('#resetBtn'); if (rb) rb.remove();
   trocarBotao('homeBtn', 'Voltar ao início', () => {
+    const meio = meioDaPartidaComGente();
     closeSheet(); leaveGame(); show('home');
-    toast('Seu lugar na mesa está guardado. Para voltar, toque em "Voltar para a mesa".');
+    toast(meio ? 'Seu lugar está guardado. Volte antes de a partida acabar: sair no meio conta como derrota.' : 'Seu lugar na mesa está guardado. Para voltar, toque em "Voltar para a mesa".');
   });
   let armado = false;
   const qb = trocarBotao('quitBtn', 'Sair da mesa', () => {
-    if (!armado) { armado = true; qb.textContent = 'Toque de novo para sair'; return; }
+    if (!armado) { armado = true; qb.textContent = meioDaPartidaComGente() ? 'Sair agora conta como derrota. Toque de novo' : 'Toque de novo para sair'; return; }
     sairDaMesa(); closeSheet(); leaveGameBase(); show('home');
     toast('Você saiu da mesa. A turma do bairro joga no seu lugar.');
   });
@@ -6880,6 +6910,7 @@ async function mesaRapida() {
     if (r.ok && /^\d{5}$/.test(j.codigo || '')) { track('mesa-rapida'); ON.rapida = true; conectar(j.codigo); renderSala(); return; }
     if (r.status === 403 && j.erro === 'apelido') { show('home'); pedirOutroApelido(); return; }   // 3.41
     if (r.status === 403 && j.erro === 'limite-rapida' && typeof convitePlano === 'function') { show('home'); convitePlano('limite-rapida'); return; }   // 28/10: planos
+    if (r.status === 403 && j.erro === 'abandonos') { show('home'); avisoAbandonos(j); return; }   // 10/11: quem abandona partidas
     toast(r.status === 403 && j.erro === 'bloqueado' ? ERROS_MESA.bloqueado : r.status === 429 ? 'Muitas mesas agora. Tente de novo daqui a pouco.' : 'Não deu para achar uma mesa agora. Tente de novo.');
     show('home');
   } catch (e) { ON.buscando = false; toast('Sem internet agora. A mesa rápida precisa de conexão.'); show('home'); }
@@ -12631,7 +12662,7 @@ function rkRegras() {
   const r = (RK.dados && RK.dados.regras) || {};
   return { gente: r.gente || 3, robo: r.robo || 1, derrota: Math.abs(r.derrota || -1), roboPorDia: r.roboPorDia || 3, desde: r.pontosDesde || Date.parse('2026-10-26T00:00:00-04:00') };
 }
-const rkRegrasTx = g => `Vitória contra pessoas vale +${g.gente}, contra a turma do bairro +${g.robo} (só ${g.roboPorDia} por dia) e derrota contra pessoas tira ${g.derrota}.`;
+const rkRegrasTx = g => `Vitória contra pessoas vale +${g.gente}, contra a turma do bairro +${g.robo} (só ${g.roboPorDia} por dia) e derrota contra pessoas tira ${g.derrota}. Sair no meio da partida conta como derrota.`;
 function rkDesenhar() {
   const box = $('#rkLista'); if (!box) return;
   $$('#rkAbas button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.aba === RK.aba)));
@@ -13336,7 +13367,7 @@ function csSheetHTML(d) {
     <p class="eyebrow cs-k">Como funciona</p>
     <ul class="pr-lista cs-regras">
       <li>${CHECK}<span><b>Só sócios pontuam</b>, nas partidas online jogadas do começo ao fim.</span></li>
-      <li>${CHECK}<span>Pontos como no ranking: vitória contra pessoas +${g.gente}, contra a turma do bairro +${g.robo} (${g.roboPorDia} por dia) e derrota contra pessoas −${g.derrota}.</span></li>
+      <li>${CHECK}<span>Pontos como no ranking: vitória contra pessoas +${g.gente}, contra a turma do bairro +${g.robo} (${g.roboPorDia} por dia) e derrota contra pessoas −${g.derrota}. Sair no meio da partida conta como derrota.</span></li>
       <li>${CHECK}<span><b>Campeão:</b> troféu na carteira de sócio e a mesa do campeão até a próxima Copa.</span></li>
       <li>${CHECK}<span><b>2º e 3º:</b> medalha na carteira. Quem jogar ganha a marca de participação.</span></li>
       <li>${CHECK}<span>A cada 3 meses, no último fim de semana de fevereiro, maio, agosto e novembro.</span></li>
@@ -13405,11 +13436,35 @@ function copaComemorar() {
   $('#cpFechar').addEventListener('click', closeSheet);
   return true;
 }
+// 10/11 (pedido do dono): recado único para quem já usava o app e abriu a versão nova: bugs corrigidos, melhorias e
+// novidades, o áudio no papo para os sócios e o convite para chamar os amigos no WhatsApp. Aparece uma vez por celular,
+// só para quem já tinha o app antes desta versão (quem acabou de chegar não vê), e só até 1º/12.
+const WA_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.3 14.8L2.3 21.8l4.9-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-3-.4-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1l-.5-.3Z"/></svg>';
+const RECADO = { id: '2026-11-10', ate: Date.parse('2026-12-01T04:00:00Z') };
+const RECADO_ZAP = 'Bora jogar dominó comigo? É o Dominó Manauara: bucho, garagem, passe e galo, do jeito de Manaus, no celular. Dá para montar a mesa só com a nossa turma.';
+function recadoNaHome() {
+  if (Date.now() > RECADO.ate || store.get('dmz-recado') === RECADO.id || store.get('dmz-recado-pend') !== RECADO.id) return false;
+  store.set('dmz-recado', RECADO.id);
+  const socio = temPlano(), pode = !socio && typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !(profile && profile.idade === 'menor');
+  track('recado-' + RECADO.id);
+  openSheet('recado', `<p class="eyebrow">Novidades na calçada</p><h2 id="sheetTitle">O jogo foi atualizado! 🎉</h2>
+    <p class="pr-lead">Corrigimos vários bugs e trouxemos um monte de melhorias e novidades. Muita coisa veio das ideias e dos avisos de vocês no Fale com a gente: obrigado, turma!</p>
+    <div class="rc-dest"><div class="rc-ic" aria-hidden="true">🎤</div><p><b>Áudio no papo de mesa${socio ? '' : ', para os sócios'}</b>Na mesa com os amigos, ${socio ? 'agora você manda' : 'o sócio agora manda'} áudio no papo: toque no microfone e fale até 10 segundos. Zoar o parceiro ficou muito mais fácil.</p></div>
+    ${pode ? '<p class="note">Ainda não é sócio? <button type="button" class="linkbtn rc-link" id="rcSocio">Conheça o plano</button> e libere o áudio, as partidas sem limite e todas as mesas de Manaus.</p>' : ''}
+    <p class="rc-chama"><b>A calçada fica melhor com a turma toda.</b> Chama os amigos pra jogar!</p>
+    <a class="share-wa rc-zap" id="rcZap" href="https://wa.me/?text=${encodeURIComponent(RECADO_ZAP + '\n' + SITE_URL)}" target="_blank" rel="noopener">${WA_IC}Chamar os amigos no WhatsApp</a>
+    <button type="button" class="linkbtn" id="rcFechar" style="width:100%;margin-top:6px">Agora não</button>`);
+  $('#rcZap').addEventListener('click', () => { track('recado-zap'); setTimeout(closeSheet, 300); });
+  if ($('#rcSocio')) $('#rcSocio').addEventListener('click', () => { track('recado-socio'); closeSheet(); abrirApoio('home', 'plano'); });
+  $('#rcFechar').addEventListener('click', closeSheet);
+  return true;
+}
 function pertencimentoNaHome() {
   try { desenharEvCard(); } catch (e) {}
   if (screen !== 'home' || sheetKind || !profile) return;
   try { if (copaComemorar()) return; } catch (e) {}
-  try { casaComemorar(); } catch (e) {}
+  try { if (casaComemorar()) return; } catch (e) {}
+  try { recadoNaHome(); } catch (e) {}
 }
 const renderHomeCasa = renderHome;
 renderHome = function () {
@@ -13557,13 +13612,29 @@ function renderPrompt() {
   const pb = $('#passBtn');
   pb.hidden = !(you && G.chain.length) || dealing;
 }
+// 10/11 (ideia de um jogador: "deixar a gente organizar as pedras"): o botão Organizar muda a ordem das pedras na mão,
+// só na tela (cada pedra continua sendo a mesma para o jogo): do menor para o maior (como já vem), as mais pesadas
+// primeiro (mais pontos) ou as carroças primeiro. A escolha fica guardada no celular. Arrastar para reordenar brigaria
+// com arrastar a pedra até a ponta, por isso é um botão.
+const MAO_ORDENS = [['menor', 'Do menor para o maior'], ['pesada', 'Mais pesadas primeiro'], ['carro', 'Carroças primeiro']];
+function maoOrdem(mao) {
+  const modo = store.get('dmz-mao-ordem') || 'menor', idx = mao.map((t, i) => i);
+  const lo = t => Math.min(t[0], t[1]), hi = t => Math.max(t[0], t[1]), dbl = t => t[0] === t[1];
+  const porNum = (a, b) => lo(mao[a]) - lo(mao[b]) || hi(mao[a]) - hi(mao[b]);
+  if (modo === 'pesada') return idx.sort((a, b) => (mao[b][0] + mao[b][1]) - (mao[a][0] + mao[a][1]) || hi(mao[b]) - hi(mao[a]));
+  if (modo === 'carro') return idx.sort((a, b) => (dbl(mao[b]) - dbl(mao[a])) || porNum(a, b));
+  return idx.sort(porNum);
+}
 function renderHand() {
   const hand = $('#hand');
+  const ob = $('#ordBtn'); if (ob) ob.hidden = seatMe == null || !G.hands[seatMe] || G.hands[seatMe].length < 2;
   if (seatMe == null) {
     hand.innerHTML = G.hands[0].map(() => `<span class="ht costas"><svg viewBox="-0.04 -0.04 1.08 2.08">${backSVG}</svg></span>`).join('');
     return;
   }
-  hand.innerHTML = G.hands[seatMe].map((t, i) => {
+  const mao = G.hands[seatMe];
+  hand.innerHTML = maoOrdem(mao).map(i => {
+    const t = mao[i];
     const cls = ['ht', drag && drag.moved && drag.i === i ? 'lift' : ''].join(' ');
     return `<button type="button" class="${cls}" data-i="${i}" aria-label="Pedra ${t[0]} e ${t[1]}"><svg viewBox="-0.04 -0.04 1.08 2.08">${tileSVG({ x: .5, y: 1, o: 'v', v1: t[0], v2: t[1] }, '', false)}</svg></button>`;
   }).join('');
@@ -13935,6 +14006,12 @@ $('#passBtn').addEventListener('click', () => {
   if (legalMoves(G, seatMe).length) { $('#feed').textContent = 'Você tem pedra que encaixa. Não dá para passar.'; return; }
   clearTimeout(timer); applyPass(G, 0); announce(); proceed();
 });
+$('#ordBtn').addEventListener('click', () => {
+  const at = store.get('dmz-mao-ordem') || 'menor', k = MAO_ORDENS.findIndex(o => o[0] === at), prox = MAO_ORDENS[(k + 1) % MAO_ORDENS.length];
+  store.set('dmz-mao-ordem', prox[0]); track('mao-ordem-' + prox[0]);
+  if (G) render();
+  toast(prox[1]);
+});
 
 // ---- Folhas ----
 function openSheet(kind, html) {
@@ -14066,7 +14143,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.52-78f37a0b';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53-9866a07e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -14215,6 +14292,7 @@ $$('.appver').forEach(el => { el.textContent = APP_VERSION; });
 (function () {
   const antes = store.get('dmz-versao');
   // 3.40 (pedido do dono): o público não precisa saber das atualizações; o aviso e a lista do que mudou ficam só para o administrador
+  if (antes && antes !== APP_VERSION && Date.now() < RECADO.ate && store.get('dmz-recado') !== RECADO.id) store.set('dmz-recado-pend', RECADO.id);   // 10/11: recado da atualização
   if (antes && antes !== APP_VERSION) setTimeout(() => { if (souAdmin()) toast(`App atualizado para a versão ${APP_VERSION}. Para ver o que mudou, toque em "Versão", no rodapé do Mais.`); }, 900);
   store.set('dmz-versao', APP_VERSION);
 })();

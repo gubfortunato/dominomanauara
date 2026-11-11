@@ -167,6 +167,7 @@ async function mesaRapida(req, env, origin) {
   try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
   if (await bloqueado(env, b && b.id)) return json({ erro: 'bloqueado' }, 403, origin);
   if (await apelidoBarrado(env, b && b.id, b && b.nome)) return json({ erro: 'apelido' }, 403, origin);   // 3.41
+  { const ate = await rk.travaAbandono(env, b && b.id); if (ate) return json({ erro: 'abandonos', ate, porDia: rk.ABANDONO.porDia }, 403, origin); }   // 10/11: quem abandona partidas
   // 3.41: só pelo app aberto (robôs de fora não passam)
   if (exigeApp(env) && (!origemOk(origin) || !(await appAberto(env, b && b.id)))) { await anotarRitmo(env, b && b.id, { semApp: 1 }); return json({ erro: 'app' }, 403, origin); }
   const marca = await marcaDoDia(req, env);
@@ -347,6 +348,7 @@ async function lembretesDoDia(env) {
   // faxina: registros do limite de mesas com mais de 2 dias
   try { await env.DB.prepare('DELETE FROM mesas_criadas WHERE criado_em < ?').bind(Date.now() - 2 * 86400000).run(); } catch (e) {}
   try { await env.DB.prepare('DELETE FROM avisos_ev WHERE em < ?').bind(Date.now() - 30 * 86400000).run(); } catch (e) {}   // 10/11
+  try { await rk.limparAbandonos(env); } catch (e) {}
   await limparCodigos(env);   // 10/11: números de mesa errados (mais de 2 horas)
   await limparVozesDenunciadas(env);   // 10/11: áudios denunciados (mais de 30 dias)
   if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return { ok: 0, falhas: 0, motivo: 'sem-chaves' };

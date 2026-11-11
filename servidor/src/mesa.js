@@ -9,7 +9,7 @@ import { nivelDoador, cortesiaDe } from './pagamentos.js';
 import { fotoPublica } from './fotos.js';
 import { pontuar, nomeDaTurma, apelido as apelidoNaTurma, edicao } from './turmas.js';
 import { somarVivo } from './vivo.js';
-import { somarRanking, reiDaSemana } from './ranking.js';
+import { somarRanking, reiDaSemana, anotarAbandono } from './ranking.js';
 import { bloqueado, visto, apelidoBarrado, exigeApp, appAberto, anotarRitmo, RAPIDA_MS } from './bloqueio.js';
 import { PAPO, limparPapo, tamanho, papoRuim } from './papo.js';
 import { anotarCodigoErrado } from './codigos.js';
@@ -41,7 +41,7 @@ const FILA = { mesas: 20, idade: 60 * 60 * 1000 };   // mesas rápidas lembradas
 const QUADRO = { validade: 30 * 60000, guarda: 3 * 3600000, max: 80, renova: 5 * 60000 };
 const SILENCIO = 50000;
 const TEMPO_TOLERADO = 3;   // 03/11: quantas vezes por partida quem está conectado pode passar dos 20 s sem a partida deixar de contar
-const REACAO = { intervalo: 2000, porMinuto: 8, maior: 23 };   // reações: só o número de uma frase pronta, nunca texto              // sem sinal do celular há 50 s: conta como desconectado
+const REACAO = { intervalo: 2000, porMinuto: 8, maior: 33 };   // reações: só o número de uma frase pronta, nunca texto              // sem sinal do celular há 50 s: conta como desconectado
 const VIDA = 24 * 60 * 60 * 1000;    // a mesa some 24 h depois da última ação
 const ASSISTIR_MAX = 30;           // 3.28: quantas pessoas podem assistir a mesma mesa
 
@@ -81,6 +81,25 @@ export function quemContaNoRanking(m, vencedor) {
     quem.push({ id: c.id, nome: c.nome, av: c.av, nv: c.nv, menor: !!c.menor, ganhou: p % 2 === vencedor, gente: ops.length > 0, oponente: ops[0] || null });
   });
   return quem;
+}
+// 10/11 (pedido do dono, ideia de um jogador: "que tal punir quem sai da mesa? muito chato ficar jogando com robô"):
+// quem começou a partida e não estava mais na cadeira quando ela acabou (saiu, ou a conexão caiu e não voltou até o fim)
+// abandonou. Conta como derrota contra pessoas no ranking e na Copa (-1). Só vale se havia outra pessoa na partida:
+// largar uma mesa só com a turma do bairro não prejudica ninguém. Quem cai e volta antes do fim não perde nada.
+export function quemAbandonou(m) {
+  if (!m || !m.naPartida) return [];
+  const info = m.naPartidaInfo || [], out = [];
+  m.naPartida.forEach((id, p) => {
+    if (!id) return;
+    const c = m.cad[p];
+    if (c && !c.bot && !c.saiu && c.id === id) return;   // continua (ou voltou) na cadeira
+    const outros = m.naPartida.map((x, q) => q !== p && x && x !== id ? x : null).filter(Boolean).sort();
+    if (!outros.length) return;
+    const i = info[p] || {};
+    const adv = m.naPartida.map((x, q) => q % 2 !== p % 2 && x && x !== id ? x : null).filter(Boolean).sort();
+    out.push({ id, nome: i.nome || 'Jogador', av: i.av || null, nv: i.nv || 1, menor: !!i.menor, ganhou: false, gente: true, oponente: adv[0] || outros[0], abandono: true });
+  });
+  return out;
 }
 export class Mesa {
   constructor(ctx, env) {
@@ -1335,13 +1354,22 @@ export class Mesa {
     m.robo.mao[p] = true; if (!soMao) m.robo.partida[p] = true;
   }
   // Ranking (3.29): quem estava em cada cadeira quando a partida começou (só conta quem jogou a partida inteira)
-  inicioDePartida() { const m = this.m; m.naPartida = m.cad.map(c => c && !c.bot && c.id ? c.id : null); }
+  inicioDePartida() {
+    const m = this.m; m.naPartida = m.cad.map(c => c && !c.bot && c.id ? c.id : null);
+    m.naPartidaInfo = m.cad.map(c => c && !c.bot && c.id ? { nome: c.nome, av: c.av || null, nv: c.nv || 1, menor: !!c.menor } : null);   // 10/11: para quem abandonar
+  }
   async contarRanking() {
     const m = this.m, G = m.G, r = G && G.result;
     if (!G || G.phase !== 'handEnd' || !r || r.matchWinner == null || r.ranking) return;
     r.ranking = true;
     const quem = quemContaNoRanking(m, r.matchWinner);
     if (quem.length) { try { await somarRanking(this.env, quem); } catch (e) {} }
+    // 10/11: quem abandonou a partida perde como se tivesse perdido para pessoas; na mesa rápida, conta para a trava do dia
+    const sairam = quemAbandonou(m);
+    if (sairam.length) {
+      try { await somarRanking(this.env, sairam); } catch (e) {}
+      if (m.publica) for (const q of sairam) { try { await anotarAbandono(this.env, q.id); } catch (e) {} }
+    }
   }
   novaMaoRobo(novaPartida) {
     const m = this.m;

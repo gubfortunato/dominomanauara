@@ -43,6 +43,31 @@ export function periodos(agora) {
 function inicio(per) { const s = per.slice(1); return Date.parse((per[0] === 'S' ? s : s + '-01') + 'T00:00:00-04:00'); }
 export function usaPontos(env, per) { return inicio(per) >= pontosDesde(env); }
 
+// 10/11 (pedido do dono): trava da mesa rápida para quem abandona partidas. A 3ª partida abandonada no dia (com outras
+// pessoas na mesa) deixa a pessoa 15 minutos sem entrar na mesa rápida; cada abandono a mais, outros 15 minutos. Guarda
+// só o código do aparelho e a contagem do dia, por 2 dias. Mesa com os amigos e jogo offline continuam liberados.
+export const ABANDONO = { porDia: 3, trava: 15 * 60000 };
+export async function anotarAbandono(env, id) {
+  if (!idOk(id)) return;
+  const agora = Date.now(), dia = diaManaus(agora);
+  await env.DB.prepare('INSERT INTO abandonos (dia, aparelho, n, ultimo) VALUES (?, ?, 1, ?) ON CONFLICT (dia, aparelho) DO UPDATE SET n = n + 1, ultimo = excluded.ultimo')
+    .bind(dia, id, agora).run();
+}
+// -> até quando a mesa rápida está travada para esse aparelho (0 = liberada). Falha do banco não trava ninguém.
+export async function travaAbandono(env, id) {
+  if (!idOk(id)) return 0;
+  try {
+    const agora = Date.now();
+    const r = await env.DB.prepare('SELECT n, ultimo FROM abandonos WHERE dia = ? AND aparelho = ?').bind(diaManaus(agora), id).first();
+    if (!r || r.n < ABANDONO.porDia) return 0;
+    const ate = r.ultimo + ABANDONO.trava;
+    return ate > agora ? ate : 0;
+  } catch (e) { return 0; }
+}
+export async function limparAbandonos(env) {
+  try { await env.DB.prepare('DELETE FROM abandonos WHERE dia < ?').bind(diaManaus(Date.now() - 2 * DIA)).run(); } catch (e) {}
+}
+
 // Fim de partida online: quem jogou a partida inteira
 // (quem: [{ id, nome, av, nv, menor, ganhou, gente, oponente }]; gente = tinha pessoa do outro lado; oponente = o código dela)
 export async function somarRanking(env, quem) {
