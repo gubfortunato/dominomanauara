@@ -198,7 +198,7 @@ a.card{text-decoration:none}
 .seat{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:7px 4px 6px;border-radius:12px;background:rgba(0,0,0,.18);border:1px solid rgba(255,240,215,.06);min-width:0;transition:background .2s, box-shadow .2s}
 .av{position:relative;flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-display);font-size:16px;color:var(--wood-2);background:var(--eles-t);box-shadow:0 0 0 2px var(--eles-t)}
 .seat.nos .av{background:var(--nos-t);box-shadow:0 0 0 2px var(--nos-t)}
-.av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.av img{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;margin:0}   /* 10/11 (o dono: "a bolinha do avatar não tá centralizada"): a foto/avatar ocupa a bolinha inteira, presa nas 4 bordas (no iPhone, a grade às vezes não esticava a imagem) */
 .seat.turn .av{box-shadow:0 0 0 3px var(--glow)}
 .av .on{position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:var(--ok-t);box-shadow:0 0 0 2px var(--wood-2)}
 .sinfo{display:grid;justify-items:center;min-width:0;max-width:100%;line-height:1.2}
@@ -1292,7 +1292,7 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .sc-tag.par{color:#2a1a08;background:#f0b45e}
 .sc-tag.eu{color:#2a1a08;background:#f6eedf}
 .sc-face{position:relative;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--bg);box-shadow:0 0 0 2px var(--line)}
-.sc-face .sc-img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.sc-face .sc-img{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;margin:0}
 .sc-letra{font-family:var(--font-display);font-size:24px;color:var(--fg)}
 .sc-vazia{font-size:28px;font-weight:700;color:var(--muted);background:transparent;box-shadow:inset 0 0 0 2px var(--line)}
 .sc-on{position:absolute;right:-1px;bottom:1px;width:14px;height:14px;border-radius:50%;background:#8a7a68;box-shadow:0 0 0 2.5px var(--bg-2)}
@@ -1409,6 +1409,7 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 /* 10/11: Desafio das Confrarias mais rico (brasão, hoje, seta, barra, reta final) */
 .brasao{display:block;flex:none;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.25))}
 .dc-faixa{margin:2px 0 10px;padding:9px 12px;border-radius:12px;background:color-mix(in srgb,var(--glow) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--glow) 45%,var(--line));font-size:14.5px;line-height:1.35;color:var(--ink)}
+.dc-socio{display:inline;padding:0;margin:0 0 0 4px;border:0;background:none;min-height:0;font:inherit;font-weight:800;color:inherit;text-decoration:underline;width:auto}
 .dc-faixa.quente{background:linear-gradient(90deg,#b3261e,#e0662a);border-color:#f3a35e;color:#fff6e6}
 .dc-ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .dc-li{display:grid;grid-template-columns:30px 34px minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 10px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
@@ -3900,6 +3901,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.3', data: '10/11/2026', itens: ['Sexta da Calçada: a moral em dobro passa a ser dos sócios; quem não é sócio vê o aviso e o convite.', 'Desafio das Confrarias: na reta final (14 a 20/12), a vitória vale 2 pontos quando tem sócio na dupla que ganhou (sem sócio, 1). O ranking mostra os pontos certos do dia.', 'A oferta de sócio mostra os dois benefícios novos.', 'Cadeira da mesa: a bolinha do avatar fica sempre centralizada (no iPhone, a imagem podia sair do centro).'] },
   { v: '3.53.2', data: '10/11/2026', itens: ['Escolha de mesa: a amostra da mesa Amazonas mostra a mesa nova, com as faixas a pincel atravessando o meio.'] },
   { v: '3.53.1', data: '10/11/2026', itens: ['Ao vivo no Desafio: na Calçada, os confrontos entre Turmas acontecendo agora, com o placar e o botão Assistir, para qualquer um, sem o número da mesa (só assiste, não senta). O convite do desafio avisa que a partida passa ao vivo.', 'Na mesa online, o brasão da Turma aparece junto do nome de quem joga; no confronto entre Turmas, o placar mostra o brasão e o nome de cada Turma embaixo da dupla.', 'Quem acabou de chegar joga primeiro: a oferta de sócio só aparece na primeira vez que a pessoa usa o limite grátis (na hora, com o motivo em cima).', 'Foto no perfil é só para sócio (sem plano, aparece trancada); o sócio tem os botões Trocar a foto e Excluir a foto.', 'Cartão do Desafio: o título do tamanho dos outros cartões e uma taça nova.', 'Início: uma carroça de sena inclinada, grande, colada no nome Dominó Manauara.', 'Tela de entrada: mesa quadrada, um pouco mais para baixo (o balão de quem está em cima não cobre mais o nome do jogo).', 'Som de embaralhar as pedras mais caprichado (o arrasto na mesa e as pedras batendo), e dá para ouvir em Som e vibração.', 'Som e vibração: os botões de ouvir não travam mais (um toque com o dedo mexendo um pouco virava arrastar a folha).', 'Mesa Amazonas: as faixas agora são pinceladas (com as cerdas e as falhas do pincel), paradas.'] },
   { v: '3.53', data: '10/11/2026', itens: ['Sair no meio da partida com outras pessoas na mesa conta como derrota no ranking e na Copa. Na mesa rápida, quem sai no meio de 3 partidas no dia fica 15 minutos sem a mesa rápida. Queda de internet não conta se a pessoa voltar antes de a partida acabar.', 'Mais 10 emojis para reagir e no papo de mesa: 🐓 🤣 😎 🙏 💪 🎉 😭 😡 🤔 👀.', 'Foto do sócio no lugar do avatar: para o sócio que coloca foto no perfil, a opção já vem ligada; aprovada, a foto aparece na mesa, na fila, no papo, no ranking, na Copa e nas mesas ao vivo. Desligando no perfil, volta o avatar. Quem já tinha foto é perguntado uma vez.', 'Carteira de sócio: os botões "Trocar a foto" e "Usar o avatar" ficaram do mesmo tamanho.', 'Desafio das Confrarias mais emocionante: brasão de cada Turma, pontos de hoje, seta de quem subiu ou caiu, barra de pontos, a sua Turma sempre à vista e quanto falta para passar a de cima. Reta final em dobro: de 14 a 20/12, cada vitória contra outra Turma vale 2 pontos. Na tela da Turma: os craques (quem mais trouxe pontos) e o placar contra a Turma rival. Avisos no celular (no máximo 1 por dia, às 18h) quando outra Turma passar a sua, quando a sua chegar ao pódio, na véspera da reta final e no último dia.', 'Convite, uma vez, para quem já tinha o app: chamar os amigos para jogar, com o botão do WhatsApp.', 'Pedra de dominó mais parecida com a de verdade: espessura, quina polida, risco do meio gravado, pintas como furos e pino de latão.', 'Boas-vindas: a mesa vista de cima, com pedras de verdade no meio, as pedras de cada um na frente dele e os quatro em volta, sem nada por cima da mesa.', 'Sexta da Calçada: o emoji de dado saiu (dominó não é dado).'] },
@@ -9989,8 +9991,10 @@ function dcDatas(d) {
 function dcFaixa(d) {
   const x = dcDatas(d), agora = Date.now(), dias = Math.ceil((x.fim - agora) / 86400000), dobro = d.dobro || (agora >= x.dobroDesde && agora < x.fim);
   const ddmm = ms => { const z = new Date(ms - 4 * 3600000); return String(z.getUTCDate()).padStart(2, '0') + '/' + String(z.getUTCMonth() + 1).padStart(2, '0'); };
-  if (dobro) return `<p class="dc-faixa quente"><b>🔥 Reta final:</b> cada vitória contra outra Turma vale ${x.mult} pontos · ${dias <= 1 ? 'termina hoje, à meia-noite' : `faltam ${dias} dias`}</p>`;
-  return `<p class="dc-faixa"><b>${dias === 1 ? 'Falta 1 dia' : `Faltam ${dias} dias`}</b> · 🔥 de ${ddmm(x.dobroDesde)} a 20/12, cada vitória vale ${x.mult} pontos</p>`;
+  // 10/11 (pedido do dono): o dobro da reta final é de quem tem sócio na dupla; quem não é sócio vê o convite
+  const vira = !temPlano() && typeof pagamentosAtivos === 'function' && pagamentosAtivos() ? ' <button type="button" class="linkbtn dc-socio" data-socio>Seja sócio</button>' : '';
+  if (dobro) return `<p class="dc-faixa quente"><b>🔥 Reta final:</b> vitória com sócio na dupla vale ${x.mult} pontos · ${dias <= 1 ? 'termina hoje, à meia-noite' : `faltam ${dias} dias`}${vira}</p>`;
+  return `<p class="dc-faixa"><b>${dias === 1 ? 'Falta 1 dia' : `Faltam ${dias} dias`}</b> · 🔥 de ${ddmm(x.dobroDesde)} a 20/12, vitória com sócio na dupla vale ${x.mult} pontos${vira}</p>`;
 }
 const dcMov = m => m === 'novo' ? '<i class="dc-mov novo">novo</i>' : m > 0 ? `<i class="dc-mov up" aria-label="subiu ${m}">▲${m}</i>` : m < 0 ? `<i class="dc-mov down" aria-label="caiu ${-m}">▼${-m}</i>` : '';
 // a lista das Turmas (Calçada e folha da Turma): as primeiras e, se a sua ficou de fora, ela no fim
@@ -10026,7 +10030,7 @@ function dcAoVivo() {
 function dcFalta(t, d) {
   if (!t || !d.aberto) return '';
   if (t.pos === 1) return `<p class="dc-meu">👑 A ${esc(nomeTurma(t.nome))} lidera o Desafio! Segura essa posição.</p>`;
-  if (t.acima) { const f = t.acima.falta + 1; return `<p class="dc-meu">Faltam <b>${f} ${f === 1 ? 'ponto' : 'pontos'}</b> para passar a ${esc(nomeTurma(t.acima.nome))}${d.dobro ? ` (na reta final, ${Math.ceil(f / (d.mult || 2))} ${Math.ceil(f / (d.mult || 2)) === 1 ? 'vitória' : 'vitórias'})` : ''}.</p>`; }
+  if (t.acima) { const f = t.acima.falta + 1; return `<p class="dc-meu">Faltam <b>${f} ${f === 1 ? 'ponto' : 'pontos'}</b> para passar a ${esc(nomeTurma(t.acima.nome))}${d.dobro ? ` (com sócio na dupla, ${Math.ceil(f / (d.mult || 2))} ${Math.ceil(f / (d.mult || 2)) === 1 ? 'vitória' : 'vitórias'})` : ''}.</p>`; }
   if (!t.pontos) return `<p class="dc-meu">A sua Turma ainda não pontuou: a primeira vitória contra outra Turma já põe vocês no ranking.</p>`;
   return '';
 }
@@ -10056,7 +10060,7 @@ function desenharCartaoTurma() {
       ${t ? `<span class="tc-pts"><b>${t.pontos}</b> ${t.pontos === 1 ? 'ponto' : 'pontos'}${t.pos ? ` · ${t.pos}º lugar` : ''}</span>`
           : `<span class="tc-passos"><span><b>1</b>Junte os amigos numa Turma</span><span><b>2</b>Desafie outra Turma</span><span><b>3</b>Ganhou: +1 ponto</span></span>`}
       ${(() => { const x = dcDatas(d), ag = Date.now(), dias = Math.ceil((x.fim - ag) / 86400000), dobro = d.dobro || (ag >= x.dobroDesde && ag < x.fim);
-        return `<span class="tc-faixa${dobro ? ' quente' : ''}">${dobro ? `🔥 Reta final: vitória vale ${x.mult} pontos · ${dias <= 1 ? 'último dia' : `faltam ${dias} dias`}` : `${dias === 1 ? 'Falta 1 dia' : `Faltam ${dias} dias`} · 🔥 reta final em dobro a partir de 14/12`}</span>`; })()}
+        return `<span class="tc-faixa${dobro ? ' quente' : ''}">${dobro ? `🔥 Reta final: vitória com sócio vale ${x.mult} pontos · ${dias <= 1 ? 'último dia' : `faltam ${dias} dias`}` : `${dias === 1 ? 'Falta 1 dia' : `Faltam ${dias} dias`} · 🔥 de 14/12, vitória com sócio vale ${x.mult}`}</span>`; })()}
       ${top.length ? `<span class="tc-rank">${top.map(r => `<span class="tc-lin${t && r.nome === t.nome ? ' eu' : ''}"><i class="m${r.pos}">${r.pos}º</i>${brasao(r.nome, 24)}<span>${esc(nomeTurma(r.nome))}</span><em class="tc-hoje">${r.hoje ? `+${r.hoje} hoje` : ''}</em><b>${r.pontos}</b></span>`).join('')}</span>`
           : '<span class="tc-vazio">Nenhuma Turma pontuou ainda. A primeira vitória já vale o topo do ranking.</span>'}
       ${(() => { const n = (typeof VIVO !== 'undefined' && VIVO.mesas || []).filter(v => v.desafio && v.desafio.ver && v.fase === 'jogo').length;
@@ -10115,7 +10119,7 @@ function craquesRivalHTML(t, d) {
 function desenharTurma() {
   const box = $('#turmaFolha'); if (!box) return;
   const t = TM.info, d = desafioAgora();
-  const regra = `<ol class="tm-passos"><li><b>Monte a sua Turma</b> e mande o código para os amigos.</li><li><b>Desafie outra Turma:</b> o app cria a mesa e manda o convite pelo WhatsApp.</li><li><b>Ganhou, +1 ponto</b> (na reta final, de 14 a 20/12, +2). Em 20/12, a Turma com mais pontos é a campeã do ano e ganha uma estrela ★ ao lado do nome. Com 3 estrelas, ganha o troféu 🏆 da Grande Taça.</li></ol>
+  const regra = `<ol class="tm-passos"><li><b>Monte a sua Turma</b> e mande o código para os amigos.</li><li><b>Desafie outra Turma:</b> o app cria a mesa e manda o convite pelo WhatsApp.</li><li><b>Ganhou, +1 ponto</b> (na reta final, de 14 a 20/12, +2 se tiver sócio na dupla). Em 20/12, a Turma com mais pontos é a campeã do ano e ganha uma estrela ★ ao lado do nome. Com 3 estrelas, ganha o troféu 🏆 da Grande Taça.</li></ol>
     <p class="tm-virtual">A estrela e o troféu são do app: aparecem no nome da Turma, no ranking e na mesa. Não é prêmio físico.</p>
     <p class="note tm-regra">Vale de 1º/11 a 20/12, em partida online contra alguém de outra Turma (na mesa rápida também conta, se cair gente de outra Turma do outro lado). Contam até 5 vitórias por dia contra a mesma Turma.${planosValem() && !temPlano() ? ' Sem plano: até 2 desafios por dia, além da partida grátis.' : ''}</p>`;
   const campeas = d.campeas && d.campeas.length ? `<p class="tm-k">Campeãs</p><ul class="tm-camp">${d.campeas.map(c => `<li><span>${c.ano}</span><b>${esc(c.nome)}</b></li>`).join('')}</ul>` : '';
@@ -10215,7 +10219,7 @@ function desafiarTurma() {
 const conviteTextoTurma = conviteTexto;
 conviteTexto = function (cod) {
   const v = ON.vista; if (!(v && v.vs && v.codigo === cod)) return conviteTextoTurma(cod);
-  return `⚔️ Desafio das Confrarias! A ${nomeTurma(v.vs)} desafia a sua Turma no Dominó Manauara. Quem ganhar a partida leva ponto para a sua Turma (2 na reta final, de 14 a 20/12). A partida passa ao vivo na Calçada do app, para quem quiser assistir.\nEntra na mesa:\n${SITE_URL}#mesa=${cod}\n\nOu abra o app e digite o número da mesa: *${cod}*`;
+  return `⚔️ Desafio das Confrarias! A ${nomeTurma(v.vs)} desafia a sua Turma no Dominó Manauara. Quem ganhar a partida leva ponto para a sua Turma (2 na reta final, de 14 a 20/12, com sócio na dupla). A partida passa ao vivo na Calçada do app, para quem quiser assistir.\nEntra na mesa:\n${SITE_URL}#mesa=${cod}\n\nOu abra o app e digite o número da mesa: *${cod}*`;
 };
 const renderSalaTurma = renderSala;
 renderSala = function () {
@@ -10245,7 +10249,7 @@ receberOnline = function (m) {
     const minha = m.cad[m.minha] && m.cad[m.minha].turma, nome = d.turmas.includes(minha) ? minha : d.turmas[0];
     TM.em = 0;
     const n = d.pontos || 1;
-    setTimeout(() => toast(`+${n} ${n === 1 ? 'ponto' : 'pontos'} para a ${nomeTurma(nome)} no Desafio das Confrarias!${n > 1 ? ' 🔥 Reta final em dobro.' : ''}`), 1800);
+    setTimeout(() => toast(`+${n} ${n === 1 ? 'ponto' : 'pontos'} para a ${nomeTurma(nome)} no Desafio das Confrarias!${n > 1 ? ' 🔥 Reta final: sócio vale o dobro.' : ''}`), 1800);
   } catch (e) {}
 };
 
@@ -10577,7 +10581,7 @@ function contraGente() {
   try { if (mode !== 'on' || !ON.vista || typeof cadDe !== 'function') return false; return [1, 3].some(pos => { const c = cadDe(pos); return !!(c && !c.bot && !c.saiu); }); }
   catch (e) { return false; }
 }
-let xpMetade = false, xpSexta = false;
+let xpMetade = false, xpSexta = false, xpSextaSocio = false;
 // o aviso "contra a turma do bairro, vale metade" aparece nas 3 primeiras vezes, depois só no "Como ganhar experiência?"
 function xpMetadeAvisar() { try { const n = Number(store.get('dmz-xp-metade') || 0); if (n >= 3) return false; store.set('dmz-xp-metade', String(n + 1)); return true; } catch (e) { return false; } }
 // um título a cada 5 níveis (desde a 3.20.1 também no 25, 35 e 45, para nunca ficar muito tempo sem novidade)
@@ -10664,7 +10668,8 @@ function contarXP() {
   }
   xpMetade = pts > 0 && !contraGente();
   if (xpMetade) pts = Math.max(1, Math.round(pts / 2));
-  if (pts > 0 && sxAgora() === 'agora') { pts *= 2; xpSexta = true; }   // 10/11: Sexta da Calçada, XP em dobro
+  // 10/11 (pedido do dono): na Sexta da Calçada, a moral em dobro é do sócio; quem não é sócio vê o aviso
+  if (pts > 0 && sxAgora() === 'agora') { if (temPlano()) { pts *= 2; xpSexta = true; } else xpSextaSocio = true; }
   ganharXP(pts);
 }
 const trackOfflineNv = trackOffline;
@@ -10673,8 +10678,8 @@ trackOffline = function () { try { contarXP(); } catch (e) {} return trackOfflin
 function linhaXP(onde, como) {
   if (!xpDaMao || !onde) return;
   const v = nivelDe(nvEstado().xp);
-  onde.insertAdjacentHTML(como, `<p class="xp-linha"><b>+${xpDaMao}</b> de moral · Nível ${v.n}${v.precisa ? ` <span>(${v.dentro}/${v.precisa})</span>` : ''}${xpSeqMsg ? `<small class="xp-seq">${esc(xpSeqMsg)}</small>` : ''}${xpSexta ? '<small class="xp-seq">🔥 Sexta da Calçada: moral em dobro</small>' : ''}${xpMetade && xpMetadeAvisar() ? '<small class="xp-seq xp-metade">Contra a turma do bairro, vale a metade; contra pessoas, vale inteira.</small>' : ''}</p>`);
-  xpDaMao = 0; xpSeqMsg = ''; xpMetade = false; xpSexta = false;
+  onde.insertAdjacentHTML(como, `<p class="xp-linha"><b>+${xpDaMao}</b> de moral · Nível ${v.n}${v.precisa ? ` <span>(${v.dentro}/${v.precisa})</span>` : ''}${xpSeqMsg ? `<small class="xp-seq">${esc(xpSeqMsg)}</small>` : ''}${xpSexta ? '<small class="xp-seq">🔥 Sexta da Calçada: moral em dobro</small>' : ''}${xpSextaSocio ? '<small class="xp-seq">🔥 Sexta da Calçada: sócio ganha o dobro de moral</small>' : ''}${xpMetade && xpMetadeAvisar() ? '<small class="xp-seq xp-metade">Contra a turma do bairro, vale a metade; contra pessoas, vale inteira.</small>' : ''}</p>`);
+  xpDaMao = 0; xpSeqMsg = ''; xpMetade = false; xpSexta = false; xpSextaSocio = false;
 }
 const showResultNv = showResult;
 showResult = function () {
@@ -12921,7 +12926,7 @@ async function rkFora(fora) {
 function desenharDesafioCalcada() {
   let box = $('#dcCard'); const ref = $('#calcNota'); if (!ref) return;
   const d = desafioAgora(), t = TM.info;
-  if (!box) { ref.insertAdjacentHTML('afterend', '<section class="rk dc" id="dcCard" hidden></section>'); box = $('#dcCard'); box.addEventListener('click', e => { const vv = e.target.closest('[data-ver]'); if (vv) { assistirDesafio(vv.dataset.ver); return; } if (e.target.closest('#dcDesafiar')) desafiarTurma(); else if (e.target.closest('#dcTurma')) abrirTurma(); }); }
+  if (!box) { ref.insertAdjacentHTML('afterend', '<section class="rk dc" id="dcCard" hidden></section>'); box = $('#dcCard'); box.addEventListener('click', e => { const vv = e.target.closest('[data-ver]'); if (vv) { assistirDesafio(vv.dataset.ver); return; } if (e.target.closest('[data-socio]')) { track('desafio-reta-socio'); abrirApoio('calcada', 'plano'); return; } if (e.target.closest('#dcDesafiar')) desafiarTurma(); else if (e.target.closest('#dcTurma')) abrirTurma(); }); }
   box.hidden = !d.aberto || !profile;
   if (box.hidden) return;
   const top = (d.ranking || []).slice(0, 5);
@@ -13419,7 +13424,8 @@ function avisoPromoSocio(forcar, motivo) {
     ${preco}
     <ul class="pr-lista">
       <li>${CHECK}<span><b>Partidas sem limite</b> na mesa rápida, com os amigos e no offline (até sem internet)</span></li>
-      <li>${CHECK}<span><b>Desafios sem limite</b> no Desafio das Confrarias</span></li>
+      <li>${CHECK}<span><b>Desafios sem limite</b> no Desafio das Confrarias, e na reta final a sua vitória vale o dobro para a Turma</span></li>
+      <li>${CHECK}<span><b>Moral em dobro</b> na Sexta da Calçada, toda sexta das 20h às 23h</span></li>
       <li>${CHECK}<span><b>Todas as mesas de Manaus:</b> Teatro Amazonas, Arara-Azul, Tucano, Encontro das Águas e muito mais</span></li>
       <li>${CHECK}<span><b>Papo de mesa</b> liberado nas partidas com os amigos</span></li>
       <li>${CHECK}<span><b>Seu avatar do seu jeito</b>, foto na mesa e o selo ★ de sócio</span></li>
@@ -13528,7 +13534,7 @@ function evCardDados() {
   if (c.fase === 'agora') return { tipo: 'copa', ir: 'copa', ck: 'Ao vivo · até domingo, 22h', ct: `🏆 ${ed.nome}`,
     cd: socio ? (eu ? `Você está em ${eu.pos}º, com ${rkPts(eu.pontos)}. Cada vitória online vale ponto: bora subir!` : 'Cada vitória online vale ponto para os sócios. Entre no ranking da Copa!')
       : 'Só sócios pontuam. Veja o ranking e seja sócio para disputar o troféu.' };
-  if (sx === 'agora') return { tipo: 'sexta', ir: 'rapida', ck: 'Sexta da Calçada · até as 23h', ct: '🔥 Moral em dobro agora!', cd: 'Toda partida vale o dobro de moral: o nível sobe duas vezes mais rápido. Bora pra mesa rápida?' };
+  if (sx === 'agora') return { tipo: 'sexta', ir: 'rapida', ck: 'Sexta da Calçada · até as 23h', ct: '🔥 Moral em dobro agora!', cd: temPlano() ? 'Toda partida vale o dobro de moral para você, sócio: o nível sobe duas vezes mais rápido. Bora pra mesa rápida?' : 'Até as 23h, os sócios ganham o dobro de moral em todas as partidas. Seja sócio e suba de nível duas vezes mais rápido!' };
   if (c.fase === 'antes') return { tipo: 'copa', ir: 'copa', ck: 'Vem aí', ct: `🏆 ${ed.nome}`,
     cd: `${csQuando(ed).replace(/^d/, 'D')}. ${socio ? 'Você está dentro: o campeão leva o troféu na carteira e a mesa do campeão.' : 'Só sócios pontuam: o campeão leva o troféu na carteira e a mesa do campeão.'}` };
   if (c.fase === 'depois') {
@@ -13536,7 +13542,7 @@ function evCardDados() {
     return { tipo: 'copa', ir: 'copa', ck: 'Copa dos Sócios', ct: cp ? `🏆 ${cp.eu ? 'Você é o campeão!' : cp.nome + ' é o campeão!'}` : `🏆 A ${ed.nome} terminou`,
       cd: `Veja o pódio da ${ed.nome}. A próxima é em ${c.atual.mes}.` };
   }
-  if (sx === 'hoje') return { tipo: 'sexta', ir: 'sexta', ck: 'Hoje · das 20h às 23h', ct: '🔥 Sexta da Calçada', cd: 'Moral em dobro em todas as partidas: o nível sobe duas vezes mais rápido. Chama a turma!' };
+  if (sx === 'hoje') return { tipo: 'sexta', ir: 'sexta', ck: 'Hoje · das 20h às 23h', ct: '🔥 Sexta da Calçada', cd: temPlano() ? 'Moral em dobro para os sócios em todas as partidas: o seu nível sobe duas vezes mais rápido. Chama a turma!' : 'Das 20h às 23h, os sócios ganham moral em dobro em todas as partidas. Chama a turma!' };
   return null;
 }
 function desenharEvCard() {
@@ -14366,7 +14372,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.2-79d5f7ee';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.3-a6ae2b1f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

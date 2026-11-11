@@ -185,10 +185,10 @@ const hm = ms => { const d = new Date(ms - MANAUS); return { dia: d.toISOString(
 const ddmm = ms => { const d = new Date(ms - MANAUS); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0'); };
 export const TEXTOS = {
   vemAi: e => ({ titulo: `Vem aí a ${e.nome}! 🏆`, texto: `De ${ddmm(e.inicio)} (sexta, 20h) a ${ddmm(e.fim)} (domingo, 22h). Só sócios pontuam: o campeão leva o troféu na carteira e a mesa do campeão.`, url: '/?abrir=copa' }),
-  sexta19: { titulo: 'Hoje tem Sexta da Calçada! 🔥', texto: 'Das 20h às 23h, moral em dobro: o seu nível sobe duas vezes mais rápido. Chama a turma e bora pra mesa!', url: '/' },
-  sexta20: { titulo: 'Começou a Sexta da Calçada!', texto: 'Moral em dobro até as 23h: o nível sobe duas vezes mais rápido. Bora pra mesa?', url: '/' },
-  copa19: e => ({ titulo: `A ${e.nome} começa em 1 hora! 🏆`, texto: 'Às 20h começa a Copa e a Sexta da Calçada, com moral em dobro. Só sócios pontuam na Copa.', url: '/?abrir=copa' }),
-  copa20: e => ({ titulo: `Começou a ${e.nome}! 🏆`, texto: `Vai até domingo, 22h. Cada vitória online conta ponto para os sócios. E hoje tem moral em dobro até as 23h.`, url: '/?abrir=copa' }),
+  sexta19: { titulo: 'Hoje tem Sexta da Calçada! 🔥', texto: 'Das 20h às 23h, sócio ganha moral em dobro: o nível sobe duas vezes mais rápido. Chama a turma e bora pra mesa!', url: '/' },
+  sexta20: { titulo: 'Começou a Sexta da Calçada!', texto: 'Até as 23h, sócio ganha moral em dobro: o nível sobe duas vezes mais rápido. Bora pra mesa?', url: '/' },
+  copa19: e => ({ titulo: `A ${e.nome} começa em 1 hora! 🏆`, texto: 'Às 20h começa a Copa e a Sexta da Calçada, com moral em dobro para os sócios. Só sócios pontuam na Copa.', url: '/?abrir=copa' }),
+  copa20: e => ({ titulo: `Começou a ${e.nome}! 🏆`, texto: `Vai até domingo, 22h. Cada vitória online conta ponto para os sócios. E hoje o sócio tem moral em dobro até as 23h.`, url: '/?abrir=copa' }),
   ultimas: e => ({ titulo: `Últimas horas da ${e.nome}!`, texto: 'A Copa termina hoje às 22h. Ainda dá tempo de subir no ranking: bora pra mesa!', url: '/?abrir=copa' }),
   campeaoTodos: e => ({ titulo: `Temos campeão da ${e.nome}! 🏆`, texto: 'Veja quem levou o troféu. A próxima Copa já tem data: seja sócio e venha disputar.', url: '/?abrir=copa' }),
   campeaoEu: e => ({ titulo: 'Você é o campeão da Copa dos Sócios! 🏆', texto: `O troféu da ${e.nome} já está na sua carteira, e a mesa do campeão é sua até a próxima Copa.`, url: '/?abrir=copa' }),
