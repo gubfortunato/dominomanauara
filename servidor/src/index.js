@@ -482,6 +482,16 @@ async function rotinaEventos(env) {
   try { await apurarCopa(env); } catch (e) {}
   try { return await avisosDeEvento(env); } catch (e) { return null; }
 }
+// 11/11: o celular do dono (o app manda com a chave do dono, 1 vez por dia) recebe o aviso dos confrontos do Desafio
+async function donoAparelho(req, env, origin) {
+  if (!(await ehDono(req, env))) return json({ erro: 'nao-autorizado' }, 401, origin);
+  let b; try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
+  const ap = String((b && b.aparelho) || '');
+  if (!/^[a-z0-9-]{8,40}$/i.test(ap)) return json({ erro: 'aparelho' }, 400, origin);
+  await env.DB.prepare('INSERT INTO dono_aparelhos (aparelho, em) VALUES (?, ?) ON CONFLICT(aparelho) DO UPDATE SET em = excluded.em').bind(ap, Date.now()).run();
+  try { await env.DB.prepare('DELETE FROM dono_aparelhos WHERE em < ?').bind(Date.now() - 60 * 86400000).run(); } catch (e) {}
+  return json({ ok: true }, 200, origin);
+}
 async function donoAvisos(req, env, origin) {
   if (!(await ehDono(req, env))) return json({ erro: 'nao-autorizado' }, 401, origin);
   const r = await env.DB.prepare('SELECT COUNT(*) AS n, SUM(envios) AS envios FROM avisos').first();
@@ -625,6 +635,7 @@ export default {
       if (url.pathname === '/dono/avisos' && req.method === 'GET') return await donoAvisos(req, env, origin);
       if (url.pathname === '/dono/avisos/enviar' && req.method === 'POST') return await donoAvisosEnviar(req, env, origin);
       if (url.pathname === '/dono/mensagens' && req.method === 'GET') return await listarMensagens(req, env, origin, url);
+      if (url.pathname === '/dono/aparelho' && req.method === 'POST') return await donoAparelho(req, env, origin);   // 11/11
       const m = url.pathname.match(/^\/dono\/mensagens\/(\d+)$/);
       if (m && req.method === 'POST') return await mudarStatus(req, env, origin, Number(m[1]));
       return json({ erro: 'nao-encontrado' }, 404, origin);
