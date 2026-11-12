@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon-v2.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Dominó">
+<meta name="apple-mobile-web-app-title" content="Dominó Manauara">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script>if (navigator.standalone === true) document.documentElement.classList.add('iosapp');</script>
 <meta property="og:type" content="website">
@@ -3995,6 +3995,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.20', data: '12/11/2026', itens: ['O app instalado agora se chama Dominó Manauara na tela do celular (antes, só Dominó).'] },
   { v: '3.53.19', data: '12/11/2026', itens: ['Nova: Quarta dos Amigos! Toda quarta, das 20h às 23h, quem senta na mesa com os amigos de um sócio joga sem limite, mesmo sem ser sócio, e sem gastar as partidas grátis do dia. E o sócio ganha moral em dobro nas mesas com os amigos. Aviso no celular às 18h.'] },
   { v: '3.53.18', data: '12/11/2026', itens: ['Tela de entrada ajustada para celulares com tela mais baixa (como muitos Android com o app instalado): tudo cabe na tela, sem cortar a frase de baixo.'] },
   { v: '3.53.17', data: '12/11/2026', itens: ['Digitou o código de sócio e não achou? Agora o app mostra o que conferir: o código não tem as letras O e I nem os números 0 e 1.'] },
@@ -14801,7 +14802,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.19-ae7769ca';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.20-8f6c5227';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
