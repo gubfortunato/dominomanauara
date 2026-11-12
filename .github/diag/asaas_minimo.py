@@ -15,10 +15,10 @@ with open(OUT, 'a') as f:
     if not K: f.write('sem chave\n'); sys.exit()
     st, j = req('/myAccount/fees')
     f.write(f'== taxas ({st})\n'); f.write(json.dumps(j.get('payment', j), ensure_ascii=False)[:3000] + '\n')
-    for valor, tipos in [(4.90, ['PIX', 'CREDIT_CARD']), (4.90, ['PIX']), (1.00, ['PIX'])]:
+    for valor, tipos in [(5.00, ['PIX', 'CREDIT_CARD'])]:
         corpo = {'billingTypes': tipos, 'chargeTypes': ['DETACHED'], 'minutesToExpire': 10,
                  'callback': {'successUrl': 'https://dominomanauara.com.br/?pago=teste', 'cancelUrl': 'https://dominomanauara.com.br/?pago=cancelado', 'expiredUrl': 'https://dominomanauara.com.br/?pago=expirado'},
-                 'items': [{'name': 'Dominó Manauara - 7 dias', 'description': 'Teste do passe da semana (cancelado na hora).', 'quantity': 1, 'value': valor}]}
+                 'items': [{'name': 'Dominó Manauara - 7 dias', 'description': 'Passe da semana: 7 dias de Sócio da Calçada, com partidas sem limite, todas as mesas, papo de mesa e ranking completo.', 'quantity': 1, 'value': valor}]}
         st, j = req('/checkouts', 'POST', corpo)
         erro = (j.get('errors') or [{}])[0].get('description') if isinstance(j, dict) else None
         f.write(f'== checkout {valor} {tipos}: status {st}, abriu {bool(j.get("link"))}, erro {erro}\n')
