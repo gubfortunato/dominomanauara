@@ -3995,6 +3995,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.24', data: '12/11/2026', itens: ['O recado "Bora chamar a turma?" não aparece mais ao abrir o app. O convite para os amigos continua na mesa com os amigos e em Mais.'] },
   { v: '3.53.23', data: '12/11/2026', itens: ['Mais proteção para o progresso do sócio: se o app for reinstalado ou o celular trocado, o progresso guardado com a gente não é mais apagado pelo da instalação nova. Ele volta sozinho para o celular.'] },
   { v: '3.53.22', data: '12/11/2026', itens: ['Ícone em madeira escura, com as pedras maiores.'] },
   { v: '3.53.21', data: '12/11/2026', itens: ['Ícone novo: Dominó Manauara escrito, com três pedras em leque atrás.'] },
@@ -14063,6 +14064,7 @@ const WA_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentCo
 const RECADO = { id: '2026-11-10', ate: Date.parse('2026-12-01T04:00:00Z') };
 const RECADO_ZAP = 'Bora jogar dominó comigo? É o Dominó Manauara: bucho, garagem, passe e galo, do jeito de Manaus, no celular. Dá para montar a mesa só com a nossa turma.';
 function recadoNaHome() {
+  return false;   // 12/11 (pedido do dono: "cancele pra não incomodar os usuários"): o recado "Bora chamar a turma?" não aparece mais
   if (Date.now() > RECADO.ate || store.get('dmz-recado') === RECADO.id || store.get('dmz-recado-pend') !== RECADO.id) return false;
   store.set('dmz-recado', RECADO.id);
   track('recado-' + RECADO.id);
@@ -14810,7 +14812,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.23-04a4c33b';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.24-e401d8ed';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
