@@ -27,8 +27,8 @@ jobs:
           sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
           AGORA=$(($(date +%s) * 1000))
           p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
-          # 12/11 (pedido do dono): o código de sócio dos aparelhos do dono. Só lê.
-          python3 "$GITHUB_WORKSPACE/.github/diag/meu_codigo.py" $OUT 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
+          # 12/11 (pedido do dono): reinstalou e perdeu o progresso: onde está o plano e o progresso na nuvem. Só lê.
+          python3 "$GITHUB_WORKSPACE/.github/diag/meu_progresso.py" $OUT 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
           rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
