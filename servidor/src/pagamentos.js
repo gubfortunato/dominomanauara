@@ -30,8 +30,8 @@ export const PRODUTOS = {
   ap3u: { nome: 'Dominó Manauara - 3 meses', desc: 'Sócio da Calçada por 3 meses: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 37.90, dias: 92, promo: { valor: 24.90, vezes: 1 } },
   ap12u: { nome: 'Dominó Manauara - 1 ano', desc: 'Sócio da Calçada por 1 ano: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 99.90, dias: 366, promo: { valor: 74.90, vezes: 1 } },
   // 12/11 (pedido do dono): Passe da semana, 7 dias de sócio, pago uma vez (Pix ou cartão), sem renovar. Para quem bate o
-  // limite e quer jogar mais sem assinar. O Asaas não aceita cobrança abaixo de R$ 5,00 (testado em 12/11: R$ 4,90 recusado).
-  aps: { nome: 'Dominó Manauara - 7 dias', desc: 'Passe da semana: 7 dias de Sócio da Calçada, com partidas sem limite, todas as mesas, papo de mesa e ranking completo.', valor: 5.00, dias: 7 },
+  // limite e quer jogar mais sem assinar. R$ 5,90 (dono). O Asaas não aceita cobrança abaixo de R$ 5,00 (testado em 12/11: R$ 4,90 recusado).
+  aps: { nome: 'Dominó Manauara - 7 dias', desc: 'Passe da semana: 7 dias de Sócio da Calçada, com partidas sem limite, todas as mesas, papo de mesa e ranking completo.', valor: 5.90, dias: 7 },
   apoio990: { nome: 'Dominó Manauara - 1 mês', desc: 'Sócio da Calçada do Dominó Manauara por 1 mês: foto na mesa online, selo e avatares exclusivos.', valor: 9.90, dias: 31 },
   apoio1990: { nome: 'Dominó Manauara - 3 meses', desc: 'Sócio da Calçada do Dominó Manauara por 3 meses: foto na mesa online, selo e avatares exclusivos.', valor: 19.90, dias: 92 },
   apoio2990: { nome: 'Dominó Manauara - 6 meses', desc: 'Sócio da Calçada do Dominó Manauara por 6 meses: foto na mesa online, selo e avatares exclusivos.', valor: 29.90, dias: 183 },

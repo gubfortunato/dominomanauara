@@ -3969,7 +3969,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.53.16', data: '12/11/2026', itens: ['Novo: Passe da semana. São 7 dias de Sócio da Calçada, com partidas sem limite, por R$ 5,00 no Pix ou no cartão, sem renovar.', 'As partidas grátis do dia são por pessoa, não por aparelho: jogar no app, no navegador ou em outro celular soma na mesma conta. Fica justo para todo mundo.'] },
+  { v: '3.53.16', data: '12/11/2026', itens: ['Novo: Passe da semana. São 7 dias de Sócio da Calçada, com partidas sem limite, por R$ 5,90 no Pix ou no cartão, sem renovar.', 'As partidas grátis do dia são por pessoa, não por aparelho: jogar no app, no navegador ou em outro celular soma na mesma conta. Fica justo para todo mundo.'] },
   { v: '3.53.15', data: '11/11/2026', itens: ['Já é sócio e o app pediu para pagar? Na tela do limite de partidas agora tem "Já sou sócio em outro aparelho": é só usar o seu código.', 'Na carta de boas-vindas do sócio, um botão manda o seu código para o seu WhatsApp.'] },
   { v: '3.53.14', data: '11/11/2026', itens: ['Quem foi bloqueado por passar do limite grátis com vários aparelhos e vira Sócio da Calçada volta a jogar na hora.'] },
   { v: '3.53.13', data: '11/11/2026', itens: ['Mais proteção para quem joga limpo: quem foi bloqueado por descumprir as regras não volta mais com outro aparelho.'] },
@@ -7497,7 +7497,7 @@ function renovaSozinho() { const p = planoLocal(); return !!(p && p.renova); }
 // assina até 4/11 (fim no começo dos limites, 5/11 00:00 de Brasília). O app pergunta ao servidor (GET /precos) e, sem
 // internet, usa estes. Quem cobra é o servidor: o valor da página do Asaas é sempre o certo.
 const PRECOS_BASE = { apm: { normal: 14.9, promo: 9.9, vezes: 3 }, ap3: { normal: 37.9, promo: 24.9, vezes: 1 }, ap12: { normal: 99.9, promo: 74.9, vezes: 1 }, ap1: { normal: 14.9, promo: 9.9, vezes: 1 },
-  ap3u: { normal: 37.9, promo: 24.9, vezes: 1 }, ap12u: { normal: 99.9, promo: 74.9, vezes: 1 }, aps: { normal: 5, promo: 5, vezes: 0 } };   // 04/11: 3 meses e 1 ano avulsos (Pix ou cartão); 12/11: passe da semana
+  ap3u: { normal: 37.9, promo: 24.9, vezes: 1 }, ap12u: { normal: 99.9, promo: 74.9, vezes: 1 }, aps: { normal: 5.9, promo: 5.9, vezes: 0 } };   // 04/11: 3 meses e 1 ano avulsos (Pix ou cartão); 12/11: passe da semana
 const PLANOS_LANC = Date.UTC(2026, 10, 5, 3, 0, 0);   // 05/11/2026, 00:00 de Brasília
 const PROMO_FIM = Date.UTC(2026, 11, 1, 3, 0, 0);   // 03/11 (dono): a promoção vale até 30/11 (antes, até 4/11), para pegar o 1º mês de limites
 const PROMO_DIA = '30/11';
