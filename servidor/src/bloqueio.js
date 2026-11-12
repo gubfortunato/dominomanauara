@@ -77,6 +77,18 @@ export async function donoApelidos(req, env, origin, h, url) {
   return h.json({ apelidos: results || [] }, 200, origin);
 }
 
+// 11/11 (pedido do dono): quem foi bloqueado por burlar o limite grátis (vários aparelhos, ou voltou com outro aparelho)
+// e vira sócio é desbloqueado sozinho quando o pagamento cai: o motivo da burla some e ele passa a pagar. Quem foi bloqueado
+// por outro motivo (apelido ou foto ofensiva, ou pela lista do administrador) continua bloqueado e nem consegue pagar.
+const BURLA = /burla|voltou com outro aparelho/i;
+export async function motivoBloqueio(env, aparelho) {
+  if (!aparelho) return null;
+  try { const r = await env.DB.prepare('SELECT motivo FROM bloqueios WHERE aparelho = ?').bind(aparelho).first(); return r ? { motivo: r.motivo || '', burla: BURLA.test(r.motivo || '') } : null; } catch (e) { return null; }
+}
+export async function liberarQuemPagou(env, aparelho) {
+  try { await env.DB.prepare('DELETE FROM bloqueios WHERE aparelho = ? AND (motivo LIKE ? OR motivo LIKE ?)').bind(aparelho, '%burla%', '%voltou com outro aparelho%').run(); } catch (e) {}
+}
+
 export async function bloqueado(env, aparelho) {
   if (!aparelho) return false;
   try { return !!(await env.DB.prepare('SELECT 1 AS ok FROM bloqueios WHERE aparelho = ?').bind(aparelho).first()); } catch (e) { return false; }
