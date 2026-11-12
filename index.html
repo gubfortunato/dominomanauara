@@ -1919,6 +1919,8 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 /* 3.25: administrador — jogadores da mesa online e bloqueio */
 .dn-joglista{list-style:none;margin:6px 0 10px;padding:0;display:grid;gap:6px}
 .dn-apl-add{display:flex;gap:8px;margin:6px 0 4px}   /* 11/11: apelidos bloqueados */
+.sala-quarta{margin:4px 0 10px;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,#1d5d78,#08222e);color:#eaf6fb;font-size:15px;line-height:1.4;text-align:center}   /* 12/11: Quarta dos Amigos */
+.sala-quarta b{display:block;font-size:16.5px;margin-bottom:2px;color:#fff}
 .trz-dica{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:var(--bg-2);border:1px solid var(--line);font-size:14.5px;line-height:1.4;color:var(--fg)}   /* 12/11: o que conferir no código */
 .pl-passe{display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}.pl-passe small{font-size:13px;font-weight:600;opacity:.8}   /* 12/11: passe da semana */
 .ps-cmp{margin:12px 0 14px;padding:12px 14px;border-radius:14px;background:var(--bg-2);border:1px solid var(--line);font-size:15px;line-height:1.4}
@@ -2377,6 +2379,7 @@ body.assistindo #scrGame.game{padding-bottom:calc(env(safe-area-inset-bottom,0px
 .ev-card .ck{color:#f3c25a}
 .ev-card.copa{--wood-1:#17664a;--wood-2:#05201a}
 .ev-card.sexta{--wood-1:#3d2c6e;--wood-2:#160e30}
+.ev-card.quarta{--wood-1:#1d5d78;--wood-2:#08222e}   /* 12/11: Quarta dos Amigos */
 /* Copa: janela e cartão da Calçada */
 .cs-status{margin:4px 0 10px;color:var(--muted);font-size:15.5px;line-height:1.4}
 .rk.cs .cs-status{margin:0}
@@ -3037,6 +3040,7 @@ body.papo-aberto{overflow:hidden}
       <div class="sala-mesa" id="salaMesa"></div>
       <button type="button" class="mesa-pick" id="salaMesaPick" aria-label="Trocar a mesa"></button>
       <p class="note sala-dica" id="salaDica">Toque numa cadeira vazia para trocar de lugar. Quem senta na sua frente é o seu parceiro.</p>
+      <p class="sala-quarta" id="salaQuarta" hidden></p>
       <a class="share-wa sala-convite" id="salaConvite" href="https://wa.me/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.3 14.8L2.3 21.8l4.9-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-3-.4-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.1 11.1 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3Z"/></svg>Chamar os amigos no WhatsApp</a>
       <button type="button" class="primary" id="salaComecar">Começar</button>
       <p class="note sala-faltam" id="salaFaltam"></p>
@@ -3110,6 +3114,7 @@ body.papo-aberto{overflow:hidden}
         <div class="ap-cmp-l" role="row"><b role="rowheader">Papo de mesa (com os amigos)</b><span role="cell" class="ap-cmp-g">Na partida do dia, e ouve os áudios</span><span role="cell" class="ap-cmp-s">Em todas as partidas, e manda áudio</span></div>
         <!-- 11/11 (pedido do dono): a tabela mostra também a Sexta e a reta final do Desafio, como a oferta e a carta -->
         <div class="ap-cmp-l" role="row"><b role="rowheader">Sexta da Calçada (20h às 23h)</b><span role="cell" class="ap-cmp-g">Moral normal</span><span role="cell" class="ap-cmp-s">Moral em dobro</span></div>
+        <div class="ap-cmp-l" role="row"><b role="rowheader">Quarta dos Amigos (20h às 23h)</b><span role="cell" class="ap-cmp-g">Sem limite só na mesa de um sócio</span><span role="cell" class="ap-cmp-s">Sua mesa liberada para a turma, e moral em dobro</span></div>
         <div class="ap-cmp-l" role="row" id="apCmpDesafio"><b role="rowheader">Desafio das Confrarias: reta final (14 a 20/12)</b><span role="cell" class="ap-cmp-g">1 ponto por vitória, ou 2 com um sócio na dupla</span><span role="cell" class="ap-cmp-s">2 pontos por vitória para a Turma</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Ranking</b><span role="cell" class="ap-cmp-g">Pontua e vê o Rei e os 3 primeiros da semana</span><span role="cell" class="ap-cmp-s">Completo, da semana e do mês, com a sua posição</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Coroa de Rei da Calçada</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s">Pode ser sua</span></div>
@@ -3320,6 +3325,11 @@ body.papo-aberto{overflow:hidden}
       <span class="ck">Possíveis burlas dos limites</span>
       <p class="dn-avn" id="dnBurlasR">Carregando…</p>
       <ul class="dn-joglista" id="dnBurlasLista"></ul>
+    </div>
+    <div class="dn-list wood dn-jog" id="dnQuarta" hidden>
+      <span class="ck">Quarta dos Amigos e convites</span>
+      <p class="dn-avn" id="dnQuartaR">Carregando…</p>
+      <ul class="dn-joglista" id="dnQuartaLista"></ul>
     </div>
     <div class="dn-list wood dn-avisos" id="dnAvisos" hidden>
       <span class="ck">Lembretes para jogar</span>
@@ -3985,6 +3995,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.19', data: '12/11/2026', itens: ['Nova: Quarta dos Amigos! Toda quarta, das 20h às 23h, quem senta na mesa com os amigos de um sócio joga sem limite, mesmo sem ser sócio, e sem gastar as partidas grátis do dia. E o sócio ganha moral em dobro nas mesas com os amigos. Aviso no celular às 18h.'] },
   { v: '3.53.18', data: '12/11/2026', itens: ['Tela de entrada ajustada para celulares com tela mais baixa (como muitos Android com o app instalado): tudo cabe na tela, sem cortar a frase de baixo.'] },
   { v: '3.53.17', data: '12/11/2026', itens: ['Digitou o código de sócio e não achou? Agora o app mostra o que conferir: o código não tem as letras O e I nem os números 0 e 1.'] },
   { v: '3.53.16', data: '12/11/2026', itens: ['Novo: Passe da semana. São 7 dias de Sócio da Calçada, com partidas sem limite, por R$ 5,90 no Pix ou no cartão, sem renovar.', 'As partidas grátis do dia são por pessoa, não por aparelho: jogar no app, no navegador ou em outro celular soma na mesma conta. Fica justo para todo mundo.'] },
@@ -6569,7 +6580,9 @@ document.addEventListener('click', () => {
 // aqui a mesa é "girada" para que você seja sempre a cadeira 0 — assim a mesa, as animações,
 // a festa e o histórico funcionam igual ao jogo offline.
 const MKEY = 'dmz-mesa';           // mesa em que você está sentado (para voltar depois)
-const CONVITE = 'dmz-convite';     // número que chegou por link, esperando você entrar
+const CONVITE = 'dmz-convite';
+const CONVITE_NOVO = 'dmz-convite-novo';   // 12/11: chegou pela 1ª vez pelo link desta mesa (o servidor anota uma vez)
+function conviteNovo(cod) { try { const c = JSON.parse(store.get(CONVITE_NOVO) || 'null'); if (!c) return 0; if (c.mesa !== cod || Date.now() - c.em > 864e5) { if (Date.now() - c.em > 864e5) store.del(CONVITE_NOVO); return 0; } store.del(CONVITE_NOVO); return 1; } catch (e) { return 0; } }     // número que chegou por link, esperando você entrar
 const ON = { cod: null, ws: null, ativo: false, vista: null, seq: -1, tent: 0, reT: null, pingT: null, otimista: null,
   depoisDoDeal: null, armado: false, ultimoAviso: 0, buscando: false, rapida: false, recebido: 0, contaT: null };
 
@@ -6646,7 +6659,7 @@ function conectar(cod) {
   ws.onopen = () => {
     ON.tent = 0;
     let mesa = null; try { mesa = mesaEscolhida().id; } catch (e) {}
-    const entrar = () => { if (ws.readyState === 1) ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), mesa, mesaFixa: !!ON.mesaFixa, fila: true, apelido: true, menor: !!(profile && profile.idade === 'menor') })); };   // fila: este app mostra a fila do ganha-chama
+    const entrar = () => { if (ws.readyState === 1) ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), mesa, mesaFixa: !!ON.mesaFixa, fila: true, apelido: true, menor: !!(profile && profile.idade === 'menor'), convite: conviteNovo(cod) })); };   // 12/11: convite: 1ª vez no app pelo link desta mesa   // fila: este app mostra a fila do ganha-chama
     // 3.41: o servidor só deixa entrar quem está com o app aberto: antes, o app garante que avisou ("No app agora")
     (typeof presGarantir === 'function' ? presGarantir() : Promise.resolve()).then(entrar, entrar).then(() => { ON.mesaFixa = false; });
     clearInterval(ON.pingT);
@@ -7131,6 +7144,8 @@ function conviteTexto(cod) {
   // na mesa da Copa (Manaus 357, até o dia 24/10), o convite fala da festa
   if (ON.vista && ON.vista.tema === 'manaus357' && typeof COPA !== 'undefined' && Date.now() < COPA.fim)
     return `🎉 Manaus faz 357 anos! Bora celebrar com uma partida de dominó? Entra na minha mesa da Copa 357 Anos no Dominó Manauara:\n${SITE_URL}#mesa=${cod}\n\nOu abra o app e digite o número da mesa: *${cod}*`;
+  // 12/11: Quarta dos Amigos, na mesa de um sócio: o convite diz que dá para jogar sem limite
+  if (ON.vista && ON.vista.quarta) return `🤝 Hoje é Quarta dos Amigos! Até as 23h, nesta mesa você joga dominó sem limite, mesmo sem ser sócio. Entra aí no Dominó Manauara:\n${SITE_URL}#mesa=${cod}\n\nOu abra o app e digite o número da mesa: *${cod}*`;
   return `🁫 Bora jogar dominó comigo? Entra na minha mesa no Dominó Manauara:\n${SITE_URL}#mesa=${cod}\n\nOu abra o app e digite o número da mesa: *${cod}*`;
 }
 const NOME_POS = ['Você', 'Adversário', 'Parceiro', 'Adversário'];
@@ -7225,6 +7240,8 @@ renderHome = function () {
   const m = location.hash.match(/^#mesa=(\d{5})\b/);
   if (!m) return;
   store.set(CONVITE, m[1]);
+  // 12/11: 1ª vez no app, pelo link de uma mesa: a mesa anota o convite quando a pessoa entra (só para medir)
+  if (!profile) store.set(CONVITE_NOVO, JSON.stringify({ mesa: m[1], em: Date.now() }));
   try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
 })();
 addEventListener('hashchange', () => {
@@ -8313,7 +8330,22 @@ document.addEventListener('click', async e => {
   } catch (er) { toast('Não deu agora. Tente de novo.'); }
   dnBurlasCarregar(); if (typeof dnAplCarregar === 'function') dnAplCarregar();
 });
-renderDono = function () { renderDonoBase(); dnPagCarregar(); dnApoiadoresCarregar(); dnBurlasCarregar(); };
+renderDono = function () { renderDonoBase(); dnPagCarregar(); dnApoiadoresCarregar(); dnBurlasCarregar(); dnQuartaCarregar(); };
+// 12/11 (pedido do dono): se a Quarta dos Amigos traz gente. Só números: amigos novos pelo link da mesa, quantos voltaram
+// em outro dia e quantos viraram sócio; e, em cada Quarta, quantos sem plano jogaram na mesa de um sócio.
+async function dnQuartaCarregar() {
+  const box = $('#dnQuarta'); if (!box) return;
+  box.hidden = !CONFIG.api || !souAdmin(); if (box.hidden) return;
+  try {
+    const j = await dnMsgPedir('/dono/quarta'), c = j.convites || {};
+    const n = (k, um, varios) => `${k} ${k === 1 ? um : varios}`;
+    $('#dnQuartaR').textContent = `Últimos 30 dias: ${n(c.novos || 0, 'amigo novo chegou', 'amigos novos chegaram')} pelo link de uma mesa (${c.naQuarta || 0} na Quarta) · ${c.voltaram || 0} ${c.voltaram === 1 ? 'voltou' : 'voltaram'} em outro dia · ${n(c.socios || 0, 'virou sócio', 'viraram sócio')}.`;
+    const dm = d => d.slice(8, 10) + '/' + d.slice(5, 7);
+    const prox = (() => { const t = new Date(Date.now() - 4 * 3600000); const add = (3 - t.getUTCDay() + 7) % 7 || (t.getUTCHours() >= 23 ? 7 : 0); t.setUTCDate(t.getUTCDate() + add); return t.toISOString().slice(0, 10); })();
+    const itens = (j.quartas || []).map(q => `<li><span class="dn-jog-t"><b>Quarta, ${dm(q.dia)}</b><small>${esc(`${n(q.pessoas, 'pessoa sem plano jogou', 'pessoas sem plano jogaram')} ${n(q.partidas, 'partida', 'partidas')} na mesa de um sócio · ${n(q.novos, 'amigo novo', 'amigos novos')} (${q.voltaram} ${q.voltaram === 1 ? 'voltou' : 'voltaram'}, ${n(q.socios, 'virou sócio', 'viraram sócio')})`)}</small></span></li>`);
+    $('#dnQuartaLista').innerHTML = itens.length ? itens.join('') : `<li class="dn-jog-vazio">${j.agora ? 'A Quarta dos Amigos está rolando agora.' : `A próxima Quarta dos Amigos é dia ${dm(prox)}, das 20h às 23h.`}</li>`;
+  } catch (e) { $('#dnQuartaR').textContent = 'Não deu para carregar agora.'; }
+}
 // 10/11 (pedido do dono): toda lista longa da área do administrador (e da lista "No app agora" da Calçada) mostra 5 itens,
 // com "Ver mais (N)" e "Ver menos". Vale para as listas que se refazem sozinhas: quem abriu continua aberto.
 const DN_MAX = 5, dnAbertas = new Set();
@@ -10798,7 +10830,7 @@ function contraGente() {
   try { if (mode !== 'on' || !ON.vista || typeof cadDe !== 'function') return false; return [1, 3].some(pos => { const c = cadDe(pos); return !!(c && !c.bot && !c.saiu); }); }
   catch (e) { return false; }
 }
-let xpMetade = false, xpSexta = false, xpSextaSocio = false;
+let xpMetade = false, xpSexta = false, xpSextaSocio = false, xpQuarta = false, xpQuartaSocio = false;
 // o aviso "contra a turma do bairro, vale metade" aparece nas 3 primeiras vezes, depois só no "Como ganhar experiência?"
 function xpMetadeAvisar() { try { const n = Number(store.get('dmz-xp-metade') || 0); if (n >= 3) return false; store.set('dmz-xp-metade', String(n + 1)); return true; } catch (e) { return false; } }
 // um título a cada 5 níveis (desde a 3.20.1 também no 25, 35 e 45, para nunca ficar muito tempo sem novidade)
@@ -10887,6 +10919,8 @@ function contarXP() {
   if (xpMetade) pts = Math.max(1, Math.round(pts / 2));
   // 10/11 (pedido do dono): na Sexta da Calçada, a moral em dobro é do sócio; quem não é sócio vê o aviso
   if (pts > 0 && sxAgora() === 'agora') { if (temPlano()) { pts *= 2; xpSexta = true; } else xpSextaSocio = true; }
+  // 12/11: na Quarta dos Amigos, nas mesas com os amigos, o sócio ganha moral em dobro
+  if (pts > 0 && mode === 'on' && ON.vista && !ON.vista.publica && typeof quaAgora === 'function' && quaAgora() === 'agora') { if (temPlano()) { pts *= 2; xpQuarta = true; } else xpQuartaSocio = true; }
   ganharXP(pts);
 }
 const trackOfflineNv = trackOffline;
@@ -10895,8 +10929,8 @@ trackOffline = function () { try { contarXP(); } catch (e) {} return trackOfflin
 function linhaXP(onde, como) {
   if (!xpDaMao || !onde) return;
   const v = nivelDe(nvEstado().xp);
-  onde.insertAdjacentHTML(como, `<p class="xp-linha"><b>+${xpDaMao}</b> de moral · Nível ${v.n}${v.precisa ? ` <span>(${v.dentro}/${v.precisa})</span>` : ''}${xpSeqMsg ? `<small class="xp-seq">${esc(xpSeqMsg)}</small>` : ''}${xpSexta ? '<small class="xp-seq">🔥 Sexta da Calçada: moral em dobro</small>' : ''}${xpSextaSocio ? '<small class="xp-seq">🔥 Sexta da Calçada: sócio ganha o dobro de moral</small>' : ''}${xpMetade && xpMetadeAvisar() ? '<small class="xp-seq xp-metade">Contra a turma do bairro, vale a metade; contra pessoas, vale inteira.</small>' : ''}</p>`);
-  xpDaMao = 0; xpSeqMsg = ''; xpMetade = false; xpSexta = false; xpSextaSocio = false;
+  onde.insertAdjacentHTML(como, `<p class="xp-linha"><b>+${xpDaMao}</b> de moral · Nível ${v.n}${v.precisa ? ` <span>(${v.dentro}/${v.precisa})</span>` : ''}${xpSeqMsg ? `<small class="xp-seq">${esc(xpSeqMsg)}</small>` : ''}${xpSexta ? '<small class="xp-seq">🔥 Sexta da Calçada: moral em dobro</small>' : ''}${xpSextaSocio ? '<small class="xp-seq">🔥 Sexta da Calçada: sócio ganha o dobro de moral</small>' : ''}${xpQuarta ? '<small class="xp-seq">🤝 Quarta dos Amigos: moral em dobro</small>' : ''}${xpQuartaSocio ? '<small class="xp-seq">🤝 Quarta dos Amigos: sócio ganha o dobro de moral</small>' : ''}${xpMetade && xpMetadeAvisar() ? '<small class="xp-seq xp-metade">Contra a turma do bairro, vale a metade; contra pessoas, vale inteira.</small>' : ''}</p>`);
+  xpDaMao = 0; xpSeqMsg = ''; xpMetade = false; xpSexta = false; xpSextaSocio = false; xpQuarta = false; xpQuartaSocio = false;
 }
 const showResultNv = showResult;
 showResult = function () {
@@ -11086,8 +11120,12 @@ function vivoVisivel() { const c = $('#vivoCard'); if (c) c.hidden = !vivoMostra
 function calcCabSexta() {
   const tit = document.querySelector('#scrCalcada .aba-tit'), sub = $('#calcSub'); if (!tit) return;
   const ev = typeof sxAgora === 'function' && sxAgora() === 'agora';
-  tit.textContent = ev ? '🔥 Sexta da Calçada' : 'Agora na calçada';
-  tit.closest('.aba-cab').classList.toggle('sexta', ev);
+  const qa = !ev && typeof quaAgora === 'function' && quaAgora() === 'agora';   // 12/11: Quarta dos Amigos
+  tit.textContent = ev ? '🔥 Sexta da Calçada' : qa ? '🤝 Quarta dos Amigos' : 'Agora na calçada';
+  tit.closest('.aba-cab').classList.toggle('sexta', ev || qa);
+  if (qa && sub && !vivoDetalhes()) sub.textContent = temPlano()
+    ? 'Até as 23h, a sua mesa com os amigos fica liberada: quem você chamar joga sem limite. E você ganha moral em dobro.'
+    : 'Até as 23h, na mesa com os amigos de um sócio, você joga sem limite. As mesas jogando agora estão aqui.';
   if (ev && sub && !vivoDetalhes()) sub.textContent = temPlano()
     ? 'Até as 23h, você ganha moral em dobro em toda partida, sócio. As mesas jogando agora estão aqui: toque numa com lugar vago e entre.'
     : 'Até as 23h, os sócios ganham moral em dobro em toda partida. As mesas jogando agora estão aqui: toque numa com lugar vago e entre.';
@@ -13024,7 +13062,15 @@ function avisoPlanoSala() {
   ref.insertAdjacentHTML('afterend', '<p class="note sala-plano" id="salaPlano" hidden></p>');
 })();
 const renderSalaPlano = renderSala;
-renderSala = function () { const r = renderSalaPlano.apply(this, arguments); try { avisoPlanoSala(); } catch (e) {} return r; };
+renderSala = function () { const r = renderSalaPlano.apply(this, arguments); try { avisoPlanoSala(); } catch (e) {} try { avisoQuartaSala(); } catch (e) {} return r; };
+// 12/11: Quarta dos Amigos na mesa de um sócio: aviso na sala de espera, logo acima do convite do WhatsApp
+function avisoQuartaSala() {
+  const el = $('#salaQuarta'); if (!el) return;
+  const v = ON && ON.vista, sim = !!(v && v.quarta && !v.publica);
+  el.hidden = !sim; if (!sim) return;
+  el.innerHTML = temPlano() ? '<b>🤝 Quarta dos Amigos</b>Até as 23h, quem você chamar joga sem limite na sua mesa, mesmo sem ser sócio. Chame a turma!'
+    : '<b>🤝 Quarta dos Amigos</b>Até as 23h, nesta mesa de sócio você joga sem limite, sem gastar as partidas grátis de hoje.';
+}
 
 // Início: a regra da mesa rápida no cartão dela, para quem não tem plano (antes do lançamento, a data)
 function avisoPlanoRapida() {
@@ -13260,7 +13306,7 @@ function desenharDesafioCalcada() {
 const DN_GRUPOS = [
   ['Precisa de você', ['dnMsgs', 'dnPapo', 'dnFotos', 'dnRobo'], true],
   ['Jogadores', ['dnNoApp', 'dnFilas', 'dnJog'], true],
-  ['Números do jogo', ['dnNum'], true],   // 03/11: jogadores desde o início, partidas, horários e picos
+  ['Números do jogo', ['dnNum', 'dnQuarta'], true],   // 12/11: Quarta dos Amigos e convites   // 03/11: jogadores desde o início, partidas, horários e picos
   ['Dinheiro', ['dnPag', 'dnApoiadores', 'dnBurlas', 'dnPatroCard', 'dnAnuncieLink'], false],
   ['Falar com os jogadores', ['dnAvisos'], false],
   ['Números do Umami', ['dnOpen', 'dnLive', 'dnRange', 'dnBody', 'dnErr', 'dnKey', 'dnFull'], false],
@@ -13542,6 +13588,7 @@ window.addEventListener('popstate', () => {
 // Nunca tira ninguém da partida ou da sala: aí o aviso só traz o app para a frente.
 function abrirPeloAviso(alvo, ver) {
   if (alvo === 'dono') { if (!souAdmin()) return false; if (sheetKind) closeSheet(); show('dono'); setTimeout(() => { try { dnGrupoAbrir(DN_GRUPOS.findIndex(g => g[1].includes('dnBurlas')), true, false); } catch (e) {} const el = $('#dnBurlas'); if (el && !el.hidden) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 700); return true; }   // 12/11: aviso de burla para o dono (abre o grupo Dinheiro)
+  if (alvo === 'amigos' && profile) { if (sheetKind) closeSheet(); if (screen !== 'home') show('home'); setTimeout(() => { const g = $('#goOnline'); if (g && !g.hidden) g.click(); }, 300); track('aviso-abrir-amigos'); return true; }   // 12/11: Quarta dos Amigos
   if (!profile || !['ranking', 'turma', 'copa', 'carteira', 'aovivo'].includes(alvo)) return false;
   if (['game', 'sala', 'who'].includes(screen) || (typeof ON !== 'undefined' && (ON.ativo || ON.buscando))) return false;
   if (sheetKind) closeSheet();
@@ -13685,6 +13732,7 @@ function cartaApoiador(forcar) {
     <ul class="pr-lista carta-lista2">
       <li>${CHECK}<span><b>Jogue sem limite</b> na mesa rápida, nas mesas com os amigos e no offline (até sem internet)</span></li>
       <li>${CHECK}<span><b>Moral em dobro</b> na Sexta da Calçada, toda sexta das 20h às 23h</span></li>
+      <li>${CHECK}<span><b>Quarta dos Amigos:</b> toda quarta, das 20h às 23h, a sua mesa fica liberada para a turma jogar sem limite</span></li>
       ${dz && !dz.depois ? `<li>${CHECK}<span><b>Vitória em dobro</b> na reta final do Desafio das Confrarias (14 a 20/12): a sua dupla leva 2 pontos para a Turma</span></li>` : ''}
       <li>${CHECK}<span><b>Ranking completo</b> da semana e do mês, as suas estatísticas e a chance de ser o Rei da Calçada</span></li>
       <li>${CHECK}<span><b>Papo de mesa</b> com os amigos em todas as partidas, com áudio</span></li>
@@ -13742,6 +13790,7 @@ function avisoPromoSocio(forcar, motivo) {
       <li>${CHECK}<span><b>Partidas sem limite</b> na mesa rápida, com os amigos e no offline (até sem internet)</span></li>
       <li>${CHECK}<span><b>Desafios sem limite</b> no Desafio das Confrarias, e na reta final a sua vitória vale o dobro para a Turma</span></li>
       <li>${CHECK}<span><b>Moral em dobro</b> na Sexta da Calçada, toda sexta das 20h às 23h</span></li>
+      <li>${CHECK}<span><b>Quarta dos Amigos:</b> toda quarta, das 20h às 23h, a sua mesa fica liberada para a turma jogar sem limite</span></li>
       <li>${CHECK}<span><b>Todas as mesas de Manaus:</b> Teatro Amazonas, Arara-Azul, Tucano, Encontro das Águas e muito mais</span></li>
       <li>${CHECK}<span><b>Papo de mesa</b> liberado nas partidas com os amigos</span></li>
       <li>${CHECK}<span><b>Seu avatar do seu jeito</b>, foto na mesa e o selo ★ de sócio</span></li>
@@ -13829,6 +13878,9 @@ function souCampea() { let a = Number(TM && TM.campeaAte) || 0; if (!a) { try { 
 function souCampeao() { const p = planoLocal(); return !!(p && temPlano() && p.campeaoAte > Date.now()); }
 // --- Sexta da Calçada ---
 function sxAgora(t) { const d = manausDe(t || Date.now()); if (d.getUTCDay() !== 5) return null; const h = d.getUTCHours(); return h >= 20 && h < 23 ? 'agora' : h < 20 ? 'hoje' : null; }
+// --- 12/11 (pedido do dono): Quarta dos Amigos, toda quarta das 20h às 23h. Na mesa com os amigos de um sócio, quem senta
+// joga sem limite (o servidor libera); o sócio ganha moral em dobro nas mesas com os amigos. Aviso no celular às 18h.
+function quaAgora(t) { const d = manausDe(t || Date.now()); if (d.getUTCDay() !== 3) return null; const h = d.getUTCHours(); return h >= 20 && h < 23 ? 'agora' : h < 20 ? 'hoje' : null; }
 // --- Tempo de casa ---
 function somaMesesM(ms, n) {
   const d = manausDe(ms), dia = d.getUTCDate();
@@ -13857,6 +13909,10 @@ function evCardDados() {
   if (c.fase === 'agora') return { tipo: 'copa', ir: 'copa', ck: 'Ao vivo · até domingo, 22h', ct: `🏆 ${ed.nome}`,
     cd: socio ? (eu ? `Você está em ${eu.pos}º, com ${rkPts(eu.pontos)}. Cada vitória online vale ponto: bora subir!` : 'Cada vitória online vale ponto para os sócios. Entre no ranking da Copa!')
       : 'Só sócios pontuam. Veja o ranking e seja sócio para disputar o troféu.' };
+  const qa = typeof quaAgora === 'function' ? quaAgora() : null;   // 12/11: Quarta dos Amigos
+  if (qa === 'agora') return { tipo: 'quarta', ir: 'amigos', ck: 'Quarta dos Amigos · até as 23h', ct: socio ? '🤝 Sua mesa está liberada!' : '🤝 Mesa de sócio liberada',
+    cd: socio ? 'Quem você chamar joga sem limite na sua mesa, mesmo sem ser sócio. E você ganha moral em dobro. Crie a mesa e chame a turma!'
+      : 'Na mesa com os amigos de um sócio, você joga sem limite até as 23h. Chame o seu amigo sócio, ou seja sócio e abra a mesa para a turma!' };
   if (sx === 'agora') return { tipo: 'sexta', ir: 'rapida', ck: 'Sexta da Calçada · até as 23h', ct: '🔥 Moral em dobro agora!', cd: temPlano() ? 'Toda partida vale o dobro de moral para você, sócio: o nível sobe duas vezes mais rápido. Bora pra mesa rápida?' : 'Até as 23h, os sócios ganham o dobro de moral em todas as partidas. Seja sócio e suba de nível duas vezes mais rápido!' };
   if (c.fase === 'antes') return { tipo: 'copa', ir: 'copa', ck: 'Vem aí', ct: `🏆 ${ed.nome}`,
     cd: `${csQuando(ed).replace(/^d/, 'D')}. ${socio ? 'Você está dentro: o campeão leva o troféu na carteira e a mesa do campeão.' : 'Só sócios pontuam: o campeão leva o troféu na carteira e a mesa do campeão.'}` };
@@ -13865,6 +13921,8 @@ function evCardDados() {
     return { tipo: 'copa', ir: 'copa', ck: 'Copa dos Sócios', ct: cp ? `🏆 ${cp.eu ? 'Você é o campeão!' : cp.nome + ' é o campeão!'}` : `🏆 A ${ed.nome} terminou`,
       cd: `Veja o pódio da ${ed.nome}. A próxima é em ${c.atual.mes}.` };
   }
+  if (qa === 'hoje') return { tipo: 'quarta', ir: 'quarta', ck: 'Hoje · das 20h às 23h', ct: '🤝 Quarta dos Amigos',
+    cd: socio ? 'Das 20h às 23h, a sua mesa fica liberada: quem você chamar joga sem limite. Já combina com a turma!' : 'Das 20h às 23h, na mesa de um amigo sócio você joga sem limite. Combine com a turma!' };
   if (sx === 'hoje') return { tipo: 'sexta', ir: 'sexta', ck: 'Hoje · das 20h às 23h', ct: '🔥 Sexta da Calçada', cd: temPlano() ? 'Moral em dobro para os sócios em todas as partidas: o seu nível sobe duas vezes mais rápido. Chama a turma!' : 'Das 20h às 23h, os sócios ganham moral em dobro em todas as partidas. Chama a turma!' };
   return null;
 }
@@ -13878,6 +13936,8 @@ function desenharEvCard() {
       const ir = b.dataset.ir; track('evento-cartao-' + ir);
       if (ir === 'copa') abrirCopa();
       else if (ir === 'rapida') mesaRapida();
+      else if (ir === 'amigos') { const g = $('#goOnline'); if (g && !g.hidden) g.click(); }   // 12/11
+      else if (ir === 'quarta') toast('A Quarta dos Amigos começa às 20h. Até lá!');
       else toast('A Sexta da Calçada começa às 20h. Até lá!');
     });
   }
@@ -14741,7 +14801,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.18-439324ba';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.19-ae7769ca';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -15842,6 +15902,7 @@ function cotaDoDia() {
   if (!(typeof pagamentosAtivos === 'function' && pagamentosAtivos())) return null;
   if (mode === 'off') return { n: offlineUsoHoje(), de: offPorDia(), onde: 'no jogo offline' };
   const u = mode === 'on' && ON && ON.vista && ON.vista.meuUso;
+  if (u && u.quarta) return { quarta: true };   // 12/11: Quarta dos Amigos na mesa do sócio
   if (u && u.de) return { n: u.n, de: u.de, onde: u.desafio ? 'nos desafios entre Turmas' : ON.vista.publica ? 'na mesa rápida' : 'nas mesas com os amigos' };
   return null;
 }
@@ -15852,7 +15913,8 @@ showResult = function () {
     const R = G && G.result, nb = $('#sheet #nextBtn');
     if (R && R.matchWinner != null && sheetKind === 'result' && nb && !$('#sheet .res-cota')) {
       const c = cotaDoDia();
-      if (c && c.n > 0) {
+      if (c && c.quarta) nb.insertAdjacentHTML('beforebegin', '<p class="res-cota">🤝 Quarta dos Amigos: nesta mesa de sócio você joga sem limite até as 23h, sem gastar as partidas grátis de hoje.</p>');
+      else if (c && c.n > 0) {
         const n = Math.min(c.n, c.de), ultima = n >= c.de;
         nb.insertAdjacentHTML('beforebegin', `<p class="res-cota">${ultima ? `Essa foi a sua última partida grátis de hoje ${c.onde}.` : `Partida <b>${n} de ${c.de}</b> de hoje ${c.onde}.`} Sócio joga sem limite.${mode === 'off' ? '<button type="button" id="resCotaSocio">Ser sócio</button>' : ''}</p>`);
         // na mesa online não tira ninguém da mesa no meio da sessão: o botão fica só no offline (o jogo fica guardado)

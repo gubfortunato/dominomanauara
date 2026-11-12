@@ -75,7 +75,8 @@ export async function somarUso(env, aparelho, campo, dia) {
 // quem ainda pode jogar uma partida hoje (uso guardado na cadeira: { dia, partidas, publicas }): na mesa com os amigos
 // (publica = false) ou na mesa rápida (publica = true). 03/11: na mesa de um sócio (daSocio), até LIMITE.partidasSocio.
 // 04/11: na mesa de desafio (criada pelo botão Desafiar), também pode quem ainda tem desafio do dia
-export const podeJogar = (c, env, publica, daSocio, desafio) => !c || c.bot || c.apoiador || !limitesValem(env) || !c.uso || c.uso.dia !== diaBR()
+// 12/11: daSocio = 'livre' na Quarta dos Amigos (quarta.js): na mesa com os amigos de um sócio, joga sem limite
+export const podeJogar = (c, env, publica, daSocio, desafio) => !c || c.bot || c.apoiador || !limitesValem(env) || (!publica && daSocio === 'livre') || !c.uso || c.uso.dia !== diaBR()
   || (publica ? (c.uso.publicas || 0) < LIMITE.publicas : (c.uso.partidas || 0) < (daSocio ? LIMITE.partidasSocio : LIMITE.partidas))
   || (!publica && !!desafio && (c.uso.desafios || 0) < LIMITE.desafios);
 

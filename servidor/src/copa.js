@@ -12,6 +12,7 @@
 // renovar, recomeça do zero (o dono escolheu). Marcas aos 3, 6 e 12 meses; quando chega uma, vai um aviso para o celular.
 //
 // SEXTA DA CALÇADA — toda sexta, das 20h às 23h: moral em dobro (a experiência do jogo se chama "moral"; o nível sobe duas vezes mais rápido) e aviso às 19h e às 20h.
+// QUARTA DOS AMIGOS — toda quarta, das 20h às 23h: ver quarta.js (aqui só os avisos das 18h).
 import { ordenados, lista, periodos } from './ranking.js';
 import { fotosDe } from './fotos.js';
 
@@ -193,6 +194,9 @@ export const TEXTOS = {
   campeaoTodos: e => ({ titulo: `Temos campeão da ${e.nome}! 🏆`, texto: 'Veja quem levou o troféu. A próxima Copa já tem data: seja sócio e venha disputar.', url: '/?abrir=copa' }),
   campeaoEu: e => ({ titulo: 'Você é o campeão da Copa dos Sócios! 🏆', texto: `O troféu da ${e.nome} já está na sua carteira, e a mesa do campeão é sua até a próxima Copa.`, url: '/?abrir=copa' }),
   podioEu: (e, pos) => ({ titulo: `${pos}º lugar na ${e.nome}! ${pos === 2 ? '🥈' : '🥉'}`, texto: 'A sua medalha já está na carteira de sócio. Parabéns! Na próxima, o troféu pode ser seu.', url: '/?abrir=copa' }),
+  // 12/11: Quarta dos Amigos (quarta.js): às 18h, um texto para o sócio e outro para quem não é
+  quartaSocio: { titulo: '🤝 Hoje tem Quarta dos Amigos!', texto: 'Das 20h às 23h, a sua mesa fica liberada: quem você chamar joga sem limite, mesmo sem ser sócio. Crie a mesa e chame a turma!', url: '/?abrir=amigos' },
+  quartaTodos: { titulo: '🤝 Hoje tem Quarta dos Amigos!', texto: 'Das 20h às 23h, na mesa de um amigo sócio você joga sem limite. Combine com a turma e bora pra mesa!', url: '/?abrir=amigos' },
   casa: m => ({ titulo: m === 12 ? '1 ano de sócio! 🥇' : `${m} meses de sócio! ${m === 3 ? '🥉' : '🥈'}`, texto: `Sua carteira de sócio ganhou a marca de ${m === 12 ? '1 ano' : m + ' meses'}. Obrigado por manter a calçada viva!`, url: '/?abrir=carteira' })
 };
 export async function avisosAgendados(env, agora) {
@@ -204,6 +208,11 @@ export async function avisosAgendados(env, agora) {
     const copaHoje = diaDe(c.atual.inicio) === t.dia;
     if (t.h === 19) out.push({ chave: `sx:${t.dia}:19`, msg: copaHoje ? TEXTOS.copa19(c.atual) : TEXTOS.sexta19, para: 'todos', caixa: copaHoje });
     else out.push({ chave: `sx:${t.dia}:20`, msg: copaHoje ? TEXTOS.copa20(c.atual) : TEXTOS.sexta20, para: 'todos', caixa: copaHoje });
+  }
+  // 12/11: quarta, às 18h (o que não couber na rodada sai às 19h; cada um recebe uma vez)
+  if (t.sem === 3 && (t.h === 18 || t.h === 19)) {
+    out.push({ chave: `qa:${t.dia}:socio`, msg: TEXTOS.quartaSocio, para: 'socios', caixa: false });
+    out.push({ chave: `qa:${t.dia}:todos`, msg: TEXTOS.quartaTodos, para: 'naoSocios', caixa: false });
   }
   // uma semana antes da Copa (de manhã)
   if (t.h >= 9 && t.h < 12 && diaDe(c.atual.inicio - 7 * DIA) === t.dia) out.push({ chave: `cp:${c.atual.id}:vem`, msg: TEXTOS.vemAi(c.atual), para: 'todos', caixa: true });

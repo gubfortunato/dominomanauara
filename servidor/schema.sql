@@ -320,3 +320,8 @@ CREATE TABLE IF NOT EXISTS pessoa_dia (dia TEXT NOT NULL, nome TEXT NOT NULL, ma
 CREATE INDEX IF NOT EXISTS pessoa_dia_ap ON pessoa_dia (aparelho);
 CREATE TABLE IF NOT EXISTS apelidos_vigia (nome TEXT PRIMARY KEY, apelido TEXT, motivo TEXT, desde INTEGER NOT NULL, ate INTEGER NOT NULL, avisado INTEGER, bloqueado INTEGER, aparelhos TEXT, perdao INTEGER);
 CREATE TABLE IF NOT EXISTS vigia_tentativas (nome TEXT NOT NULL, aparelho TEXT NOT NULL, em INTEGER NOT NULL, PRIMARY KEY (nome, aparelho));
+-- 12/11 (pedido do dono): Quarta dos Amigos (quarta.js). quarta_jog: partidas sem limite na mesa de um sócio, por dia e
+-- aparelho (para o painel). convites: quem abriu o app pela 1ª vez pelo link de uma mesa e entrou nela (só para medir).
+CREATE TABLE IF NOT EXISTS quarta_jog (dia TEXT NOT NULL, aparelho TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (dia, aparelho));
+CREATE TABLE IF NOT EXISTS convites (aparelho TEXT PRIMARY KEY, anfitriao TEXT, socio_anfitriao INTEGER NOT NULL DEFAULT 0, quarta INTEGER NOT NULL DEFAULT 0, mesa TEXT, em INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS convites_em ON convites (em);
