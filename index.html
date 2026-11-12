@@ -174,7 +174,8 @@ a.card{text-decoration:none}
 /* 11/11: Turma de 1 pessoa (precisa de pelo menos 2 para pontuar no Desafio) */
 .tm-solo{margin:12px 0 4px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--glow) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--glow) 45%,var(--line))}
 .tm-solo b{display:block;font-size:16px}.tm-solo p{margin:6px 0 0;font-size:14.5px;line-height:1.4}
-.tm-solo .share-wa{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px}.tm-solo .share-wa svg{width:22px;height:22px}
+.tm-solo .share-wa{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px}
+.carta-wa{display:flex;align-items:center;justify-content:center;margin:8px 0 2px;padding:11px 14px;text-decoration:none}   /* 11/11 */.tm-solo .share-wa svg{width:22px;height:22px}
 .rc-pedras{display:flex;justify-content:center;margin:4px 0 10px}.rc-pedras svg{width:150px;height:auto;transform:rotate(-6deg)}
 .rc-zap{display:flex !important;align-items:center;justify-content:center;gap:8px}.rc-zap svg{width:22px;height:22px}
 .share-wa{display:block;text-align:center;text-decoration:none;margin-top:14px;padding:13px 16px;border-radius:14px;font-weight:700;font-size:17px;background:#25d366;color:#0b2e17}
@@ -3962,6 +3963,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.15', data: '11/11/2026', itens: ['Já é sócio e o app pediu para pagar? Na tela do limite de partidas agora tem "Já sou sócio em outro aparelho": é só usar o seu código.', 'Na carta de boas-vindas do sócio, um botão manda o seu código para o seu WhatsApp.'] },
   { v: '3.53.14', data: '11/11/2026', itens: ['Quem foi bloqueado por passar do limite grátis com vários aparelhos e vira Sócio da Calçada volta a jogar na hora.'] },
   { v: '3.53.13', data: '11/11/2026', itens: ['Mais proteção para quem joga limpo: quem foi bloqueado por descumprir as regras não volta mais com outro aparelho.'] },
   { v: '3.53.12', data: '11/11/2026', itens: ['Desafio das Confrarias: quando começa um confronto entre Turmas, quem é das duas Turmas recebe um aviso no celular, e o toque já abre a partida para assistir ao vivo.', 'Quem assiste um confronto vê o nome das Turmas no placar.', 'Na Sexta da Calçada (sexta, das 20h às 23h), a aba Calçada vira "🔥 Sexta da Calçada".'] },
@@ -12859,12 +12861,15 @@ function convitePlano(motivo) {
     ${resta.length ? `<p class="note">Enquanto isso, ainda dá para jogar ${juntaE(resta)}, se você não usou as partidas de lá.</p>` : ''}
     <div class="pr-acoes">${pode ? '<button type="button" class="primary" id="plVer" style="width:100%">Quero ser sócio</button>' : ''}
     ${podeRapida ? '<button type="button" class="secondary" id="plRapida" style="width:100%;margin-top:10px">Jogar na mesa rápida</button>' : podeOff ? '<button type="button" class="secondary" id="plOffline" style="width:100%;margin-top:10px">Jogar offline</button>' : ''}
+    ${pagamentosAtivos() ? '<button type="button" class="linkbtn" id="plTrazer" style="width:100%;margin-top:6px">Já sou sócio em outro aparelho</button>' : ''}
     <button type="button" class="linkbtn" id="plFechar" style="width:100%;margin-top:6px">Agora não</button></div>`);   // 05/11: os botões ficam sempre à vista
   track('plano-limite-' + motivo);
   if ($('#plVer')) $('#plVer').addEventListener('click', () => { track('plano-quero-' + motivo + (vit ? '-vitrine' : '')); closeSheet(); abrirApoio(screen === 'game' || screen === 'sala' ? 'home' : (screen || 'home'), 'plano'); });
   if ($('#plRapida')) $('#plRapida').addEventListener('click', () => { closeSheet(); const b = $('#goRapida'); if (b && !b.hidden) b.click(); else show('home'); });
   if ($('#plOffline')) $('#plOffline').addEventListener('click', () => { closeSheet(); if (screen !== 'home') show('home'); const b = $('#goOffline'); if (b) b.click(); });
   $('#plFechar').addEventListener('click', closeSheet);
+  // 11/11 (sócio que pagou num aparelho e joga em outro, sem o plano): o código traz o plano para cá na hora
+  if ($('#plTrazer')) $('#plTrazer').addEventListener('click', () => { track('plano-limite-trazer-' + motivo); closeSheet(); setTimeout(abrirTrazerPlano, 250); });
 }
 // 10/11 (sócio recebia "acabaram as grátis"): quem é sócio neste aparelho e recebe aviso de limite não vê convite para ser
 // sócio: o app confere o plano no servidor e, se está valendo, pede desculpas e leva de volta para jogar
@@ -13596,8 +13601,10 @@ function cartaApoiador(forcar) {
       <li>${CHECK}<span><b>Seu progresso guardado</b> com a gente: nível, conquistas e histórico, até se trocar de celular</span></li>
     </ul>
     ${p.renova ? '<p>Seu plano renova sozinho no cartão. Para parar, toque em "Cancelar a renovação" na tela do Sócio da Calçada.</p>' : ''}
-    ${cod ? '<p>Se trocar de celular, é só usar o seu código em "Sócio da Calçada › Já sou sócio em outro celular":</p>' : ''}
-    ${cod ? `<div class="carta-cod"><b>${esc(cod)}</b><button type="button" class="linkbtn" id="cartaCopiar">Copiar</button></div><p class="note">Guarde o código (um print da tela já serve).</p>` : ''}
+    ${cod ? '<p><b>Joga em outro lugar?</b> No app instalado, em outro navegador ou em outro celular, toque em <b>Mais › Já sou sócio em outro aparelho</b> e use o seu código:</p>' : ''}
+    ${cod ? `<div class="carta-cod"><b>${esc(cod)}</b><button type="button" class="linkbtn" id="cartaCopiar">Copiar</button></div>
+      <a class="share-wa carta-wa" id="cartaZap" href="https://wa.me/?text=${encodeURIComponent('Meu código de Sócio da Calçada no Dominó Manauara: ' + cod + ' (no app: Mais › Já sou sócio em outro aparelho)')}" target="_blank" rel="noopener">Mandar o código para o meu WhatsApp</a>
+      <p class="note">Guarde o código (um print da tela já serve).</p>` : ''}
     <p class="carta-ass">Boa diversão.<br>Time Dominó Manauara</p>
     <button type="button" class="primary" id="cartaOk">Bora pra mesa!</button>
     <button type="button" class="secondary" id="cartaPerso" style="width:100%;margin-top:10px">${temFoto ? 'Escolher a mesa e o avatar' : 'Pôr a minha foto'}</button>`);
@@ -13649,7 +13656,8 @@ function avisoPromoSocio(forcar, motivo) {
     </ul>
     <p class="note pr-nota">Sem fidelidade: você para a renovação quando quiser.</p>
     <div class="pr-acoes"><button type="button" class="primary" id="prQuero" style="width:100%">Quero ser sócio</button>
-    <button type="button" class="secondary" id="prFechar" style="width:100%;margin-top:8px" disabled>Agora não (10)</button></div>`);
+    <button type="button" class="secondary" id="prFechar" style="width:100%;margin-top:8px" disabled>Agora não (10)</button>
+    ${motivo ? '<button type="button" class="linkbtn" id="prTrazer" style="width:100%;margin-top:6px">Já sou sócio em outro aparelho</button>' : ''}</div>`);
   track('promo-socio-aviso');
   promoAte = Date.now() + 10000;
   const x = $('#sheet .folha-x'); if (x) { x.disabled = true; x.classList.add('pr-travado'); }
@@ -13663,6 +13671,8 @@ function avisoPromoSocio(forcar, motivo) {
   }, 250);
   bt.addEventListener('click', () => { if (Date.now() < promoAte) return; track('promo-socio-fechou'); closeSheet(); });
   $('#prQuero').addEventListener('click', () => { track('promo-socio-quero'); promoAte = 0; closeSheet(); abrirApoio('home', 'plano'); });
+  // 11/11: sócio que pagou em outro aparelho (e bateu o limite neste) traz o plano com o código, sem esperar os 10 s
+  if ($('#prTrazer')) $('#prTrazer').addEventListener('click', () => { track('promo-socio-trazer'); promoAte = 0; closeSheet(); setTimeout(abrirTrazerPlano, 250); });
 }
 // enquanto trava, o toque no fundo escuro não fecha
 $('#back').addEventListener('click', e => { if (sheetKind === 'promo' && e.target.id === 'back') { e.stopImmediatePropagation(); if (Date.now() >= promoAte) closeSheet(); } }, true);
@@ -14636,7 +14646,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.14-c50d1356';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.15-664269a7';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
