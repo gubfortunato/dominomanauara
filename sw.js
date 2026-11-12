@@ -1,6 +1,6 @@
 // Dominó Manauara: guarda o jogo no celular para abrir rápido e funcionar sem internet.
 // Ao publicar uma versão nova, troque o número abaixo para os celulares baixarem tudo de novo.
-const CACHE = 'dominomanauara-3.53.20-8f6c5227';
+const CACHE = 'dominomanauara-3.53.21-286e9a1f';
 const FILES = [
   './',
   './index.html',
@@ -9,9 +9,9 @@ const FILES = [
   './termos.html',
   './fonts/alfa-slab-one.woff',
   './fonts/figtree.woff',
-  './icons/icon-192-v2.png',
-  './icons/icon-512-v2.png',
-  './icons/apple-touch-icon-v2.png',
+  './icons/icon-192-v3.png',
+  './icons/icon-512-v3.png',
+  './icons/apple-touch-icon-v3.png',
   './icons/badge-96.png'
 ];
 
@@ -73,7 +73,7 @@ self.addEventListener('push', e => {
   const guardar = caches.open('dmz-caixa').then(c => c.put('./__caixa/' + (d.id || Date.now()), new Response(JSON.stringify({ id: d.id || null, titulo, texto, url: d.url || './', em: Date.now() }), { headers: { 'content-type': 'application/json' } }))).catch(() => {});
   e.waitUntil(Promise.all([guardar, self.registration.showNotification(titulo, {
     body: texto,
-    icon: './icons/icon-192-v2.png',
+    icon: './icons/icon-192-v3.png',
     badge: './icons/badge-96.png',
     tag: d.tag || 'dominomanauara',
     renotify: true,
