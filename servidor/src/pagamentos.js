@@ -255,6 +255,17 @@ async function progressoDe(env, aparelho) {
   if (!r) return null;
   try { return { dados: JSON.parse(r.dados), atualizado: r.atualizado }; } catch (e) { return null; }
 }
+// 12/11: o tamanho do progresso. Os contadores do histórico (mãos, partidas, jogos, galos, batidas) só crescem; a moral
+// pode ser recalculada pelo app, por isso só conta quando cai muito (instalação nova, sem nada).
+const lerJ = (d, k) => { try { return JSON.parse((d && d[k]) || 'null') || {}; } catch (e) { return {}; } };
+function tamanhoProgresso(d) {
+  const h = lerJ(d, 'dmz-historico'), n = lerJ(d, 'dmz-nivel');
+  return { hist: ['maos', 'partidas', 'jogos', 'galos', 'batidas'].reduce((s, k) => s + (Number(h[k]) || 0), 0), xp: Number(n.xp) || 0 };
+}
+export function progressoMenor(novo, guardado) {
+  const a = tamanhoProgresso(novo), b = tamanhoProgresso(guardado);
+  return b.hist > a.hist || (b.hist === a.hist && b.xp > a.xp * 2 + 100);
+}
 // POST /progresso {aparelho, dados: {chave: texto}} -> guarda (só quem apoia)
 export async function guardarProgresso(req, env, origin, h) {
   let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
@@ -264,6 +275,12 @@ export async function guardarProgresso(req, env, origin, h) {
   for (const k of PROGRESSO_CHAVES) if (typeof b.dados[k] === 'string') dados[k] = b.dados[k];
   const txt = JSON.stringify(dados);
   if (txt.length > PROGRESSO_MAX) return h.json({ erro: 'grande' }, 413, origin);
+  // 12/11 (o dono reinstalou o app no iPhone e o progresso vazio da instalação nova foi gravado por cima do guardado):
+  // um progresso menor não substitui um maior. O servidor mantém o que tem e devolve para o app restaurar.
+  if (b.forcar !== true) {
+    const atual = await progressoDe(env, b.aparelho);
+    if (atual && progressoMenor(dados, atual.dados)) return h.json({ ok: false, maior: atual }, 409, origin);
+  }
   await env.DB.prepare('INSERT INTO progresso (aparelho, dados, atualizado) VALUES (?, ?, ?) ON CONFLICT(aparelho) DO UPDATE SET dados = excluded.dados, atualizado = excluded.atualizado')
     .bind(b.aparelho, txt, Date.now()).run();
   return h.json({ ok: true }, 200, origin);

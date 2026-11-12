@@ -3995,6 +3995,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.23', data: '12/11/2026', itens: ['Mais proteção para o progresso do sócio: se o app for reinstalado ou o celular trocado, o progresso guardado com a gente não é mais apagado pelo da instalação nova. Ele volta sozinho para o celular.'] },
   { v: '3.53.22', data: '12/11/2026', itens: ['Ícone em madeira escura, com as pedras maiores.'] },
   { v: '3.53.21', data: '12/11/2026', itens: ['Ícone novo: Dominó Manauara escrito, com três pedras em leque atrás.'] },
   { v: '3.53.20', data: '12/11/2026', itens: ['O app instalado agora se chama Dominó Manauara na tela do celular (antes, só Dominó).'] },
@@ -13657,7 +13658,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('mess
 // mudou). No celular novo, o código do plano ("Já apoio em outro celular") traz o tempo de Apoiador, o selo e o progresso.
 const NUVEM_CHAVES = ['dmz-perfil', 'dmz-historico', 'dmz-nivel', 'dmz-missoes', 'dmz-avatar-montado', 'dmz-conquistas-vistas',
   'dmz-mesa-cor', 'dmz-copa357', 'dmz-laterais', 'dmz-torneio', 'dmz-mesas-rodizio'];
-const NUVEM_KEY = 'dmz-nuvem';
+const NUVEM_KEY = 'dmz-nuvem', NUVEM_RESTAURADO = 'dmz-nuvem-restaurado';
 function nuvemPode() {
   return !!CONFIG.api && typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !!profile
     && ((typeof temPlano === 'function' && temPlano()) || (typeof souDoador === 'function' && souDoador()));
@@ -13676,9 +13677,13 @@ async function nuvemEnviar(final) {
   if (st.r === resumo) return;
   nuvemIndo = true;
   try {
+    // 12/11: o servidor não aceita um progresso menor por cima do guardado (reinstalou o app, trocou de celular): devolve o
+    // guardado e o app restaura. Se acabou de restaurar (10 min), manda o daqui assim mesmo (nunca fica num vaivém).
+    const recente = Date.now() - (+store.get(NUVEM_RESTAURADO) || 0) < 600000;
     const r = await fetch(CONFIG.api + '/progresso', { method: 'POST', headers: { 'content-type': 'application/json' }, keepalive: !!final,
-      body: JSON.stringify({ aparelho: meuId(), dados }) });
+      body: JSON.stringify(Object.assign({ aparelho: meuId(), dados }, recente ? { forcar: true } : {})) });
     if (r.ok) store.set(NUVEM_KEY, JSON.stringify({ r: resumo, em: Date.now() }));
+    else if (r.status === 409 && !final) { const j = await r.json().catch(() => null); if (j && j.maior && nuvemRestaurar(j.maior, true)) track('progresso-restaurado-servidor'); }
   } catch (e) {}
   nuvemIndo = false;
 }
@@ -13691,13 +13696,14 @@ bumpHist = function () { const r = bumpHistNuvem.apply(this, arguments); nuvemGu
 // Trouxe o plano de outro celular: se o progresso de lá é maior que o daqui, ele entra no lugar e o app recarrega
 function nuvemXp(d) { try { return Number((JSON.parse(d['dmz-nivel'] || 'null') || {}).xp) || 0; } catch (e) { return 0; } }
 function nuvemJogos(d) { try { return Number((JSON.parse(d['dmz-historico'] || 'null') || {}).jogos) || 0; } catch (e) { return 0; } }
-function nuvemRestaurar(p) {
+function nuvemRestaurar(p, doServidor) {
   if (!p || !p.dados || typeof p.dados !== 'object') return false;
   const aqui = nuvemFoto();
   const la = [nuvemXp(p.dados), nuvemJogos(p.dados)], ca = [nuvemXp(aqui), nuvemJogos(aqui)];
-  if (!(la[0] > ca[0] || (la[0] === ca[0] && la[1] > ca[1]))) return false;
+  // 12/11: doServidor: o servidor já conferiu que o guardado é maior (não compara de novo)
+  if (!doServidor && !(la[0] > ca[0] || (la[0] === ca[0] && la[1] > ca[1]))) return false;
   NUVEM_CHAVES.forEach(k => { if (typeof p.dados[k] === 'string') localStorage.setItem(k, p.dados[k]); });
-  store.del(NUVEM_KEY);
+  store.del(NUVEM_KEY); store.set(NUVEM_RESTAURADO, String(Date.now()));
   track('progresso-restaurado');
   toast(`Seu progresso veio junto (${la[1]} ${la[1] === 1 ? 'partida' : 'partidas'}). Abrindo de novo…`);
   setTimeout(() => location.reload(), 1600);
@@ -14804,7 +14810,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.22-aa7b9b43';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.23-04a4c33b';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
