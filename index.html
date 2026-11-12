@@ -1919,6 +1919,7 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 /* 3.25: administrador — jogadores da mesa online e bloqueio */
 .dn-joglista{list-style:none;margin:6px 0 10px;padding:0;display:grid;gap:6px}
 .dn-apl-add{display:flex;gap:8px;margin:6px 0 4px}   /* 11/11: apelidos bloqueados */
+.trz-dica{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:var(--bg-2);border:1px solid var(--line);font-size:14.5px;line-height:1.4;color:var(--fg)}   /* 12/11: o que conferir no código */
 .pl-passe{display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}.pl-passe small{font-size:13px;font-weight:600;opacity:.8}   /* 12/11: passe da semana */
 .ps-cmp{margin:12px 0 14px;padding:12px 14px;border-radius:14px;background:var(--bg-2);border:1px solid var(--line);font-size:15px;line-height:1.4}
 .ap-passe-l{display:block;width:100%;margin:12px 0 0;padding:12px 14px;border-radius:14px;border:1.5px dashed var(--line);background:transparent;color:var(--fg);font:inherit;font-size:15px;line-height:1.35;text-align:left;cursor:pointer}
@@ -3131,7 +3132,8 @@ body.papo-aberto{overflow:hidden}
     <details class="ap-trazer" id="apTrazerBox">
       <summary>Já sou sócio em outro celular</summary>
       <p class="note">Digite o código que aparece no outro celular, em "Sócio da Calçada". Ele traz o seu tempo de sócio e o selo ♥.</p>
-      <div class="sala-cod"><input type="text" id="apTrazerCod" maxlength="9" placeholder="ABCD-1234" autocomplete="off" autocapitalize="characters" spellcheck="false"><button type="button" class="secondary" id="apTrazer">Trazer</button></div>
+      <div class="sala-cod"><input type="text" id="apTrazerCod" maxlength="9" placeholder="ABCD-2345" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="apTrazerDica"><button type="button" class="secondary" id="apTrazer">Trazer</button></div>
+      <p class="trz-dica" id="apTrazerDica" role="status" hidden></p>
     </details>
   </section>
 
@@ -3969,6 +3971,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.17', data: '12/11/2026', itens: ['Digitou o código de sócio e não achou? Agora o app mostra o que conferir: o código não tem as letras O e I nem os números 0 e 1.'] },
   { v: '3.53.16', data: '12/11/2026', itens: ['Novo: Passe da semana. São 7 dias de Sócio da Calçada, com partidas sem limite, por R$ 5,90 no Pix ou no cartão, sem renovar.', 'As partidas grátis do dia são por pessoa, não por aparelho: jogar no app, no navegador ou em outro celular soma na mesma conta. Fica justo para todo mundo.'] },
   { v: '3.53.15', data: '11/11/2026', itens: ['Já é sócio e o app pediu para pagar? Na tela do limite de partidas agora tem "Já sou sócio em outro aparelho": é só usar o seu código.', 'Na carta de boas-vindas do sócio, um botão manda o seu código para o seu WhatsApp.'] },
   { v: '3.53.14', data: '11/11/2026', itens: ['Quem foi bloqueado por passar do limite grátis com vários aparelhos e vira Sócio da Calçada volta a jogar na hora.'] },
@@ -8096,9 +8099,19 @@ $('#apAvs').addEventListener('click', e => {
   renderApoioTela(); toast('Avatar trocado!');
 });
 // 10/11: trazer o plano pelo código (na tela do sócio e na aba Mais). Devolve true quando deu certo.
+// 12/11 (pedido do dono, depois da sócia que digitou o código errado): o código nunca tem O, I, 0 nem 1. A comparação continua
+// exata (nenhuma chance a mais para quem chuta); só a explicação do que conferir ficou clara, na hora e quando não acha.
+const COD_FORA = /[OI01]/;
+const dicaCodigoErrado = () => 'Não achei esse código. Confira letra por letra: ele não tem as letras O e I nem os números 0 e 1. Atenção ao 2 e ao Z, ao 5 e ao S, ao 8 e ao B, ao U e ao V. O código está no outro aparelho, em Mais › Seu código de sócio, ou no print que você guardou.';
+function avisoCodigo(txt, b) {
+  const d = b && b.id === 'apTrazer' ? $('#apTrazerDica') : sheetKind === 'trazer' ? $('#trzDica') : null;
+  if (d && d.isConnected) { d.textContent = txt; d.hidden = !txt; return; }
+  if (txt) toast(txt);
+}
 async function trazerPlanoCodigo(valor, b) {
   const cod = String(valor || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-  if (cod.length !== 8) { toast('O código tem 8 letras e números, como ABCD-1234.'); return false; }
+  if (cod.length !== 8) { avisoCodigo('O código tem 8 letras e números, como ABCD-2345.', b); return false; }
+  if (COD_FORA.test(cod)) { avisoCodigo('O código não tem as letras O e I nem os números 0 e 1. Confira esse caractere no outro aparelho ou no seu print.', b); return false; }
   if (b) b.disabled = true;
   let ok = false;
   try {
@@ -8106,11 +8119,11 @@ async function trazerPlanoCodigo(valor, b) {
     const j = await r.json().catch(() => ({}));
     if (r.ok && (j.ate || j.doador)) {
       ok = true; track('plano-trazido');
-      guardarConta(j); $('#apTrazerCod').value = ''; renderApoioTela();
+      guardarConta(j); $('#apTrazerCod').value = ''; avisoCodigo('', b); renderApoioTela();
       if (j.progresso && typeof nuvemRestaurar === 'function' && nuvemRestaurar(j.progresso)) return true;   // 3.39: o progresso veio junto
       toast(j.ate > Date.now() ? `Pronto! Você é sócio neste aparelho até ${dataBR(j.ate)}.` : 'Pronto! Seu selo ♥ veio junto.');
     }
-    else toast(r.status === 404 ? 'Não achei esse código. Confira no outro aparelho, em Mais › Seu código de sócio.' : r.status === 429 ? 'Muitas tentativas. Tente de novo mais tarde.' : 'Não deu agora. Tente de novo.');
+    else { if (r.status === 404) track('plano-trazer-nao-achou'); avisoCodigo(r.status === 404 ? dicaCodigoErrado() : r.status === 429 ? 'Muitas tentativas. Tente de novo mais tarde.' : 'Não deu agora. Tente de novo.', b); }
   } catch (e) { toast('Sem internet agora.'); }
   if (b) b.disabled = false;
   return ok;
@@ -8119,6 +8132,7 @@ $('#apTrazer').addEventListener('click', () => trazerPlanoCodigo($('#apTrazerCod
 $('#apTrazerCod').addEventListener('input', e => {
   const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
   e.target.value = v.length > 4 ? v.slice(0, 4) + '-' + v.slice(4) : v;
+  avisoCodigo(COD_FORA.test(v) ? 'O código não tem as letras O e I nem os números 0 e 1. Confira esse caractere.' : '', $('#apTrazer'));   // 12/11
 });
 $('#apoioBack').addEventListener('click', () => show(apoioVolta === 'profile' ? 'profile' : apoioVolta === 'calcada' ? 'calcada' : profile ? 'home' : 'who'));
 
@@ -11735,11 +11749,13 @@ function abrirCodigoSocio() {
 function abrirTrazerPlano() {
   openSheet('trazer', `<p class="eyebrow">Sócio da Calçada</p><h2 id="sheetTitle">Já sou sócio em outro aparelho</h2>
     <p>Digite o código de sócio. Ele está no outro aparelho, em <b>Mais › Seu código de sócio</b>.</p>
-    <input type="text" class="trz-cod" id="trzCod" maxlength="9" placeholder="ABCD-1234" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Código de sócio">
+    <input type="text" class="trz-cod" id="trzCod" maxlength="9" placeholder="ABCD-2345" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Código de sócio" aria-describedby="trzDica">
+    <p class="trz-dica" id="trzDica" role="status" hidden></p>
     <button type="button" class="primary" id="trzOk" style="width:100%;margin-top:10px">Trazer o meu plano</button>
     <p class="note">O plano passa para este aparelho e sai do outro.</p>`);
   const i = $('#trzCod');
-  i.addEventListener('input', e => { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8); e.target.value = v.length > 4 ? v.slice(0, 4) + '-' + v.slice(4) : v; });
+  i.addEventListener('input', e => { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8); e.target.value = v.length > 4 ? v.slice(0, 4) + '-' + v.slice(4) : v;
+    avisoCodigo(COD_FORA.test(v) ? 'O código não tem as letras O e I nem os números 0 e 1. Confira esse caractere.' : '', e.currentTarget); });   // 12/11
   $('#trzOk').addEventListener('click', async e => { if (await trazerPlanoCodigo(i.value, e.currentTarget)) { closeSheet(); if (screen === 'mais') renderMais(); } });
   setTimeout(() => { try { i.focus(); } catch (e) {} }, 300);
 }
@@ -14710,7 +14726,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.16-9a61430a';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.17-91fa61dd';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
