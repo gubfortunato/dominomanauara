@@ -10,7 +10,7 @@ import { fotoPublica } from './fotos.js';
 import { pontuar, nomeDaTurma, apelido as apelidoNaTurma, edicao, campeaDesafioAte, avisarConfronto } from './turmas.js';
 import { somarVivo } from './vivo.js';
 import { somarRanking, reiDaSemana, anotarAbandono } from './ranking.js';
-import { bloqueado, visto, apelidoBarrado, exigeApp, appAberto, anotarRitmo, RAPIDA_MS } from './bloqueio.js';
+import { bloqueado, visto, apelidoBarrado, exigeApp, appAberto, anotarRitmo, RAPIDA_MS, pegaPeloApelido } from './bloqueio.js';
 import { PAPO, limparPapo, tamanho, papoRuim } from './papo.js';
 import { anotarCodigoErrado } from './codigos.js';
 import { campeaoAte } from './copa.js';   // 10/11: o campeão da Copa dos Sócios (troféu na mesa e a mesa do campeão)
@@ -492,6 +492,7 @@ export class Mesa {
     if (att.trava && !this.jaNaMesa(quem.id)) return this.recusar(ws, 'muitos-codigos');   // 10/11: rede travada não entra em mesa nova
     att.apelido = !!msg.apelido;   // 3.38.2: este app entende o aviso 'apelido' (escolher outro apelido)
     if (await bloqueado(this.env, quem.id)) return this.recusar(ws, 'bloqueado');
+    if (await pegaPeloApelido(this.env, quem.id, quem.nome)) return this.recusar(ws, 'bloqueado');   // 11/11: voltou com outro aparelho
     // 3.41: o administrador pediu outro apelido e a pessoa voltou com o mesmo (app antigo: 'nao-existe', volta ao início)
     if (await apelidoBarrado(this.env, quem.id, quem.nome)) return this.recusar(ws, att.apelido ? 'apelido' : 'nao-existe');
     // 3.41: quem chega agora (não estava sentado nem na fila) precisa estar com o app aberto
@@ -865,6 +866,7 @@ export class Mesa {
       return;
     }
     delete m.proximaPedida;
+    this.ctx.waitUntil(this.tirarBloqueados().catch(() => {}));   // 11/11: quem foi bloqueado com a partida rolando sai agora
     const r = G.result;
     // 3.38.2: sem esperar nada aqui (dois 'proxima' ao mesmo tempo não podem passar juntos); só apaga se não sobrou ninguém
     if (r && r.matchWinner != null && this.tirarApelidosRuins() === 'vazia') { await this.apagar(); return; }
@@ -1007,6 +1009,14 @@ export class Mesa {
 
   // 3.25: o administrador bloqueou alguém: sai da mesa na hora e um robô da turma assume a cadeira (com nome de robô)
   // 3.41: com motivo 'apelido' (pediu outro apelido), o aviso é para trocar o apelido, não de bloqueio
+  // 11/11 (pedido do dono): quem foi bloqueado com a partida rolando (pelo painel, por outro caminho ou pela regra do apelido)
+  // sai na virada da mão: um robô da turma assume a cadeira, como no Bloquear do administrador
+  async tirarBloqueados() {
+    const m = this.viva(); if (!m) return;
+    for (const c of m.cad.filter(x => x && !x.bot && x.id)) {
+      if (await bloqueado(this.env, c.id) && this.viva()) { try { await this.expulsar({ id: c.id }); } catch (e) {} }
+    }
+  }
   async expulsar(b) {
     const m = this.viva(); if (!m) return { id: null };
     const p = Number.isInteger(b.cadeira) ? b.cadeira : m.cad.findIndex(c => c && c.id && c.id === b.id);
