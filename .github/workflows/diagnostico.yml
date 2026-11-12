@@ -10,6 +10,7 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || 'c5f546c10d461c0d2e3e1d54f83fba39' }}
+      ASAAS_API_KEY: ${{ secrets.ASAAS_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,8 +27,8 @@ jobs:
           sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
           AGORA=$(($(date +%s) * 1000))
           p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
-          # 12/11 (pedido do dono): análise de uma jogadora (o apelido só por resumo), sem mudar nada
-          python3 "$GITHUB_WORKSPACE/.github/diag/jogadora.py" $OUT 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
+          # 12/11: o Asaas aceita a cobrança do Passe da semana (R$ 4,90)? Cria e cancela; e as taxas da conta
+          python3 "$GITHUB_WORKSPACE/.github/diag/asaas_minimo.py" $OUT 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
           rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
