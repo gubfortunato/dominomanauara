@@ -2800,6 +2800,20 @@ body.papo-aberto{overflow:hidden}
 /* troca de telas um pouco mais rápida */
 .screen.fade-in{animation-duration:.26s}
 .screen.fade-out{animation-duration:.1s}
+/* 12/11 (pedido do dono, Android com o app instalado): a tela de entrada precisava de ~800 px de altura e a frase de baixo
+   ficava cortada nas telas mais baixas. Em pé e com até 830 px de altura, os espaços encolhem; até 720 px, a fileira
+   de pedras sai para a frase caber. */
+@media (orientation: portrait) and (max-height: 830px){
+  #scrWho.entry{padding-block:12px 14px}
+  #scrWho .rt-wrap{margin:80px auto 40px;width:min(62vw,34vh,330px)}
+  #scrWho .entry-actions{margin-top:12px}
+  #scrWho .train{margin-top:16px}
+  #scrWho .entry-frase{margin-top:10px}
+}
+@media (orientation: portrait) and (max-height: 720px){
+  #scrWho .train{display:none}
+  #scrWho .entry-frase{margin-top:18px}
+}
 </style>
 </head>
 <body>
@@ -3971,6 +3985,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.18', data: '12/11/2026', itens: ['Tela de entrada ajustada para celulares com tela mais baixa (como muitos Android com o app instalado): tudo cabe na tela, sem cortar a frase de baixo.'] },
   { v: '3.53.17', data: '12/11/2026', itens: ['Digitou o código de sócio e não achou? Agora o app mostra o que conferir: o código não tem as letras O e I nem os números 0 e 1.'] },
   { v: '3.53.16', data: '12/11/2026', itens: ['Novo: Passe da semana. São 7 dias de Sócio da Calçada, com partidas sem limite, por R$ 5,90 no Pix ou no cartão, sem renovar.', 'As partidas grátis do dia são por pessoa, não por aparelho: jogar no app, no navegador ou em outro celular soma na mesma conta. Fica justo para todo mundo.'] },
   { v: '3.53.15', data: '11/11/2026', itens: ['Já é sócio e o app pediu para pagar? Na tela do limite de partidas agora tem "Já sou sócio em outro aparelho": é só usar o seu código.', 'Na carta de boas-vindas do sócio, um botão manda o seu código para o seu WhatsApp.'] },
@@ -14726,7 +14741,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.17-91fa61dd';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.18-439324ba';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
