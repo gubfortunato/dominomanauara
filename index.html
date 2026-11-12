@@ -1919,6 +1919,11 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 /* 3.25: administrador — jogadores da mesa online e bloqueio */
 .dn-joglista{list-style:none;margin:6px 0 10px;padding:0;display:grid;gap:6px}
 .dn-apl-add{display:flex;gap:8px;margin:6px 0 4px}   /* 11/11: apelidos bloqueados */
+.pl-passe{display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}.pl-passe small{font-size:13px;font-weight:600;opacity:.8}   /* 12/11: passe da semana */
+.ps-cmp{margin:12px 0 14px;padding:12px 14px;border-radius:14px;background:var(--bg-2);border:1px solid var(--line);font-size:15px;line-height:1.4}
+.ap-passe-l{display:block;width:100%;margin:12px 0 0;padding:12px 14px;border-radius:14px;border:1.5px dashed var(--line);background:transparent;color:var(--fg);font:inherit;font-size:15px;line-height:1.35;text-align:left;cursor:pointer}
+.pl-pessoa{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:var(--bg-2);border:1px solid var(--line);font-size:14px;line-height:1.4}   /* 12/11: limite por pessoa */
+.dn-joglista li.vig{align-items:center}   /* 12/11: apelidos em vigia */
 .dn-apl-add input{flex:1;min-width:0;font:inherit;font-size:16px;padding:9px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg)}
 .dn-apl-add button{flex:none;padding:9px 16px}
 .dn-joglista li{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:12px;background:rgba(0,0,0,.18)}
@@ -3110,6 +3115,7 @@ body.papo-aberto{overflow:hidden}
         <button type="button" class="ap-preco" data-p="ap3"><small class="ap-de"><s>R$ 37,90</s></small><b>R$ 24<i>,90</i></b><span>3 meses</span><small class="ap-cmp">Um <span class="ap-nw">x-caboquinho</span></small><small class="ap-cond">no 1º trimestre, depois R$ 37,90</small><small>R$ 8,30 por mês</small></button>
         <button type="button" class="ap-preco destaque" data-p="ap12"><em>Mais em conta</em><small class="ap-de"><s>R$ 99,90</s></small><b>R$ 74<i>,90</i></b><span>1 ano</span><small class="ap-cmp">Uma banda de tambaqui assada</small><small class="ap-cond">no 1º ano, depois R$ 99,90</small><small>R$ 6,24 por mês</small></button>
       </div>
+      <button type="button" class="ap-passe-l" id="apPasse" hidden></button>
       <div class="ap-outro" id="apOutro" hidden>
         <p class="ap-outro-t"><b>Quer mais tempo?</b> A partir de R$ 30, cada R$ 5 vale 1 mês de sócio.</p>
         <div class="ap-outro-l"><label class="ap-outro-in"><span aria-hidden="true">R$</span><input type="text" id="apOutroValor" inputmode="decimal" autocomplete="off" placeholder="30" maxlength="6" aria-label="Valor, a partir de 30 reais" aria-describedby="apOutroDica"></label><button type="button" class="primary ap-outro-b" id="apOutroDoar" disabled>Ser sócio</button></div>
@@ -3963,6 +3969,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.16', data: '12/11/2026', itens: ['Novo: Passe da semana. São 7 dias de Sócio da Calçada, com partidas sem limite, por R$ 5,90 no Pix ou no cartão, sem renovar.', 'As partidas grátis do dia são por pessoa, não por aparelho: jogar no app, no navegador ou em outro celular soma na mesma conta. Fica justo para todo mundo.'] },
   { v: '3.53.15', data: '11/11/2026', itens: ['Já é sócio e o app pediu para pagar? Na tela do limite de partidas agora tem "Já sou sócio em outro aparelho": é só usar o seu código.', 'Na carta de boas-vindas do sócio, um botão manda o seu código para o seu WhatsApp.'] },
   { v: '3.53.14', data: '11/11/2026', itens: ['Quem foi bloqueado por passar do limite grátis com vários aparelhos e vira Sócio da Calçada volta a jogar na hora.'] },
   { v: '3.53.13', data: '11/11/2026', itens: ['Mais proteção para quem joga limpo: quem foi bloqueado por descumprir as regras não volta mais com outro aparelho.'] },
@@ -7038,7 +7045,7 @@ async function criarMesa() {
     }
     if (r.status === 201 && j.codigo) { track('mesa-online-criada'); ON.vista = null; conectar(j.codigo); renderSala(); return; }
     if (r.status === 403 && j.erro === 'apelido') { pedirOutroApelido(); return; }   // 3.41
-    if (r.status === 403 && /^limite/.test(j.erro || '') && typeof convitePlano === 'function') { convitePlano(j.erro); return; }   // 28/10: planos
+    if (r.status === 403 && /^limite/.test(j.erro || '') && typeof convitePlano === 'function') { if (j.pessoa) LIM_PESSOA.em = Date.now(); convitePlano(j.erro); return; }   // 28/10: planos (12/11: pessoa)
     if (r.status === 403 && j.erro === 'bloqueado') store.set(BLOQKEY, '1');   // 11/11
     toast(r.status === 403 && j.erro === 'bloqueado' ? ERROS_MESA.bloqueado : r.status === 429 ? 'Muitas mesas criadas agora. Tente de novo daqui a pouco.' : 'Não deu para criar a mesa. Tente de novo.');
   } catch (e) { toast('Sem internet agora. A mesa online precisa de conexão.'); }
@@ -7080,7 +7087,7 @@ async function mesaRapida() {
     ON.buscando = false;
     if (r.ok && /^\d{5}$/.test(j.codigo || '')) { track('mesa-rapida'); ON.rapida = true; conectar(j.codigo); renderSala(); return; }
     if (r.status === 403 && j.erro === 'apelido') { show('home'); pedirOutroApelido(); return; }   // 3.41
-    if (r.status === 403 && j.erro === 'limite-rapida' && typeof convitePlano === 'function') { show('home'); convitePlano('limite-rapida'); return; }   // 28/10: planos
+    if (r.status === 403 && j.erro === 'limite-rapida' && typeof convitePlano === 'function') { if (j.pessoa) LIM_PESSOA.em = Date.now(); show('home'); convitePlano('limite-rapida'); return; }   // 28/10: planos (12/11: pessoa)
     if (r.status === 403 && j.erro === 'abandonos') { show('home'); avisoAbandonos(j); return; }   // 10/11: quem abandona partidas
     if (r.status === 403 && j.erro === 'bloqueado') store.set(BLOQKEY, '1');   // 11/11
     toast(r.status === 403 && j.erro === 'bloqueado' ? ERROS_MESA.bloqueado : r.status === 429 ? 'Muitas mesas agora. Tente de novo daqui a pouco.' : 'Não deu para achar uma mesa agora. Tente de novo.');
@@ -7490,7 +7497,7 @@ function renovaSozinho() { const p = planoLocal(); return !!(p && p.renova); }
 // assina até 4/11 (fim no começo dos limites, 5/11 00:00 de Brasília). O app pergunta ao servidor (GET /precos) e, sem
 // internet, usa estes. Quem cobra é o servidor: o valor da página do Asaas é sempre o certo.
 const PRECOS_BASE = { apm: { normal: 14.9, promo: 9.9, vezes: 3 }, ap3: { normal: 37.9, promo: 24.9, vezes: 1 }, ap12: { normal: 99.9, promo: 74.9, vezes: 1 }, ap1: { normal: 14.9, promo: 9.9, vezes: 1 },
-  ap3u: { normal: 37.9, promo: 24.9, vezes: 1 }, ap12u: { normal: 99.9, promo: 74.9, vezes: 1 } };   // 04/11: 3 meses e 1 ano avulsos (Pix ou cartão)
+  ap3u: { normal: 37.9, promo: 24.9, vezes: 1 }, ap12u: { normal: 99.9, promo: 74.9, vezes: 1 }, aps: { normal: 5.9, promo: 5.9, vezes: 0 } };   // 04/11: 3 meses e 1 ano avulsos (Pix ou cartão); 12/11: passe da semana
 const PLANOS_LANC = Date.UTC(2026, 10, 5, 3, 0, 0);   // 05/11/2026, 00:00 de Brasília
 const PROMO_FIM = Date.UTC(2026, 11, 1, 3, 0, 0);   // 03/11 (dono): a promoção vale até 30/11 (antes, até 4/11), para pegar o 1º mês de limites
 const PROMO_DIA = '30/11';
@@ -7498,7 +7505,7 @@ let precosServidor = null;
 function precoDe(k) {
   const s = precosServidor && precosServidor.itens && precosServidor.itens[k], b = PRECOS_BASE[k];
   if (s) return { valor: s.valor, normal: s.normal, vezes: s.vezes, promo: s.vezes > 0 };
-  const pr = Date.now() < PROMO_FIM;
+  const pr = Date.now() < PROMO_FIM && b.vezes > 0;
   return { valor: pr ? b.promo : b.normal, normal: b.normal, vezes: pr ? b.vezes : 0, promo: pr };
 }
 const emPromocao = () => precoDe('apm').promo;
@@ -7670,7 +7677,9 @@ async function acompanharPedido(id, insistir) {
   if (insistir && pedidoGuardado()) toast('Assim que o pagamento for confirmado, o plano liga sozinho. Pode jogar enquanto isso.');
   acompanhando = null;
 }
+let cartaPasse = false;   // 12/11: a carta de boas-vindas diz até quando vale o passe
 function obrigado(plano, ate, nivelAntes, produto) {
+  cartaPasse = produto === 'aps';
   // 3.39: quem acabou de virar Apoiador recebe a carta de agradecimento (com o código e o progresso guardado)
   if (plano && ate && typeof cartaApoiador === 'function' && temPlano()) { store.set('dmz-carta-apoio', String(Date.now())); cartaApoiador(true); return; }
   const titulo = plano ? 'Você agora é Sócio da Calçada!' : 'Valeu, sócio! ♥';
@@ -7968,6 +7977,25 @@ function renderPrecos() {
   const pb = $('#apPromo');
   if (pb) { pb.hidden = !pr; if (pr) pb.innerHTML = `<b>Promoção de lançamento até ${PROMO_DIA}</b><span>Mensal: ${condicaoDe('apm')}. Trimestral: ${condicaoDe('ap3')}. Anual: ${condicaoDe('ap12')}.</span>`; }
   const an = $('#apAntes'); if (an) an.hidden = typeof planosValem !== 'function' || planosValem();
+  const ps = $('#apPasse'); if (ps) { ps.hidden = !pagamentosAtivos(); ps.innerHTML = `<b>Só quer jogar esta semana?</b> Passe de 7 dias por ${brl(precoDe('aps').valor)}, sem renovar`; }   // 12/11
+}
+$('#apPasse').addEventListener('click', () => abrirPasse('tela-socio'));
+// 12/11 (pedido do dono): Passe da semana. 7 dias de Sócio da Calçada, pago uma vez (Pix ou cartão), sem renovar: para quem
+// bate o limite e quer jogar mais sem assinar. A tela mostra a conta: para o mês todo, o sócio sai mais em conta.
+function abrirPasse(origem) {
+  if (!pagamentosAtivos() || menorDeIdade()) return;
+  track('passe-abrir-' + (origem || 'direto'));
+  const ps = precoDe('aps'), m = precoDe('apm'), ate = new Date(Date.now() + 7 * 864e5).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Manaus' });
+  openSheet('passe', `<p class="eyebrow">Passe da semana</p><h2 id="sheetTitle">7 dias sem limite por ${brl(ps.valor)}</h2>
+    <p>Até <b>${ate}</b> você é Sócio da Calçada: partidas sem limite na mesa rápida, com os amigos e no offline, todas as mesas de Manaus, papo de mesa e ranking completo.</p>
+    <p class="note">${brl(ps.valor)} uma vez só, no Pix ou no cartão. Não renova sozinho.</p>
+    <div class="ps-cmp"><b>Vai jogar o mês todo?</b> Sendo sócio, sai por <b>${brl(m.valor)} por mês</b>${m.promo ? ` nos ${m.vezes} primeiros meses` : ''}. Quatro passes da semana dariam ${brl(Math.round(ps.valor * 400) / 100)}.</div>
+    <div class="pr-acoes"><button type="button" class="primary" id="psPagar" style="width:100%">Pagar ${brl(ps.valor)} e jogar agora</button>
+    <button type="button" class="secondary" id="psSocio" style="width:100%;margin-top:10px">Prefiro ser sócio por ${brl(m.valor)} por mês</button>
+    <button type="button" class="linkbtn" id="psFechar" style="width:100%;margin-top:6px">Agora não</button></div>`);
+  $('#psPagar').addEventListener('click', e => { track('passe-pagar-' + (origem || 'direto')); store.set('dmz-socio-origem', 'passe-' + (origem || 'direto')); pagarProduto('aps', e.currentTarget); });
+  $('#psSocio').addEventListener('click', () => { track('passe-prefere-socio'); closeSheet(); abrirApoio(screen === 'game' || screen === 'sala' ? 'home' : (screen || 'home'), 'plano'); });
+  $('#psFechar').addEventListener('click', closeSheet);
 }
 $('#apPrecos').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (!b) return; if (b.dataset.p === 'ap1') escolherMensal(); else escolherPlano(b.dataset.p, b); });
 // 28/10 (pedido do dono): o mensal — todo mês no cartão (renova sozinho, cancela quando quiser) ou só 1 mês (Pix ou cartão)
@@ -8139,7 +8167,7 @@ openApoioSheet = function () { closeSheet(); if (screen === 'game') leaveGame();
 
 // ---------- Área do dono: quanto entrou ----------
 const reais = v => 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',');
-const NOME_PRODUTO = { apm: 'Sócio mensal', ap1: 'Sócio 1 mês avulso', ap3u: 'Sócio 3 meses avulso', ap12u: 'Sócio 1 ano avulso', ap3: 'Sócio trimestral', ap12: 'Sócio anual', apoio990: 'Sócio 1 mês (antigo)', apoio1990: 'Sócio 3 meses (antigo)', apoio2990: 'Sócio 6 meses (antigo)', livre: 'Sócio (valor livre)', apoio5: 'Sócio 1 mês (antigo)', apoio12: 'Sócio 3 meses (antigo)', apoio40: 'Sócio 1 ano (antigo)',
+const NOME_PRODUTO = { aps: 'Passe da semana', apm: 'Sócio mensal', ap1: 'Sócio 1 mês avulso', ap3u: 'Sócio 3 meses avulso', ap12u: 'Sócio 1 ano avulso', ap3: 'Sócio trimestral', ap12: 'Sócio anual', apoio990: 'Sócio 1 mês (antigo)', apoio1990: 'Sócio 3 meses (antigo)', apoio2990: 'Sócio 6 meses (antigo)', livre: 'Sócio (valor livre)', apoio5: 'Sócio 1 mês (antigo)', apoio12: 'Sócio 3 meses (antigo)', apoio40: 'Sócio 1 ano (antigo)',
   mensal: 'Plano 30 dias', anual: 'Plano 1 ano', doacao5: 'Plano antigo', doacao10: 'Plano antigo', doacao20: 'Plano antigo' };
 async function dnPagCarregar() {
   const box = $('#dnPag');
@@ -8231,11 +8259,31 @@ async function dnBurlasCarregar() {
     if (!r.ok) throw new Error('http');
     const j = await r.json(), hoje = (j.barrados || []).filter(b => b.dia === j.dia);
     $('#dnBurlasR').textContent = `Hoje: ${j.bateram} ${j.bateram === 1 ? 'aparelho bateu' : 'aparelhos bateram'} o limite · ${j.novos} aparelhos novos · ${hoje.length} ${hoje.length === 1 ? 'tentativa barrada' : 'tentativas barradas'} · ${(j.suspeitos || []).length} ${(j.suspeitos || []).length === 1 ? 'passou' : 'passaram'}.`;
-    const itens = (j.suspeitos || []).map(x => `<li><span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')} · jogou</b><small>${esc(`Aparelho novo às ${horaMan(x.novo)}, depois de bater o limite da ${TIPO_LIM[x.tipo] || x.tipo} às ${horaMan(x.bateu)}`)} · ${esc([x.rapidas ? `${x.rapidas} na rápida` : '', x.amigos ? `${x.amigos} com os amigos` : '', x.offline ? `${x.offline} offline` : ''].filter(Boolean).join(', ') || 'ainda sem partida')}</small></span></li>`)
-      .concat((j.barrados || []).map(b => `<li class="bloq"><span class="dn-jog-t"><b>${esc(b.nome || 'Sem apelido')} · barrado</b><small>${esc(`${b.dia === j.dia ? 'Hoje' : 'Ontem'} às ${horaMan(b.em)} · ${TIPO_LIM[b.tipo] || b.tipo} · ${b.via === 'irmao' ? 'outro aparelho com o mesmo apelido já tinha batido o limite' : `reconhecido pelo ${b.via === 'apelido' ? 'apelido' : 'endereço de internet'}`}`)}</small></span></li>`));
+    const vig = (j.vigiados || []).map(x => {   // 12/11: apelidos em vigia (o limite é um só para os aparelhos com ele)
+      const est = x.tirado ? 'tirado da vigia' : x.bloqueado ? `bloqueado automático (${x.bloqueados} ${x.bloqueados === 1 ? 'aparelho' : 'aparelhos'})` : x.ativo ? 'em vigia, limite único' : 'vigia acabou';
+      const dm = t => new Date(t).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Manaus' });
+      const det = [`desde ${dm(x.desde)} ${horaMan(x.desde)}`, x.ativo ? `até ${dm(x.ate)}` : '', x.motivo || '', x.avisado ? `avisado ${quandoFoi(x.avisado)}` : 'ainda sem aviso',
+        x.tentativas ? `${x.tentativas} ${x.tentativas === 1 ? 'aparelho novo tentou' : 'aparelhos novos tentaram'} depois do aviso` : ''].filter(Boolean).join(' · ');
+      const bt = !x.tirado && (x.ativo || x.bloqueado) ? `<button type="button" class="linkbtn dn-jog-b" data-vig-tirar="${esc(x.nome)}">${x.bloqueado ? 'Desfazer' : 'Tirar'}</button>` : '';
+      return `<li class="vig${x.bloqueado && !x.tirado ? ' bloq' : ''}"><span class="dn-jog-t"><b>${esc(x.apelido || x.nome)}</b><small><strong>${esc(est)}</strong> · ${esc(det)}</small></span>${bt}</li>`;
+    });
+    const itens = vig.concat((j.suspeitos || []).map(x => `<li><span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')} · jogou</b><small>${esc(`Aparelho novo às ${horaMan(x.novo)}, depois de bater o limite da ${TIPO_LIM[x.tipo] || x.tipo} às ${horaMan(x.bateu)}`)} · ${esc([x.rapidas ? `${x.rapidas} na rápida` : '', x.amigos ? `${x.amigos} com os amigos` : '', x.offline ? `${x.offline} offline` : ''].filter(Boolean).join(', ') || 'ainda sem partida')}</small></span></li>`)
+      .concat((j.barrados || []).map(b => `<li class="bloq"><span class="dn-jog-t"><b>${esc(b.nome || 'Sem apelido')} · barrado</b><small>${esc(`${b.dia === j.dia ? 'Hoje' : 'Ontem'} às ${horaMan(b.em)} · ${TIPO_LIM[b.tipo] || b.tipo} · ${VIA_LIM[b.via] || `reconhecido pelo ${b.via === 'apelido' ? 'apelido' : 'endereço de internet'}`}`)}</small></span></li>`)));
     $('#dnBurlasLista').innerHTML = itens.length ? itens.join('') : '<li class="dn-jog-vazio">Nenhuma tentativa hoje.</li>';
   } catch (e) { $('#dnBurlasR').textContent = 'Não deu para carregar agora.'; }
 }
+const VIA_LIM = { irmao: 'outro aparelho com o mesmo apelido já tinha batido o limite', pessoa: 'mesmo apelido e mesma internet: somou as partidas do outro aparelho', vigia: 'apelido em vigia: somou as partidas dos outros aparelhos' };   // 12/11
+// 12/11: tirar da vigia (foi engano): desfaz o bloqueio automático e o apelido não volta para a vigia por 30 dias
+document.addEventListener('click', async e => {
+  const b = e.target.closest && e.target.closest('[data-vig-tirar]'); if (!b) return;
+  if (!b.dataset.armado) { b.dataset.armado = '1'; b.textContent = 'Toque de novo'; return; }
+  b.disabled = true;
+  try {
+    const j = await dnMsgPedir('/dono/vigia/tirar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nome: b.dataset.vigTirar }) });
+    toast(j.soltos ? `Pronto. ${j.soltos} ${j.soltos === 1 ? 'aparelho desbloqueado' : 'aparelhos desbloqueados'}, e o apelido saiu da vigia.` : 'Pronto. O apelido saiu da vigia.');
+  } catch (er) { toast('Não deu agora. Tente de novo.'); }
+  dnBurlasCarregar(); if (typeof dnAplCarregar === 'function') dnAplCarregar();
+});
 renderDono = function () { renderDonoBase(); dnPagCarregar(); dnApoiadoresCarregar(); dnBurlasCarregar(); };
 // 10/11 (pedido do dono): toda lista longa da área do administrador (e da lista "No app agora" da Calçada) mostra 5 itens,
 // com "Ver mais (N)" e "Ver menos". Vale para as listas que se refazem sozinhas: quem abriu continua aberto.
@@ -12845,9 +12893,17 @@ function planoTxt(motivo) {
   T['limite-partida'] = T.limite;
   return T[motivo] || T.limite;
 }
+// 12/11 (pedido do dono: endurecer contra quem usa vários aparelhos): o servidor avisa quando o limite foi pela pessoa (as
+// partidas do outro celular ou navegador com o mesmo apelido entraram na conta). A tela do limite explica, sem acusar.
+const LIM_PESSOA = { em: 0 };
+function limitePorPessoa(off) {
+  if (off) { try { const p = offPasse(); return !!(p && p.pessoa && p.dia === diaBRLocal()); } catch (e) { return false; } }
+  const sim = Date.now() - LIM_PESSOA.em < 20000; LIM_PESSOA.em = 0; return sim;
+}
 // Convite para o plano quando bate o limite, sempre com uma saída (o que ainda dá para jogar hoje)
 function convitePlano(motivo) {
   const [tit, tx] = planoTxt(motivo), rapida = motivo === 'limite-rapida', off = motivo === 'limite-offline', vit = vitrineDeHoje();
+  const pessoa = motivo !== 'papo' && limitePorPessoa(off);
   const pode = typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !(profile && profile.idade === 'menor');
   const preco = typeof precoDe === 'function' ? precoDe('apm') : null;
   const a = preco ? (preco.promo ? `<span class="pl-preco"><b>${brl(preco.valor)} por mês</b> nos 3 primeiros meses<small>Promoção até ${PROMO_DIA}. Depois, ${brl(preco.normal)} por mês.</small></span>` : `<span class="pl-preco"><b>${brl(preco.valor)} por mês</b><small>Cancela quando quiser.</small></span>`) : '';
@@ -12855,19 +12911,22 @@ function convitePlano(motivo) {
   const resta = [podeRapida ? 'na mesa rápida' : '', podeOff ? 'no jogo offline' : '', off || rapida ? 'com os amigos' : ''].filter(Boolean);
   openSheet('plano', `<p class="eyebrow">${rapida ? 'Mesa rápida' : off ? 'Jogo offline' : motivo === 'limite-desafio' ? 'Desafio das Confrarias' : 'Mesas com os amigos'}</p><h2 id="sheetTitle">${tit}</h2>
     <p>${tx}</p>
+    ${pessoa ? `<p class="pl-pessoa">As partidas grátis são por pessoa, não por aparelho: somando o seu outro celular ou navegador com o apelido <b>${esc((profile && profile.name) || '')}</b>, as de hoje já foram jogadas.</p>` : ''}
     ${pode ? `<div class="pl-ap"><p><b>Quer continuar agora?</b> Sendo Sócio da Calçada, a calçada é sua o dia inteiro:</p>
       <ul class="pr-lista pl-lista">${['<b>Partidas sem limite</b> na mesa rápida, com os amigos e no offline', (vit ? `<b>Todas as mesas de Manaus</b>, como a mesa ${esc(vit.nome)} que você jogou hoje` : '<b>Todas as mesas de Manaus</b>, do Teatro Amazonas ao Peixe-boi'), '<b>Papo de mesa</b>, foto na mesa e o selo ★ de sócio', '<b>Ranking completo</b> e as suas estatísticas'].map(t => `<li>${typeof CHECK !== 'undefined' ? CHECK : '✓'}<span>${t}</span></li>`).join('')}</ul>
       ${a}<p class="note">E você ainda ajuda o Dominó Manauara a crescer.</p></div>` : ''}
     ${resta.length ? `<p class="note">Enquanto isso, ainda dá para jogar ${juntaE(resta)}, se você não usou as partidas de lá.</p>` : ''}
     <div class="pr-acoes">${pode ? '<button type="button" class="primary" id="plVer" style="width:100%">Quero ser sócio</button>' : ''}
+    ${pode && motivo !== 'papo' ? `<button type="button" class="secondary pl-passe" id="plPasse" style="width:100%;margin-top:10px"><b>Passe da semana: ${brl(precoDe('aps').valor)}</b><small>7 dias sem limite, sem renovar</small></button>` : ''}
     ${podeRapida ? '<button type="button" class="secondary" id="plRapida" style="width:100%;margin-top:10px">Jogar na mesa rápida</button>' : podeOff ? '<button type="button" class="secondary" id="plOffline" style="width:100%;margin-top:10px">Jogar offline</button>' : ''}
     ${pagamentosAtivos() ? '<button type="button" class="linkbtn" id="plTrazer" style="width:100%;margin-top:6px">Já sou sócio em outro aparelho</button>' : ''}
     <button type="button" class="linkbtn" id="plFechar" style="width:100%;margin-top:6px">Agora não</button></div>`);   // 05/11: os botões ficam sempre à vista
-  track('plano-limite-' + motivo);
+  track('plano-limite-' + motivo + (pessoa ? '-pessoa' : ''));
   if ($('#plVer')) $('#plVer').addEventListener('click', () => { track('plano-quero-' + motivo + (vit ? '-vitrine' : '')); closeSheet(); abrirApoio(screen === 'game' || screen === 'sala' ? 'home' : (screen || 'home'), 'plano'); });
   if ($('#plRapida')) $('#plRapida').addEventListener('click', () => { closeSheet(); const b = $('#goRapida'); if (b && !b.hidden) b.click(); else show('home'); });
   if ($('#plOffline')) $('#plOffline').addEventListener('click', () => { closeSheet(); if (screen !== 'home') show('home'); const b = $('#goOffline'); if (b) b.click(); });
   $('#plFechar').addEventListener('click', closeSheet);
+  if ($('#plPasse')) $('#plPasse').addEventListener('click', () => { closeSheet(); setTimeout(() => abrirPasse('limite-' + motivo), 250); });   // 12/11
   // 11/11 (sócio que pagou num aparelho e joga em outro, sem o plano): o código traz o plano para cá na hora
   if ($('#plTrazer')) $('#plTrazer').addEventListener('click', () => { track('plano-limite-trazer-' + motivo); closeSheet(); setTimeout(abrirTrazerPlano, 250); });
 }
@@ -12892,7 +12951,7 @@ convitePlano = function (motivo) {
 const receberOnlinePlano = receberOnline;
 receberOnline = function (m) {
   const r = receberOnlinePlano.apply(this, arguments);
-  if (m && m.t === 'erro' && (m.cod === 'limite' || m.cod === 'limite-rapida' || m.cod === 'limite-desafio')) setTimeout(() => convitePlano(m.cod), 450);
+  if (m && m.t === 'erro' && (m.cod === 'limite' || m.cod === 'limite-rapida' || m.cod === 'limite-desafio')) { if (m.pessoa) LIM_PESSOA.em = Date.now(); setTimeout(() => convitePlano(m.cod), 450); }
   if (m && m.t === 'erro' && m.cod === 'mesa-socio') { toast(avisoMesaSocio()); try { aplicarMesa(); } catch (e) {} }
   return r;
 };
@@ -13451,6 +13510,7 @@ window.addEventListener('popstate', () => {
 // ?abrir=turma (a folha da Turma). Com o app fechado, vem no endereço; com o app aberto, o sw.js manda uma mensagem.
 // Nunca tira ninguém da partida ou da sala: aí o aviso só traz o app para a frente.
 function abrirPeloAviso(alvo, ver) {
+  if (alvo === 'dono') { if (!souAdmin()) return false; if (sheetKind) closeSheet(); show('dono'); setTimeout(() => { try { dnGrupoAbrir(DN_GRUPOS.findIndex(g => g[1].includes('dnBurlas')), true, false); } catch (e) {} const el = $('#dnBurlas'); if (el && !el.hidden) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 700); return true; }   // 12/11: aviso de burla para o dono (abre o grupo Dinheiro)
   if (!profile || !['ranking', 'turma', 'copa', 'carteira', 'aovivo'].includes(alvo)) return false;
   if (['game', 'sala', 'who'].includes(screen) || (typeof ON !== 'undefined' && (ON.ativo || ON.buscando))) return false;
   if (sheetKind) closeSheet();
@@ -13601,6 +13661,7 @@ function cartaApoiador(forcar) {
       <li>${CHECK}<span><b>Seu progresso guardado</b> com a gente: nível, conquistas e histórico, até se trocar de celular</span></li>
     </ul>
     ${p.renova ? '<p>Seu plano renova sozinho no cartão. Para parar, toque em "Cancelar a renovação" na tela do Sócio da Calçada.</p>' : ''}
+    ${cartaPasse && p.ate ? `<p><b>Seu Passe da semana vale até ${esc(dataBR(p.ate))}.</b> Gostou? Para continuar depois, é só virar sócio.</p>` : ''}
     ${cod ? '<p><b>Joga em outro lugar?</b> No app instalado, em outro navegador ou em outro celular, toque em <b>Mais › Já sou sócio em outro aparelho</b> e use o seu código:</p>' : ''}
     ${cod ? `<div class="carta-cod"><b>${esc(cod)}</b><button type="button" class="linkbtn" id="cartaCopiar">Copiar</button></div>
       <a class="share-wa carta-wa" id="cartaZap" href="https://wa.me/?text=${encodeURIComponent('Meu código de Sócio da Calçada no Dominó Manauara: ' + cod + ' (no app: Mais › Já sou sócio em outro aparelho)')}" target="_blank" rel="noopener">Mandar o código para o meu WhatsApp</a>
@@ -13640,8 +13701,9 @@ function avisoPromoSocio(forcar, motivo) {
     ? `<div class="pr-preco"><span class="pr-tag">Promoção até ${PROMO_DIA}</span><b>${brlGrande(p.valor)}<small>/mês</small></b><span>nos ${p.vezes} primeiros meses · depois ${brl(p.normal)} por mês</span></div>`
     : `<div class="pr-preco"><b>${brlGrande(p.valor)}<small>/mês</small></b></div>`;
   const lim = motivo && typeof planoTxt === 'function' ? planoTxt(motivo) : null;
+  const pessoa = !!motivo && typeof limitePorPessoa === 'function' && limitePorPessoa(motivo === 'limite-offline');   // 12/11
   openSheet('promo', `<p class="eyebrow">Sócio da Calçada</p>
-    ${lim ? `<p class="pr-limite"><b>${esc(lim[0])}</b> ${esc(lim[1])}</p>` : ''}
+    ${lim ? `<p class="pr-limite"><b>${esc(lim[0])}</b> ${esc(lim[1])}${pessoa ? ' As partidas grátis são por pessoa, não por aparelho: somando o seu outro celular ou navegador, as de hoje já foram jogadas.' : ''}</p>` : ''}
     <h2 id="sheetTitle">${nome ? `${nome}, ` : ''}garanta a sua cadeira na calçada!</h2>
     <p class="pr-lead">Sem plano, o jogo tem um limite de partidas por dia. Sendo sócio, a calçada é sua o dia inteiro, e você ainda ajuda o Dominó Manauara a crescer.</p>
     ${preco}
@@ -13656,6 +13718,7 @@ function avisoPromoSocio(forcar, motivo) {
     </ul>
     <p class="note pr-nota">Sem fidelidade: você para a renovação quando quiser.</p>
     <div class="pr-acoes"><button type="button" class="primary" id="prQuero" style="width:100%">Quero ser sócio</button>
+    ${motivo ? `<button type="button" class="secondary pl-passe" id="prPasse" style="width:100%;margin-top:8px"><b>Passe da semana: ${brl(precoDe('aps').valor)}</b><small>7 dias sem limite, sem renovar</small></button>` : ''}
     <button type="button" class="secondary" id="prFechar" style="width:100%;margin-top:8px" disabled>Agora não (10)</button>
     ${motivo ? '<button type="button" class="linkbtn" id="prTrazer" style="width:100%;margin-top:6px">Já sou sócio em outro aparelho</button>' : ''}</div>`);
   track('promo-socio-aviso');
@@ -13672,6 +13735,7 @@ function avisoPromoSocio(forcar, motivo) {
   bt.addEventListener('click', () => { if (Date.now() < promoAte) return; track('promo-socio-fechou'); closeSheet(); });
   $('#prQuero').addEventListener('click', () => { track('promo-socio-quero'); promoAte = 0; closeSheet(); abrirApoio('home', 'plano'); });
   // 11/11: sócio que pagou em outro aparelho (e bateu o limite neste) traz o plano com o código, sem esperar os 10 s
+  if ($('#prPasse')) $('#prPasse').addEventListener('click', () => { promoAte = 0; closeSheet(); setTimeout(() => abrirPasse('promo-' + motivo), 250); });   // 12/11
   if ($('#prTrazer')) $('#prTrazer').addEventListener('click', () => { track('promo-socio-trazer'); promoAte = 0; closeSheet(); setTimeout(abrirTrazerPlano, 250); });
 }
 // enquanto trava, o toque no fundo escuro não fecha
@@ -14646,7 +14710,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.15-664269a7';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.16-9a61430a';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -15565,7 +15629,7 @@ async function offConferir(forcar) {
     const j = await r.json();
     if (!j || !j.agora || !j.dia) return 'falhou';
     store.del(BLOQKEY);   // 11/11: o servidor liberou (desbloqueado)
-    store.set(OFFPASSE, JSON.stringify({ dia: j.dia, agora: j.agora, n: j.n | 0, herdou: !!j.herdou, em: Date.now() }));
+    store.set(OFFPASSE, JSON.stringify({ dia: j.dia, agora: j.agora, n: j.n | 0, herdou: !!j.herdou, pessoa: !!j.pessoa, em: Date.now() }));   // 12/11: pessoa
     store.set(HORAMAX, String(j.agora));   // a hora certa é a do servidor (desfaz o relógio adiantado)
     if ((j.n | 0) > offlineUsoLocal()) store.set(OFFKEY, JSON.stringify({ dia: j.dia, n: j.n | 0 }));
     try { offEspelhar(); } catch (e) {}

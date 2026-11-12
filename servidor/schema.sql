@@ -312,3 +312,11 @@ CREATE TABLE IF NOT EXISTS apelidos_bloqueados (termo TEXT PRIMARY KEY, parte IN
 INSERT OR IGNORE INTO apelidos_bloqueados (termo, parte, motivo, em) SELECT lower(nome), 0, 'de quem já estava bloqueado', em FROM bloqueios
   WHERE nome IS NOT NULL AND length(nome) >= 4 AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'apelidos-bloqueados-1');
 INSERT OR IGNORE INTO marcos (chave, em) VALUES ('apelidos-bloqueados-1', 0);
+-- 12/11 (pedido do dono: endurecer contra quem usa vários aparelhos para jogar mais que o limite grátis; pessoa.js).
+-- pessoa_dia: os aparelhos que jogaram hoje (sem plano), com o apelido limpo e o resumo da rede do dia, por 2 dias.
+-- apelidos_vigia: apelido em vários aparelhos: por 7 dias, os aparelhos com ele dividem um limite só (perdao: o dono tirou
+-- da vigia, não volta até essa data). vigia_tentativas: aparelhos novos que tentaram passar do limite depois do aviso.
+CREATE TABLE IF NOT EXISTS pessoa_dia (dia TEXT NOT NULL, nome TEXT NOT NULL, marca TEXT NOT NULL, aparelho TEXT NOT NULL, em INTEGER NOT NULL, PRIMARY KEY (dia, nome, marca, aparelho));
+CREATE INDEX IF NOT EXISTS pessoa_dia_ap ON pessoa_dia (aparelho);
+CREATE TABLE IF NOT EXISTS apelidos_vigia (nome TEXT PRIMARY KEY, apelido TEXT, motivo TEXT, desde INTEGER NOT NULL, ate INTEGER NOT NULL, avisado INTEGER, bloqueado INTEGER, aparelhos TEXT, perdao INTEGER);
+CREATE TABLE IF NOT EXISTS vigia_tentativas (nome TEXT NOT NULL, aparelho TEXT NOT NULL, em INTEGER NOT NULL, PRIMARY KEY (nome, aparelho));

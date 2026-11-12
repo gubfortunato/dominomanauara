@@ -14,6 +14,7 @@ import * as rk from './ranking.js';
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos, pegaPeloApelido, donoApelidos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
 import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
+import { limitePessoa, donoVigiaTirar, vigiados } from './pessoa.js';
 import { travaCodigo, anotarCodigoErrado, limparCodigos } from './codigos.js';
 import { saudeVoz, donoPapoVoz, limparVozesDenunciadas } from './voz.js';
 import { copaInfo, apurarCopa, avisosAgendados } from './copa.js';   // 10/11: Copa dos Sócios, Sexta da Calçada e tempo de casa
@@ -128,7 +129,7 @@ async function novaMesa(req, env, origin) {
   const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM mesas_criadas WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();
   if (r && r.n >= MESAS_POR_HORA) return json({ erro: 'muitas' }, 429, origin);
   // planos (28/10): quem não é sócio cria 1 mesa com os amigos por dia (e precisa ter a partida do dia para jogar)
-  let uso = null, apoia = false;
+  let uso = null, apoia = false, outrosP = 0;
   const rede = await marcaRede(req.headers.get('cf-connecting-ip'), env);
   // 04/11 (dono): mesa de desafio entre Turmas (botão Desafiar): só vale com o Desafio aberto e quem cria numa Turma.
   // Sem plano, não gasta a mesa nem a partida grátis do dia: até LIMITE.desafios partidas de desafio por dia.
@@ -143,6 +144,10 @@ async function novaMesa(req, env, origin) {
       uso = await usoDoDia(env, b && b.id);
       if (uso.mesas >= LIMITE.mesas) return json({ erro: 'limite-mesa' }, 403, origin);
       if (uso.partidas >= LIMITE.partidas) return json({ erro: 'limite-partida' }, 403, origin);
+      // 12/11: o limite grátis é por pessoa (o mesmo apelido em outro aparelho da mesma rede, ou um apelido em vigia)
+      const lp = await limitePessoa(env, { rede, tipo: 'partidas', aparelho: b && b.id, nome: b && b.nome, proprio: uso.partidas || 0, limite: LIMITE.partidas });
+      if (lp.barrar) return json({ erro: 'limite-partida', pessoa: true }, 403, origin);
+      if (lp.outros) { uso = Object.assign({}, uso, { partidas: (uso.partidas || 0) + lp.outros }); outrosP = lp.outros; }
       // aparelho novo na mesma rede de quem acabou de bater o limite (apagou os dados do app): o limite continua
       if (!uso.partidas && !uso.mesas && await limiteHerdado(env, rede, 'partidas', b && b.id, b && b.nome)) return json({ erro: 'limite-partida' }, 403, origin);   // 10/11: rede ou apelido
       if (await limiteDoIrmao(env, 'partidas', b && b.id, b && b.nome)) return json({ erro: 'limite-partida' }, 403, origin);   // 10/11 (desligado)
@@ -152,7 +157,7 @@ async function novaMesa(req, env, origin) {
   for (let k = 0; k < 8; k++) {
     const codigo = String(10000 + Math.floor(Math.random() * 90000));
     const stub = env.MESA.get(env.MESA.idFromName(codigo));
-    const res = await stub.fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, nv: b.nv, codigo, uso, apoiador: apoia, desafio: vs }) });
+    const res = await stub.fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, nv: b.nv, codigo, uso, apoiador: apoia, desafio: vs, outros: outrosP }) });
     if (res.status === 201) {
       try { await env.DB.prepare('INSERT INTO mesas_criadas (marca, criado_em) VALUES (?, ?)').bind(marca, Date.now()).run(); } catch (e) {}   // limite do banco: a mesa vale assim mesmo
       if (uso && !vs) await somarUso(env, b.id, 'mesas');
@@ -181,6 +186,8 @@ async function mesaRapida(req, env, origin) {
   if (limitesValem(env) && !(await temPlano(env, b && b.id))) {
     const uso = await usoDoDia(env, b && b.id);
     if (uso.publicas >= LIMITE.publicas) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);
+    { const lp = await limitePessoa(env, { rede, tipo: 'publicas', aparelho: b && b.id, nome: b && b.nome, proprio: uso.publicas || 0, limite: LIMITE.publicas });   // 12/11: por pessoa
+      if (lp.barrar) return json({ erro: 'limite-rapida', limite: LIMITE.publicas, pessoa: true }, 403, origin); }
     if (!uso.publicas && await limiteHerdado(env, rede, 'publicas', b && b.id, b && b.nome)) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);   // 10/11: rede ou apelido
     if (await limiteDoIrmao(env, 'publicas', b && b.id, b && b.nome)) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);   // 10/11 (desligado): outro aparelho com o mesmo apelido
   } else if (b && b.id) await aparelhoDesde(env, b.id);
@@ -620,7 +627,8 @@ export default {
       if (url.pathname === '/copa' && req.method === 'GET') return await copaInfo(req, env, origin, H, url);   // 10/11: Copa dos Sócios
       if (url.pathname === '/dono/presenca' && req.method === 'GET') return await presenca.donoPresenca(req, env, origin, H);
       if (url.pathname === '/dono/numeros' && req.method === 'GET') return await donoNumeros(req, env, origin, H);   // 03/11
-      if (url.pathname === '/dono/burlas' && req.method === 'GET') return await donoBurlas(req, env, origin, H);   // 10/11: possíveis burlas dos limites
+      if (url.pathname === '/dono/burlas' && req.method === 'GET') return await donoBurlas(req, env, origin, H, vigiados);   // 10/11: possíveis burlas dos limites (12/11: e os apelidos em vigia)
+      if (url.pathname === '/dono/vigia/tirar' && req.method === 'POST') return await donoVigiaTirar(req, env, origin, H);   // 12/11: o dono tira da vigia (e desfaz o bloqueio automático)
       if (url.pathname === '/dono/cofre' && req.method === 'GET') return await donoCofre(env, origin);   // 10/11: troca da senha do dono
       if (url.pathname === '/dono/cofre' && req.method === 'POST') return await donoCofreTrocar(req, env, origin);
       if (url.pathname === '/vivo/hoje' && req.method === 'GET') return await vivo.hoje(env, origin, H);

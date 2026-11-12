@@ -4,6 +4,7 @@
 // código na mesma rede logo depois de bater o limite, mantém o limite (a mesma regra das mesas online).
 import { limitesValem, diaBR, temPlano, marcaRede, aparelhoDesde, anotarLimite, limiteHerdado, limiteDoIrmao } from './planos.js';
 import { bloqueado, pegaPeloApelido } from './bloqueio.js';
+import { limitePessoa } from './pessoa.js';
 
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
 export const OFFLINE_POR_DIA = 5;   // o app soma +1 de quem cumpre as missões do dia
@@ -24,13 +25,18 @@ export async function conferir(req, env, origin, h) {
     n = (r && r.n) || 0;
     if (Math.random() < .03) await env.DB.prepare('DELETE FROM offline_uso WHERE dia < ?').bind(diaBR(agora - 7 * 86400000)).run();
   } catch (e) {}
-  let herdou = false;
+  let herdou = false, pessoa = false;
   if (limitesValem(env) && !(await temPlano(env, ap))) {
     const rede = await marcaRede(req.headers.get('cf-connecting-ip'), env);
     await aparelhoDesde(env, ap);
     if (n >= OFFLINE_POR_DIA) await anotarLimite(env, rede, 'offline', ap, b.nome);
-    else if (!n) herdou = await limiteHerdado(env, rede, 'offline', ap, b.nome);   // 10/11: pela rede ou pelo apelido
+    else {
+      // 12/11 (pessoa.js): o limite é por pessoa: as partidas offline dos outros aparelhos dela hoje contam junto
+      const lp = await limitePessoa(env, { rede, tipo: 'offline', aparelho: ap, nome: b.nome, proprio: n, limite: OFFLINE_POR_DIA });
+      if (lp.barrar) herdou = pessoa = true;
+      else if (!n) herdou = await limiteHerdado(env, rede, 'offline', ap, b.nome);   // 10/11: pela rede ou pelo apelido
+    }
     if (!herdou && n < OFFLINE_POR_DIA) herdou = await limiteDoIrmao(env, 'offline', ap, b.nome);   // 10/11 (desligado)
   }
-  return h.json({ dia, agora, n, herdou }, 200, origin);
+  return h.json({ dia, agora, n, herdou, pessoa }, 200, origin);
 }
