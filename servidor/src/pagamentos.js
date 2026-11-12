@@ -4,6 +4,7 @@
 // O Asaas avisa o pagamento pelo webhook (CHECKOUT_PAID); só então o plano liga. O jogo nunca vê CPF nem cartão:
 // quem paga preenche tudo na página do Asaas. Aqui fica só o código do aparelho, o produto, o valor e as datas.
 import { promoValendo, promoAte } from './planos.js';
+import { motivoBloqueio, liberarQuemPagou } from './bloqueio.js';   // 11/11
 import { casaAoLigar, casaDe, premiosDe, campeaoAte } from './copa.js';   // 10/11: tempo de casa e Copa dos Sócios
 const DIA = 86400000;
 export const PRODUTOS = {
@@ -109,6 +110,7 @@ async function ligarPlano(env, aparelho, dias) {
   if (p) await env.DB.prepare('UPDATE planos SET ate = ? WHERE aparelho = ?').bind(ate, aparelho).run();
   else await novaConta(env, aparelho, ate);
   await casaAoLigar(env, aparelho, p && p.ate, agora);   // 10/11: tempo de casa (zera se ficou mais de 7 dias vencido)
+  await liberarQuemPagou(env, aparelho);   // 11/11: bloqueado por burlar o limite grátis que vira sócio: desbloqueado
   return ate;
 }
 // data para o Asaas, no horário de Brasília (UTC-3): "AAAA-MM-DD HH:MM:SS"
@@ -185,6 +187,8 @@ export async function pagar(req, env, origin, h) {
   if (PRODUTOS[b.produto].livre && valorLivre(b.valor) == null) return h.json({ erro: 'valor', min: LIVRE.min, max: LIVRE.max }, 400, origin);
   const prod = produtoDoPedido(b.produto, PRODUTOS[b.produto].livre ? valorLivre(b.valor) : undefined);
   if (prod.dias && !idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
+  // 11/11: bloqueado por apelido ou foto ofensiva não paga (pagaria e continuaria sem a mesa online); quem burlou o limite paga
+  { const bq = idOk(b.aparelho) ? await motivoBloqueio(env, b.aparelho) : null; if (bq && !bq.burla) return h.json({ erro: 'bloqueado' }, 403, origin); }
   const agora = Date.now(), promo = emPromo(prod, env, agora), valor = precoDe(prod, env, agora);   // 28/10: promoção de lançamento
   const marca = await h.marcaDoDia(req, env);
   const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM pedidos WHERE marca = ? AND criado_em > ?').bind(marca, Date.now() - 3600000).first();

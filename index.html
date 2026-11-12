@@ -3962,6 +3962,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.14', data: '11/11/2026', itens: ['Quem foi bloqueado por passar do limite grátis com vários aparelhos e vira Sócio da Calçada volta a jogar na hora.'] },
   { v: '3.53.13', data: '11/11/2026', itens: ['Mais proteção para quem joga limpo: quem foi bloqueado por descumprir as regras não volta mais com outro aparelho.'] },
   { v: '3.53.12', data: '11/11/2026', itens: ['Desafio das Confrarias: quando começa um confronto entre Turmas, quem é das duas Turmas recebe um aviso no celular, e o toque já abre a partida para assistir ao vivo.', 'Quem assiste um confronto vê o nome das Turmas no placar.', 'Na Sexta da Calçada (sexta, das 20h às 23h), a aba Calçada vira "🔥 Sexta da Calçada".'] },
   { v: '3.53.11', data: '11/11/2026', itens: ['No notebook e no computador, a partida ficou do tamanho da tela: o placar e a sua vez vão para a esquerda, a mesa ocupa a altura toda e as pedras na mesa ficam bem maiores. O "Mesa oferecida por" saiu de cima das pedras.'] },
@@ -7627,6 +7628,7 @@ async function pagarProduto(produto, btn, valor) {
       return;
     }
     track('pagar-erro', { produto, status: r.status, erro: j.erro || null });
+    if (r.status === 403 && j.erro === 'bloqueado') { if (btn) { btn.disabled = false; btn.innerHTML = rotulo; } closeSheet(); setTimeout(avisoBloqueado, 250); return; }   // 11/11
     toast(r.status === 400 && j.erro === 'valor' ? `O valor precisa ser de R$ ${j.min || 30} a R$ ${j.max || 500}.`
       : r.status === 503 ? 'Os pagamentos ainda não estão ligados. Tente mais tarde.'
       : r.status === 429 ? 'Muitas tentativas agora. Tente de novo daqui a pouco.'
@@ -14634,7 +14636,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.13-65b1fefd';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.14-c50d1356';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
