@@ -82,7 +82,7 @@ export const podeJogar = (c, env, publica, daSocio, desafio) => !c || c.bot || c
 // ---- 28/10 (pedido do dono): ninguém ganha partidas de graça a mais trocando de apelido ou apagando os dados do app ----
 // O limite é do código do aparelho: trocar de apelido não muda nada. Quem apaga os dados do app (ou abre em outro
 // navegador) ganha um código novo; por isso, um aparelho novo (visto pela 1ª vez há menos de 24 h) que chega pela mesma
-// rede de um aparelho que bateu o limite hoje herda o limite, se usar o mesmo apelido ou se apareceu até 2 horas depois.
+// rede de um aparelho que bateu o limite hoje herda o limite, se usar o mesmo apelido (12/11: só assim; ver limiteDaRede).
 // A rede fica só como um resumo (hash do endereço com o dia, que muda todo dia): o endereço nunca é guardado. 2 dias.
 export const sha = async t => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(b => b.toString(16).padStart(2, '0')).join('');
 // 10/11 (revisão de segurança): o resumo da rede usava como "tempero" um valor que está no código público (dava para
@@ -91,12 +91,12 @@ export const sha = async t => [...new Uint8Array(await crypto.subtle.digest('SHA
 export const SAL_DESDE = '2026-11-11';
 export function salRede(env, dia) { return (String(dia || diaBR()) >= SAL_DESDE && env && env.SAL_REDE) || (env && env.ADMIN_HASH) || ''; }
 export async function marcaRede(ip, env) { const dia = diaBR(); return ip ? (await sha('rede|' + ip + '|' + dia + '|' + salRede(env, dia))).slice(0, 24) : null; }
-const nomeChave = n => String(n || '').toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
+export const nomeChave = n => String(n || '').toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
 // 10/11 (pedido do dono, depois da análise de 5 a 9/11): quem apaga os dados (ou troca de aparelho/navegador) e volta com
 // o MESMO apelido logo depois de bater o limite do dia fica com o limite também, em qualquer rede (antes, só na mesma
 // rede). Só vale para apelido pouco comum (até 3 jogadores online com ele), para não pegar dois "João" diferentes.
 // o apelido "limpo" no banco (o mesmo que nomeChave: minúsculo, sem acento, sem espaço nem pontuação)
-const CHAVE_SQL = (() => {
+export const CHAVE_SQL = (() => {
   let e = 'lower(nome)';
   const tr = { a: 'áàâãäÁÀÂÃÄ', e: 'éèêëÉÈÊË', i: 'íìîïÍÌÎÏ', o: 'óòôõöÓÒÔÕÖ', u: 'úùûüÚÙÛÜ', c: 'çÇ', n: 'ñÑ' };
   for (const [k, v] of Object.entries(tr)) for (const ch of v) e = `replace(${e}, '${ch}', '${k}')`;
@@ -144,7 +144,7 @@ export async function limiteHerdado(env, rede, tipo, aparelho, nome) {
 }
 // GET /dono/burlas: os limites herdados de hoje e de ontem, e os aparelhos novos de hoje com o apelido de quem bateu o
 // limite e que ainda assim jogaram (apelido comum, ou chegaram antes desta regra). Só para o administrador.
-export async function donoBurlas(req, env, origin, h) {
+export async function donoBurlas(req, env, origin, h, vigiados) {
   if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
   const dia = diaBR(), ontem = diaBR(Date.now() - DIA), agora = Date.now();
   const tudo = async (q, ...a) => { try { const { results } = await env.DB.prepare(q).bind(...a).all(); return results || []; } catch (e) { return []; } };
@@ -162,7 +162,8 @@ export async function donoBurlas(req, env, origin, h) {
     const b = bateram.find(r => r.nome === k && r.aparelho !== x.aparelho && x.desde > r.em);
     if (b && !ja.has(k)) suspeitos.push({ nome: x.nome, tipo: b.tipo, bateu: b.em, novo: x.desde, rapidas: x.rapidas || 0, amigos: x.amigos || 0, offline: x.offline || 0 });
   }
-  return h.json({ dia, bateram: new Set(bateram.map(r => r.aparelho)).size, novos: novos.filter(x => !x.socio).length, barrados, suspeitos: suspeitos.slice(0, 80) }, 200, origin);
+  const vig = vigiados ? await vigiados(env) : [];   // 12/11: apelidos em vigia (pessoa.js)
+  return h.json({ dia, bateram: new Set(bateram.map(r => r.aparelho)).size, novos: novos.filter(x => !x.socio).length, barrados, suspeitos: suspeitos.slice(0, 80), vigiados: vig }, 200, origin);
 }
 // quando o aparelho apareceu pela primeira vez numa mesa online (anota agora, se for a primeira)
 export async function aparelhoDesde(env, aparelho) {
@@ -181,14 +182,18 @@ export async function anotarLimite(env, rede, tipo, aparelho, nome) {
     if (Math.random() < .05) await env.DB.prepare('DELETE FROM limites_rede WHERE dia < ?').bind(diaBR(Date.now() - 2 * DIA)).run();
   } catch (e) {}
 }
-// aparelho novo nesta rede, logo depois de outro bater o limite (ou com o mesmo apelido): fica com o limite também
+// aparelho novo nesta rede, com o mesmo apelido de outro que bateu o limite hoje: fica com o limite também.
+// 12/11 (pedido do dono: não prejudicar quem é de boa-fé): só com o MESMO apelido (antes, qualquer aparelho novo que
+// aparecesse até 2 horas depois na mesma rede herdava o limite, e isso pegava o parente ou o vizinho no mesmo Wi-Fi que
+// instalava o jogo naquela hora). Em troca, "aparelho novo" agora é o que apareceu nos últimos 3 dias (antes, 24 h).
+export const NOVO_DIAS = 3;
 export async function limiteDaRede(env, rede, tipo, aparelho, nome) {
-  if (!rede || !aparelho) return false;
+  const n = nomeChave(nome);
+  if (!rede || !aparelho || n.length < 2) return false;
   try {
     const desde = await aparelhoDesde(env, aparelho);
-    if (!(desde > Date.now() - DIA)) return false;   // aparelho que já existia: vale só o limite dele
-    const { results } = await env.DB.prepare('SELECT nome, em FROM limites_rede WHERE dia = ? AND marca = ? AND tipo = ? AND aparelho <> ? LIMIT 30').bind(diaBR(), rede, tipo, aparelho).all();
-    const n = nomeChave(nome);
-    return (results || []).some(r => (n.length >= 2 && r.nome === n) || (desde >= r.em && desde - r.em < 2 * 3600000));
+    if (!(desde > Date.now() - NOVO_DIAS * DIA)) return false;   // aparelho que já existia: vale só o limite dele
+    const r = await env.DB.prepare('SELECT 1 AS x FROM limites_rede WHERE dia = ? AND marca = ? AND tipo = ? AND aparelho <> ? AND nome = ? LIMIT 1').bind(diaBR(), rede, tipo, aparelho, n).first();
+    return !!r;
   } catch (e) { return false; }
 }

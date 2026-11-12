@@ -16,6 +16,7 @@ import { anotarCodigoErrado } from './codigos.js';
 import { campeaoAte } from './copa.js';   // 10/11: o campeão da Copa dos Sócios (troféu na mesa e a mesa do campeão)
 import { VOZ, transcrever } from './voz.js';
 import { limitesValem, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteHerdado, limiteDoIrmao, anotarLimite, mesasDoDia, bonusConfig } from './planos.js';
+import { limitePessoa } from './pessoa.js';
 // 3.38.2: na Calçada, apelido que o filtro passou a barrar (de quem entrou antes) aparece como "Jogador"
 const nomeVisivel = c => !c.bot && nomeOfensivo(c.nome) ? 'Jogador' : c.nome;
 
@@ -159,6 +160,7 @@ export class Mesa {
     const quem = this.pessoa(b);
     if (!quem) return Response.json({ erro: 'dados' }, { status: 400 });
     if (b.uso && b.uso.dia) quem.uso = { dia: String(b.uso.dia), partidas: Number(b.uso.partidas) || 0, desafios: Number(b.uso.desafios) || 0 };   // planos (28/10; 04/11: desafios)
+    if (Number(b.outros) > 0) quem.outros = Number(b.outros) | 0;   // 12/11: somou partidas de outro aparelho da pessoa
     quem.apoiador = !!b.apoiador;
     const agora = Date.now();
     this.m = { codigo: limpa(b.codigo, 5), criada: agora, ultimo: agora, fase: 'espera', seq: 0, dono: quem.id,
@@ -508,6 +510,13 @@ export class Mesa {
       if (!jaEstava && !podeJogar(quem, this.env, !!m.publica, this.mesaDeSocio(), this.mesaDesafio())) return this.recusar(ws, m.publica ? 'limite-rapida' : this.mesaDesafio() ? 'limite-desafio' : 'limite');
       // aparelho novo na mesma rede de quem acabou de bater o limite (apagou os dados do app ou trocou de navegador)
       const tipo = m.publica ? 'publicas' : 'partidas';
+      // 12/11 (pessoa.js): o limite grátis é por pessoa. As partidas dos outros aparelhos dela hoje entram na conta da cadeira.
+      if (!jaEstava && !this.mesaDesafio()) {
+        const lim = m.publica ? LIMITE.publicas : this.mesaDeSocio() ? LIMITE.partidasSocio : LIMITE.partidas;
+        const lp = await limitePessoa(this.env, { rede: att.rede, tipo, aparelho: quem.id, nome: quem.nome, proprio: quem.uso[tipo] || 0, limite: lim });
+        if (lp.barrar) return this.recusar(ws, m.publica ? 'limite-rapida' : 'limite', { pessoa: true });
+        if (lp.outros) { quem.uso = Object.assign({}, quem.uso, { [tipo]: (quem.uso[tipo] || 0) + lp.outros }); quem.outros = lp.outros; }
+      }
       if (!jaEstava && !this.mesaDesafio() && !(quem.uso[tipo] || 0) && await limiteHerdado(this.env, att.rede, tipo, quem.id, quem.nome)) return this.recusar(ws, m.publica ? 'limite-rapida' : 'limite');   // 10/11: rede ou apelido
       if (!jaEstava && !this.mesaDesafio() && await limiteDoIrmao(this.env, tipo, quem.id, quem.nome)) return this.recusar(ws, m.publica ? 'limite-rapida' : 'limite');   // 10/11 (desligado): outro aparelho com o mesmo apelido
     } else if (!jaEstava) await aparelhoDesde(this.env, quem.id);
@@ -695,14 +704,14 @@ export class Mesa {
   // aviso e o convite para o plano
   tirarSemPartida(comFila) {
     const m = this.m, pub = !!m.publica; if (!limitesValem(this.env)) return false;
-    const fora = [];
+    const fora = [], pessoa = new Set();   // 12/11: quem somou partidas de outro aparelho recebe o aviso do limite por pessoa
     const socio = this.mesaDeSocio(), des = this.mesaDesafio();
-    m.cad.forEach((c, p) => { if (c && !c.bot && !podeJogar(c, this.env, pub, socio, des)) { fora.push(c.id); m.cad[p] = null; } });
-    if (comFila && m.fila) m.fila = m.fila.filter(c => { if (podeJogar(c, this.env, pub, socio, des)) return true; fora.push(c.id); return false; });
+    m.cad.forEach((c, p) => { if (c && !c.bot && !podeJogar(c, this.env, pub, socio, des)) { fora.push(c.id); if (c.outros) pessoa.add(c.id); m.cad[p] = null; } });
+    if (comFila && m.fila) m.fila = m.fila.filter(c => { if (podeJogar(c, this.env, pub, socio, des)) return true; fora.push(c.id); if (c.outros) pessoa.add(c.id); return false; });
     if (!fora.length) return false;
     for (const ws of this.ctx.getWebSockets()) {
       const a = ws.deserializeAttachment() || {};
-      if (a.id && fora.includes(a.id)) { a.id = null; ws.serializeAttachment(a); this.recusar(ws, pub ? 'limite-rapida' : des ? 'limite-desafio' : 'limite'); }
+      if (a.id && fora.includes(a.id)) { const pes = pessoa.has(a.id); a.id = null; ws.serializeAttachment(a); this.recusar(ws, pub ? 'limite-rapida' : des ? 'limite-desafio' : 'limite', pes ? { pessoa: true } : null); }
     }
     if (!m.cad.some(c => c && c.id === m.dono)) { const h = m.cad.find(c => c && !c.bot && c.id); if (h) m.dono = h.id; }
     return true;
@@ -792,7 +801,7 @@ export class Mesa {
     for (let i = livres.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [livres[i], livres[j]] = [livres[j], livres[i]]; }
     m.cad = m.cad.map(c => c || { id: null, nome: livres.pop(), av: null, nv: nivelRobo(), bot: true, saiu: false });
   }
-  recusar(ws, cod) { this.enviar(ws, { t: 'erro', cod }); try { ws.close(4000, cod); } catch (e) {} }
+  recusar(ws, cod, extra) { this.enviar(ws, Object.assign({ t: 'erro', cod }, extra || {})); try { ws.close(4000, cod); } catch (e) {} }   // 12/11: extra (pessoa: o limite é por pessoa)
   nomeUnico(nome, p) {
     const usados = this.m.cad.filter((c, k) => c && k !== p).concat(this.m.fila || []).map(c => c.nome.toLowerCase());
     if (!usados.includes(nome.toLowerCase())) return nome;
