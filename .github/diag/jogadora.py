@@ -61,4 +61,12 @@ for ap, onde in sorted(exato.items(), key=lambda x: -max(int(r.get('em') or 0) f
 L.append(f'== apelidos que começam ou terminam com o mesmo nome (até 12 letras): {len(parecido)}')
 for ap, onde in sorted(parecido.items(), key=lambda x: -max(int(r.get('em') or 0) for _, r in x[1]))[:25]:
     L.append(f"   {h(ap)} | {', '.join(sorted({str(r.get('nome')) for _, r in onde}))} | último {quando(max(int(r.get('em') or 0) for _, r in onde))}{' | BLOQ: ' + bloq[ap]['motivo'] if ap in bloq else ''}")
+# as redes (resumo do dia) que os aparelhos com o apelido exato dividem entre si
+redes = {}
+for ap, onde in exato.items():
+    for f, r in onde:
+        if f == 'limites_rede': redes.setdefault((r['dia'], r['marca']), set()).add(ap)
+L.append('== redes do dia em que bateram limite (aparelhos com o apelido exato): ' + str(len(redes)))
+for (dia, m), aps in sorted(redes.items()):
+    L.append(f"   {dia} rede {sh(m)[:6]}: " + ', '.join(sorted(h(a) for a in aps)) + (' <- MESMA REDE' if len(aps) > 1 else ''))
 open(OUT, 'a').write('\n'.join(L) + '\n')
