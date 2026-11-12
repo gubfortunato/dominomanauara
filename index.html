@@ -1917,6 +1917,9 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .vivo-rostos i + i,.vivo-rostos img + i,.vivo-rostos i + img{margin-left:-6px}
 /* 3.25: administrador — jogadores da mesa online e bloqueio */
 .dn-joglista{list-style:none;margin:6px 0 10px;padding:0;display:grid;gap:6px}
+.dn-apl-add{display:flex;gap:8px;margin:6px 0 4px}   /* 11/11: apelidos bloqueados */
+.dn-apl-add input{flex:1;min-width:0;font:inherit;font-size:16px;padding:9px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg)}
+.dn-apl-add button{flex:none;padding:9px 16px}
 .dn-joglista li{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:12px;background:rgba(0,0,0,.18)}
 .dn-joglista li.bloq{opacity:.6}
 .dn-jog-r img,.dn-jog-r i{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--wood-2);font-style:normal;font-weight:800}
@@ -3959,6 +3962,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.13', data: '11/11/2026', itens: ['Mais proteção para quem joga limpo: quem foi bloqueado por descumprir as regras não volta mais com outro aparelho.'] },
   { v: '3.53.12', data: '11/11/2026', itens: ['Desafio das Confrarias: quando começa um confronto entre Turmas, quem é das duas Turmas recebe um aviso no celular, e o toque já abre a partida para assistir ao vivo.', 'Quem assiste um confronto vê o nome das Turmas no placar.', 'Na Sexta da Calçada (sexta, das 20h às 23h), a aba Calçada vira "🔥 Sexta da Calçada".'] },
   { v: '3.53.11', data: '11/11/2026', itens: ['No notebook e no computador, a partida ficou do tamanho da tela: o placar e a sua vez vão para a esquerda, a mesa ocupa a altura toda e as pedras na mesa ficam bem maiores. O "Mesa oferecida por" saiu de cima das pedras.'] },
   { v: '3.53.10', data: '11/11/2026', itens: ['A marca d\'água com o nome nas pedras da partida online saiu.'] },
@@ -6669,7 +6673,7 @@ const ERROS_MESA = {
   'limite': 'Você aproveitou as partidas grátis de hoje com os amigos. Sendo sócio, joga sem limite!',   // 28/10: planos (05/11: amigável)
   'limite-rapida': 'Você aproveitou as partidas grátis de hoje na mesa rápida. Sendo sócio, joga sem limite!',
   'limite-desafio': 'Você fez os desafios grátis de hoje. Sendo sócio, desafia sem limite!',   // 04/11   // 28/10: planos   // 3.41: o servidor não viu o app aberto (quase nunca acontece)
-  'bloqueado': 'Seu acesso à mesa online foi bloqueado por desrespeitar as regras (apelido ou foto). Se achar que foi engano, use o "Fale com a gente".'
+  'bloqueado': 'Seu acesso ao jogo foi bloqueado por descumprir as regras do Dominó Manauara. Se achar que foi engano, use o "Fale com a gente".'
 };
 // Reações rápidas: a ordem nunca muda (o servidor manda só o número). Para acrescentar, ponha no fim.
 const REACOES = ['Boa, parceiro!', 'Vô mermo!', 'Leseira baré!', 'Bate logo!', 'Segura essa!', 'Tá fácil!', 'Hoje tem galo!', 'Bora, bora!', '👏', '😂', '😮', '🔥',
@@ -6732,6 +6736,7 @@ function receberOnline(m) {
   }
   if (m.t === 'erro') {
     if (ERROS_MESA[m.cod]) {
+      if (m.cod === 'bloqueado') store.set(BLOQKEY, '1');   // 11/11: bloqueado também no offline
       sairDaMesa();
       // 3.41: trocar o apelido: no lugar do aviso rápido, a janela que leva ao perfil (ao voltar para o início)
       if (m.cod === 'apelido' && profile && profile.name) store.set(APKEY, profile.name); else if (!/^limite/.test(m.cod)) toast(ERROS_MESA[m.cod]);   // 05/11: no limite, só a janela amigável
@@ -7031,6 +7036,7 @@ async function criarMesa() {
     if (r.status === 201 && j.codigo) { track('mesa-online-criada'); ON.vista = null; conectar(j.codigo); renderSala(); return; }
     if (r.status === 403 && j.erro === 'apelido') { pedirOutroApelido(); return; }   // 3.41
     if (r.status === 403 && /^limite/.test(j.erro || '') && typeof convitePlano === 'function') { convitePlano(j.erro); return; }   // 28/10: planos
+    if (r.status === 403 && j.erro === 'bloqueado') store.set(BLOQKEY, '1');   // 11/11
     toast(r.status === 403 && j.erro === 'bloqueado' ? ERROS_MESA.bloqueado : r.status === 429 ? 'Muitas mesas criadas agora. Tente de novo daqui a pouco.' : 'Não deu para criar a mesa. Tente de novo.');
   } catch (e) { toast('Sem internet agora. A mesa online precisa de conexão.'); }
   finally { b.disabled = false; b.textContent = 'Criar uma mesa'; }
@@ -7073,6 +7079,7 @@ async function mesaRapida() {
     if (r.status === 403 && j.erro === 'apelido') { show('home'); pedirOutroApelido(); return; }   // 3.41
     if (r.status === 403 && j.erro === 'limite-rapida' && typeof convitePlano === 'function') { show('home'); convitePlano('limite-rapida'); return; }   // 28/10: planos
     if (r.status === 403 && j.erro === 'abandonos') { show('home'); avisoAbandonos(j); return; }   // 10/11: quem abandona partidas
+    if (r.status === 403 && j.erro === 'bloqueado') store.set(BLOQKEY, '1');   // 11/11
     toast(r.status === 403 && j.erro === 'bloqueado' ? ERROS_MESA.bloqueado : r.status === 429 ? 'Muitas mesas agora. Tente de novo daqui a pouco.' : 'Não deu para achar uma mesa agora. Tente de novo.');
     show('home');
   } catch (e) { ON.buscando = false; toast('Sem internet agora. A mesa rápida precisa de conexão.'); show('home'); }
@@ -11280,6 +11287,10 @@ const quandoFoi = ms => { const m = Math.round((Date.now() - ms) / 60000); retur
     <ul class="dn-joglista" id="dnJogLista"></ul>
     <span class="ck dn-jog-k" id="dnBloqK" hidden>Bloqueados</span>
     <ul class="dn-joglista" id="dnBloqLista"></ul>
+    <span class="ck dn-jog-k">Apelidos bloqueados</span>
+    <p class="dn-avn">Quem volta com outro aparelho usando um destes apelidos é bloqueado sozinho (no jogo online e no offline). O apelido de quem você bloqueia entra aqui sozinho. Para pegar as variações, escreva um pedaço (5 letras ou mais).</p>
+    <div class="dn-apl-add"><input type="text" id="dnAplTermo" maxlength="20" placeholder="Pedaço do apelido" autocomplete="off"><button type="button" class="secondary" id="dnAplAdd">Bloquear</button></div>
+    <ul class="dn-joglista" id="dnAplLista"></ul>
   </div>`);
 })();
 // 3.41 (pedido do dono): "derrubar" quem está com apelido ofensivo que passou pelo filtro, sem bloquear. A pessoa sai
@@ -11309,10 +11320,40 @@ async function dnJogCarregar() {
         ${x.bloq ? `<span class="dn-jog-acoes"><span class="dn-jog-st">bloqueado</span><button type="button" class="linkbtn dn-jog-b" data-desbloq="${esc(x.aparelho)}">Desbloquear</button></span>` : `<span class="dn-jog-acoes">${x.trocar ? '' : `<button type="button" class="linkbtn dn-jog-b" data-apelido="${esc(x.aparelho)}" data-nome="${esc(x.nome || '')}">Derrubar</button>`}<button type="button" class="linkbtn dn-jog-b" data-bloq="${esc(x.aparelho)}">Bloquear</button></span>`}</li>`).join('')
       : '<li class="dn-jog-vazio">Ninguém jogou online nos últimos 7 dias.</li>';
     $('#dnBloqK').hidden = !blq.length;
+    dnAplCarregar();   // 11/11
     $('#dnBloqLista').innerHTML = blq.map(x => `<li><span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')}</b><small>${x.motivo ? esc(x.motivo) + ' · ' : ''}${quandoFoi(x.em)}</small></span>
         <button type="button" class="linkbtn dn-jog-b" data-desbloq="${esc(x.aparelho)}">Desbloquear</button></li>`).join('');
   } catch (e) { $('#dnJogLista').innerHTML = '<li class="dn-jog-vazio">Não deu para carregar agora.</li>'; }
 }
+// 11/11 (pedido do dono): apelidos bloqueados (quem volta com outro aparelho e o mesmo apelido)
+async function dnAplCarregar() {
+  const ul = $('#dnAplLista'); if (!ul) return;
+  try {
+    const j = await dnMsgPedir('/dono/apelidos'), l = j.apelidos || [];
+    ul.innerHTML = l.length ? l.map(x => `<li><span class="dn-jog-t"><b>${esc(x.termo)}</b><small>${x.parte ? 'qualquer apelido com esse pedaço' : 'apelido inteiro'} · ${quandoFoi(x.em)}</small></span>
+        <button type="button" class="linkbtn dn-jog-b" data-apl-tirar="${esc(x.termo)}">Tirar</button></li>`).join('') : '<li class="dn-jog-vazio">Nenhum apelido bloqueado.</li>';
+  } catch (e) { ul.innerHTML = '<li class="dn-jog-vazio">Não deu para carregar agora.</li>'; }
+}
+document.addEventListener('click', async e => {
+  const add = e.target.closest && e.target.closest('#dnAplAdd'), tirar = e.target.closest && e.target.closest('[data-apl-tirar]');
+  if (!add && !tirar) return;
+  try {
+    if (add) {
+      const v = ($('#dnAplTermo').value || '').trim();
+      if (v.replace(/[^a-zA-ZÀ-ÿ0-9]/g, '').length < 5) { toast('Escreva 5 letras ou mais.'); return; }
+      add.disabled = true;
+      const j = await dnMsgPedir('/dono/apelidos', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ termo: v }) });
+      $('#dnAplTermo').value = '';
+      toast(j.afetados ? `Bloqueado. ${j.afetados} ${j.afetados === 1 ? 'jogador dos últimos 30 dias tem' : 'jogadores dos últimos 30 dias têm'} esse pedaço no apelido e cai${j.afetados === 1 ? '' : 'em'} quando voltar.` : 'Bloqueado. Quem usar esse pedaço no apelido cai sozinho.');
+    } else {
+      if (!tirar.dataset.armado) { tirar.dataset.armado = '1'; tirar.textContent = 'Toque de novo'; return; }
+      await dnMsgPedir('/dono/apelidos/tirar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ termo: tirar.dataset.aplTirar }) });
+      toast('Apelido liberado.');
+    }
+  } catch (er) { toast('Não deu agora. Tente de novo.'); }
+  if (add) add.disabled = false;
+  dnAplCarregar();
+});
 document.addEventListener('click', async e => {
   const t = e.target.closest && e.target.closest('#dnJog [data-apelido], #dnNoApp [data-apelido]'); if (!t) return;
   if (!t.dataset.armado) { t.dataset.armado = '1'; t.textContent = 'Toque de novo para derrubar'; return; }
@@ -14593,7 +14634,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.12-1a3379af';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.13-65b1fefd';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -15507,9 +15548,11 @@ async function offConferir(forcar) {
   try {
     const r = await fetch(CONFIG.api + '/offline', { method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ aparelho: meuId(), dia: diaBRLocal(), n: offlineUsoLocal(), nome: profile.name || '' }) });
+    if (r.status === 403) { let jb = null; try { jb = await r.json(); } catch (e) {} if (jb && jb.erro === 'bloqueado') { store.set(BLOQKEY, '1'); store.del(OFFPASSE); return 'bloqueado'; } }   // 11/11
     if (!r.ok) return 'falhou';
     const j = await r.json();
     if (!j || !j.agora || !j.dia) return 'falhou';
+    store.del(BLOQKEY);   // 11/11: o servidor liberou (desbloqueado)
     store.set(OFFPASSE, JSON.stringify({ dia: j.dia, agora: j.agora, n: j.n | 0, herdou: !!j.herdou, em: Date.now() }));
     store.set(HORAMAX, String(j.agora));   // a hora certa é a do servidor (desfaz o relógio adiantado)
     if ((j.n | 0) > offlineUsoLocal()) store.set(OFFKEY, JSON.stringify({ dia: j.dia, n: j.n | 0 }));
@@ -15561,6 +15604,17 @@ offlineContar = function () { offContarEspelho(); offEspelhar(); };
 addEventListener('online', () => { offConferir(true); });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') offConferir(false); });
 setTimeout(() => offConferir(false), 2500);
+// 11/11 (pedido do dono): aparelho bloqueado (por exemplo, quem usou vários aparelhos para passar do limite grátis)
+const BLOQKEY = 'dmz-bloq';
+function avisoBloqueado() {
+  openSheet('info', `<p class="eyebrow">Dominó Manauara</p><h2 id="sheetTitle">Acesso bloqueado</h2>
+    <p>${ERROS_MESA.bloqueado}</p>
+    <button type="button" class="primary" id="bloqFale" style="width:100%">Fale com a gente</button>
+    <button type="button" class="linkbtn" id="bloqFechar" style="width:100%;margin-top:6px">Fechar</button>`);
+  track('aviso-bloqueado');
+  $('#bloqFechar').addEventListener('click', closeSheet);
+  $('#bloqFale').addEventListener('click', () => { closeSheet(); setTimeout(() => abrirFale('bloqueado'), 250); });
+}
 // sem o passe: pede para ligar a internet uma vez (com "Tentar de novo")
 function offPedirInternet(alvo) {
   openSheet('info', `<p class="eyebrow">Jogo offline</p><h2 id="sheetTitle">Ligue a internet um instante</h2>
@@ -15588,9 +15642,20 @@ document.addEventListener('click', e => {
   else if (t.id === 'resetBtn') comeca = mode === 'off' && armedReset;
   else comeca = mode === 'off' && G && G.result && G.result.matchWinner != null;
   if (!comeca) return;
+  // 11/11 (pedido do dono: endurecer): aparelho bloqueado não joga offline; confere com o servidor (se foi desbloqueado, segue)
+  if (store.get(BLOQKEY) === '1') {
+    e.preventDefault(); e.stopImmediatePropagation();
+    offConferir(true).then(r => {
+      if (r === 'ok' && store.get(BLOQKEY) !== '1') { if (t.isConnected) t.click(); return; }
+      if (t.id !== 'startOffline') { closeSheet(); leaveGame(); show('home'); }
+      setTimeout(avisoBloqueado, 300);
+    });
+    return;
+  }
   if (!offPasseOk()) {   // 04/11: sem conferir há mais de 48 h: tenta agora; sem internet, pede para ligar
     e.preventDefault(); e.stopImmediatePropagation();
     offConferir(true).then(r => {
+      if (r === 'bloqueado') { if (t.id !== 'startOffline') { closeSheet(); leaveGame(); show('home'); } setTimeout(avisoBloqueado, 300); return; }   // 11/11
       if (r === 'falhou') offGraca();
       if (r === 'ok' || r === 'falhou') { if (t.isConnected) t.click(); }
       else { if (t.id !== 'startOffline') { closeSheet(); leaveGame(); show('home'); } setTimeout(() => offPedirInternet(t.id === 'startOffline' ? t : null), 300); }

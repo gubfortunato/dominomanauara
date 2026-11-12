@@ -4,6 +4,79 @@
 const DIA = 86400000;
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
 
+// ---- 11/11 (pedido do dono: "a usuária bloqueada voltou; quero derrubar e endurecer") ----
+// Apelido bloqueado: quem foi bloqueado e volta com outro aparelho (apagou os dados do app, outro navegador, outro celular)
+// com o mesmo apelido é bloqueado sozinho, assim que abre o app, confere o jogo offline ou tenta entrar numa mesa ou Turma.
+//  - apelido inteiro: entra sozinho quando o administrador bloqueia alguém (só apelido pouco comum: até 3 aparelhos com ele).
+//    Vale o mesmo apelido sem acento, espaço, número e letra repetida, e com 4→a, 0→o, 1→i, 3→e.
+//  - parte do apelido: o administrador escreve um pedaço (5 letras ou mais) e todo apelido que o contém fica bloqueado.
+// Sócio não cai nessa regra (o administrador bloqueia na mão, se precisar).
+const LEET = { '4': 'a', '@': 'a', '3': 'e', '1': 'i', '!': 'i', '0': 'o', '5': 's', '$': 's', '7': 't' };
+const juntas = x => x.replace(/(.)\1+/g, '$1');
+export function chavesApelido(n) {
+  const s = String(n || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const a = s.replace(/[^a-z]/g, ''), b = s.replace(/[4@31!05$7]/g, ch => LEET[ch]).replace(/[^a-z]/g, '');
+  return [...new Set([a, b, juntas(a), juntas(b)])].filter(Boolean);
+}
+export const termoLimpo = n => juntas(String(n || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[4@31!05$7]/g, ch => LEET[ch]).replace(/[^a-z]/g, ''));
+const TERMOS = { lista: null, em: 0 };
+export function termosMudaram() { TERMOS.em = 0; }
+async function termos(env) {
+  if (TERMOS.lista && Date.now() - TERMOS.em < 60000) return TERMOS.lista;
+  try {
+    const { results } = await env.DB.prepare('SELECT termo, parte FROM apelidos_bloqueados').all();
+    TERMOS.lista = (results || []).map(r => ({ termo: r.termo, t: termoLimpo(r.termo), parte: !!r.parte })).filter(x => x.t.length >= 4);
+    TERMOS.em = Date.now();
+  } catch (e) { TERMOS.lista = TERMOS.lista || []; }
+  return TERMOS.lista;
+}
+export function bateTermo(nome, lista) {
+  const ks = chavesApelido(nome).map(juntas);
+  return (lista || []).find(x => ks.some(k => x.parte ? k.includes(x.t) : k === x.t)) || null;
+}
+export async function pegaPeloApelido(env, aparelho, nome) {
+  if (!aparelho || !idOk(aparelho) || !nome) return false;
+  const t = bateTermo(nome, await termos(env)); if (!t) return false;
+  try { const p = await env.DB.prepare('SELECT ate FROM planos WHERE aparelho = ?').bind(aparelho).first(); if (p && p.ate > Date.now()) return false; } catch (e) {}
+  try {
+    await env.DB.prepare('INSERT INTO bloqueios (aparelho, nome, motivo, em) VALUES (?, ?, ?, ?) ON CONFLICT (aparelho) DO NOTHING')
+      .bind(aparelho, String(nome).slice(0, 16), 'voltou com outro aparelho (apelido bloqueado)', Date.now()).run();
+    await env.DB.prepare("UPDATE fotos SET status = 'recusada', dados = '', revisado_em = ? WHERE aparelho = ?").bind(Date.now(), aparelho).run();
+  } catch (e) {}
+  return true;
+}
+// o apelido de quem o administrador bloqueou passa a valer para qualquer aparelho (se for pouco comum)
+async function bloquearApelido(env, nome, motivo) {
+  const t = termoLimpo(nome); if (t.length < 4) return;
+  try {
+    const { results } = await env.DB.prepare('SELECT nome FROM jogadores_vistos WHERE visto_em > ?').bind(Date.now() - 60 * DIA).all();
+    if ((results || []).filter(r => termoLimpo(r.nome) === t).length > 3) return;   // apelido comum: não
+    await env.DB.prepare('INSERT OR IGNORE INTO apelidos_bloqueados (termo, parte, motivo, em) VALUES (?, 0, ?, ?)').bind(t, motivo || null, Date.now()).run();
+    termosMudaram();
+  } catch (e) {}
+}
+// GET /dono/apelidos · POST /dono/apelidos {termo} (parte do apelido) · POST /dono/apelidos/tirar {termo}
+export async function donoApelidos(req, env, origin, h, url) {
+  if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
+  const recentes = async () => { try { const { results } = await env.DB.prepare('SELECT nome FROM jogadores_vistos WHERE visto_em > ?').bind(Date.now() - 30 * DIA).all(); return results || []; } catch (e) { return []; } };
+  if (req.method === 'POST') {
+    let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
+    if (url.pathname.endsWith('/tirar')) {
+      await env.DB.prepare('DELETE FROM apelidos_bloqueados WHERE termo = ?').bind(String(b.termo || '')).run();
+      termosMudaram(); return h.json({ ok: true }, 200, origin);
+    }
+    const t = termoLimpo(b.termo);
+    if (t.length < 5) return h.json({ erro: 'curto' }, 400, origin);
+    await env.DB.prepare('INSERT INTO apelidos_bloqueados (termo, parte, motivo, em) VALUES (?, 1, ?, ?) ON CONFLICT (termo) DO UPDATE SET parte = 1, em = excluded.em')
+      .bind(t, 'parte do apelido (administrador)', Date.now()).run();
+    termosMudaram();
+    const afetados = (await recentes()).filter(r => bateTermo(r.nome, [{ t, parte: true }])).length;
+    return h.json({ ok: true, termo: t, afetados }, 200, origin);
+  }
+  const { results } = await env.DB.prepare('SELECT termo, parte, motivo, em FROM apelidos_bloqueados ORDER BY parte DESC, em DESC LIMIT 200').all();
+  return h.json({ apelidos: results || [] }, 200, origin);
+}
+
 export async function bloqueado(env, aparelho) {
   if (!aparelho) return false;
   try { return !!(await env.DB.prepare('SELECT 1 AS ok FROM bloqueios WHERE aparelho = ?').bind(aparelho).first()); } catch (e) { return false; }
@@ -51,6 +124,7 @@ export async function donoBloquear(req, env, origin, h) {
     .bind(aparelho, nome, motivo, Date.now()).run();
   // a foto sai da mesa (fica recusada)
   await env.DB.prepare("UPDATE fotos SET status = 'recusada', dados = '', revisado_em = ? WHERE aparelho = ?").bind(Date.now(), aparelho).run();
+  if (nome) await bloquearApelido(env, nome, 'bloqueado pelo administrador');   // 11/11: volta com outro aparelho: cai sozinho
   // e a pessoa sai da mesa em que estava
   if (mesa) { try { await env.MESA.get(env.MESA.idFromName(mesa)).fetch('https://mesa/expulsar', { method: 'POST', body: JSON.stringify({ id: aparelho }) }); } catch (e) {} }
   return h.json({ ok: true, nome }, 200, origin);
@@ -60,6 +134,12 @@ export async function donoDesbloquear(req, env, origin, h) {
   if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
   let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
   if (!idOk(b.aparelho)) return h.json({ erro: 'dados' }, 400, origin);
+  // 11/11: desbloqueou (engano): o apelido inteiro dele também sai da lista, senão ele cairia de novo
+  try {
+    const r = await env.DB.prepare('SELECT nome FROM bloqueios WHERE aparelho = ?').bind(b.aparelho).first();
+    const t = r && termoLimpo(r.nome);
+    if (t) { await env.DB.prepare('DELETE FROM apelidos_bloqueados WHERE parte = 0 AND termo = ?').bind(t).run(); termosMudaram(); }
+  } catch (e) {}
   await env.DB.prepare('DELETE FROM bloqueios WHERE aparelho = ?').bind(b.aparelho).run();
   return h.json({ ok: true }, 200, origin);
 }

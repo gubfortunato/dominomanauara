@@ -11,7 +11,7 @@ import * as vivo from './vivo.js';
 import * as presenca from './presenca.js';
 import { donoNumeros, limparNumeros } from './numeros.js';
 import * as rk from './ranking.js';
-import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos } from './bloqueio.js';
+import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos, pegaPeloApelido, donoApelidos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
 import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
 import { travaCodigo, anotarCodigoErrado, limparCodigos } from './codigos.js';
@@ -120,6 +120,7 @@ async function novaMesa(req, env, origin) {
   let b;
   try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
   if (await bloqueado(env, b && b.id)) return json({ erro: 'bloqueado' }, 403, origin);
+  if (await pegaPeloApelido(env, b && b.id, b && b.nome)) return json({ erro: 'bloqueado' }, 403, origin);   // 11/11: voltou com outro aparelho
   if (await apelidoBarrado(env, b && b.id, b && b.nome)) return json({ erro: 'apelido' }, 403, origin);   // 3.41
   // 3.41: só pelo app aberto (robôs de fora não passam)
   if (exigeApp(env) && (!origemOk(origin) || !(await appAberto(env, b && b.id)))) { await anotarRitmo(env, b && b.id, { semApp: 1 }); return json({ erro: 'app' }, 403, origin); }
@@ -166,6 +167,7 @@ async function mesaRapida(req, env, origin) {
   let b;
   try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
   if (await bloqueado(env, b && b.id)) return json({ erro: 'bloqueado' }, 403, origin);
+  if (await pegaPeloApelido(env, b && b.id, b && b.nome)) return json({ erro: 'bloqueado' }, 403, origin);   // 11/11: voltou com outro aparelho
   if (await apelidoBarrado(env, b && b.id, b && b.nome)) return json({ erro: 'apelido' }, 403, origin);   // 3.41
   { const ate = await rk.travaAbandono(env, b && b.id); if (ate) return json({ erro: 'abandonos', ate, porDia: rk.ABANDONO.porDia }, 403, origin); }   // 10/11: quem abandona partidas
   // 3.41: só pelo app aberto (robôs de fora não passam)
@@ -585,6 +587,7 @@ export default {
       if (url.pathname === '/dono/papo/apagar' && req.method === 'POST') return await donoPapoApagar(req, env, origin, H);
       if (url.pathname === '/dono/papo/voz' && req.method === 'GET') return await donoPapoVoz(req, env, origin, H);   // 10/11: áudio denunciado
       if (url.pathname === '/dono/apelido' && req.method === 'POST') return await donoApelido(req, env, origin, H);   // 3.41
+      if (url.pathname === '/dono/apelidos' || url.pathname === '/dono/apelidos/tirar') return await donoApelidos(req, env, origin, H, url);   // 11/11: apelidos bloqueados
       if (url.pathname === '/dono/robos' && req.method === 'GET') return await donoRobos(req, env, origin, H);   // 3.41
       const dv = url.pathname.match(/^\/dono\/pagamentos\/([0-9a-f]{20})\/devolver$/);
       if (dv && req.method === 'POST') return await donoDevolver(req, env, origin, H, dv[1]);

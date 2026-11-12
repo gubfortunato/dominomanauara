@@ -2,7 +2,7 @@
 // parte do jogo a pessoa está — início, partida offline, mesa online, sala de espera... O administrador vê a lista.
 // Guarda o código aleatório do aparelho, o apelido, o avatar, o nível e a tela, por no máximo 1 dia. Menor de 18 entra
 // só na contagem (sem apelido nem avatar).
-import { apelidoBarrado } from './bloqueio.js';
+import { apelidoBarrado, pegaPeloApelido } from './bloqueio.js';
 import { anotarAcesso } from './numeros.js';
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
@@ -29,6 +29,7 @@ export async function avisar(req, env, origin, h) {
   // 3.41: o administrador pediu outro apelido: o app mostra o aviso e leva para a troca (com o app aberto, em até 1 minuto).
   // Vem antes do 'aviso repetido' (que não grava de novo), para não pular o aviso.
   const barrado = !menor && b.nome && await apelidoBarrado(env, b.aparelho, limpa(b.nome, 16));
+  if (!menor && b.nome) { try { await pegaPeloApelido(env, b.aparelho, limpa(b.nome, 16)); } catch (e) {} }   // 11/11: voltou com outro aparelho
   if (u && u.k === chave && agora - u.t < REPETE_MS) return h.json(barrado ? { ok: true, apelido: 'trocar' } : { ok: true }, 200, origin);
   if (ULT.size > 3000) ULT.clear();
   try {

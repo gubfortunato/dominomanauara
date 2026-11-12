@@ -307,3 +307,8 @@ CREATE TABLE IF NOT EXISTS avisos_ev (
 );
 -- 11/11: os aparelhos do dono (aviso dos confrontos do Desafio ao vivo)
 CREATE TABLE IF NOT EXISTS dono_aparelhos (aparelho TEXT PRIMARY KEY, em INTEGER NOT NULL);
+-- 11/11: apelidos bloqueados (quem volta com outro aparelho e o mesmo apelido cai sozinho). parte = 1: qualquer apelido que contém
+CREATE TABLE IF NOT EXISTS apelidos_bloqueados (termo TEXT PRIMARY KEY, parte INTEGER NOT NULL DEFAULT 0, motivo TEXT, em INTEGER NOT NULL);
+INSERT OR IGNORE INTO apelidos_bloqueados (termo, parte, motivo, em) SELECT lower(nome), 0, 'de quem já estava bloqueado', em FROM bloqueios
+  WHERE nome IS NOT NULL AND length(nome) >= 4 AND NOT EXISTS (SELECT 1 FROM marcos WHERE chave = 'apelidos-bloqueados-1');
+INSERT OR IGNORE INTO marcos (chave, em) VALUES ('apelidos-bloqueados-1', 0);

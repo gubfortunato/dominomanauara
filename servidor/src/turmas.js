@@ -3,7 +3,7 @@
 // Desafio das Confrarias: de 1º/11 a 20/12 (horário de Manaus), cada vitória numa partida online contra alguém de
 // outra Turma vale 1 ponto para a Turma de quem ganhou (no máximo 5 por dia contra a mesma Turma, para ninguém
 // combinar resultado). A Turma com mais pontos leva o título do ano; com 3 títulos, a Grande Taça.
-import { bloqueado } from './bloqueio.js';
+import { bloqueado, pegaPeloApelido } from './bloqueio.js';
 import { nomeOfensivo } from './motor.js';
 import { enviarPush } from './webpush.js';
 
@@ -184,6 +184,7 @@ export async function nova(req, env, origin, h) {
   let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
   if (!idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
   if (await bloqueado(env, b.aparelho)) return h.json({ erro: 'bloqueado' }, 403, origin);   // 3.25
+  if (await pegaPeloApelido(env, b.aparelho, b.apelido)) return h.json({ erro: 'bloqueado' }, 403, origin);   // 11/11: voltou com outro aparelho
   const nome = limpa(b.nome, 24);
   if (nome.length < 3 || nomeRetirado(nome)) return h.json({ erro: 'nome' }, 400, origin);
   if (await turmaDoAparelho(env, b.aparelho)) return h.json({ erro: 'ja-tem' }, 409, origin);
@@ -207,6 +208,8 @@ export async function entrar(req, env, origin, h) {
   let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
   const codigo = String(b.codigo || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
   if (!idOk(b.aparelho) || !codOk(codigo)) return h.json({ erro: 'codigo' }, 400, origin);
+  // 11/11: quem está bloqueado também não entra em Turma (antes só não criava), nem quem volta com outro aparelho
+  if (await bloqueado(env, b.aparelho) || await pegaPeloApelido(env, b.aparelho, b.apelido)) return h.json({ erro: 'bloqueado' }, 403, origin);
   const t = await env.DB.prepare('SELECT codigo FROM turmas WHERE codigo = ?').bind(codigo).first();
   if (!t) return h.json({ erro: 'nao-existe' }, 404, origin);
   const ja = await turmaDoAparelho(env, b.aparelho);
