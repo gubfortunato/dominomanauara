@@ -3959,6 +3959,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.12', data: '11/11/2026', itens: ['Desafio das Confrarias: quando começa um confronto entre Turmas, quem é das duas Turmas recebe um aviso no celular, e o toque já abre a partida para assistir ao vivo.', 'Quem assiste um confronto vê o nome das Turmas no placar.', 'Na Sexta da Calçada (sexta, das 20h às 23h), a aba Calçada vira "🔥 Sexta da Calçada".'] },
   { v: '3.53.11', data: '11/11/2026', itens: ['No notebook e no computador, a partida ficou do tamanho da tela: o placar e a sua vez vão para a esquerda, a mesa ocupa a altura toda e as pedras na mesa ficam bem maiores. O "Mesa oferecida por" saiu de cima das pedras.'] },
   { v: '3.53.10', data: '11/11/2026', itens: ['A marca d\'água com o nome nas pedras da partida online saiu.'] },
   { v: '3.53.9', data: '11/11/2026', itens: ['Na partida online (mesa rápida, mesa com os amigos e Desafio), as suas pedras levam uma marca d\'água bem fraca com o seu nome e o número da mesa: se alguém mandar print da mão, dá para ver de quem é.', 'Ao sair do app no meio da partida online, as suas pedras somem da tela até você voltar.'] },
@@ -5702,6 +5703,8 @@ async function dnMsgPedir(caminho, opcoes) {
 }
 async function dnCartaoMsgs() {
   if (!CONFIG.api || !dono || !dono.admin) return;
+  // 11/11: este é um celular do dono (recebe o aviso dos confrontos do Desafio ao vivo)
+  try { const dia = new Date().toISOString().slice(0, 10); if (store.get('dmz-dono-ap') !== dia) { await dnMsgPedir('/dono/aparelho', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ aparelho: meuId() }) }); store.set('dmz-dono-ap', dia); } } catch (e) {}
   try {
     const j = await dnMsgPedir('/dono/mensagens?status=novo');
     if (j.patrocinios) $('#donoCardTx').textContent = `${j.patrocinios} ${j.patrocinios > 1 ? 'empresas querem' : 'empresa quer'} patrocinar · ver na caixa`;
@@ -10989,7 +10992,18 @@ const vivoMostra = () => souAdmin() || (VIVO_PUBLICO && !!CONFIG.api && !!profil
 const vivoDetalhes = () => souAdmin() && !VIVO.comoJogador;
 function vivoVisivel() { const c = $('#vivoCard'); if (c) c.hidden = !vivoMostra(); const b = $('#vivoVer'); if (b) { b.hidden = !souAdmin(); b.textContent = VIVO.comoJogador ? 'Ver com os detalhes de administrador' : 'Ver como os jogadores veem'; }
   const nota = $('#calcNota'); if (nota) nota.textContent = vivoDetalhes() ? 'Os jogadores veem as mesas com os amigos sem nome, sem avatar e sem o número da mesa.' : 'Na mesa com os amigos, só entra quem tem o número da mesa.';
-  const sub = $('#calcSub'); if (sub) sub.textContent = vivoDetalhes() ? 'Administrador: todas as mesas online jogando agora, inclusive as mesas com os amigos.' : 'As mesas jogando agora. Toque numa mesa rápida com lugar vago e entre na partida.'; }
+  const sub = $('#calcSub'); if (sub) sub.textContent = vivoDetalhes() ? 'Administrador: todas as mesas online jogando agora, inclusive as mesas com os amigos.' : 'As mesas jogando agora. Toque numa mesa rápida com lugar vago e entre na partida.';
+  try { calcCabSexta(); } catch (e) {} }   // (na carga do app, o relógio de Manaus ainda não existe: a aba se acerta ao abrir)
+// 11/11 (pedido do dono): durante a Sexta da Calçada (sexta, das 20h às 23h), o título da aba vira "🔥 Sexta da Calçada"
+function calcCabSexta() {
+  const tit = document.querySelector('#scrCalcada .aba-tit'), sub = $('#calcSub'); if (!tit) return;
+  const ev = typeof sxAgora === 'function' && sxAgora() === 'agora';
+  tit.textContent = ev ? '🔥 Sexta da Calçada' : 'Agora na calçada';
+  tit.closest('.aba-cab').classList.toggle('sexta', ev);
+  if (ev && sub && !vivoDetalhes()) sub.textContent = temPlano()
+    ? 'Até as 23h, você ganha moral em dobro em toda partida, sócio. As mesas jogando agora estão aqui: toque numa com lugar vago e entre.'
+    : 'Até as 23h, os sócios ganham moral em dobro em toda partida. As mesas jogando agora estão aqui: toque numa com lugar vago e entre.';
+}
 const VIVO = { mesas: [], timer: null, buscadoEm: 0, buscando: false, comoJogador: false };
 const VIVO_MIN = 10;   // a linha "Hoje" só aparece a partir de 10 partidas no dia
 let vivoHojeEm = 0;
@@ -11066,6 +11080,7 @@ function vivoFila(v) {
   return `<span class="vivo-fila"><b>Fila:</b> ${f.map((c, i) => `<span class="vivo-g${c.on ? ' on' : ''}">${i + 1}º ${esc(c.nome)}${c.menor ? ' <small>(menor)</small>' : ''}</span>`).join('')}</span>`;
 }
 function vivoDesenha() {
+  try { calcCabSexta(); } catch (e) {}   // 11/11: a Sexta da Calçada começa (ou acaba) com a aba aberta
   const box = $('#vivoLista'); if (!box) return;
   const pe = $('#vivoPe');
   if (!VIVO.mesas.length) {
@@ -12073,6 +12088,7 @@ function assistirFaixa(m) {
   const outros = Math.max(0, ((m && m.assistindo) || 1) - 1);
   $('#assistirTx').textContent = ON.assistirDe === 'fila'
     ? `Assistindo · ${(((ON.vistaReal || {}).naFila) || 0) + 1}º na fila`
+    : m && m.confronto ? (outros ? `⚔️ Desafio · ${outros + 1} assistindo` : '⚔️ Desafio ao vivo')   // 11/11: confronto entre Turmas
     : `Assistindo${outros ? ` com mais ${outros}` : ''}`;
   $('#assistirSair').textContent = ON.assistirDe === 'fila' ? 'Voltar para a fila' : 'Parar de assistir';
 }
@@ -13386,11 +13402,27 @@ window.addEventListener('popstate', () => {
 // Os avisos do Rei da Calçada e do Desafio das Confrarias levam direto ao lugar: ?abrir=ranking (Calçada, no ranking) e
 // ?abrir=turma (a folha da Turma). Com o app fechado, vem no endereço; com o app aberto, o sw.js manda uma mensagem.
 // Nunca tira ninguém da partida ou da sala: aí o aviso só traz o app para a frente.
-function abrirPeloAviso(alvo) {
-  if (!profile || !['ranking', 'turma', 'copa', 'carteira'].includes(alvo)) return false;
+function abrirPeloAviso(alvo, ver) {
+  if (!profile || !['ranking', 'turma', 'copa', 'carteira', 'aovivo'].includes(alvo)) return false;
   if (['game', 'sala', 'who'].includes(screen) || (typeof ON !== 'undefined' && (ON.ativo || ON.buscando))) return false;
   if (sheetKind) closeSheet();
   track('aviso-abrir-' + alvo);
+  // 11/11 (pedido do dono): aviso do confronto do Desafio: se ainda está rolando, já entra assistindo; se acabou, mostra
+  // os outros ao vivo e o ranking na Calçada
+  if (alvo === 'aovivo') {
+    if (typeof irAba === 'function') irAba('calcada'); else show('calcada');
+    const ok = () => /^[0-9a-f]{16}$/.test(ver || '') && VIVO.mesas.some(v => v.desafio && v.desafio.ver === ver && v.fase === 'jogo');
+    const mostrar = () => { const c = $('#dcCard'); if (c && !c.hidden) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+    let n = 0;
+    const tentar = async () => {
+      try { await vivoMesas(true); } catch (e) {}
+      if (ok()) { if (screen === 'calcada') assistirDesafio(ver); return; }
+      if (VIVO.buscando && ++n < 6) { setTimeout(tentar, 800); return; }
+      mostrar(); if (ver) toast('Esse confronto já terminou. Veja aqui os que estão ao vivo e o ranking.');
+    };
+    setTimeout(tentar, 300);
+    return true;
+  }
   if (alvo === 'copa') { if (screen !== 'home') show('home'); setTimeout(() => abrirCopa(), 300); return true; }   // 10/11
   if (alvo === 'carteira') { setTimeout(() => abrirCarteira(), 300); return true; }
   if (alvo === 'ranking') {
@@ -13406,14 +13438,14 @@ function abrirPeloAviso(alvo) {
 }
 // Com o app fechado: espera a pessoa entrar (passar da tela de entrada) e não briga com a janela de novidades
 (function () {
-  const q = new URLSearchParams(location.search), alvo = q.get('abrir');
+  const q = new URLSearchParams(location.search), alvo = q.get('abrir'), ver = q.get('ver');
   if (!alvo) return;
-  q.delete('abrir');
+  q.delete('abrir'); q.delete('ver');
   try { history.replaceState(history.state, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } catch (e) {}
   let n = 0;
   const t = setInterval(() => {
     if (++n > 120) { clearInterval(t); return; }   // 1 minuto
-    if (profile && screen && screen !== 'who' && !sheetKind) { clearInterval(t); abrirPeloAviso(alvo); }
+    if (profile && screen && screen !== 'who' && !sheetKind) { clearInterval(t); abrirPeloAviso(alvo, ver); }
   }, 500);
 })();
 // Com o app aberto: o sw.js traz o app para a frente e manda para onde o aviso leva
@@ -13423,7 +13455,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('mess
   try {
     const u = new URL(d.url, location.href);
     const alvo = u.searchParams.get('abrir');
-    if (alvo) abrirPeloAviso(alvo);
+    if (alvo) abrirPeloAviso(alvo, u.searchParams.get('ver'));
     else if (u.searchParams.get('apoio') === 'renovar' && profile && typeof abrirApoio === 'function' && typeof pagamentosAtivos === 'function' && pagamentosAtivos()
       && !['game', 'sala'].includes(screen)) abrirApoio('home', 'plano');
   } catch (err) {}
@@ -13931,7 +13963,12 @@ function miniTile(t) {
 function base() { return seatMe == null ? 0 : seatMe; }
 function who(p) { return p === seatMe ? 'Você' : G.names[p]; }
 function duo(team) { return `${G.names[team]} e ${G.names[team + 2]}`; }
-function teamName(team) { return seatMe == null ? duo(team) : (TEAM(seatMe) === team ? 'Nós' : 'Eles'); }
+function teamName(team) {
+  // 11/11 (pedido do dono): quem assiste um confronto do Desafio vê o nome das Turmas (Os do Japiim × Galera do Coroado)
+  const cf = seatMe == null && typeof ON !== 'undefined' && ON.assistindo && ON.vista && ON.vista.confronto;
+  if (cf && cf.a && cf.b) return team === 0 ? cf.a : cf.b;
+  return seatMe == null ? duo(team) : (TEAM(seatMe) === team ? 'Nós' : 'Eles');
+}
 function describe(ev) {
   const n = who(ev.p), sai = ev.p === seatMe ? 'Você sai' : n + ' sai';
   switch (ev.type) {
@@ -14556,7 +14593,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.11-af5af25a';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.12-1a3379af';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

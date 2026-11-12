@@ -5,6 +5,7 @@
 // combinar resultado). A Turma com mais pontos leva o título do ano; com 3 títulos, a Grande Taça.
 import { bloqueado } from './bloqueio.js';
 import { nomeOfensivo } from './motor.js';
+import { enviarPush } from './webpush.js';
 
 const LETRAS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const MAX_MEMBROS = 40, MAX_POR_PAR_DIA = 5;
@@ -255,6 +256,42 @@ export async function apelido(env, ap, nome) {
 export async function nomeDaTurma(env, ap) {
   const t = idOk(ap) ? await turmaDoAparelho(env, ap) : null;
   return t ? nomeSeguro(t.nome) : null;
+}
+
+// 11/11 (pedido do dono: "como vou saber quando estiverem rolando os jogos das confrarias?"): começou um confronto do
+// Desafio (gente de duas Turmas na mesa), sai um aviso no celular para quem é das duas Turmas e não está jogando, e para o
+// dono. Cada pessoa recebe no máximo 1 aviso por dia para o mesmo par de Turmas (a mesa com fila começa várias partidas).
+// O toque no aviso abre a partida para assistir (?abrir=aovivo&ver=…), sem o número da mesa.
+export async function avisarConfronto(env, cf, sentados) {
+  if (!cf || !cf.ver || !env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return { ok: 0 };
+  const agora = Date.now(), sent = [...new Set((sentados || []).filter(idOk))];
+  const cods = new Set();
+  for (const ap of sent) { try { const t = await turmaDoAparelho(env, ap); if (t) cods.add(t.codigo); } catch (e) {} }
+  if (cods.size < 2) return { ok: 0 };
+  const turmas = [...cods].sort();
+  const q = turmas.map(() => '?').join(',');
+  const { results: ms } = await env.DB.prepare(`SELECT aparelho FROM turma_membros WHERE turma IN (${q})`).bind(...turmas).all();
+  let donos = []; try { const { results } = await env.DB.prepare('SELECT aparelho FROM dono_aparelhos').all(); donos = (results || []).map(x => x.aparelho); } catch (e) {}
+  const membros = new Set((ms || []).map(x => x.aparelho));
+  const aps = [...new Set([...membros, ...donos])].filter(ap => !sent.includes(ap)).slice(0, 120);
+  if (!aps.length) return { ok: 0 };
+  const chave = `cf:${diaManaus(agora)}:${turmas.join('-')}`;
+  const { results } = await env.DB.prepare(`SELECT DISTINCT a.id, a.endpoint, a.p256dh, a.auth, i.aparelho FROM avisos a JOIN avisos_id i ON i.endpoint = a.endpoint
+    WHERE i.aparelho IN (${aps.map(() => '?').join(',')}) AND NOT EXISTS (SELECT 1 FROM avisos_ev e WHERE e.aviso = a.id AND e.chave = ?) LIMIT 300`).bind(...aps, chave).all();
+  const vistos = new Set(), lista = (results || []).filter(x => !vistos.has(x.id) && vistos.add(x.id));
+  if (!lista.length) return { ok: 0 };
+  const st = env.DB.prepare('INSERT OR IGNORE INTO avisos_ev (aviso, chave, em) VALUES (?, ?, ?)');
+  await env.DB.batch(lista.map(x => st.bind(x.id, chave, agora)));   // anota antes: ninguém recebe duas vezes
+  const titulo = `⚔️ Ao vivo: ${nomeSeguro(cf.a)} × ${nomeSeguro(cf.b)}`, url = `/?abrir=aovivo&ver=${cf.ver}`;
+  let ok = 0;
+  for (const s of lista) {
+    const msg = { titulo, url, texto: membros.has(s.aparelho) ? 'A sua Turma está jogando agora no Desafio das Confrarias. Toque para assistir e torcer!'
+      : 'Começou um confronto do Desafio das Confrarias. Toque para assistir ao vivo.' };
+    let r = 0; try { r = await enviarPush(s, msg, env); } catch (e) {}
+    if (r === 404 || r === 410) { try { await env.DB.prepare('DELETE FROM avisos WHERE id = ?').bind(s.id).run(); await env.DB.prepare('DELETE FROM avisos_id WHERE endpoint = ?').bind(s.endpoint).run(); } catch (e) {} }
+    if (r >= 200 && r < 300) { ok++; try { await env.DB.prepare('UPDATE avisos SET ultimo_envio = ?, envios = envios + 1 WHERE id = ?').bind(agora, s.id).run(); } catch (e) {} }
+  }
+  return { ok };
 }
 
 // 10/11 (pedido do dono): avisos do Desafio no celular, no máximo 1 por dia, às 18h (Manaus), só para quem está numa Turma:

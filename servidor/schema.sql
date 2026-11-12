@@ -305,3 +305,5 @@ CREATE TABLE IF NOT EXISTS avisos_ev (
   em INTEGER NOT NULL,
   PRIMARY KEY (aviso, chave)
 );
+-- 11/11: os aparelhos do dono (aviso dos confrontos do Desafio ao vivo)
+CREATE TABLE IF NOT EXISTS dono_aparelhos (aparelho TEXT PRIMARY KEY, em INTEGER NOT NULL);

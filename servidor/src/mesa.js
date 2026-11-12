@@ -7,7 +7,7 @@
 import { newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, reacaoRobo, tkey, nomeOfensivo, BOT_NAMES, pedirPonto } from './motor.js';
 import { nivelDoador, cortesiaDe } from './pagamentos.js';
 import { fotoPublica } from './fotos.js';
-import { pontuar, nomeDaTurma, apelido as apelidoNaTurma, edicao, campeaDesafioAte } from './turmas.js';
+import { pontuar, nomeDaTurma, apelido as apelidoNaTurma, edicao, campeaDesafioAte, avisarConfronto } from './turmas.js';
 import { somarVivo } from './vivo.js';
 import { somarRanking, reiDaSemana, anotarAbandono } from './ranking.js';
 import { bloqueado, visto, apelidoBarrado, exigeApp, appAberto, anotarRitmo, RAPIDA_MS } from './bloqueio.js';
@@ -832,6 +832,8 @@ export class Mesa {
     this.agendar(this.T.distribuir);
     await this.salvar(); this.espalhar();
     await this.registrarAtiva();
+    // 11/11 (pedido do dono): confronto do Desafio começando: aviso no celular das duas Turmas (e do dono) para assistir
+    try { const cf = this.confrontoVivo(m); if (cf) this.ctx.waitUntil(avisarConfronto(this.env, cf, m.cad.filter(c => c && !c.bot && c.id).map(c => c.id)).catch(() => {})); } catch (e) {}
   }
 
   async jogar(ws, p, msg) {
@@ -1452,7 +1454,8 @@ export class Mesa {
       cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, campea: !!c.campea && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || c.menor ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
       tempos: minha >= 0 && m.tempos ? m.tempos[minha] || 0 : 0, tolerado: TEMPO_TOLERADO,   // 03/11
-      jogo, agora: Date.now(), assistindo: this.quantosAssistem() };
+      jogo, agora: Date.now(), assistindo: this.quantosAssistem(),
+      confronto: (() => { try { const cf = this.confrontoVivo(m); return cf ? { a: cf.a, b: cf.b } : null; } catch (e) { return null; } })() };   // 11/11: o nome das Turmas para quem assiste
   }
   enviar(ws, obj) { try { ws.send(JSON.stringify(obj)); } catch (e) {} }
   espalhar(menos) {
