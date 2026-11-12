@@ -15,6 +15,7 @@ import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, 
 import { donoPapo, donoPapoApagar } from './papo.js';
 import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
 import { limitePessoa, donoVigiaTirar, vigiados } from './pessoa.js';
+import { donoQuarta } from './quarta.js';   // 12/11: Quarta dos Amigos
 import { travaCodigo, anotarCodigoErrado, limparCodigos } from './codigos.js';
 import { saudeVoz, donoPapoVoz, limparVozesDenunciadas } from './voz.js';
 import { copaInfo, apurarCopa, avisosAgendados } from './copa.js';   // 10/11: Copa dos Sócios, Sexta da Calçada e tempo de casa
@@ -466,6 +467,10 @@ async function avisosDeEvento(env, agora) {
         sql = `SELECT DISTINCT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a JOIN avisos_id i ON i.endpoint = a.endpoint JOIN planos p ON p.aparelho = i.aparelho
           WHERE p.ate > ? AND ${naoFoi} ORDER BY a.id LIMIT ?`;
         binds = [agora, ev.chave, sobra];
+      } else if (ev.para === 'naoSocios') {   // 12/11: quem não tem plano valendo (Quarta dos Amigos)
+        sql = `SELECT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a WHERE ${naoFoi}
+          AND NOT EXISTS (SELECT 1 FROM avisos_id i JOIN planos p ON p.aparelho = i.aparelho WHERE i.endpoint = a.endpoint AND p.ate > ?) ORDER BY a.id LIMIT ?`;
+        binds = [ev.chave, agora, sobra];
       } else if (ev.para === 'turmas') {   // 10/11: quem está numa Turma (Desafio das Confrarias)
         sql = `SELECT DISTINCT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a JOIN avisos_id i ON i.endpoint = a.endpoint JOIN turma_membros m ON m.aparelho = i.aparelho
           WHERE ${naoFoi} ORDER BY a.id LIMIT ?`;
@@ -628,6 +633,7 @@ export default {
       if (url.pathname === '/dono/presenca' && req.method === 'GET') return await presenca.donoPresenca(req, env, origin, H);
       if (url.pathname === '/dono/numeros' && req.method === 'GET') return await donoNumeros(req, env, origin, H);   // 03/11
       if (url.pathname === '/dono/burlas' && req.method === 'GET') return await donoBurlas(req, env, origin, H, vigiados);   // 10/11: possíveis burlas dos limites (12/11: e os apelidos em vigia)
+      if (url.pathname === '/dono/quarta' && req.method === 'GET') return await donoQuarta(req, env, origin, H);   // 12/11: Quarta dos Amigos e convites
       if (url.pathname === '/dono/vigia/tirar' && req.method === 'POST') return await donoVigiaTirar(req, env, origin, H);   // 12/11: o dono tira da vigia (e desfaz o bloqueio automático)
       if (url.pathname === '/dono/cofre' && req.method === 'GET') return await donoCofre(env, origin);   // 10/11: troca da senha do dono
       if (url.pathname === '/dono/cofre' && req.method === 'POST') return await donoCofreTrocar(req, env, origin);
