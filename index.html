@@ -583,6 +583,7 @@ body{touch-action:manipulation}
 .dn-msglista .m-responder button{justify-self:start;border:0;border-radius:999px;padding:9px 16px;font:inherit;font-size:15px;font-weight:700;background:var(--glow);color:#24180f;cursor:pointer}
 .dn-msglista .m-responder button:disabled{opacity:.6}
 .dn-msglista .m-sug{font-size:13px;line-height:1.35;color:var(--glow)}
+.dn-treino-voltar{justify-self:start;border:1px solid rgba(239,226,204,.3);background:transparent;color:var(--wood-ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
 /* 13/11: relatório do dia no painel */
 .dr-lista{list-style:none;margin:8px 0 6px;padding:0;display:grid;gap:6px}
 .dr-lista li{display:grid;grid-template-columns:104px minmax(0,1fr);gap:10px;align-items:baseline;padding:8px 10px;border-radius:12px;background:rgba(0,0,0,.18)}
@@ -3414,6 +3415,13 @@ body.papo-aberto{overflow:hidden}
       <p class="dn-avn" id="dnRelR">Carregando…</p>
       <div id="dnRelCorpo"></div>
     </div>
+    <!-- 13/11 (pedido do dono): robô que treina toda noite -->
+    <div class="dn-list wood dn-jog" id="dnTreino" hidden>
+      <span class="ck">Robô da turma do bairro</span>
+      <p class="dn-avn" id="dnTreinoR">Carregando…</p>
+      <ul class="dn-joglista" id="dnTreinoLista"></ul>
+      <button type="button" class="dn-treino-voltar" id="dnTreinoVoltar" hidden>Voltar ao robô anterior</button>
+    </div>
     <div class="dn-list wood dn-jog" id="dnQuarta" hidden>
       <span class="ck">Quarta dos Amigos e convites</span>
       <p class="dn-avn" id="dnQuartaR">Carregando…</p>
@@ -3747,8 +3755,11 @@ function mataParceiro(st, p, mv) {
   if (!d || !u || mv.side === 'C' || d[mv.side] !== q || u[q] !== mv.side || st.hands[p].length <= 1) return false;
   return !Array.isArray(st.gente) || st.gente.includes(q);
 }
-function botChoose(st, p, rnd) {
-  rnd = rnd || Math.random;
+// 13/11 (pedido do dono: robô que aprende): os pesos da escolha ficam num objeto. PESOS_BASE é o robô de sempre (o jogo offline
+// usa só ele); o servidor pode passar pesos treinados toda noite (robo_pesos), que só entram se ganharem do robô em uso.
+const PESOS_BASE = { carroca: 4, pontos: 0.35, trava: 0.8, fecha: 14, fechaUma: 2, travaParceiro: 6, risco: 0.45, liga: 1.5 };
+function botChoose(st, p, rnd, W) {
+  rnd = rnd || Math.random; W = W || PESOS_BASE;
   const moves = legalMoves(st, p);
   if (moves.length === 1) return moves[0];
   const hand = st.hands[p];
@@ -3768,17 +3779,17 @@ function botChoose(st, p, rnd) {
     let v = pts;
     if (!rest.length) v += 300 + (isDbl(t) ? 20 : 0);
     if (mataParceiro(st, p, mv)) v -= MATAR_PARCEIRO;
-    if (isDbl(t)) v += 4;
-    v += pips(t) * 0.35;
+    if (isDbl(t)) v += W.carroca;
+    v += pips(t) * W.pontos;
     const ends = openEnds(sim).map(e => e.v);
     if (rest.length && lockedTable(sim)) {
       const ours = rest.reduce((s, x) => s + pips(x), 0) + avg * st.hands[partner].length;
       const theirs = avg * (st.hands[opp].length + st.hands[opp2].length);
-      v += ours < theirs ? 0.8 * Math.floor(theirs / 5) * 5 : -0.8 * Math.floor(ours / 5) * 5;
+      v += ours < theirs ? W.trava * Math.floor(theirs / 5) * 5 : -W.trava * Math.floor(ours / 5) * 5;
     } else if (rest.length) {
       const blocked = ends.every(e => oppL.includes(e));
-      if (blocked) v += 14; else if (ends.some(e => oppL.includes(e))) v += 2;
-      if (ends.every(e => parL.includes(e))) v -= 6;
+      if (blocked) v += W.fecha; else if (ends.some(e => oppL.includes(e))) v += W.fechaUma;
+      if (ends.every(e => parL.includes(e))) v -= W.travaParceiro;
       if (!blocked) {
         const simEnds = openEnds(sim);
         let risk = 0;
@@ -3791,9 +3802,9 @@ function botChoose(st, p, rnd) {
             risk = Math.max(risk, tableScore(s2));
           }
         }
-        v -= risk * 0.45;
+        v -= risk * W.risco;
       }
-      v += rest.filter(x => ends.some(e => x[0] === e || x[1] === e)).length * 1.5;
+      v += rest.filter(x => ends.some(e => x[0] === e || x[1] === e)).length * W.liga;
     }
     v += (rnd() - 0.5) * 2;
     if (v > bestV) { bestV = v; best = mv; }
@@ -4083,6 +4094,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.54.2', data: '13/11/2026', itens: ['A turma do bairro agora treina toda noite: quando acha um jeito melhor de jogar, passa a usar nas mesas online.'] },
   { v: '3.54.1', data: '13/11/2026', itens: ['Suporte mais rápido: as respostas às mensagens do Fale com a gente chegam mais depressa aqui no app.'] },
   { v: '3.54.0', data: '12/11/2026', itens: ['Ajuda e suporte, em Mais: as dúvidas mais comuns (código de sócio, plano em outro aparelho, pagamento, partidas grátis, bloqueio, progresso, robô e regras) com a resposta e um botão que resolve.', 'Fale com a gente virou conversa: a resposta do suporte chega aqui no app, em até 48 horas, com aviso no celular.', 'Na sexta da Copa dos Sócios, o cartão da Sexta da Calçada aparece junto do cartão da Copa.', 'Partidas grátis com o número certo em todas as telas: até 19/11 (bônus), 5 por dia na mesa rápida e 2 com os amigos; depois, 3 e 1.'] },
   { v: '3.53.26', data: '12/11/2026', itens: ['Botões mais claros: o botão principal fica maior e o "Agora não" fica sempre menor. "Já sou sócio em outro aparelho" ficou do tamanho dos outros botões.', 'Quem assiste uma partida vê os nomes das duplas por inteiro: um nome por linha, sem cortar no meio da palavra.'] },
@@ -8615,7 +8627,7 @@ document.addEventListener('click', async e => {
   } catch (er) { toast('Não deu agora. Tente de novo.'); }
   dnBurlasCarregar(); if (typeof dnAplCarregar === 'function') dnAplCarregar();
 });
-renderDono = function () { renderDonoBase(); dnPagCarregar(); dnApoiadoresCarregar(); dnBurlasCarregar(); dnQuartaCarregar(); dnRelCarregar(); };
+renderDono = function () { renderDonoBase(); dnPagCarregar(); dnApoiadoresCarregar(); dnBurlasCarregar(); dnQuartaCarregar(); dnRelCarregar(); dnTreinoCarregar(); };
 // 12/11 (pedido do dono): se a Quarta dos Amigos traz gente. Só números: amigos novos pelo link da mesa, quantos voltaram
 // em outro dia e quantos viraram sócio; e, em cada Quarta, quantos sem plano jogaram na mesa de um sócio.
 // 13/11 (pedido do dono): relatório do dia. Números contados no banco (sem IA): ontem, os destaques, o parcial de hoje e os 6 dias antes
@@ -8645,6 +8657,28 @@ async function dnRelCarregar() {
     ${l.length > 1 ? `<ul class="dn-joglista dr-dias">${l.slice(1).map(x => `<li><span class="dn-jog-t"><b>${dm(x.dia)}</b><small>${n(x.pessoas, 'pessoa', 'pessoas')} · ${n(x.partidas, 'partida', 'partidas')} · ${vendas(x)}</small></span></li>`).join('')}</ul>` : ''}`;
   } catch (e) { $('#dnRelR').textContent = 'Não deu para carregar o relatório agora.'; }
 }
+// 13/11 (pedido do dono): o robô treina toda noite (3h10); a versão nova só entra se ganhar com folga e confirmar
+async function dnTreinoCarregar() {
+  const box = $('#dnTreino'); if (!box) return;
+  box.hidden = !CONFIG.api || !souAdmin(); if (box.hidden) return;
+  try {
+    const j = await dnMsgPedir('/dono/robo'), a = j.ativa, dd = ms => dnData(ms).split(' às ')[0];
+    const pts = v => `${String(Math.round(10 * (v || 0)) / 10).replace('.', ',')} ${Math.abs(v) === 1 ? 'ponto' : 'pontos'} por mão`;
+    $('#dnTreinoR').textContent = (a ? `Em uso: versão ${a.versao}, desde ${dd(a.em)} (ganha ${pts(a.ganho)} da anterior).` : 'Em uso: o robô de sempre.')
+      + ' Toda noite ele joga milhares de mãos contra variações dele mesmo; a versão nova só entra nas mesas online se ganhar com folga e confirmar. O jogo offline não muda.';
+    const tr = (j.treinos || []).map(t => `<li><span class="dn-jog-t"><b>Treino de ${dd(t.em)}</b><small>${t.mudou ? `✅ versão nova: ganha ${pts(t.media)}` : `${esc(t.motivo || 'sem mudança')} (melhor: ${pts(t.media)})`}</small></span></li>`);
+    $('#dnTreinoLista').innerHTML = tr.length ? tr.join('') : '<li class="dn-jog-vazio">O primeiro treino é hoje às 3h10.</li>';
+    const bt = $('#dnTreinoVoltar'); bt.hidden = !a; delete bt.dataset.armado; bt.textContent = 'Voltar ao robô anterior';
+  } catch (e) { $('#dnTreinoR').textContent = 'Não deu para carregar agora.'; }
+}
+$('#dnTreinoVoltar').addEventListener('click', async e => {
+  const bt = e.currentTarget;
+  if (!bt.dataset.armado) { bt.dataset.armado = '1'; bt.textContent = 'Toque de novo para voltar'; return; }
+  bt.disabled = true;
+  try { const j = await dnMsgPedir('/dono/robo/voltar', { method: 'POST' }); toast(j.versao ? `Pronto: o robô voltou para a versão ${j.versao}.` : 'Pronto: voltou o robô de sempre.'); }
+  catch (er) { toast('Não deu para voltar agora.'); }
+  bt.disabled = false; dnTreinoCarregar();
+});
 async function dnQuartaCarregar() {
   const box = $('#dnQuarta'); if (!box) return;
   box.hidden = !CONFIG.api || !souAdmin(); if (box.hidden) return;
@@ -13621,7 +13655,7 @@ const DN_GRUPOS = [
   ['Relatório do dia', ['dnRel'], true],   // 13/11: os números de ontem, os destaques e o parcial de hoje
   ['Precisa de você', ['dnMsgs', 'dnPapo', 'dnFotos', 'dnRobo'], true],
   ['Jogadores', ['dnNoApp', 'dnFilas', 'dnJog'], true],
-  ['Números do jogo', ['dnNum', 'dnQuarta'], true],   // 12/11: Quarta dos Amigos e convites   // 03/11: jogadores desde o início, partidas, horários e picos
+  ['Números do jogo', ['dnNum', 'dnQuarta', 'dnTreino'], true],   // 13/11: robô que treina toda noite   // 12/11: Quarta dos Amigos e convites   // 03/11: jogadores desde o início, partidas, horários e picos
   ['Dinheiro', ['dnPag', 'dnApoiadores', 'dnBurlas', 'dnPatroCard', 'dnAnuncieLink'], false],
   ['Falar com os jogadores', ['dnAvisos'], false],
   ['Números do Umami', ['dnOpen', 'dnLive', 'dnRange', 'dnBody', 'dnErr', 'dnKey', 'dnFull'], false],
@@ -15190,7 +15224,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.54.1-10696cd5';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.54.2-f5c91221';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

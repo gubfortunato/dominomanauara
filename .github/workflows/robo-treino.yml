@@ -1,0 +1,54 @@
+# 13/11 (pedido do dono: robô que aprende sozinho): toda noite, às 3h10 de Manaus, o robô da turma do bairro treina contra
+# ele mesmo (servidor/treino/treinar.mjs). Se uma variação ganhar com folga e confirmar numa rodada nova, ela vira a nova
+# versão em robo_pesos e passa a valer nas mesas online. O resultado de cada noite fica em robo_treinos (só números) e
+# aparece no painel do dono, que pode voltar para o robô anterior com um toque. Nada de jogador entra no treino.
+name: robo-treino
+on:
+  schedule:
+    - cron: '10 7 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: robo-treino
+  cancel-in-progress: false
+jobs:
+  treinar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || 'c5f546c10d461c0d2e3e1d54f83fba39' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Treinar
+        working-directory: servidor
+        shell: bash
+        run: |
+          set -o pipefail
+          npm i -g wrangler@4 > /dev/null 2>&1
+          id=$(wrangler d1 list --json 2>/dev/null | jq -r '.[] | select(.name=="dominomanauara") | .uuid')
+          [ -n "$id" ] || { echo "sem o banco"; exit 1; }
+          sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/treino/" wrangler.template.toml > wrangler.toml
+          q() { wrangler d1 execute dominomanauara --remote --json --command "$1" 2>/dev/null; }
+          ATUAL=$(q "SELECT pesos FROM robo_pesos WHERE ativo = 1 ORDER BY versao DESC LIMIT 1" | jq -r '.[0].results[0].pesos // ""')
+          echo "pesos em uso: ${ATUAL:-robô de sempre}"
+          mkdir -p /tmp/t/src /tmp/t/treino && cp src/motor.js /tmp/t/src/ && echo '{"type":"module"}' > /tmp/t/src/package.json && cp treino/treinar.mjs /tmp/t/treino/
+          R=$(node /tmp/t/treino/treinar.mjs "$ATUAL")
+          echo "$R" | jq '{mudou, motivo, teste, confirmacao, contraOriginal, candidatos, segundos}'
+          AGORA=$(($(date +%s) * 1000))
+          MUDOU=$(echo "$R" | jq -r 'if .mudou then 1 else 0 end')
+          MOTIVO=$(echo "$R" | jq -r '.motivo' | tr -d "'")
+          MEDIA=$(echo "$R" | jq -r '(.confirmacao.media // .teste.media) | tostring')
+          Z=$(echo "$R" | jq -r '(.confirmacao.z // .teste.z) | tostring')
+          PARES=$(echo "$R" | jq -r '(.confirmacao.pares // .teste.pares) | tostring')
+          SEG=$(echo "$R" | jq -r '.segundos | tostring')
+          q "INSERT INTO robo_treinos (em, mudou, motivo, media, z, segundos) VALUES ($AGORA, $MUDOU, '$MOTIVO', $MEDIA, $Z, $SEG)" > /dev/null || echo "não deu para guardar o treino"
+          if [ "$MUDOU" = "1" ]; then
+            PESOS=$(echo "$R" | jq -c '.melhor')
+            q "INSERT INTO robo_pesos (pesos, ganho, z, pares, em, ativo) VALUES ('$PESOS', $MEDIA, $Z, $PARES, $AGORA, 1)" > /dev/null && echo "versão nova do robô guardada" || echo "não deu para guardar a versão nova"
+          fi
+          rm -f wrangler.toml

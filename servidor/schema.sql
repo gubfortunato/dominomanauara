@@ -334,3 +334,7 @@ CREATE INDEX IF NOT EXISTS suporte_msg ON suporte (msg);
 CREATE TABLE IF NOT EXISTS relatorios (dia TEXT PRIMARY KEY, dados TEXT NOT NULL, em INTEGER NOT NULL);
 -- 13/11: sugestão de resposta da IA para cada mensagem do suporte (o dono confere no painel; nunca vai sozinha)
 CREATE TABLE IF NOT EXISTS suporte_sugestao (msg INTEGER PRIMARY KEY, texto TEXT NOT NULL, modelo TEXT, em INTEGER NOT NULL);
+-- 13/11 (pedido do dono): robô que treina toda noite (servidor/treino/treinar.mjs, robo-treino.yml; robo.js). robo_pesos: cada
+-- versão que ganhou e confirmou (só a ativa mais nova vale nas mesas online); robo_treinos: o resultado de cada noite (só números).
+CREATE TABLE IF NOT EXISTS robo_pesos (versao INTEGER PRIMARY KEY AUTOINCREMENT, pesos TEXT NOT NULL, ganho REAL, z REAL, pares INTEGER, em INTEGER NOT NULL, ativo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS robo_treinos (em INTEGER PRIMARY KEY, mudou INTEGER NOT NULL, motivo TEXT, media REAL, z REAL, segundos INTEGER);

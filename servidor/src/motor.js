@@ -271,8 +271,11 @@ function mataParceiro(st, p, mv) {
   if (!d || !u || mv.side === 'C' || d[mv.side] !== q || u[q] !== mv.side || st.hands[p].length <= 1) return false;
   return !Array.isArray(st.gente) || st.gente.includes(q);
 }
-function botChoose(st, p, rnd) {
-  rnd = rnd || Math.random;
+// 13/11 (pedido do dono: robô que aprende): os pesos da escolha ficam num objeto. PESOS_BASE é o robô de sempre (o jogo offline
+// usa só ele); o servidor pode passar pesos treinados toda noite (robo_pesos), que só entram se ganharem do robô em uso.
+const PESOS_BASE = { carroca: 4, pontos: 0.35, trava: 0.8, fecha: 14, fechaUma: 2, travaParceiro: 6, risco: 0.45, liga: 1.5 };
+function botChoose(st, p, rnd, W) {
+  rnd = rnd || Math.random; W = W || PESOS_BASE;
   const moves = legalMoves(st, p);
   if (moves.length === 1) return moves[0];
   const hand = st.hands[p];
@@ -292,17 +295,17 @@ function botChoose(st, p, rnd) {
     let v = pts;
     if (!rest.length) v += 300 + (isDbl(t) ? 20 : 0);
     if (mataParceiro(st, p, mv)) v -= MATAR_PARCEIRO;
-    if (isDbl(t)) v += 4;
-    v += pips(t) * 0.35;
+    if (isDbl(t)) v += W.carroca;
+    v += pips(t) * W.pontos;
     const ends = openEnds(sim).map(e => e.v);
     if (rest.length && lockedTable(sim)) {
       const ours = rest.reduce((s, x) => s + pips(x), 0) + avg * st.hands[partner].length;
       const theirs = avg * (st.hands[opp].length + st.hands[opp2].length);
-      v += ours < theirs ? 0.8 * Math.floor(theirs / 5) * 5 : -0.8 * Math.floor(ours / 5) * 5;
+      v += ours < theirs ? W.trava * Math.floor(theirs / 5) * 5 : -W.trava * Math.floor(ours / 5) * 5;
     } else if (rest.length) {
       const blocked = ends.every(e => oppL.includes(e));
-      if (blocked) v += 14; else if (ends.some(e => oppL.includes(e))) v += 2;
-      if (ends.every(e => parL.includes(e))) v -= 6;
+      if (blocked) v += W.fecha; else if (ends.some(e => oppL.includes(e))) v += W.fechaUma;
+      if (ends.every(e => parL.includes(e))) v -= W.travaParceiro;
       if (!blocked) {
         const simEnds = openEnds(sim);
         let risk = 0;
@@ -315,9 +318,9 @@ function botChoose(st, p, rnd) {
             risk = Math.max(risk, tableScore(s2));
           }
         }
-        v -= risk * 0.45;
+        v -= risk * W.risco;
       }
-      v += rest.filter(x => ends.some(e => x[0] === e || x[1] === e)).length * 1.5;
+      v += rest.filter(x => ends.some(e => x[0] === e || x[1] === e)).length * W.liga;
     }
     v += (rnd() - 0.5) * 2;
     if (v > bestV) { bestV = v; best = mv; }
@@ -587,4 +590,5 @@ function nomeGenerico(nome) {
 }
 // 03/11 (pedido do dono): a turma do bairro mistura a galera nova com os da calçada de sempre (os mesmos nomes do app)
 const BOT_NAMES = ["Kauã", "Yasmin", "Ryan", "Tainá", "Davi", "Duda", "Juninho", "Ketlen", "Vitinho", "Bia", "Kadu", "Lari", "Biel", "Gabi", "Léo", "Rayssa", "Igor", "Maju", "Caio", "Nanda", "Kaique", "Iara", "Thaís", "Tonhão", "Piaba", "Curica", "Lucinha", "Mané", "Raimundo", "Socorro", "Nonato", "Tião", "Conceição", "Bené", "Rosinha"];
+export { PESOS_BASE };   // 13/11
 export { TEAM, TARGET, tkey, isDbl, pips, newGame, startHand, legalMoves, applyMove, applyPass, nextHand, botChoose, botForte, reacaoRobo, openEnds, tableSum, nomeOfensivo, nomeGenerico, BOT_NAMES, pedirPonto };
