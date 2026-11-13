@@ -17,7 +17,8 @@ import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelho
 import { limitePessoa, donoVigiaTirar, vigiados } from './pessoa.js';
 import { donoQuarta } from './quarta.js';   // 12/11: Quarta dos Amigos
 import { anotarSuporte, suporteDoAparelho, suporteLido, donoResponder, juntarSuporte } from './suporte.js';   // 12/11: conversa com o suporte
-import { relatorioDiario, donoRelatorio, alertas, sugerirResposta } from './gestor.js';   // 13/11: relatório do dia, alertas e rascunho de resposta
+import { relatorioDiario, donoRelatorio, alertas, sugerirResposta } from './gestor.js';
+import { donoRobo, donoRoboVoltar } from './robo.js';   // 13/11: robô que treina toda noite   // 13/11: relatório do dia, alertas e rascunho de resposta
 import { travaCodigo, anotarCodigoErrado, limparCodigos } from './codigos.js';
 import { saudeVoz, donoPapoVoz, limparVozesDenunciadas } from './voz.js';
 import { copaInfo, apurarCopa, avisosAgendados } from './copa.js';   // 10/11: Copa dos Sócios, Sexta da Calçada e tempo de casa
@@ -662,6 +663,8 @@ export default {
       if (url.pathname === '/dono/avisos/enviar' && req.method === 'POST') return await donoAvisosEnviar(req, env, origin);
       if (url.pathname === '/dono/mensagens' && req.method === 'GET') return await listarMensagens(req, env, origin, url);
       if (url.pathname === '/dono/relatorio' && req.method === 'GET') return await donoRelatorio(req, env, origin, { json, ehDono });   // 13/11
+      if (url.pathname === '/dono/robo' && req.method === 'GET') return await donoRobo(req, env, origin, { json, ehDono });   // 13/11
+      if (url.pathname === '/dono/robo/voltar' && req.method === 'POST') return await donoRoboVoltar(req, env, origin, { json, ehDono });
       if (url.pathname === '/dono/aparelho' && req.method === 'POST') return await donoAparelho(req, env, origin);   // 11/11
       const mr = url.pathname.match(/^\/dono\/mensagens\/(\d+)\/responder$/);   // 12/11: resposta do dono vai para o app
       if (mr && req.method === 'POST') return await donoResponder(req, env, origin, H, Number(mr[1]));

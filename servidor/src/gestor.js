@@ -39,12 +39,14 @@ export async function montarRelatorio(env, dia) {
   const vigia = (await um(env, 'SELECT COUNT(*) AS n FROM apelidos_vigia WHERE desde >= ? AND desde < ?', ini, fim)).n || 0;
   const burlas = (await um(env, 'SELECT COUNT(DISTINCT aparelho) AS n FROM burlas WHERE dia = ?', dia)).n || 0;
   const convites = (await um(env, 'SELECT COUNT(*) AS n FROM convites WHERE em >= ? AND em < ?', ini, fim)).n || 0;
+  const robo = await um(env, 'SELECT versao, ganho FROM robo_pesos WHERE ativo = 1 AND em >= ? AND em < ? ORDER BY versao DESC LIMIT 1', ini, fim);   // 13/11
   const media = l => { const v = l.map(x => Number(x.n != null ? x.n : x.partidas) || 0).filter(x => x > 0); return v.length ? Math.round(v.reduce((s, x) => s + x, 0) / v.length) : 0; };
   const vendas = { n: vendasL.reduce((s, x) => s + (x.n || 0), 0), total: Math.round(100 * vendasL.reduce((s, x) => s + (Number(x.total) || 0), 0)) / 100, produtos: vendasL.map(x => ({ p: x.produto, n: x.n, total: Number(x.total) || 0 })) };
   const r = {
     dia, pessoas, pessoasMedia: media(pessoas7), novos, partidas: (vivo && vivo.partidas) || 0, partidasMedia: media(vivo7), galos: (vivo && vivo.galos) || 0,
     pico: pico && pico.maximo ? { hora: pico.hora, n: pico.maximo } : null, vendas, socios, acabaram,
-    mensagens: { novas: msgs, pendentes, respondidas }, fraude: { bloqueios, vigia, burlas }, convites
+    mensagens: { novas: msgs, pendentes, respondidas }, fraude: { bloqueios, vigia, burlas }, convites,
+    robo: robo && robo.versao ? { versao: robo.versao, ganho: robo.ganho } : null
   };
   // destaques simples (regras, não IA): o que mudou muito em relação à média dos 7 dias anteriores
   const d = [];
@@ -52,6 +54,7 @@ export async function montarRelatorio(env, dia) {
   comp(pessoas, r.pessoasMedia, 'Pessoas'); comp(r.partidas, r.partidasMedia, 'Partidas');
   if (pendentes) d.push(`${pendentes} ${pendentes === 1 ? 'mensagem esperando' : 'mensagens esperando'} resposta`);
   if (bloqueios + vigia) d.push(`Fraude: ${bloqueios} ${bloqueios === 1 ? 'bloqueio' : 'bloqueios'} e ${vigia} ${vigia === 1 ? 'apelido' : 'apelidos'} em vigia`);
+  if (r.robo) d.push(`🤖 O robô melhorou (versão ${r.robo.versao}): ganha ${String(Math.round(10 * r.robo.ganho) / 10).replace('.', ',')} ${Math.abs(r.robo.ganho) === 1 ? 'ponto' : 'pontos'} por mão do anterior`);
   if (acabaram) d.push(`${acabaram} ${acabaram === 1 ? 'plano acabou' : 'planos acabaram'} sem renovar`);
   r.destaques = d;
   return r;

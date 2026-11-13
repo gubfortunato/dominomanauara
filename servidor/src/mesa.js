@@ -17,7 +17,8 @@ import { campeaoAte } from './copa.js';   // 10/11: o campeão da Copa dos Sóci
 import { VOZ, transcrever } from './voz.js';
 import { limitesValem, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteHerdado, limiteDoIrmao, anotarLimite, mesasDoDia, bonusConfig } from './planos.js';
 import { limitePessoa } from './pessoa.js';
-import { quartaValendo, contarQuarta, anotarConvite } from './quarta.js';   // 12/11: Quarta dos Amigos
+import { quartaValendo, contarQuarta, anotarConvite } from './quarta.js';
+import { pesosRobo } from './robo.js';   // 13/11: robô treinado toda noite   // 12/11: Quarta dos Amigos
 // 3.38.2: na Calçada, apelido que o filtro passou a barrar (de quem entrou antes) aparece como "Jogador"
 const nomeVisivel = c => !c.bot && nomeOfensivo(c.nome) ? 'Jogador' : c.nome;
 
@@ -1316,7 +1317,7 @@ export class Mesa {
     G.gente = m.cad.map((x, i) => x && !x.bot ? i : -1).filter(i => i >= 0);   // 10/11: o robô não mata a pedra de parceiro que é gente
     if (c.bot) {
       this.marcarRobo(p);
-      if (moves.length) applyMove(G, p, botChoose(G, p)); else applyPass(G, p);
+      if (moves.length) applyMove(G, p, botChoose(G, p, undefined, await pesosRobo(this.env))); else applyPass(G, p);   // 13/11: pesos treinados
       if (G.pedido) pedirPonto(G, p, true);   // robô sempre pede o ponto dele
       await this.depoisDaAcao(null);
       return this.reacaoDosRobos();
