@@ -684,7 +684,7 @@ export default {
   async scheduled(evento, env, ctx) {
     const hora = new Date((evento && evento.scheduledTime) || Date.now()).getUTCHours();
     // 10/11: sexta às 20h (Manaus) só para a Sexta da Calçada e o começo da Copa
-    if (evento && evento.cron === '0 0 * * 6') { ctx.waitUntil(rotinaEventos(env)); return; }
+    if (evento && (evento.cron === '0 0 * * 6' || evento.cron === '0 16,17 * * 5')) { ctx.waitUntil(rotinaEventos(env)); return; }   // 13/11: e sexta 12h/13h, o aviso da Sexta
     ctx.waitUntil(rotinaEventos(env));   // 10/11: Copa (apuração e avisos), Sexta da Calçada e tempo de casa
     ctx.waitUntil(limparNumeros(env));   // 03/11: acessos por hora guardados por 60 dias
     if (hora === 13) ctx.waitUntil(relatorioDiario(env).catch(() => {}));   // 13/11: 9h em Manaus: o relatório de ontem no celular do dono

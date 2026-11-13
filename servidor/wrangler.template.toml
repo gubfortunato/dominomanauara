@@ -20,7 +20,7 @@ binding = "AI"
 # Lembretes para jogar: 17h, 18h e 19h em Manaus (21h, 22h e 23h UTC).
 # Avisos de evento (aniversário de Manaus, Desafio, Rei da Calçada): 9h, 10h e 11h em Manaus (13h, 14h e 15h UTC).
 [triggers]
-crons = ["0 21,22,23 * * *", "0 13,14,15 * * *", "0 0 * * 6"]   # 10/11: sábado 0h UTC = sexta 20h em Manaus (Sexta da Calçada e Copa)
+crons = ["0 21,22,23 * * *", "0 13,14,15 * * *", "0 0 * * 6", "0 16,17 * * 5"]   # 10/11: sábado 0h UTC = sexta 20h em Manaus (Sexta da Calçada e Copa); 13/11: sexta 16h e 17h UTC = 12h e 13h em Manaus (aviso da Sexta)
 
 [[d1_databases]]
 binding = "DB"
