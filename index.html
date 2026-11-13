@@ -4134,6 +4134,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.54.5', data: '13/11/2026', itens: ['Sócios: ao abrir o app, ele confere a cópia do progresso guardada no servidor; se lá estiver maior (de outro celular), ele traz sozinho.', 'A foto do perfil agora também entra na cópia do progresso dos sócios.'] },
   { v: '3.54.4', data: '13/11/2026', itens: ['O cartão da Sexta da Calçada na tela inicial, antes das 20h, volta a só avisar a hora que começa (não abre mais o WhatsApp).'] },
   { v: '3.54.3', data: '13/11/2026', itens: ['Sexta da Calçada de cara nova: noite na Calçada (lua, céu estrelado e varal) e na tela do jogo (lua e estrelas), relógio de quanto falta, Placar da Sexta, fogos no galo, convite para a turma no WhatsApp e, depois das 23h, o resumo da sua noite para compartilhar.', 'Conquista nova para sócios: Boêmio da Calçada (3 Sextas seguidas), com o violão de seresta para o avatar.'] },
   { v: '3.54.2', data: '13/11/2026', itens: ['A turma do bairro agora treina toda noite: quando acha um jeito melhor de jogar, passa a usar nas mesas online.'] },
@@ -14250,16 +14251,19 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('mess
 // conquistas, avatar montado, histórico e missões) fica no navegador; o navegador pode apagar, e trocar de celular perde
 // tudo. Para quem apoia, o app manda uma cópia para o servidor sempre que algo muda (no máximo a cada 15 s, e só se
 // mudou). No celular novo, o código do plano ("Já apoio em outro celular") traz o tempo de Apoiador, o selo e o progresso.
+// 13/11 (o dono perdeu a foto ao reinstalar): a foto do perfil também entra na cópia
 const NUVEM_CHAVES = ['dmz-perfil', 'dmz-historico', 'dmz-nivel', 'dmz-missoes', 'dmz-avatar-montado', 'dmz-conquistas-vistas',
-  'dmz-mesa-cor', 'dmz-copa357', 'dmz-laterais', 'dmz-torneio', 'dmz-mesas-rodizio'];
+  'dmz-mesa-cor', 'dmz-copa357', 'dmz-laterais', 'dmz-torneio', 'dmz-mesas-rodizio', 'dmz-foto'];
 const NUVEM_KEY = 'dmz-nuvem', NUVEM_RESTAURADO = 'dmz-nuvem-restaurado';
 function nuvemPode() {
   return !!CONFIG.api && typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !!profile
     && ((typeof temPlano === 'function' && temPlano()) || (typeof souDoador === 'function' && souDoador()));
 }
-function nuvemFoto() { const d = {}; NUVEM_CHAVES.forEach(k => { const v = localStorage.getItem(k); if (v != null) d[k] = v; }); return d; }
+function nuvemFoto() { const d = {}; NUVEM_CHAVES.forEach(k => { const v = localStorage.getItem(k); if (v != null && !(k === 'dmz-foto' && v.length > 150000)) d[k] = v; }); return d; }   // foto grande demais fica fora (o resto da cópia não pode falhar por causa dela)
 const nuvemResumo = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return String(h >>> 0) + ':' + s.length; };
-let nuvemT = null, nuvemIndo = false;
+// 13/11: na primeira vez de cada abertura do app, manda mesmo sem mudança: se o servidor tiver um progresso maior (veio de
+// outro celular, ou foi recuperado), ele devolve e o app restaura. Antes só mandava quando algo mudava aqui, e o maior ficava parado lá.
+let nuvemT = null, nuvemIndo = false, nuvemConferido = false;
 function nuvemGuardar(jaJa) {
   if (!nuvemPode()) return;
   clearTimeout(nuvemT); nuvemT = setTimeout(nuvemEnviar, jaJa ? 0 : 15000);
@@ -14268,7 +14272,7 @@ async function nuvemEnviar(final) {
   if (!nuvemPode() || nuvemIndo) return;
   const dados = nuvemFoto(), resumo = nuvemResumo(JSON.stringify(dados));
   let st = {}; try { st = JSON.parse(store.get(NUVEM_KEY) || '{}') || {}; } catch (e) {}
-  if (st.r === resumo) return;
+  if (st.r === resumo && nuvemConferido) return;
   nuvemIndo = true;
   try {
     // 12/11: o servidor não aceita um progresso menor por cima do guardado (reinstalou o app, trocou de celular): devolve o
@@ -14276,8 +14280,8 @@ async function nuvemEnviar(final) {
     const recente = Date.now() - (+store.get(NUVEM_RESTAURADO) || 0) < 600000;
     const r = await fetch(CONFIG.api + '/progresso', { method: 'POST', headers: { 'content-type': 'application/json' }, keepalive: !!final,
       body: JSON.stringify(Object.assign({ aparelho: meuId(), dados }, recente ? { forcar: true } : {})) });
-    if (r.ok) store.set(NUVEM_KEY, JSON.stringify({ r: resumo, em: Date.now() }));
-    else if (r.status === 409 && !final) { const j = await r.json().catch(() => null); if (j && j.maior && nuvemRestaurar(j.maior, true)) track('progresso-restaurado-servidor'); }
+    if (r.ok) { store.set(NUVEM_KEY, JSON.stringify({ r: resumo, em: Date.now() })); nuvemConferido = true; }
+    else if (r.status === 409 && !final) { nuvemConferido = true; const j = await r.json().catch(() => null); if (j && j.maior && nuvemRestaurar(j.maior, true)) track('progresso-restaurado-servidor'); }
   } catch (e) {}
   nuvemIndo = false;
 }
@@ -15473,7 +15477,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.54.4-f7cb61e7';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.54.5-315301b5';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

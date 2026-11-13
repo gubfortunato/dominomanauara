@@ -244,8 +244,9 @@ export async function plano(env, origin, h, url) {
 // ---------- 3.39: progresso do jogo guardado para quem apoia ----------
 // Só as partes do progresso (nada de chave do dono, código do aparelho, plano ou pedidos). Até 64 KB.
 export const PROGRESSO_CHAVES = ['dmz-perfil', 'dmz-historico', 'dmz-nivel', 'dmz-missoes', 'dmz-avatar-montado', 'dmz-conquistas-vistas',
-  'dmz-mesa-cor', 'dmz-copa357', 'dmz-laterais', 'dmz-torneio', 'dmz-mesas-rodizio'];
-const PROGRESSO_MAX = 64 * 1024;
+  'dmz-mesa-cor', 'dmz-copa357', 'dmz-laterais', 'dmz-torneio', 'dmz-mesas-rodizio', 'dmz-foto'];
+// 13/11: com a foto do perfil (até ~120 mil letras) na cópia
+const PROGRESSO_MAX = 200 * 1024;
 async function apoia(env, aparelho) {
   if (await env.DB.prepare('SELECT 1 AS x FROM planos WHERE aparelho = ?').bind(aparelho).first()) return true;
   return !!(await cortesiaDe(env, aparelho));
