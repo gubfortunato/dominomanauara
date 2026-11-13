@@ -1921,6 +1921,8 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .dn-apl-add{display:flex;gap:8px;margin:6px 0 4px}   /* 11/11: apelidos bloqueados */
 .sala-quarta{margin:4px 0 10px;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,#1d5d78,#08222e);color:#eaf6fb;font-size:15px;line-height:1.4;text-align:center}   /* 12/11: Quarta dos Amigos */
 .sala-quarta b{display:block;font-size:16.5px;margin-bottom:2px;color:#fff}
+.ca-passos{margin:14px 0 16px;padding:0 0 0 18px;display:grid;gap:8px;font-size:15px;line-height:1.4}   /* 12/11: guarde o código */
+#caZap{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px}#caZap svg{width:22px;height:22px;flex:none}
 .trz-dica{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:var(--bg-2);border:1px solid var(--line);font-size:14.5px;line-height:1.4;color:var(--fg)}   /* 12/11: o que conferir no código */
 .pl-passe{display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}.pl-passe small{font-size:13px;font-weight:600;opacity:.8}   /* 12/11: passe da semana */
 .ps-cmp{margin:12px 0 14px;padding:12px 14px;border-radius:14px;background:var(--bg-2);border:1px solid var(--line);font-size:15px;line-height:1.4}
@@ -3995,6 +3997,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.25', data: '12/11/2026', itens: ['Sócio: o app lembra de guardar o seu código de sócio, mostra onde achar (Mais › Seu código de sócio) e como recuperar o plano em outro aparelho. Dá para copiar ou mandar o código para o seu WhatsApp.'] },
   { v: '3.53.24', data: '12/11/2026', itens: ['O recado "Bora chamar a turma?" não aparece mais ao abrir o app. O convite para os amigos continua na mesa com os amigos e em Mais.'] },
   { v: '3.53.23', data: '12/11/2026', itens: ['Mais proteção para o progresso do sócio: se o app for reinstalado ou o celular trocado, o progresso guardado com a gente não é mais apagado pelo da instalação nova. Ele volta sozinho para o celular.'] },
   { v: '3.53.22', data: '12/11/2026', itens: ['Ícone em madeira escura, com as pedras maiores.'] },
@@ -14127,11 +14130,43 @@ function desafioConviteNaHome() {
   $('#dscFechar').addEventListener('click', closeSheet);
   return true;
 }
+// 12/11 (pedido do dono: "muitos usuários estão perdendo o código de sócio"): aviso para o sócio guardar o código, com o
+// código na tela, copiar, mandar para o próprio WhatsApp, onde achar e como recuperar. Sai até ele guardar ("Já guardei",
+// copiar ou mandar no WhatsApp); se tocar em "Lembrar depois", volta no dia seguinte (no máximo 3 vezes).
+const CODAVISO = 'dmz-codigo-aviso';
+function codigoNaHome() {
+  if (!temPlano() || menorDeIdade()) return false;
+  const p = planoLocal() || {}; if (!p.codigo) return false;
+  let st = {}; try { st = JSON.parse(store.get(CODAVISO) || '{}') || {}; } catch (e) {}
+  if (st.ok || (st.n || 0) >= 3 || Date.now() - (st.em || 0) < 20 * 3600000) return false;
+  store.set(CODAVISO, JSON.stringify({ n: (st.n || 0) + 1, em: Date.now() }));
+  const guardou = como => { track('codigo-aviso-' + como); try { const x = JSON.parse(store.get(CODAVISO) || '{}') || {}; x.ok = Date.now(); store.set(CODAVISO, JSON.stringify(x)); } catch (e) {} };
+  const cod = codigoBonito(p.codigo);
+  const zap = `Meu código de Sócio da Calçada no Dominó Manauara: ${cod}\nPara recuperar o plano em outro aparelho: no app, Mais › Já sou sócio em outro aparelho, e digite o código.`;
+  track('codigo-aviso');
+  openSheet('codaviso', `<p class="eyebrow">Sócio da Calçada</p><h2 id="sheetTitle">Guarde o seu código de sócio</h2>
+    <p class="pr-lead">Ele é a chave do seu plano. Se você trocar de celular, apagar o app ou limpar o navegador, é com ele que o seu plano e o seu progresso voltam.</p>
+    <div class="carta-cod"><b>${esc(cod)}</b><button type="button" class="linkbtn" id="caCopiar">Copiar</button></div>
+    <a class="share-wa carta-wa" id="caZap" href="https://wa.me/?text=${encodeURIComponent(zap)}" target="_blank" rel="noopener">${WA_IC}Mandar o código para o meu WhatsApp</a>
+    <ul class="ca-passos">
+      <li><b>Onde achar:</b> em Mais › Seu código de sócio.</li>
+      <li><b>Para recuperar:</b> no aparelho novo, toque em Mais › Já sou sócio em outro aparelho, digite o código e toque em "Trazer o meu plano".</li>
+      <li><b>Dica:</b> tire um print desta tela ou mande o código para você mesmo no WhatsApp.</li>
+    </ul>
+    <button type="button" class="primary" id="caOk" style="width:100%">Já guardei</button>
+    <button type="button" class="linkbtn" id="caDepois" style="width:100%;margin-top:6px">Lembrar depois</button>`);
+  $('#caCopiar').addEventListener('click', async () => { try { await navigator.clipboard.writeText(cod); toast('Código copiado. Guarde num lugar seguro.'); guardou('copiou'); } catch (e) { toast('Não deu para copiar. Tire um print da tela.'); } });
+  $('#caZap').addEventListener('click', () => guardou('zap'));
+  $('#caOk').addEventListener('click', () => { guardou('ok'); closeSheet(); });
+  $('#caDepois').addEventListener('click', () => { track('codigo-aviso-depois'); closeSheet(); });
+  return true;
+}
 function pertencimentoNaHome() {
   try { desenharEvCard(); } catch (e) {}
   if (screen !== 'home' || sheetKind || !profile) return;
   try { if (copaComemorar()) return; } catch (e) {}
   try { if (casaComemorar()) return; } catch (e) {}
+  try { if (codigoNaHome()) { dsConviteHoje = true; return; } } catch (e) {}   // 12/11
   try { if (recadoNaHome()) { dsConviteHoje = true; return; } } catch (e) {}
   try { if (fotoAvisoNaHome()) { dsConviteHoje = true; return; } } catch (e) {}
   try { if (!dsConviteHoje) desafioConviteNaHome(); } catch (e) {}
@@ -14812,7 +14847,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.24-e401d8ed';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.25-cdd8da5f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
