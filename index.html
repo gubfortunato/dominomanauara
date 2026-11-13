@@ -4134,6 +4134,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.54.6', data: '13/11/2026', itens: ['O Mané, dono da taberna, ganhou um fundo verde.'] },
   { v: '3.54.5', data: '13/11/2026', itens: ['Sócios: ao abrir o app, ele confere a cópia do progresso guardada no servidor; se lá estiver maior (de outro celular), ele traz sozinho.', 'A foto do perfil agora também entra na cópia do progresso dos sócios.'] },
   { v: '3.54.4', data: '13/11/2026', itens: ['O cartão da Sexta da Calçada na tela inicial, antes das 20h, volta a só avisar a hora que começa (não abre mais o WhatsApp).'] },
   { v: '3.54.3', data: '13/11/2026', itens: ['Sexta da Calçada de cara nova: noite na Calçada (lua, céu estrelado e varal) e na tela do jogo (lua e estrelas), relógio de quanto falta, Placar da Sexta, fogos no galo, convite para a turma no WhatsApp e, depois das 23h, o resumo da sua noite para compartilhar.', 'Conquista nova para sócios: Boêmio da Calçada (3 Sextas seguidas), com o violão de seresta para o avatar.'] },
@@ -4821,7 +4822,7 @@ const BOTS = [
   { name: 'Piaba', av: { bg: AVF[1], skin: SKIN.medio, style: 'bone', cap: '#c8102e', hc: HAIR.preto, boca: 'piscada', shirt: 'time:#12a3a0:#f4efe4' } },
   { name: 'Curica', av: { bg: AVF[0], skin: SKIN.jambo, style: 'franja', hc: HAIR.preto, quadrados: true, boca: 'dentes', shirt: 'moletom:#e8505b' } },
   { name: 'Lucinha', av: { bg: '#f0c46a', skin: SKIN.moreno, style: 'coque', hc: HAIR.preto, shirt: '#f2e7d5', mao: 'tacaca' } },   // a tacacazeira
-  { name: 'Mané', av: { bg: '#c9b28a', skin: SKIN.medio, style: 'careca', hc: HAIR.grisalho, bigode: HAIR.grisalho, shirt: '#f6eedf' } },   // o dono da taberna
+  { name: 'Mané', av: { bg: '#2f6f5e', skin: SKIN.medio, style: 'careca', hc: HAIR.grisalho, bigode: HAIR.grisalho, shirt: '#f6eedf' } },   // o dono da taberna (13/11, pedido do dono: fundo verde-taberna; o bege sumia no fundo do app)
   // 03/11 (dono: "mesclar os mais modernos com os mais antigos"): voltam os da calçada de sempre, com o rosto de antes
   { name: 'Raimundo', av: { bg: '#5f8f78', skin: SKIN.moreno, style: 'chapeu', hc: HAIR.grisalho, bigode: HAIR.grisalho, shirt: '#e8dcc4' }, antigo: true },
   { name: 'Socorro', av: { bg: '#b98bc4', skin: SKIN.moreno, style: 'coque', hc: HAIR.grisalho, oculos: true, shirt: '#2e7d6b' }, antigo: true },
@@ -15477,7 +15478,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.54.5-315301b5';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.54.6-b95ab39b';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
