@@ -2455,9 +2455,10 @@ body.calc-noite #calcCorpo .vivo-mesa{box-shadow:0 0 0 1px rgba(255,190,110,.22)
 body.calc-noite #calcCorpo .vivo-mesa.livre{background:linear-gradient(180deg,rgba(255,170,80,.14),rgba(255,170,80,.05)),var(--bg-2)}
 #scrCalcada .varal{display:block;width:calc(100% + 32px);height:96px;margin:-10px -16px -6px;overflow:visible}
 #scrCalcada .varal .est{fill:#fff6dc;animation:sxBrilho 3.2s ease-in-out infinite;animation-delay:var(--d)}
-#scrCalcada .varal .lamp{filter:drop-shadow(0 0 7px rgba(255,200,110,1))}
+#scrCalcada .varal .lp circle{filter:drop-shadow(0 0 6px rgba(255,190,90,.9));animation:lpPisca 2.4s ease-in-out infinite;animation-delay:var(--d)}
+@keyframes lpPisca{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes sxBrilho{0%,100%{opacity:.95}50%{opacity:.35}}
-@media (prefers-reduced-motion:reduce){#scrCalcada .varal .est{animation:none}}
+@media (prefers-reduced-motion:reduce){#scrCalcada .varal .est,#scrCalcada .varal .lp circle{animation:none}}
 .calc-sexta{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#4a2a6e,#2a1745);color:#fff1dc;box-shadow:0 0 0 1px rgba(255,200,120,.25),0 8px 24px rgba(120,60,200,.25)}
 .calc-sexta .cs-fogo{font-size:26px}
 .calc-sexta .cs-tx{display:grid;gap:2px}.calc-sexta .cs-tx b{font-size:16.5px}.calc-sexta .cs-tx small{font-size:13.5px;opacity:.85}
@@ -4108,7 +4109,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.54.3', data: '13/11/2026', itens: ['Sexta da Calçada com cara de noite: das 20h às 23h, a aba Calçada ganha lua, postes acesos, o relógio de quanto falta e as mesas com lugar vago primeiro.'] },
+  { v: '3.54.3', data: '13/11/2026', itens: ['Sexta da Calçada com cara de noite: das 20h às 23h, a aba Calçada ganha lua, céu estrelado, varal de lâmpadas, o relógio de quanto falta e as mesas com lugar vago primeiro.'] },
   { v: '3.54.2', data: '13/11/2026', itens: ['A turma do bairro agora treina toda noite: quando acha um jeito melhor de jogar, passa a usar nas mesas online.'] },
   { v: '3.54.1', data: '13/11/2026', itens: ['Suporte mais rápido: as respostas às mensagens do Fale com a gente chegam mais depressa aqui no app.'] },
   { v: '3.54.0', data: '12/11/2026', itens: ['Ajuda e suporte, em Mais: as dúvidas mais comuns (código de sócio, plano em outro aparelho, pagamento, partidas grátis, bloqueio, progresso, robô e regras) com a resposta e um botão que resolve.', 'Fale com a gente virou conversa: a resposta do suporte chega aqui no app, em até 48 horas, com aviso no celular.', 'Na sexta da Copa dos Sócios, o cartão da Sexta da Calçada aparece junto do cartão da Copa.', 'Partidas grátis com o número certo em todas as telas: até 19/11 (bônus), 5 por dia na mesa rápida e 2 com os amigos; depois, 3 e 1.'] },
@@ -11480,20 +11481,20 @@ function vivoVisivel() { const c = $('#vivoCard'); if (c) c.hidden = !vivoMostra
   try { calcCabSexta(); } catch (e) {} }   // (na carga do app, o relógio de Manaus ainda não existe: a aba se acerta ao abrir)
 // 11/11 (pedido do dono): durante a Sexta da Calçada (sexta, das 20h às 23h), o título da aba vira "🔥 Sexta da Calçada"
 // 13/11 (pedido do dono: "deixar a tela da calçada diferente na hora da Sexta"): das 20h às 23h de sexta, a aba Calçada
-// fica com cara de rua à noite (fundo escuro, lua, estrelas que brilham de leve e postes acesos; parado para quem pediu menos movimento),
+// fica com cara de rua à noite (fundo escuro, lua, estrelas e varal de lâmpadas que piscam de leve; parado para quem pediu menos movimento),
 // uma faixa com o tempo que falta e, para o sócio, "dobro" no botão de entrar. As mesas com lugar vago aparecem primeiro.
-// 13/11 (dono): lua, estrelas e postes de luz com o cone caindo na calçada (desenho próprio, em SVG)
+// 13/11 (dono): céu com lua e estrelas e o varal de lâmpadas (desenho próprio, em SVG)
 const VARAL = (() => {
   const est = [[96, 14], [128, 34], [176, 10], [214, 28], [248, 8], [306, 20], [338, 40], [22, 52], [118, 58], [232, 50]]
     .map(([x, y], i) => `<circle class="est" cx="${x}" cy="${y}" r="${i % 3 ? 1.1 : 1.6}" style="--d:${(i * 0.53) % 3}s"/>`).join('');
-  const poste = x => `<g class="poste"><polygon points="${x - 15},34 ${x - 40},92 ${x + 10},92" fill="url(#sxCone)"/><ellipse cx="${x - 15}" cy="92" rx="26" ry="4" fill="rgba(255,196,110,.35)"/>`
-    + `<path d="M${x} 92 V26 Q${x} 18 ${x - 8} 18 H${x - 12}" fill="none" stroke="#0d0817" stroke-width="3" stroke-linecap="round"/>`
-    + `<path d="M${x - 20} 26 L${x - 10} 26 L${x - 12} 20 L${x - 18} 20 Z" fill="#0d0817"/><ellipse class="lamp" cx="${x - 15}" cy="27.5" rx="4.6" ry="2.4" fill="#ffd58a"/></g>`;
+  // o varal: um fio que cai do canto ao meio e sobe de novo, com 11 lâmpadas penduradas (piscam de leve)
+  const fio = x => 50 + 32 * Math.sin(Math.PI * x / 400), cores = ['#ffd27a', '#ff9f5a', '#ffe9b0', '#ffb36b'];
+  const lamps = Array.from({ length: 11 }, (_, i) => { const x = 32 + i * 33.6, y = fio(x);
+    return `<g class="lp" style="--d:${((i * 0.37) % 2.2).toFixed(2)}s"><rect x="${(x - 1.6).toFixed(1)}" y="${(y + 1).toFixed(1)}" width="3.2" height="4" rx="1" fill="#1a1222"/><circle cx="${x.toFixed(1)}" cy="${(y + 9).toFixed(1)}" r="4.6" fill="${cores[i % 4]}"/></g>`; }).join('');
   return `<svg class="varal" viewBox="0 0 400 96" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs>`
-    + `<linearGradient id="sxCone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd58a" stop-opacity=".42"/><stop offset="1" stop-color="#ffb35c" stop-opacity="0"/></linearGradient>`
     + `<radialGradient id="sxLuaG"><stop offset="0" stop-color="#fff1c9" stop-opacity=".45"/><stop offset="1" stop-color="#fff1c9" stop-opacity="0"/></radialGradient></defs>`
     + `<g class="ceu">${est}</g><circle cx="46" cy="32" r="30" fill="url(#sxLuaG)"/><path class="lua" d="M48.3 14.0 A16 16 0 1 0 61.8 38.2 A14 14 0 0 1 48.3 14.0Z" fill="#fff1c9"/>`
-    + poste(150) + poste(262) + poste(374) + `<path d="M0 93 H400" stroke="rgba(255,214,160,.25)" stroke-width="1.5"/></svg>`;
+    + `<path d="M0 50 Q200 114 400 50" fill="none" stroke="#0d0817" stroke-width="1.6"/>` + lamps + '</svg>';
 })();
 function sxFalta() {   // até as 23h (Manaus) de hoje
   const d = manausDe(Date.now()), fim = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 23) + 4 * 3600000;
