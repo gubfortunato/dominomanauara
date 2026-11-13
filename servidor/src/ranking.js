@@ -174,6 +174,31 @@ export async function reiDaSemana(env) {
   REI.sem = sem; REI.em = agora; REI.quase = quase; REI.dados = x ? { aparelho: x.aparelho, nome: x.nome, av: x.av, nv: x.nv } : null;
   return REI.dados;
 }
+// 13/11 (pedido do dono): Campeão do Mês. O sócio mais bem colocado do ranking do mês passado fica com a pedra Dourada
+// durante o mês seguinte inteiro: só ele usa, e na mesa online as pedras que ele joga caem douradas na tela de todo mundo
+// (com o selo 🥇 ao lado do nome). Quem não é sócio e ficou em 1º sabe que seria o campeão (quase), como na coroa do Rei.
+// A primeira é a de novembro de 2026 (vale em dezembro); antes disso, ninguém.
+const CAMP = { mes: null, em: 0, dados: null, quase: null };
+export const CAMPEAO_DESDE = 'M2026-11';
+export async function campeaoDoMes(env) {
+  const agora = agoraDe(env), mes = periodos(inicio(periodos(agora).mes) - DIA).mes;   // o mês passado
+  if (mes < CAMPEAO_DESDE) return null;
+  if (!env.RANKING_AGORA && CAMP.mes === mes && agora - CAMP.em < 10 * 60000) return CAMP.dados;
+  const lista = await ordenados(env, mes);
+  let x = lista[0] || null, quase = null;
+  if (x) {
+    const s = await socios(env, lista.map(y => y.aparelho));
+    if (!s.has(x.aparelho)) { quase = x.aparelho; x = lista.find(y => s.has(y.aparelho)) || null; }
+  }
+  CAMP.mes = mes; CAMP.em = agora; CAMP.quase = quase; CAMP.dados = x ? { aparelho: x.aparelho, nome: x.nome, av: x.av, nv: x.nv, mes } : null;
+  return CAMP.dados;
+}
+// GET /ranking/campeao?aparelho= -> { campeao: { nome, mes, eu } | null, quase } (o app confere ao abrir, para liberar a Dourada)
+export async function campeaoRota(req, env, origin, h, url) {
+  const ap = idOk(url.searchParams.get('aparelho')) ? url.searchParams.get('aparelho') : null;
+  let c = null; try { c = await campeaoDoMes(env); } catch (e) {}
+  return h.json({ campeao: c ? { nome: c.nome, mes: c.mes, eu: !!ap && ap === c.aparelho } : null, quase: !!ap && CAMP.quase === ap }, 200, origin);
+}
 // GET /ranking?aparelho= -> { semana, mes, fora, rei, regras, completo }
 // Planos (28/10): sem plano, depois do lançamento, o ranking mostra só o Rei da Calçada e os 3 primeiros da semana; a
 // lista completa da semana e do mês e a sua posição são dos sócios (completo = false: o app mostra o convite).
@@ -186,11 +211,14 @@ export async function ranking(req, env, origin, h, url) {
   const eu = fora ? null : ap, reiAp = rei && rei.aparelho;
   const completo = !limitesValem(env) || (!!ap && await temPlano(env, ap));
   let reiFoto = null; if (rei) { try { reiFoto = (await fotosDe(env, [rei.aparelho])).get(rei.aparelho) || null; } catch (e) {} }
+  let camp = null; try { camp = await campeaoDoMes(env); } catch (e) {}   // 13/11: Campeão do Mês
+  let campFoto = null; if (camp) { try { campFoto = (await fotosDe(env, [camp.aparelho])).get(camp.aparelho) || null; } catch (e) {} }
   const semana = await lista(env, p.sem, p.fimSem, eu, reiAp);
   const mes = completo ? await lista(env, p.mes, p.fimMes, eu, reiAp) : { top: [], eu: null, fim: p.fimMes, pontos: usaPontos(env, p.mes), trancado: true };
   if (!completo) { semana.top = semana.top.slice(0, TOP_GRATIS); semana.eu = null; semana.trancado = true; }
   return h.json({ semana, mes, fora, completo, topGratis: TOP_GRATIS,
     rei: rei ? { nome: rei.nome, av: rei.av, nv: rei.nv, foto: reiFoto, eu: !!ap && ap === reiAp } : null, quaseRei: !!ap && REI.quase === ap,
+    campeao: camp ? { nome: camp.nome, av: camp.av, nv: camp.nv, foto: campFoto, mes: camp.mes, eu: !!ap && ap === camp.aparelho } : null, quaseCampeao: !!ap && CAMP.quase === ap,
     regras: { pontosDesde: pontosDesde(env), ...PTS, roboPorDia: ROBO_POR_DIA, parPorDia: PAR_POR_DIA } }, 200, origin);
 }
 // POST /ranking/fora {aparelho, fora: true|false} — não aparecer (ou voltar a aparecer) no ranking
@@ -199,7 +227,7 @@ export async function sairDoRanking(req, env, origin, h) {
   if (!b || !idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
   if (b.fora) await env.DB.prepare('INSERT INTO ranking_fora (aparelho, em) VALUES (?, ?) ON CONFLICT (aparelho) DO NOTHING').bind(b.aparelho, Date.now()).run();
   else await env.DB.prepare('DELETE FROM ranking_fora WHERE aparelho = ?').bind(b.aparelho).run();
-  REI.em = 0;   // quem saiu (ou voltou) pode mudar quem é o Rei
+  REI.em = 0; CAMP.em = 0;   // quem saiu (ou voltou) pode mudar quem é o Rei (e o Campeão do Mês)
   return h.json({ ok: true, fora: !!b.fora }, 200, origin);
 }
 // No agendado: o ranking guarda no máximo 13 meses; as contas do dia (robôs e pares), 2 dias

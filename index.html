@@ -234,13 +234,14 @@ a.card{text-decoration:none}
 .ends.hit{color:var(--wood-2);background:var(--glow);border-color:var(--glow)}
 
 /* Peças (SVG) */
-.t-body{fill:url(#bone);stroke:var(--tile-shade);stroke-width:.03}
+.t-body{fill:url(#bone);stroke:var(--pedra-sh,var(--tile-shade));stroke-width:.03}
+.t-veio{fill:none;pointer-events:none}
 .t-shadow{fill:var(--shadow)}
 .t-div{stroke:var(--tile-shade);stroke-width:.04}
 .t-pip{fill:var(--pip)}
 .t-pin{fill:var(--pin)}
 /* 10/11: pedra de verdade — espessura, quina polida, risco gravado, furo nas pintas e pino de latão */
-.t-lado{fill:color-mix(in srgb,var(--tile-shade) 78%,#5a4630)}
+.t-lado{fill:color-mix(in srgb,var(--pedra-sh,var(--tile-shade)) 78%,#5a4630)}
 .t-brilho{fill:none;stroke:rgba(255,255,255,.6);stroke-width:.028}
 .t-div{stroke:rgba(70,52,30,.42);stroke-width:.034;stroke-linecap:round}
 .t-div2{stroke:rgba(255,255,255,.75);stroke-width:.02;stroke-linecap:round}
@@ -251,8 +252,35 @@ a.card{text-decoration:none}
 .b-dot{fill:var(--back-dot)}
 .bstop1{stop-color:var(--back-1)}
 .bstop2{stop-color:var(--back-2)}
-.stop1{stop-color:var(--tile)}
-.stop2{stop-color:var(--tile-2)}
+.stop1{stop-color:var(--pedra-1,var(--tile))}
+.stop2{stop-color:var(--pedra-2,var(--tile-2))}
+/* 13/11 (pedido do dono): modelos de pedras, ganhos nas conquistas (sócio libera todos na hora). Cada um vê o seu. */
+html[data-pedra="preta"]{--pedra-1:#2b2724;--pedra-2:#141110;--pedra-sh:#4a4440}
+html[data-pedra="madeira"]{--pedra-1:#b47a44;--pedra-2:#7c4e27;--pedra-sh:#5e3a1c}
+html[data-pedra="acai"]{--pedra-1:#5a2560;--pedra-2:#2e0f33;--pedra-sh:#24102a}
+html[data-pedra="guarana"]{--pedra-1:#e8962a;--pedra-2:#ad5c12;--pedra-sh:#7a3f0a}   /* 13/11: âmbar do refrigerante (o vermelho lembrava o Garantido) */
+html[data-pedra="rionegro"]{--pedra-1:#2a2017;--pedra-2:#120c08;--pedra-sh:#3a2c20}
+html[data-pedra="mata"]{--pedra-1:#2f7a44;--pedra-2:#1b4f2b;--pedra-sh:#143a20}
+html[data-pedra="ouro"]{--pedra-1:#f0cf6a;--pedra-2:#c08f2c;--pedra-sh:#8c6420}
+html[data-pedra="perola"]{--pedra-1:#f7f2f7;--pedra-2:#dfe6f1;--pedra-sh:#c7c3d6}
+html[data-pedra="parintins"]{--pedra-sh:#4a2f5a}
+html[data-pedra="parintins"] .t-body{fill:url(#pedParV)}
+html[data-pedra="parintins"] .t-body.t-bh{fill:url(#pedParH)}
+html[data-pedra="madeira"] .t-veio{fill:url(#pedVeio)}
+:is(html[data-pedra="preta"],html[data-pedra="madeira"],html[data-pedra="acai"],html[data-pedra="guarana"],html[data-pedra="mata"],html[data-pedra="parintins"]) .t-pip{fill:url(#pipClara)}
+html[data-pedra="rionegro"] .t-pip{fill:url(#ping)}
+:is(html[data-pedra="preta"],html[data-pedra="acai"],html[data-pedra="rionegro"],html[data-pedra="mata"]) .t-div{stroke:rgba(0,0,0,.6)}
+.ap-cores.es-pedras{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* 13/11 (pedido do dono): Campeão do Mês. As pedras que ele joga caem douradas na mesa online de todo mundo */
+html g.ouro .t-body{fill:url(#pedOuro);stroke:#8c6420}
+html g.ouro .t-lado{fill:#8c6420}
+html g.ouro .t-veio{fill:none}
+html g.ouro .t-pip{fill:url(#pipg)}
+html g.ouro .t-div{stroke:rgba(70,52,30,.42)}
+.sc-ouro{font-size:12px}
+.rk-camp{margin-top:8px}
+.es-pedras .ap-cor{gap:6px;padding:12px 4px 10px;min-width:0}
+.es-pedras svg{width:min(78px,100%);height:auto;display:block}
 .last .t-body{stroke:var(--glow);stroke-width:.08}
 .fresh{animation:drop .35s ease-out;transform-box:fill-box;transform-origin:center}
 .incoming{opacity:0}
@@ -2961,6 +2989,12 @@ body.papo-aberto{overflow:hidden}
     <radialGradient id="pipg" cx=".62" cy=".64" r=".62">
       <stop offset="0" stop-color="#4a3a2e"/><stop offset=".55" stop-color="#1b130d"/><stop offset="1" stop-color="#050302"/>
     </radialGradient>
+    <!-- 13/11: modelos de pedras -->
+    <radialGradient id="pipClara" cx=".38" cy=".36" r=".7"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f1e8d6"/><stop offset="1" stop-color="#bfb3a0"/></radialGradient>
+    <linearGradient id="pedOuro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0cf6a"/><stop offset="1" stop-color="#c08f2c"/></linearGradient>
+    <linearGradient id="pedParV" x1="0" y1="0" x2="0" y2="1"><stop offset=".5" stop-color="#d23a2f"/><stop offset=".5" stop-color="#1f4fb0"/></linearGradient>
+    <linearGradient id="pedParH" x1="0" y1="0" x2="1" y2="0"><stop offset=".5" stop-color="#d23a2f"/><stop offset=".5" stop-color="#1f4fb0"/></linearGradient>
+    <pattern id="pedVeio" width=".5" height=".14" patternUnits="userSpaceOnUse"><path d="M0 .07q.12-.03.25 0t.25 0" fill="none" stroke="rgba(60,30,10,.35)" stroke-width=".012"/></pattern>
     <radialGradient id="ping" cx=".36" cy=".34" r=".72">
       <stop offset="0" stop-color="#fff0c2"/><stop offset=".35" stop-color="#e2b764"/><stop offset=".8" stop-color="#a87a33"/><stop offset="1" stop-color="#6e4d1c"/>
     </radialGradient>
@@ -3020,7 +3054,7 @@ body.papo-aberto{overflow:hidden}
       <span class="flabel">Sua cara na mesa</span>
       <button type="button" class="rulescard estilocard" id="goEstilo" hidden>
         <span class="rc-ic es-ic" id="goEstiloFace" aria-hidden="true"></span>
-        <span class="rc-tx"><b>Personalizar</b><small id="goEstiloTx">Avatar, mesa e conquistas</small></span>
+        <span class="rc-tx"><b>Personalizar</b><small id="goEstiloTx">Avatar, mesa, pedras e conquistas</small></span>
         <span class="rc-go" aria-hidden="true">›</span>
       </button>
       <div class="avatars" id="avatarGrid" role="radiogroup" aria-label="Escolha sua foto ou um avatar"></div>
@@ -3250,6 +3284,7 @@ body.papo-aberto{overflow:hidden}
         <div class="ap-cmp-l" role="row"><b role="rowheader">Sua foto no lugar do avatar</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s"><svg class="ap-ok" viewBox="0 0 24 24" aria-label="sim"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Selo de sócio ao lado do nome</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s"><svg class="selo-ic selo-estrela" viewBox="-0.3 0 24.6 24" aria-label="sim"><path d="M12 1.3L14.88 8.94 23.03 9.32 16.66 14.41 18.82 22.28 12 17.8 5.18 22.28 7.34 14.41 0.97 9.32 9.12 8.94Z"/></svg></span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Mesas</b><span role="cell" class="ap-cmp-g">Madeira, Vermelha e Azul</span><span role="cell" class="ap-cmp-s">Todas</span></div>
+        <div class="ap-cmp-l" role="row"><b role="rowheader">Pedras</b><span role="cell" class="ap-cmp-g">Marfim</span><span role="cell" class="ap-cmp-s">9 modelos, e a Dourada para o Campeão do Mês</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Avatar</b><span role="cell" class="ap-cmp-g">Os avatares prontos</span><span role="cell" class="ap-cmp-s">Monte o seu, mais os exclusivos</span></div>
       </div>
       <p class="ap-cmp-nota">Cada partida vai até 200 pontos. Os limites zeram à meia-noite (horário de Brasília).</p>
@@ -3299,6 +3334,11 @@ body.papo-aberto{overflow:hidden}
       <span class="ap-k">Sua mesa</span>
       <p class="note mesa-promo" id="esPromo" hidden></p>
       <div class="ap-cores es-mesas" id="esMesas" role="radiogroup" aria-label="Mesa"></div>
+    </div>
+    <div class="es-sec">
+      <span class="ap-k">Suas pedras</span>
+      <div class="ap-cores es-pedras" id="esPedras" role="radiogroup" aria-label="Pedras"></div>
+      <p class="note">Os modelos novos são dos sócios da Calçada. A Dourada é só do Campeão do Mês: o sócio que mais pontuar no ranking do mês joga com ela no mês seguinte, e na mesa online as pedras dele caem douradas para todos.</p>
     </div>
     <div class="es-sec">
       <span class="ap-k">Conquistas <small id="esConqN"></small></span>
@@ -4153,6 +4193,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.55.0', data: '13/11/2026', itens: ['Modelos novos de pedras: Preta de boteco, Madeira de lei, Guaraná, Verde mata, Açaí, Rio Negro, Madrepérola, Parintins e Dourada. São dos sócios da Calçada. A Dourada é do Campeão do Mês: o sócio que mais pontuar no ranking do mês joga com ela no mês seguinte, e na mesa online as pedras dele caem douradas para todos. Escolha em Personalizar.'] },
   { v: '3.54.9', data: '13/11/2026', itens: ['Mesa com os amigos: um aviso no botão do Papo de mesa conta que agora dá para mandar (sócios) e ouvir áudio da turma.'] },
   { v: '3.54.8', data: '13/11/2026', itens: ['Mesa nova para os sócios: Onça-pintada, deitada no galho no meio da mata.', 'Mesa nova para os sócios: Curumins, dois meninos na trilha da mata, perto do rio.'] },
   { v: '3.54.7', data: '13/11/2026', itens: ['Mesa nova para os sócios: Palacete Provincial, a antiga sede da Província do Amazonas, hoje casa de museus, com a fachada vermelha e amarela e as duas estátuas de soldado na porta.'] },
@@ -7334,6 +7375,7 @@ render = function () {
     if (sc) { const r = sc.querySelector('.sc-robo'); if (r) r.remove(); if (porRobo) sc.insertAdjacentHTML('afterbegin', '<span class="sc-robo">robô</span> '); }
     if (c.rei) el.dataset.rei = '1'; else delete el.dataset.rei;   // 3.37: coroa do Rei da Calçada em cima do avatar
     if (c.campeao) el.dataset.campeao = '1'; else delete el.dataset.campeao;   // 10/11: troféu do campeão da Copa dos Sócios
+    if (sc) { const o = sc.querySelector('.sc-ouro'); if (o) o.remove(); if (c.dourada && !c.bot) sc.insertAdjacentHTML('afterbegin', '<span class="sc-ouro" title="Campeão do Mês" aria-label="Campeão do Mês">🥇</span> '); }   // 13/11
     if (sc) { const v = sc.querySelector('.sc-campea'); if (v) v.remove(); if (c.campea && !c.bot) sc.insertAdjacentHTML('afterbegin', '<span class="sc-campea" title="Turma campeã do Desafio das Confrarias" aria-label="Turma campeã do Desafio das Confrarias">🏆</span> '); }   // 10/11: selo da Turma campeã
     // 10/11 (pedido do dono): o brasão da Turma junto do nome de quem joga (a base reescreve o nome a cada desenho)
     if (sn && c.turma && !c.bot && typeof brasao === 'function') sn.insertAdjacentHTML('afterbegin', `<span class="sn-br" title="${esc(nomeTurma(c.turma))}">${brasao(c.turma, 15)}</span>`);
@@ -7564,7 +7606,7 @@ function renderSala() {
     const tag = `<span class="sc-tag ${pos === 2 ? 'par' : pos === 0 ? 'eu' : 'adv'}">${NOME_POS[pos]}</span>`;
     if (!c) return `<button type="button" class="sala-cad vazia ${POS_CLASS[pos]}" data-p="${p}">${tag}<span class="sc-face sc-vazia" aria-hidden="true">+</span><b>Cadeira vazia</b><small>Toque para sentar aqui</small></button>`;
     const face = pos === 0 ? faceImg(myFaceURI(), 'sc-img') : c.bot && botFaceURI(c.nome) ? faceImg(botFaceURI(c.nome), 'sc-img') : c.foto && !fotoEscondida(c.foto) ? fotoOnlineImg(c, 'sc-img') : (avatarDe(c.av) ? faceImg(avatarURI(avatarDe(c.av)), 'sc-img') : `<span class="sc-letra">${esc(c.nome[0] || '?')}</span>`);
-    return `<div class="sala-cad ${POS_CLASS[pos]}${c.on ? '' : ' fora'}${pos === 0 ? '' : fade(p)}">${tag}<span class="sc-face">${face}${c.rei ? '<i class="sc-coroa" title="Rei da Calçada" aria-label="Rei da Calçada">👑</i>' : c.campeao ? '<i class="sc-coroa" title="Campeão da Copa dos Sócios" aria-label="Campeão da Copa dos Sócios">🏆</i>' : ''}<i class="sc-on${c.on ? ' ok' : ''}" aria-hidden="true"></i></span><b>${esc(pos === 0 ? 'Você' : c.nome)}${c.apoiador ? ` <i class="sc-star" title="Sócio da Calçada">${seloEstrela()}</i>` : ''}${c.doador ? ` <i class="sc-heart" title="Sócio de coração">${seloCoracao(c.doador)}</i>` : ''}</b><small>${esc(salaSub(c, pos))}</small></div>`;
+    return `<div class="sala-cad ${POS_CLASS[pos]}${c.on ? '' : ' fora'}${pos === 0 ? '' : fade(p)}">${tag}<span class="sc-face">${face}${c.rei ? '<i class="sc-coroa" title="Rei da Calçada" aria-label="Rei da Calçada">👑</i>' : c.campeao ? '<i class="sc-coroa" title="Campeão da Copa dos Sócios" aria-label="Campeão da Copa dos Sócios">🏆</i>' : ''}<i class="sc-on${c.on ? ' ok' : ''}" aria-hidden="true"></i></span><b>${c.dourada ? '<span class="sc-ouro" title="Campeão do Mês">🥇</span> ' : ''}${esc(pos === 0 ? 'Você' : c.nome)}${c.apoiador ? ` <i class="sc-star" title="Sócio da Calçada">${seloEstrela()}</i>` : ''}${c.doador ? ` <i class="sc-heart" title="Sócio de coração">${seloCoracao(c.doador)}</i>` : ''}</b><small>${esc(salaSub(c, pos))}</small></div>`;
   }).join('') + '<div class="sala-centro" aria-hidden="true"></div>';
   $$('#salaMesa .vazia').forEach(b => b.addEventListener('click', () => mandar({ t: 'sentar', cadeira: Number(b.dataset.p) })));
   const vazias = v.cad.filter(c => !c).length;
@@ -9762,7 +9804,7 @@ const CQKEY = 'dmz-conquistas-vistas', AVMKEY = 'dmz-avatar-montado';
 const minusc = s => s && /^[A-ZÀ-Ú][a-zà-ú ]/.test(s) ? s[0].toLowerCase() + s.slice(1) : s || '';
 // Nome do prêmio dentro de uma frase: "tapioca", "X-caboquinho", "a mesa Ponta Negra"
 // 3.41 (o dono viu "vitória-régia" com v minúsculo): nome de mesa é nome próprio e fica como é ("a mesa Vitória-régia")
-const premioFrase = p => p.tipo === 'mesa' ? 'a mesa ' + p.nome : minusc(p.nome);
+const premioFrase = p => p.tipo === 'mesa' ? 'a mesa ' + p.nome : p.tipo === 'pedra' ? 'a pedra ' + p.nome : minusc(p.nome);
 const juntaE = l => l.length < 2 ? (l[0] || '') : l.slice(0, -1).join(', ') + ' e ' + l[l.length - 1];
 const conquistaDe = id => CONQUISTAS.find(x => x.id === id);
 function progressoConquista(c, t) { if (c.campo === 'copa357') return copaGanha() ? 1 : 0; if (c.campo === 'sextas') return Math.min(c.meta, sextasSeguidas(t)); return Math.min(c.meta, (t || loadHist())[c.campo] || 0); }
@@ -9816,6 +9858,7 @@ function premiosDe(id) {
   const l = [];
   ORDEM_PARTES.forEach(k => PARTES[k].forEach((p, i) => { if (p.req === id) l.push({ tipo: 'parte', k, i, nome: p.n }); }));
   // as mesas não são mais prêmio: estão todas liberadas
+  PEDRAS.forEach(pd => { if (pd.req === id) l.push({ tipo: 'pedra', id: pd.id, nome: pd.nome }); });   // 13/11
   return l;
 }
 
@@ -9834,6 +9877,7 @@ function marcarMesa() {
     if (m.id === 'madeira') r.removeAttribute('data-mesa'); else if (r.getAttribute('data-mesa') !== m.id) r.setAttribute('data-mesa', m.id);
   } catch (e) {}
 }
+try { setTimeout(() => { try { aplicarPedra(); } catch (e) {} }, 0); } catch (e) {}   // 13/11: a pedra escolhida (depois que tudo carregou)
 function aplicarMesa() {
   try {
     marcarMesa();
@@ -9974,6 +10018,7 @@ function roupaURI(v, bg) {
 function iconePremio(p, d) {
   if (!p) return '';
   if (p.tipo === 'mesa') { const m = MESAS.find(x => x.id === p.id); return `<span class="es-msw" style="background:${fundoMesa(m)}"></span>`; }
+  if (p.tipo === 'pedra') return pedraPrevSVG(PEDRAS.find(x => x.id === p.id));
   if (p.k === 'mao') return `<img src="${maoURI(PARTES.mao[p.i].v, '#f3d29b')}" alt="">`;
   if (p.k === 'roupa') return `<img src="${roupaURI(PARTES.roupa[p.i].v, '#f3d29b')}" alt="">`;
   return `<img src="${avatarURI(avatarDe(codigoAvatar(Object.assign({}, d || esBase(), { [p.k]: p.i }))))}" alt="">`;
@@ -10057,6 +10102,7 @@ function renderEstilo() {
   if (!esDraft) esDraft = esBase();
   const code = codigoAvatar(esDraft);
   $('#esPrev').src = avatarURI(avatarDe(code));
+  try { renderPedras(); } catch (e) {}   // 13/11
   $('#esTabs').innerHTML = ABAS.map(t => `<button type="button" role="tab" aria-selected="${t.id === esAba}" data-aba="${t.id}">${t.nome}</button>`).join('');
   const aba = ABAS.find(t => t.id === esAba) || ABAS[1];
   $('#esOps').innerHTML = aba.partes.map(k => {
@@ -10087,6 +10133,92 @@ function renderMesas(el) {
       + (livre ? '' : `<small>${m.plano || mesaDoSocio(m) ? 'Sócio' : esc(conquistaDe(m.req).curto)}</small><i aria-hidden="true">${LOCK_SVG}</i>`) + '</button>';
   }).join('');
 }
+// ---- Pedras (13/11, pedido do dono: modelos novos, só para os sócios da Calçada; quem não é sócio joga com a Marfim) ----
+const PDRKEY = 'dmz-pedra';
+const PEDRAS = [
+  { id: 'marfim', nome: 'Marfim', c1: '#f6eedf', c2: '#e4d5bb', sh: '#cbb895', pinta: 'escura' },
+  { id: 'preta', nome: 'Preta de boteco', c1: '#2b2724', c2: '#141110', sh: '#4a4440', pinta: 'clara', plano: true },
+  { id: 'madeira', nome: 'Madeira de lei', c1: '#b47a44', c2: '#7c4e27', sh: '#5e3a1c', pinta: 'clara', plano: true },
+  { id: 'guarana', nome: 'Guaraná', c1: '#e8962a', c2: '#ad5c12', sh: '#7a3f0a', pinta: 'clara', plano: true },
+  { id: 'mata', nome: 'Verde mata', c1: '#2f7a44', c2: '#1b4f2b', sh: '#143a20', pinta: 'clara', plano: true },
+  { id: 'acai', nome: 'Açaí', c1: '#5a2560', c2: '#2e0f33', sh: '#24102a', pinta: 'clara', plano: true },
+  { id: 'rionegro', nome: 'Rio Negro', c1: '#2a2017', c2: '#120c08', sh: '#3a2c20', pinta: 'ouro', plano: true },
+  { id: 'perola', nome: 'Madrepérola', c1: '#f7f2f7', c2: '#dfe6f1', sh: '#c7c3d6', pinta: 'escura', plano: true },
+  { id: 'parintins', nome: 'Parintins', c1: '#d23a2f', c2: '#1f4fb0', sh: '#4a2f5a', pinta: 'clara', plano: true, meio: true },
+  { id: 'ouro', nome: 'Dourada', c1: '#f0cf6a', c2: '#c08f2c', sh: '#8c6420', pinta: 'escura', campeao: true }   // 13/11 (dono): só do Campeão do Mês
+];
+function pedraLivre(pd) { return !!pd && (pd.campeao ? souAdmin() || souCampeaoMes() : !pd.plano || souAdmin() || temPlano()); }
+// 13/11 (pedido do dono): Campeão do Mês. O sócio mais bem colocado do ranking do mês fica com a Dourada no mês seguinte.
+// O servidor diz quem é (GET /ranking/campeao); o app guarda com o mês em que vale.
+const CAMPKEY = 'dmz-campeao';
+const mesManaus = t => 'M' + new Date((t || Date.now()) - 4 * 3600000).toISOString().slice(0, 7);
+const NOME_MES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const nomeMes = per => NOME_MES[Number(String(per || '').slice(6, 8)) - 1] || '';
+function campeaoGuardado() { try { return JSON.parse(store.get(CAMPKEY) || 'null'); } catch (e) { return null; } }
+function souCampeaoMes() { const c = campeaoGuardado(); return !!(c && c.eu && c.vale === mesManaus()); }   // (souCampeao é o da Copa)
+function campeaoAnotar(c) {
+  if (!c) { store.del(CAMPKEY); return; }
+  const antes = campeaoGuardado(), novo = { eu: !!c.eu, nome: c.nome || '', de: c.mes || '', vale: mesManaus() };
+  store.set(CAMPKEY, JSON.stringify(novo));
+  if (novo.eu && !(antes && antes.eu && antes.vale === novo.vale)) setTimeout(campeaoParabens, 1500);   // virou campeão agora
+  if (!novo.eu && store.get(PDRKEY) === 'ouro') { store.del(PDRKEY); aplicarPedra(); }
+}
+async function campeaoBuscar() {
+  try {
+    const r = await fetch(CONFIG.api + '/ranking/campeao?aparelho=' + encodeURIComponent(meuId()), { cache: 'no-store' });
+    if (!r.ok) return; const j = await r.json(); campeaoAnotar(j.campeao ? j.campeao : null); aplicarPedra();
+  } catch (e) {}
+}
+function campeaoParabens() {
+  if (sheetKind) { setTimeout(campeaoParabens, 4000); return; }
+  const c = campeaoGuardado(); if (!c || !c.eu) return;
+  track('campeao-mes-parabens');
+  openSheet('info', `<div class="rc-pedras" aria-hidden="true" style="display:flex;justify-content:center">${pedraPrevSVG(PEDRAS.find(x => x.id === 'ouro')).replace('<svg ', '<svg style="width:150px;height:auto" ')}</div>
+    <p class="eyebrow">🥇 Campeão do Mês</p><h2 id="sheetTitle">Você foi o campeão de ${esc(nomeMes(c.de))}!</h2>
+    <p class="note">Nenhum sócio fez mais pontos que você no ranking de ${esc(nomeMes(c.de))}. Em ${esc(nomeMes(c.vale))}, a pedra Dourada é só sua: na mesa online, as pedras que você jogar caem douradas na tela de todo mundo, com o selo 🥇 ao lado do seu nome.</p>
+    <button type="button" class="primary" id="campUsar">Jogar com a Dourada</button>
+    <button type="button" class="secondary" id="campDepois" style="width:100%;margin-top:10px">Depois</button>`);
+  $('#campUsar').addEventListener('click', () => { store.set(PDRKEY, 'ouro'); aplicarPedra(); closeSheet(); toast('Pedra Dourada na mesa!'); });
+  $('#campDepois').addEventListener('click', closeSheet);
+}
+setTimeout(() => { try { campeaoBuscar(); } catch (e) {} }, 4000);
+function pedraAtual() { const pd = PEDRAS.find(x => x.id === store.get(PDRKEY)); return pd && pedraLivre(pd) ? pd : PEDRAS[0]; }
+function aplicarPedra() { const pd = pedraAtual(); if (pd.id === 'marfim') delete document.documentElement.dataset.pedra; else document.documentElement.dataset.pedra = pd.id; }
+let pedraPrevN = 0;
+// a prévia de um modelo (com as cores dele mesmo, independente do que está em uso): pedra 6 e 3 deitada
+function pedraPrevSVG(pd) {
+  if (!pd) return '';
+  const n = ++pedraPrevN, g = `pv${n}`, pip = pd.pinta === 'clara' ? 'url(#pipClara)' : pd.pinta === 'ouro' ? 'url(#ping)' : 'url(#pipg)';
+  const corpo = pd.meio ? `<linearGradient id="${g}" x1="0" y1="0" x2="1" y2="0"><stop offset=".5" stop-color="${pd.c1}"/><stop offset=".5" stop-color="${pd.c2}"/></linearGradient>`
+    : `<linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${pd.c1}"/><stop offset="1" stop-color="${pd.c2}"/></linearGradient>`;
+  let s = `<svg viewBox="-0.04 -0.04 2.12 1.18" aria-hidden="true"><defs>${corpo}</defs>`
+    + `<rect x=".035" y=".08" width="1.93" height=".93" rx=".13" fill="${pd.sh}" opacity=".85"/>`
+    + `<rect x=".035" y=".035" width="1.93" height=".93" rx=".13" fill="url(#${g})" stroke="${pd.sh}" stroke-width=".03"/>`
+    + (pd.id === 'madeira' ? `<rect x=".035" y=".035" width="1.93" height=".93" rx=".13" fill="url(#pedVeio)"/>` : '')
+    + `<rect x=".07" y=".07" width="1.86" height=".86" rx=".1" fill="none" stroke="rgba(255,255,255,.55)" stroke-width=".028"/>`
+    + `<line x1="1" y1=".15" x2="1" y2=".85" stroke="${pd.pinta === 'escura' ? 'rgba(70,52,30,.42)' : 'rgba(0,0,0,.6)'}" stroke-width=".034"/><line x1="1.022" y1=".17" x2="1.022" y2=".83" stroke="rgba(255,255,255,.7)" stroke-width=".02"/>`;
+  for (const [hx, v] of [[0, 6], [1, 3]]) for (const [px, py] of PIPS[v]) s += `<circle cx="${(hx + py).toFixed(3)}" cy="${px.toFixed(3)}" r=".108" fill="${pip}"/>`;
+  return s + `<circle cx="1" cy=".5" r=".072" fill="url(#ping)"/></svg>`;
+}
+function renderPedras() {
+  const el = $('#esPedras'); if (!el) return;
+  const atual = pedraAtual().id;
+  el.innerHTML = PEDRAS.map(pd => {
+    const livre = pedraLivre(pd);
+    return `<button type="button" class="ap-cor${livre ? '' : ' trancado'}" role="radio" aria-checked="${pd.id === atual}" data-pd="${pd.id}" aria-label="Pedra ${esc(pd.nome)}${livre ? '' : ', ainda não liberada'}">`
+      + pedraPrevSVG(pd) + `<span>${esc(pd.nome)}</span>` + (livre ? '' : `<small>${pd.campeao ? '🥇 Campeão do mês' : 'Sócio'}</small><i aria-hidden="true">${LOCK_SVG}</i>`) + '</button>';
+  }).join('');
+}
+$('#esPedras').addEventListener('click', e => {
+  const b = e.target.closest('[data-pd]'); if (!b) return;
+  const pd = PEDRAS.find(x => x.id === b.dataset.pd); if (!pd) return;
+  if (!pedraLivre(pd)) {
+    toast(pd.campeao ? 'A Dourada é do Campeão do Mês: o sócio que fizer mais pontos no ranking do mês joga com ela o mês seguinte inteiro.' + (mesManaus() < 'M2026-12' ? ' A primeira sai em 1º de dezembro.' : '') : `${pd.nome} é uma pedra dos sócios. Seja Sócio da Calçada e jogue com todos os modelos!`);
+    track('pedra-trancada-' + pd.id); return;
+  }
+  store.set(PDRKEY, pd.id); aplicarPedra(); renderPedras(); track('pedra-' + pd.id);
+  toast(`Pedra ${pd.nome} na mesa!`);
+});
 function renderConquistas() {
   const t = loadHist(), base = esDraft || esBase();
   const lista = CONQUISTAS.filter(conquistaVisivel), feitas = lista.filter(c => progressoConquista(c, t) >= c.meta).length;
@@ -13868,6 +14000,12 @@ function rkDesenhar() {
   const rei = d.rei, reiBox = $('#rkRei');
   reiBox.hidden = !rei;
   if (rei) reiBox.innerHTML = `<span class="rk-face">${rkRosto(rei.av, rei.nome, rei.foto)}</span><span class="rk-rei-tx"><small>👑 Rei da Calçada</small><b>${esc(rei.nome)}${rei.eu ? ' <small class="rk-voce">você</small>' : ''}</b><small>${rei.eu ? 'Você foi o 1º da semana passada: está com a coroa na mesa online até domingo.' : '1º da semana passada · está com a coroa na mesa online até domingo'}</small></span>`;
+  // 13/11: Campeão do Mês (o sócio que mais pontuou no mês passado fica com a Dourada)
+  let cb = $('#rkCamp');
+  if (!cb) { reiBox.insertAdjacentHTML('afterend', '<div class="rk-rei rk-camp" id="rkCamp" hidden></div>'); cb = $('#rkCamp'); }
+  const cp = d.campeao; cb.hidden = !cp;
+  if (cp) { cb.innerHTML = `<span class="rk-face">${rkRosto(cp.av, cp.nome, cp.foto)}</span><span class="rk-rei-tx"><small>🥇 Campeão de ${esc(nomeMes(cp.mes))}</small><b>${esc(cp.nome)}${cp.eu ? ' <small class="rk-voce">você</small>' : ''}</b><small>${cp.eu ? 'A pedra Dourada é sua até o fim do mês.' : 'Joga com a pedra Dourada até o fim do mês'}</small></span>`; try { campeaoAnotar(cp); } catch (e) {} }
+  else if (d.campeao === null) { try { campeaoAnotar(null); } catch (e) {} }
   // 03/11: a coroa é só de sócio. Quem ficou em 1º sem ser sócio fica sabendo que seria o Rei.
   let qr = $('#rkQuaseRei');
   if (!qr) { reiBox.insertAdjacentHTML('afterend', '<div class="rk-quase" id="rkQuaseRei" hidden></div>'); qr = $('#rkQuaseRei'); }
@@ -14324,7 +14462,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('mess
 // mudou). No celular novo, o código do plano ("Já apoio em outro celular") traz o tempo de Apoiador, o selo e o progresso.
 // 13/11 (o dono perdeu a foto ao reinstalar): a foto do perfil também entra na cópia
 const NUVEM_CHAVES = ['dmz-perfil', 'dmz-historico', 'dmz-nivel', 'dmz-missoes', 'dmz-avatar-montado', 'dmz-conquistas-vistas',
-  'dmz-mesa-cor', 'dmz-copa357', 'dmz-laterais', 'dmz-torneio', 'dmz-mesas-rodizio', 'dmz-foto'];
+  'dmz-mesa-cor', 'dmz-copa357', 'dmz-laterais', 'dmz-torneio', 'dmz-mesas-rodizio', 'dmz-foto', 'dmz-pedra'];
 const NUVEM_KEY = 'dmz-nuvem', NUVEM_RESTAURADO = 'dmz-nuvem-restaurado';
 function nuvemPode() {
   return !!CONFIG.api && typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !!profile
@@ -14884,7 +15022,8 @@ function tileSVG(p, cls, shadow) {
   // 10/11 (o dono: "a pedra precisa ser igual a uma de verdade"): a espessura da pedra aparece embaixo, a quina tem
   // brilho, o risco do meio é gravado (sombra e luz), as pintas são furos e o pino do meio é de latão
   s += `<rect x="${f2(x0 + g)}" y="${f2(y0 + g + .045)}" width="${f2(w - 2 * g)}" height="${f2(h - 2 * g)}" rx=".13" class="t-lado"/>`;
-  s += `<rect x="${f2(x0 + g)}" y="${f2(y0 + g)}" width="${f2(w - 2 * g)}" height="${f2(h - 2 * g)}" rx=".13" class="t-body"/>`;
+  s += `<rect x="${f2(x0 + g)}" y="${f2(y0 + g)}" width="${f2(w - 2 * g)}" height="${f2(h - 2 * g)}" rx=".13" class="t-body${p.o === 'h' ? ' t-bh' : ''}"/>`;
+  s += `<rect x="${f2(x0 + g)}" y="${f2(y0 + g)}" width="${f2(w - 2 * g)}" height="${f2(h - 2 * g)}" rx=".13" class="t-veio"/>`;   // 13/11: veio da Madeira de lei
   s += `<rect x="${f2(x0 + g + .035)}" y="${f2(y0 + g + .035)}" width="${f2(w - 2 * g - .07)}" height="${f2(h - 2 * g - .07)}" rx=".1" class="t-brilho"/>`;
   if (p.o === 'h') s += `<line x1="${f2(p.x)}" y1="${f2(y0 + .15)}" x2="${f2(p.x)}" y2="${f2(y0 + h - .15)}" class="t-div"/><line x1="${f2(p.x + .022)}" y1="${f2(y0 + .17)}" x2="${f2(p.x + .022)}" y2="${f2(y0 + h - .17)}" class="t-div2"/>`;
   else s += `<line x1="${f2(x0 + .15)}" y1="${f2(p.y)}" x2="${f2(x0 + w - .15)}" y2="${f2(p.y)}" class="t-div"/><line x1="${f2(x0 + .17)}" y1="${f2(p.y + .022)}" x2="${f2(x0 + w - .17)}" y2="${f2(p.y + .022)}" class="t-div2"/>`;
@@ -14953,11 +15092,15 @@ function findPlaced(key) {
   for (const k of ['U', 'D']) for (const t of ((G.bucho && G.bucho[k]) || [])) if (tkey([t.n, t.f]) === key) return [t.n, t.f];
   return null;
 }
+// 13/11: as pedras que o Campeão do Mês jogou nesta mão (na mesa online, ficam douradas para todos)
+const OURO = new Set();
+function cadOnline(p) { try { return ON.vista && ON.vista.cad ? ON.vista.cad[(p + ON.vista.minha + 4) % 4] : null; } catch (e) { return null; } }
 function announce() {
   if (mode === 'off') { trackOffline(); saveGame(); }
   setFeed();
   for (const ev of G.events || []) {
     if (ev.type === 'play') {
+      if (mode === 'on') { if ((G.chain || []).length <= 1) OURO.clear(); const c = cadOnline(ev.p); if (c && c.dourada) OURO.add(tkey(ev.t)); } else OURO.clear();
       freshKey = tkey(ev.t);
       const placed = findPlaced(freshKey);
       if (placed) pendingFly = { key: freshKey, p: ev.p, v1: placed[0], v2: placed[1] };
@@ -15133,7 +15276,7 @@ function renderBoard() {
     const ev = (G.events || []).find(e => e.type === 'start');
     html += `<text x="0" y=".15" class="emptymsg">${esc(G.phase === 'play' && ev ? describe(ev) : 'Mesa vazia')}</text>`;
   }
-  const tcls = k => ['tk' + k, k === G.lastKey ? 'last' : '', flying && flying.key === k ? 'incoming' : (k === freshKey && !pendingFly ? 'fresh' : '')].join(' ');
+  const tcls = k => ['tk' + k, k === G.lastKey ? 'last' : '', flying && flying.key === k ? 'incoming' : (k === freshKey && !pendingFly ? 'fresh' : ''), mode === 'on' && OURO.has(k) ? 'ouro' : ''].join(' ');
   G.chain.forEach((c, i) => { html += tileSVG(pos[i], tcls(tkey([c.a, c.b]))); });
   bTiles.forEach(b => { html += tileSVG(b.pos, tcls(b.key)); });
   freshKey = null;
@@ -15548,7 +15691,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.54.9-2198b1d4';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.55.0-20a5066f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

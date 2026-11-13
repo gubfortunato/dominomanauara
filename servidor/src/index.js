@@ -640,6 +640,7 @@ export default {
       if (url.pathname === '/presenca' && req.method === 'POST') return await presenca.avisar(req, env, origin, H);
       // Ranking da calçada (3.29)
       if (url.pathname === '/ranking' && req.method === 'GET') return await rk.ranking(req, env, origin, H, url);
+      if (url.pathname === '/ranking/campeao' && req.method === 'GET') return await rk.campeaoRota(req, env, origin, H, url);   // 13/11: Campeão do Mês
       if (url.pathname === '/ranking/fora' && req.method === 'POST') return await rk.sairDoRanking(req, env, origin, H);
       if (url.pathname === '/copa' && req.method === 'GET') return await copaInfo(req, env, origin, H, url);   // 10/11: Copa dos Sócios
       if (url.pathname === '/dono/presenca' && req.method === 'GET') return await presenca.donoPresenca(req, env, origin, H);
