@@ -234,13 +234,14 @@ a.card{text-decoration:none}
 .ends.hit{color:var(--wood-2);background:var(--glow);border-color:var(--glow)}
 
 /* Peças (SVG) */
-.t-body{fill:url(#bone);stroke:var(--tile-shade);stroke-width:.03}
+.t-body{fill:url(#bone);stroke:var(--pedra-sh,var(--tile-shade));stroke-width:.03}
+.t-veio{fill:none;pointer-events:none}
 .t-shadow{fill:var(--shadow)}
 .t-div{stroke:var(--tile-shade);stroke-width:.04}
 .t-pip{fill:var(--pip)}
 .t-pin{fill:var(--pin)}
 /* 10/11: pedra de verdade — espessura, quina polida, risco gravado, furo nas pintas e pino de latão */
-.t-lado{fill:color-mix(in srgb,var(--tile-shade) 78%,#5a4630)}
+.t-lado{fill:color-mix(in srgb,var(--pedra-sh,var(--tile-shade)) 78%,#5a4630)}
 .t-brilho{fill:none;stroke:rgba(255,255,255,.6);stroke-width:.028}
 .t-div{stroke:rgba(70,52,30,.42);stroke-width:.034;stroke-linecap:round}
 .t-div2{stroke:rgba(255,255,255,.75);stroke-width:.02;stroke-linecap:round}
@@ -251,8 +252,27 @@ a.card{text-decoration:none}
 .b-dot{fill:var(--back-dot)}
 .bstop1{stop-color:var(--back-1)}
 .bstop2{stop-color:var(--back-2)}
-.stop1{stop-color:var(--tile)}
-.stop2{stop-color:var(--tile-2)}
+.stop1{stop-color:var(--pedra-1,var(--tile))}
+.stop2{stop-color:var(--pedra-2,var(--tile-2))}
+/* 13/11 (pedido do dono): modelos de pedras, ganhos nas conquistas (sócio libera todos na hora). Cada um vê o seu. */
+html[data-pedra="preta"]{--pedra-1:#2b2724;--pedra-2:#141110;--pedra-sh:#4a4440}
+html[data-pedra="madeira"]{--pedra-1:#b47a44;--pedra-2:#7c4e27;--pedra-sh:#5e3a1c}
+html[data-pedra="acai"]{--pedra-1:#5a2560;--pedra-2:#2e0f33;--pedra-sh:#24102a}
+html[data-pedra="guarana"]{--pedra-1:#d2402f;--pedra-2:#9a2219;--pedra-sh:#6e1810}
+html[data-pedra="rionegro"]{--pedra-1:#2a2017;--pedra-2:#120c08;--pedra-sh:#3a2c20}
+html[data-pedra="mata"]{--pedra-1:#2f7a44;--pedra-2:#1b4f2b;--pedra-sh:#143a20}
+html[data-pedra="ouro"]{--pedra-1:#f0cf6a;--pedra-2:#c08f2c;--pedra-sh:#8c6420}
+html[data-pedra="perola"]{--pedra-1:#f7f2f7;--pedra-2:#dfe6f1;--pedra-sh:#c7c3d6}
+html[data-pedra="parintins"]{--pedra-sh:#4a2f5a}
+html[data-pedra="parintins"] .t-body{fill:url(#pedParV)}
+html[data-pedra="parintins"] .t-body.t-bh{fill:url(#pedParH)}
+html[data-pedra="madeira"] .t-veio{fill:url(#pedVeio)}
+:is(html[data-pedra="preta"],html[data-pedra="madeira"],html[data-pedra="acai"],html[data-pedra="guarana"],html[data-pedra="mata"],html[data-pedra="parintins"]) .t-pip{fill:url(#pipClara)}
+html[data-pedra="rionegro"] .t-pip{fill:url(#ping)}
+:is(html[data-pedra="preta"],html[data-pedra="acai"],html[data-pedra="rionegro"],html[data-pedra="mata"]) .t-div{stroke:rgba(0,0,0,.6)}
+.ap-cores.es-pedras{grid-template-columns:repeat(3,minmax(0,1fr))}
+.es-pedras .ap-cor{gap:6px;padding:12px 4px 10px;min-width:0}
+.es-pedras svg{width:min(78px,100%);height:auto;display:block}
 .last .t-body{stroke:var(--glow);stroke-width:.08}
 .fresh{animation:drop .35s ease-out;transform-box:fill-box;transform-origin:center}
 .incoming{opacity:0}
@@ -2961,6 +2981,11 @@ body.papo-aberto{overflow:hidden}
     <radialGradient id="pipg" cx=".62" cy=".64" r=".62">
       <stop offset="0" stop-color="#4a3a2e"/><stop offset=".55" stop-color="#1b130d"/><stop offset="1" stop-color="#050302"/>
     </radialGradient>
+    <!-- 13/11: modelos de pedras -->
+    <radialGradient id="pipClara" cx=".38" cy=".36" r=".7"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f1e8d6"/><stop offset="1" stop-color="#bfb3a0"/></radialGradient>
+    <linearGradient id="pedParV" x1="0" y1="0" x2="0" y2="1"><stop offset=".5" stop-color="#d23a2f"/><stop offset=".5" stop-color="#1f4fb0"/></linearGradient>
+    <linearGradient id="pedParH" x1="0" y1="0" x2="1" y2="0"><stop offset=".5" stop-color="#d23a2f"/><stop offset=".5" stop-color="#1f4fb0"/></linearGradient>
+    <pattern id="pedVeio" width=".5" height=".14" patternUnits="userSpaceOnUse"><path d="M0 .07q.12-.03.25 0t.25 0" fill="none" stroke="rgba(60,30,10,.35)" stroke-width=".012"/></pattern>
     <radialGradient id="ping" cx=".36" cy=".34" r=".72">
       <stop offset="0" stop-color="#fff0c2"/><stop offset=".35" stop-color="#e2b764"/><stop offset=".8" stop-color="#a87a33"/><stop offset="1" stop-color="#6e4d1c"/>
     </radialGradient>
@@ -3020,7 +3045,7 @@ body.papo-aberto{overflow:hidden}
       <span class="flabel">Sua cara na mesa</span>
       <button type="button" class="rulescard estilocard" id="goEstilo" hidden>
         <span class="rc-ic es-ic" id="goEstiloFace" aria-hidden="true"></span>
-        <span class="rc-tx"><b>Personalizar</b><small id="goEstiloTx">Avatar, mesa e conquistas</small></span>
+        <span class="rc-tx"><b>Personalizar</b><small id="goEstiloTx">Avatar, mesa, pedras e conquistas</small></span>
         <span class="rc-go" aria-hidden="true">›</span>
       </button>
       <div class="avatars" id="avatarGrid" role="radiogroup" aria-label="Escolha sua foto ou um avatar"></div>
@@ -3301,9 +3326,14 @@ body.papo-aberto{overflow:hidden}
       <div class="ap-cores es-mesas" id="esMesas" role="radiogroup" aria-label="Mesa"></div>
     </div>
     <div class="es-sec">
+      <span class="ap-k">Suas pedras</span>
+      <div class="ap-cores es-pedras" id="esPedras" role="radiogroup" aria-label="Pedras"></div>
+      <p class="note">Cada modelo sai numa conquista. Sócio da Calçada usa todos na hora. Na mesa online, cada um vê as pedras do seu jeito.</p>
+    </div>
+    <div class="es-sec">
       <span class="ap-k">Conquistas <small id="esConqN"></small></span>
       <ul class="es-conq" id="esConq"></ul>
-      <p class="note">Valem partidas offline e na mesa online. Cada conquista libera um prêmio de Manaus para o avatar: comidas, camisas e bichos da região.</p>
+      <p class="note">Valem partidas offline e na mesa online. Cada conquista libera um prêmio de Manaus para o avatar (comidas, camisas e bichos da região) e muitas liberam também um modelo de pedra.</p>
     </div>
   </section>
 
@@ -4153,6 +4183,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.55.0', data: '13/11/2026', itens: ['Modelos novos de pedras: Preta de boteco, Madeira de lei, Guaraná, Verde mata, Açaí, Rio Negro, Madrepérola, Parintins e Dourada. Cada um sai numa conquista, e o sócio da Calçada usa todos na hora. Escolha em Personalizar.'] },
   { v: '3.54.9', data: '13/11/2026', itens: ['Mesa com os amigos: um aviso no botão do Papo de mesa conta que agora dá para mandar (sócios) e ouvir áudio da turma.'] },
   { v: '3.54.8', data: '13/11/2026', itens: ['Mesa nova para os sócios: Onça-pintada, deitada no galho no meio da mata.', 'Mesa nova para os sócios: Curumins, dois meninos na trilha da mata, perto do rio.'] },
   { v: '3.54.7', data: '13/11/2026', itens: ['Mesa nova para os sócios: Palacete Provincial, a antiga sede da Província do Amazonas, hoje casa de museus, com a fachada vermelha e amarela e as duas estátuas de soldado na porta.'] },
@@ -9762,7 +9793,7 @@ const CQKEY = 'dmz-conquistas-vistas', AVMKEY = 'dmz-avatar-montado';
 const minusc = s => s && /^[A-ZÀ-Ú][a-zà-ú ]/.test(s) ? s[0].toLowerCase() + s.slice(1) : s || '';
 // Nome do prêmio dentro de uma frase: "tapioca", "X-caboquinho", "a mesa Ponta Negra"
 // 3.41 (o dono viu "vitória-régia" com v minúsculo): nome de mesa é nome próprio e fica como é ("a mesa Vitória-régia")
-const premioFrase = p => p.tipo === 'mesa' ? 'a mesa ' + p.nome : minusc(p.nome);
+const premioFrase = p => p.tipo === 'mesa' ? 'a mesa ' + p.nome : p.tipo === 'pedra' ? 'a pedra ' + p.nome : minusc(p.nome);
 const juntaE = l => l.length < 2 ? (l[0] || '') : l.slice(0, -1).join(', ') + ' e ' + l[l.length - 1];
 const conquistaDe = id => CONQUISTAS.find(x => x.id === id);
 function progressoConquista(c, t) { if (c.campo === 'copa357') return copaGanha() ? 1 : 0; if (c.campo === 'sextas') return Math.min(c.meta, sextasSeguidas(t)); return Math.min(c.meta, (t || loadHist())[c.campo] || 0); }
@@ -9816,6 +9847,7 @@ function premiosDe(id) {
   const l = [];
   ORDEM_PARTES.forEach(k => PARTES[k].forEach((p, i) => { if (p.req === id) l.push({ tipo: 'parte', k, i, nome: p.n }); }));
   // as mesas não são mais prêmio: estão todas liberadas
+  PEDRAS.forEach(pd => { if (pd.req === id) l.push({ tipo: 'pedra', id: pd.id, nome: pd.nome }); });   // 13/11
   return l;
 }
 
@@ -9834,6 +9866,7 @@ function marcarMesa() {
     if (m.id === 'madeira') r.removeAttribute('data-mesa'); else if (r.getAttribute('data-mesa') !== m.id) r.setAttribute('data-mesa', m.id);
   } catch (e) {}
 }
+try { setTimeout(() => { try { aplicarPedra(); } catch (e) {} }, 0); } catch (e) {}   // 13/11: a pedra escolhida (depois que tudo carregou)
 function aplicarMesa() {
   try {
     marcarMesa();
@@ -9974,6 +10007,7 @@ function roupaURI(v, bg) {
 function iconePremio(p, d) {
   if (!p) return '';
   if (p.tipo === 'mesa') { const m = MESAS.find(x => x.id === p.id); return `<span class="es-msw" style="background:${fundoMesa(m)}"></span>`; }
+  if (p.tipo === 'pedra') return pedraPrevSVG(PEDRAS.find(x => x.id === p.id));
   if (p.k === 'mao') return `<img src="${maoURI(PARTES.mao[p.i].v, '#f3d29b')}" alt="">`;
   if (p.k === 'roupa') return `<img src="${roupaURI(PARTES.roupa[p.i].v, '#f3d29b')}" alt="">`;
   return `<img src="${avatarURI(avatarDe(codigoAvatar(Object.assign({}, d || esBase(), { [p.k]: p.i }))))}" alt="">`;
@@ -10057,6 +10091,7 @@ function renderEstilo() {
   if (!esDraft) esDraft = esBase();
   const code = codigoAvatar(esDraft);
   $('#esPrev').src = avatarURI(avatarDe(code));
+  try { renderPedras(); } catch (e) {}   // 13/11
   $('#esTabs').innerHTML = ABAS.map(t => `<button type="button" role="tab" aria-selected="${t.id === esAba}" data-aba="${t.id}">${t.nome}</button>`).join('');
   const aba = ABAS.find(t => t.id === esAba) || ABAS[1];
   $('#esOps').innerHTML = aba.partes.map(k => {
@@ -10087,6 +10122,59 @@ function renderMesas(el) {
       + (livre ? '' : `<small>${m.plano || mesaDoSocio(m) ? 'Sócio' : esc(conquistaDe(m.req).curto)}</small><i aria-hidden="true">${LOCK_SVG}</i>`) + '</button>';
   }).join('');
 }
+// ---- Pedras (13/11, pedido do dono: modelos novos, ganhos nas conquistas; o sócio libera todos na hora) ----
+const PDRKEY = 'dmz-pedra';
+const PEDRAS = [
+  { id: 'marfim', nome: 'Marfim', c1: '#f6eedf', c2: '#e4d5bb', sh: '#cbb895', pinta: 'escura' },
+  { id: 'preta', nome: 'Preta de boteco', c1: '#2b2724', c2: '#141110', sh: '#4a4440', pinta: 'clara', req: 'galo1' },
+  { id: 'madeira', nome: 'Madeira de lei', c1: '#b47a44', c2: '#7c4e27', sh: '#5e3a1c', pinta: 'clara', req: 'vit5' },
+  { id: 'guarana', nome: 'Guaraná', c1: '#d2402f', c2: '#9a2219', sh: '#6e1810', pinta: 'clara', req: 'bat10' },
+  { id: 'mata', nome: 'Verde mata', c1: '#2f7a44', c2: '#1b4f2b', sh: '#143a20', pinta: 'clara', req: 'par25' },
+  { id: 'acai', nome: 'Açaí', c1: '#5a2560', c2: '#2e0f33', sh: '#24102a', pinta: 'clara', req: 'jogo5' },
+  { id: 'rionegro', nome: 'Rio Negro', c1: '#2a2017', c2: '#120c08', sh: '#3a2c20', pinta: 'ouro', req: 'galo10' },
+  { id: 'perola', nome: 'Madrepérola', c1: '#f7f2f7', c2: '#dfe6f1', sh: '#c7c3d6', pinta: 'escura', req: 'mis7' },
+  { id: 'parintins', nome: 'Parintins', c1: '#d23a2f', c2: '#1f4fb0', sh: '#4a2f5a', pinta: 'clara', req: 'vit25', meio: true },
+  { id: 'ouro', nome: 'Dourada', c1: '#f0cf6a', c2: '#c08f2c', sh: '#8c6420', pinta: 'escura', req: 'vit50' }
+];
+function pedraLivre(pd) { return !!pd && (!pd.req || souAdmin() || temPlano() || conquistaFeita(pd.req)); }
+function pedraAtual() { const pd = PEDRAS.find(x => x.id === store.get(PDRKEY)); return pd && pedraLivre(pd) ? pd : PEDRAS[0]; }
+function aplicarPedra() { const pd = pedraAtual(); if (pd.id === 'marfim') delete document.documentElement.dataset.pedra; else document.documentElement.dataset.pedra = pd.id; }
+let pedraPrevN = 0;
+// a prévia de um modelo (com as cores dele mesmo, independente do que está em uso): pedra 6 e 3 deitada
+function pedraPrevSVG(pd) {
+  if (!pd) return '';
+  const n = ++pedraPrevN, g = `pv${n}`, pip = pd.pinta === 'clara' ? 'url(#pipClara)' : pd.pinta === 'ouro' ? 'url(#ping)' : 'url(#pipg)';
+  const corpo = pd.meio ? `<linearGradient id="${g}" x1="0" y1="0" x2="1" y2="0"><stop offset=".5" stop-color="${pd.c1}"/><stop offset=".5" stop-color="${pd.c2}"/></linearGradient>`
+    : `<linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${pd.c1}"/><stop offset="1" stop-color="${pd.c2}"/></linearGradient>`;
+  let s = `<svg viewBox="-0.04 -0.04 2.12 1.18" aria-hidden="true"><defs>${corpo}</defs>`
+    + `<rect x=".035" y=".08" width="1.93" height=".93" rx=".13" fill="${pd.sh}" opacity=".85"/>`
+    + `<rect x=".035" y=".035" width="1.93" height=".93" rx=".13" fill="url(#${g})" stroke="${pd.sh}" stroke-width=".03"/>`
+    + (pd.id === 'madeira' ? `<rect x=".035" y=".035" width="1.93" height=".93" rx=".13" fill="url(#pedVeio)"/>` : '')
+    + `<rect x=".07" y=".07" width="1.86" height=".86" rx=".1" fill="none" stroke="rgba(255,255,255,.55)" stroke-width=".028"/>`
+    + `<line x1="1" y1=".15" x2="1" y2=".85" stroke="${pd.pinta === 'escura' ? 'rgba(70,52,30,.42)' : 'rgba(0,0,0,.6)'}" stroke-width=".034"/><line x1="1.022" y1=".17" x2="1.022" y2=".83" stroke="rgba(255,255,255,.7)" stroke-width=".02"/>`;
+  for (const [hx, v] of [[0, 6], [1, 3]]) for (const [px, py] of PIPS[v]) s += `<circle cx="${(hx + py).toFixed(3)}" cy="${px.toFixed(3)}" r=".108" fill="${pip}"/>`;
+  return s + `<circle cx="1" cy=".5" r=".072" fill="url(#ping)"/></svg>`;
+}
+function renderPedras() {
+  const el = $('#esPedras'); if (!el) return;
+  const atual = pedraAtual().id;
+  el.innerHTML = PEDRAS.map(pd => {
+    const livre = pedraLivre(pd), c = pd.req && conquistaDe(pd.req);
+    return `<button type="button" class="ap-cor${livre ? '' : ' trancado'}" role="radio" aria-checked="${pd.id === atual}" data-pd="${pd.id}" aria-label="Pedra ${esc(pd.nome)}${livre ? '' : ', ainda não liberada'}">`
+      + pedraPrevSVG(pd) + `<span>${esc(pd.nome)}</span>` + (livre ? '' : `<small>${esc(c ? c.curto : 'Sócio')}</small><i aria-hidden="true">${LOCK_SVG}</i>`) + '</button>';
+  }).join('');
+}
+$('#esPedras').addEventListener('click', e => {
+  const b = e.target.closest('[data-pd]'); if (!b) return;
+  const pd = PEDRAS.find(x => x.id === b.dataset.pd); if (!pd) return;
+  if (!pedraLivre(pd)) {
+    const c = conquistaDe(pd.req), f = c ? c.meta - progressoConquista(c) : 0;
+    toast(`${pd.nome}: ${c ? minusc(c.tx) : 'conquista'} para liberar${f > 0 && c.meta > 1 ? ` (faltam ${f})` : ''}.${pagamentosAtivos() && !temPlano() ? ' O sócio da Calçada usa na hora.' : ''}`);
+    return;
+  }
+  store.set(PDRKEY, pd.id); aplicarPedra(); renderPedras(); track('pedra-' + pd.id);
+  toast(`Pedra ${pd.nome} na mesa!`);
+});
 function renderConquistas() {
   const t = loadHist(), base = esDraft || esBase();
   const lista = CONQUISTAS.filter(conquistaVisivel), feitas = lista.filter(c => progressoConquista(c, t) >= c.meta).length;
@@ -14324,7 +14412,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('mess
 // mudou). No celular novo, o código do plano ("Já apoio em outro celular") traz o tempo de Apoiador, o selo e o progresso.
 // 13/11 (o dono perdeu a foto ao reinstalar): a foto do perfil também entra na cópia
 const NUVEM_CHAVES = ['dmz-perfil', 'dmz-historico', 'dmz-nivel', 'dmz-missoes', 'dmz-avatar-montado', 'dmz-conquistas-vistas',
-  'dmz-mesa-cor', 'dmz-copa357', 'dmz-laterais', 'dmz-torneio', 'dmz-mesas-rodizio', 'dmz-foto'];
+  'dmz-mesa-cor', 'dmz-copa357', 'dmz-laterais', 'dmz-torneio', 'dmz-mesas-rodizio', 'dmz-foto', 'dmz-pedra'];
 const NUVEM_KEY = 'dmz-nuvem', NUVEM_RESTAURADO = 'dmz-nuvem-restaurado';
 function nuvemPode() {
   return !!CONFIG.api && typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !!profile
@@ -14884,7 +14972,8 @@ function tileSVG(p, cls, shadow) {
   // 10/11 (o dono: "a pedra precisa ser igual a uma de verdade"): a espessura da pedra aparece embaixo, a quina tem
   // brilho, o risco do meio é gravado (sombra e luz), as pintas são furos e o pino do meio é de latão
   s += `<rect x="${f2(x0 + g)}" y="${f2(y0 + g + .045)}" width="${f2(w - 2 * g)}" height="${f2(h - 2 * g)}" rx=".13" class="t-lado"/>`;
-  s += `<rect x="${f2(x0 + g)}" y="${f2(y0 + g)}" width="${f2(w - 2 * g)}" height="${f2(h - 2 * g)}" rx=".13" class="t-body"/>`;
+  s += `<rect x="${f2(x0 + g)}" y="${f2(y0 + g)}" width="${f2(w - 2 * g)}" height="${f2(h - 2 * g)}" rx=".13" class="t-body${p.o === 'h' ? ' t-bh' : ''}"/>`;
+  s += `<rect x="${f2(x0 + g)}" y="${f2(y0 + g)}" width="${f2(w - 2 * g)}" height="${f2(h - 2 * g)}" rx=".13" class="t-veio"/>`;   // 13/11: veio da Madeira de lei
   s += `<rect x="${f2(x0 + g + .035)}" y="${f2(y0 + g + .035)}" width="${f2(w - 2 * g - .07)}" height="${f2(h - 2 * g - .07)}" rx=".1" class="t-brilho"/>`;
   if (p.o === 'h') s += `<line x1="${f2(p.x)}" y1="${f2(y0 + .15)}" x2="${f2(p.x)}" y2="${f2(y0 + h - .15)}" class="t-div"/><line x1="${f2(p.x + .022)}" y1="${f2(y0 + .17)}" x2="${f2(p.x + .022)}" y2="${f2(y0 + h - .17)}" class="t-div2"/>`;
   else s += `<line x1="${f2(x0 + .15)}" y1="${f2(p.y)}" x2="${f2(x0 + w - .15)}" y2="${f2(p.y)}" class="t-div"/><line x1="${f2(x0 + .17)}" y1="${f2(p.y + .022)}" x2="${f2(x0 + w - .17)}" y2="${f2(p.y + .022)}" class="t-div2"/>`;
@@ -15548,7 +15637,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.54.9-2198b1d4';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.55.0-20a5066f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
