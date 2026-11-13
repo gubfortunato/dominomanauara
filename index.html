@@ -2471,7 +2471,11 @@ body.jogo-noite #scrGame .score .meta .pt{opacity:1}
 #scrGame .mesa-noite{position:absolute;inset:0;pointer-events:none;z-index:-1;opacity:.7}
 #scrGame .mesa-noite svg{width:100%;height:100%}
 #scrGame .mesa-noite circle{animation:sxBrilho 3.2s ease-in-out infinite;animation-delay:var(--d)}
-@media (prefers-reduced-motion:reduce){#scrGame .mesa-noite circle{animation:none}}
+#scrGame .mesa-ceu{position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;overflow:hidden;background:linear-gradient(180deg,rgba(14,10,38,.6) 0%,rgba(14,10,38,.32) 36%,rgba(14,10,38,.12) 70%,rgba(14,10,38,.2) 100%)}
+#scrGame .mesa-ceu .mc-est{position:absolute;left:0;top:11%;width:100%;height:38%}
+#scrGame .mesa-ceu .mc-est circle{animation:sxBrilho 3.2s ease-in-out infinite;animation-delay:var(--d)}
+#scrGame .mesa-ceu .mc-lua{position:absolute;top:12%;right:6%;width:64px;height:64px}
+@media (prefers-reduced-motion:reduce){#scrGame .mesa-noite circle,#scrGame .mesa-ceu .mc-est circle{animation:none}}
 #fogos{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60}
 .sx-card{display:block;width:100%;aspect-ratio:4/5;border-radius:16px;background:#1a1130;margin:6px 0 4px}
 .sx-placar{display:grid;gap:8px;padding:14px 16px;border-radius:16px;background:var(--bg-2);border:1px solid var(--line)}
@@ -4129,7 +4133,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.54.3', data: '13/11/2026', itens: ['Sexta da Calçada de cara nova: noite na Calçada (lua, céu estrelado e varal) e na mesa, relógio de quanto falta, Placar da Sexta, fogos no galo, convite para a turma no WhatsApp e, depois das 23h, o resumo da sua noite para compartilhar.', 'Conquista nova para sócios: Boêmio da Calçada (3 Sextas seguidas), com o violão de seresta para o avatar.'] },
+  { v: '3.54.3', data: '13/11/2026', itens: ['Sexta da Calçada de cara nova: noite na Calçada (lua, céu estrelado e varal) e na mesa (lua e estrelas), relógio de quanto falta, Placar da Sexta, fogos no galo, convite para a turma no WhatsApp e, depois das 23h, o resumo da sua noite para compartilhar.', 'Conquista nova para sócios: Boêmio da Calçada (3 Sextas seguidas), com o violão de seresta para o avatar.'] },
   { v: '3.54.2', data: '13/11/2026', itens: ['A turma do bairro agora treina toda noite: quando acha um jeito melhor de jogar, passa a usar nas mesas online.'] },
   { v: '3.54.1', data: '13/11/2026', itens: ['Suporte mais rápido: as respostas às mensagens do Fale com a gente chegam mais depressa aqui no app.'] },
   { v: '3.54.0', data: '12/11/2026', itens: ['Ajuda e suporte, em Mais: as dúvidas mais comuns (código de sócio, plano em outro aparelho, pagamento, partidas grátis, bloqueio, progresso, robô e regras) com a resposta e um botão que resolve.', 'Fale com a gente virou conversa: a resposta do suporte chega aqui no app, em até 48 horas, com aviso no celular.', 'Na sexta da Copa dos Sócios, o cartão da Sexta da Calçada aparece junto do cartão da Copa.', 'Partidas grátis com o número certo em todas as telas: até 19/11 (bônus), 5 por dia na mesa rápida e 2 com os amigos; depois, 3 e 1.'] },
@@ -11649,7 +11653,7 @@ async function sextaPlacarBuscar() {
   return SXP.j;
 }
 function sextaPlacarDesenhar() {
-  const cab = $('#calcSexta') && !$('#calcSexta').hidden ? $('#calcSexta') : document.querySelector('#scrCalcada .aba-cab'); if (!cab) return;
+  const cab = $('#calcNota'); if (!cab) return;   // 13/11 (dono): o placar vem depois das mesas jogando
   let box = $('#sxPlacar');
   const pinta = j => {
     if (!j || !j.dia) { if (box) box.hidden = true; return; }
@@ -11692,6 +11696,15 @@ function mesaNoite() {
     g.insertAdjacentHTML('afterbegin', `<div class="mesa-noite" id="mesaNoite" aria-hidden="true"><svg viewBox="0 0 400 860" preserveAspectRatio="xMidYMid slice">${est}</svg></div>`);
   }
   else if (!on && v) v.remove();
+  // 13/11 (dono): a lua e as estrelas também no céu da mesa (atrás das pedras e dos jogadores)
+  const t = g.querySelector('.table'); let c = $('#mesaCeu');
+  if (on && t && !c) {
+    let e2 = ''; for (let i = 0; i < 26; i++) { const x = (i * 83 + 29) % 400, y = (i * 41 + 11) % 190; e2 += `<circle cx="${x}" cy="${y}" r="${i % 4 ? 1 : 1.6}" fill="#fff6dc" style="--d:${((i * 0.47) % 3).toFixed(2)}s"/>`; }
+    t.insertAdjacentHTML('afterbegin', `<div class="mesa-ceu" id="mesaCeu" aria-hidden="true"><svg class="mc-est" viewBox="0 0 400 190" preserveAspectRatio="xMidYMin slice">${e2}</svg>`
+      + `<svg class="mc-lua" viewBox="16 2 60 60"><defs><radialGradient id="mcLuaG"><stop offset="0" stop-color="#fff1c9" stop-opacity=".5"/><stop offset="1" stop-color="#fff1c9" stop-opacity="0"/></radialGradient></defs>`
+      + `<circle cx="46" cy="32" r="30" fill="url(#mcLuaG)"/><path d="M48.3 14.0 A16 16 0 1 0 61.8 38.2 A14 14 0 0 1 48.3 14.0Z" fill="#fff1c9"/></svg></div>`);
+  }
+  else if (!on && c) c.remove();
 }
 setInterval(() => { try { if (screen === 'calcada' && sxAgora() === 'agora') sextaNoite(true); else if (document.body.classList.contains('calc-noite')) calcCabSexta(); mesaNoite(); if (screen === 'home' && !sheetKind && profile) sextaResumoNaHome(); } catch (e) {} }, 30000);
 function calcCabSexta() {
