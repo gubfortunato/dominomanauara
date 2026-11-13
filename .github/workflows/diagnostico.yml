@@ -27,9 +27,14 @@ jobs:
           sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
           AGORA=$(($(date +%s) * 1000))
           p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
-          # 13/11: sugestão de resposta da IA com mensagens inventadas (o mesmo pedido do servidor, do rascunho). Só lê.
-          git fetch -q origin rascunho-3.45.1 && mkdir -p /tmp/srv && git --work-tree=/tmp/srv checkout origin/rascunho-3.45.1 -- servidor/src && echo '{"type":"module"}' > /tmp/srv/servidor/src/package.json
-          node "$GITHUB_WORKSPACE/.github/diag/ia_teste.mjs" $OUT /tmp/srv/servidor/src 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
+          # 13/11: sugestão de resposta da IA com mensagens inventadas, num worker temporário (wrangler dev --remote, nunca publicado). Só lê.
+          git fetch -q origin rascunho-3.45.1 && mkdir -p /tmp/iat && git --work-tree=/tmp/iat checkout origin/rascunho-3.45.1 -- servidor/src && mv /tmp/iat/servidor/src /tmp/iat/src
+          cp "$GITHUB_WORKSPACE/.github/diag/ia_worker.mjs" /tmp/iat/w.mjs
+          printf 'name = "ia-teste-tmp"\nmain = "w.mjs"\ncompatibility_date = "2024-11-01"\n[ai]\nbinding = "AI"\n' > /tmp/iat/wrangler.toml
+          (cd /tmp/iat && timeout 300 wrangler dev --remote --port 8799 > /tmp/dev.log 2>&1 &)
+          for k in $(seq 1 60); do sleep 3; grep -q "Ready on" /tmp/dev.log && break; done
+          curl -s -m 240 http://localhost:8799/ >> $OUT || echo "sem resposta: $(tail -c 600 /tmp/dev.log)" >> $OUT
+          grep -q "Ready on" /tmp/dev.log || echo "dev não subiu: $(tail -c 800 /tmp/dev.log | sed 's/[A-Za-z0-9_-]\{30,\}/X/g')" >> $OUT
           rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
