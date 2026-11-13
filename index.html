@@ -2610,6 +2610,16 @@ button.dn-ag:active{transform:scale(.98)}
 .rk-trava .rk-socio{width:auto;margin:4px 0 0;padding:10px 20px}
 /* ===== Papo de mesa (3.42) ===== */
 .papo-bt{position:relative}
+/* 13/11 (pedido do dono: ninguém usou o áudio ainda): o balão que conta a novidade, apontando para o botão do papo */
+.papo-dica{position:fixed;z-index:24;width:var(--w,270px);display:grid;gap:3px;text-align:left;padding:11px 14px 12px;border:0;border-radius:14px;background:#2a1745;color:#fff6e6;font:inherit;box-shadow:0 10px 26px rgba(0,0,0,.32);animation:papoDicaEntra .38s cubic-bezier(.2,1.4,.4,1) both;cursor:pointer}
+.papo-dica b{font-size:15.5px;font-weight:800}
+.papo-dica span{font-size:14px;line-height:1.32;opacity:.92}
+.papo-dica::after{content:"";position:absolute;left:var(--seta,50%);bottom:-6px;width:13px;height:13px;margin-left:-6.5px;background:#2a1745;transform:rotate(45deg);border-radius:2px}
+.papo-dica.baixo::after{bottom:auto;top:-6px}
+.papo-bt.dica{animation:papoDicaPulsa 1.6s ease-out 3}
+@keyframes papoDicaEntra{from{opacity:0;transform:translateY(8px) scale(.96)}}
+@keyframes papoDicaPulsa{0%{box-shadow:0 0 0 0 rgba(229,166,80,.7)}70%{box-shadow:0 0 0 10px rgba(229,166,80,0)}100%{box-shadow:0 0 0 0 rgba(229,166,80,0)}}
+@media (prefers-reduced-motion:reduce){.papo-dica,.papo-bt.dica{animation:none}}
 .papo-nao{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#e5484d;color:#fff;font:800 13px/20px var(--font-body, inherit);text-align:center;box-shadow:0 0 0 2px var(--bg)}
 .papo-linha{display:flex;justify-content:center;margin:12px 0 4px}
 .papo-linha[hidden]{display:none}
@@ -4143,6 +4153,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.54.9', data: '13/11/2026', itens: ['Mesa com os amigos: um aviso no botão do Papo de mesa conta que agora dá para mandar (sócios) e ouvir áudio da turma.'] },
   { v: '3.54.8', data: '13/11/2026', itens: ['Mesa nova para os sócios: Onça-pintada, deitada no galho no meio da mata.', 'Mesa nova para os sócios: Curumins, dois meninos na trilha da mata, perto do rio.'] },
   { v: '3.54.7', data: '13/11/2026', itens: ['Mesa nova para os sócios: Palacete Provincial, a antiga sede da Província do Amazonas, hoje casa de museus, com a fachada vermelha e amarela e as duas estátuas de soldado na porta.'] },
   { v: '3.54.6', data: '13/11/2026', itens: ['Mesa Largo de São Sebastião: no alto do monumento, as estátuas como são de verdade (a moça com o vaso e a pomba, Mercúrio com o caduceu ao lado dela e os anjinhos).', 'O Mané, dono da taberna, ganhou um fundo verde.', 'A lua do cartão da Sexta da Calçada ficou um pouco amarela.'] },
@@ -13095,6 +13106,41 @@ function papoBotoes() {
   // na mesa com os amigos, o "Papo" fica no lugar do "Reagir" (as mesmas frases estão em cima, no papo)
   const rb = $('#reagirBtn'); if (rb && noJogo) rb.hidden = true;
   if (!pode && PP.aberto) fecharPapo();
+  if (typeof PD !== 'undefined' && PD) papoDica();   // 13/11
+}
+
+// 13/11 (pedido do dono: ninguém usou o áudio ainda): na mesa com os amigos, um balão no botão do "Papo de mesa" conta
+// a novidade. Até 3 vezes por celular (no máximo uma por dia); para de vez quando a pessoa abre o papo depois de ver.
+// Sócio: mandar e ouvir. Quem não é sócio: ouvir a turma.
+var PDKEY = 'dmz-papo-dica';   // var: o papoBotoes pode rodar antes desta linha
+var PD = { el: null, alvo: null, t: null, nesta: false };
+function papoDicaLer() { try { return JSON.parse(store.get(PDKEY) || 'null') || { n: 0, em: 0 }; } catch (e) { return { n: 0, em: 0 }; } }
+function papoDicaFechar(abriu) {
+  clearTimeout(PD.t); if (PD.el) PD.el.remove(); if (PD.alvo) PD.alvo.classList.remove('dica');
+  PD.el = null; PD.alvo = null;
+  if (abriu) { const d = papoDicaLer(); d.n = 9; try { store.set(PDKEY, JSON.stringify(d)); } catch (e) {} }
+}
+function papoDica() {
+  if (PD.el) { if (!PD.alvo || PD.alvo.hidden || !PD.alvo.offsetParent || PP.aberto) papoDicaFechar(false); return; }
+  if (PD.nesta || PP.aberto) return;
+  const v = papoVista(); if (!(v && v.papo && v.papo.vozLigada && window.MediaRecorder)) return;
+  const b = ['papoBtn', 'papoSala', 'papoFila', 'papoRes'].map(id => $('#' + id)).find(x => x && !x.hidden && x.offsetParent);
+  if (!b) return;
+  const d = papoDicaLer(); if (d.n >= 3 || Date.now() - (d.em || 0) < 20 * 3600000) return;
+  PD.nesta = true; d.n++; d.em = Date.now(); try { store.set(PDKEY, JSON.stringify(d)); } catch (e) {}
+  const socio = !!v.papo.voz;
+  const el = document.createElement('button'); el.type = 'button'; el.className = 'papo-dica';
+  el.innerHTML = '<b>Novo: áudio no papo! 🎙️</b><span>' + (socio ? 'Toque aqui e depois no microfone para mandar até 10 segundos pra turma.' : 'Toque aqui para ouvir os áudios que a turma mandar.') + '</span>';
+  const w = Math.min(280, innerWidth - 24); el.style.setProperty('--w', w + 'px');
+  document.body.appendChild(el); PD.el = el; PD.alvo = b; b.classList.add('dica');
+  const r = b.getBoundingClientRect(), cx = r.left + r.width / 2;
+  const left = Math.max(12, Math.min(innerWidth - w - 12, cx - w / 2));
+  let top = r.top - el.offsetHeight - 12;
+  if (top < 10) { top = r.bottom + 12; el.classList.add('baixo'); }
+  el.style.left = left + 'px'; el.style.top = top + 'px'; el.style.setProperty('--seta', Math.max(18, Math.min(w - 18, cx - left)) + 'px');
+  el.addEventListener('click', () => { track('papo-dica-toque'); abrirPapo(); });
+  PD.t = setTimeout(() => papoDicaFechar(false), 9000);
+  track('papo-dica-vista');
 }
 
 // ---------- painel ----------
@@ -13102,6 +13148,7 @@ function papoBotoes() {
 document.addEventListener('scroll', e => { if (e.target && e.target.id === 'papoLista') { const cx = e.target.closest('.papo-caixa'); if (cx) cx.classList.toggle('rolou', e.target.scrollTop > 4); } }, true);
 function abrirPapo() {
   if (!papoNaMesa()) return;
+  if (PD.el) papoDicaFechar(true);   // 13/11: viu a dica e abriu o papo
   // 03/11: "mensagens novas" em cima da primeira que chegou com o papo fechado
   PP.novasDe = null;
   if (PP.nao > 0 && !PP.mudo) { const de = PP.itens.filter(it => !it.eu && !papoCalado(it)); const x = de[Math.max(0, de.length - PP.nao)]; if (x) PP.novasDe = { n: x.n, qtd: Math.min(PP.nao, de.length) }; }
@@ -15501,7 +15548,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.54.8-5b15da42';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.54.9-2198b1d4';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
