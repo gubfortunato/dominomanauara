@@ -18,7 +18,8 @@ import { VOZ, transcrever } from './voz.js';
 import { limitesValem, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteHerdado, limiteDoIrmao, anotarLimite, mesasDoDia, bonusConfig } from './planos.js';
 import { limitePessoa } from './pessoa.js';
 import { quartaValendo, contarQuarta, anotarConvite } from './quarta.js';
-import { pesosRobo } from './robo.js';   // 13/11: robô treinado toda noite   // 12/11: Quarta dos Amigos
+import { pesosRobo } from './robo.js';   // 13/11: robô treinado toda noite
+import { sextaValendo, anotarSexta } from './sexta.js';   // 13/11: Placar da Sexta   // 12/11: Quarta dos Amigos
 // 3.38.2: na Calçada, apelido que o filtro passou a barrar (de quem entrou antes) aparece como "Jogador"
 const nomeVisivel = c => !c.bot && nomeOfensivo(c.nome) ? 'Jogador' : c.nome;
 
@@ -1381,7 +1382,7 @@ export class Mesa {
     if (evs.length && m.vivoVisto !== m.seq) {
       m.vivoVisto = m.seq;
       const v = m.vivo || (m.vivo = { g: 0, c: 0 });
-      for (const e of evs) { if (e.type === 'galo') v.g++; if (e.type === 'batida' && e.carroca) v.c++; }
+      for (const e of evs) { if (e.type === 'galo') { v.g++; if (e.p >= 0 && e.p < 4) (m.sxG || (m.sxG = [0, 0, 0, 0]))[e.p]++; } if (e.type === 'batida' && e.carroca) v.c++; }   // 13/11: galos por cadeira (Placar da Sexta)
     }
     const r = G.result;
     if (G.phase !== 'handEnd' || !r || r.vivo) return;
@@ -1411,7 +1412,7 @@ export class Mesa {
   }
   // Ranking (3.29): quem estava em cada cadeira quando a partida começou (só conta quem jogou a partida inteira)
   inicioDePartida() {
-    const m = this.m; m.naPartida = m.cad.map(c => c && !c.bot && c.id ? c.id : null);
+    const m = this.m; m.naPartida = m.cad.map(c => c && !c.bot && c.id ? c.id : null); m.sxG = [0, 0, 0, 0];   // 13/11
     m.naPartidaInfo = m.cad.map(c => c && !c.bot && c.id ? { nome: c.nome, av: c.av || null, nv: c.nv || 1, menor: !!c.menor } : null);   // 10/11: para quem abandonar
   }
   async contarRanking() {
@@ -1420,6 +1421,7 @@ export class Mesa {
     r.ranking = true;
     const quem = quemContaNoRanking(m, r.matchWinner);
     if (quem.length) { try { await somarRanking(this.env, quem); } catch (e) {} }
+    if (quem.length && sextaValendo(this.env)) { try { await anotarSexta(this.env, m, quem); } catch (e) {} }   // 13/11: Placar da Sexta
     // 10/11: quem abandonou a partida perde como se tivesse perdido para pessoas; na mesa rápida, conta para a trava do dia
     const sairam = quemAbandonou(m);
     if (sairam.length) {
