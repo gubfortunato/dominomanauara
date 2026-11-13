@@ -27,8 +27,8 @@ jobs:
           sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
           AGORA=$(($(date +%s) * 1000))
           p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
-          # 13/11, 11h: só leitura (o caso do apelido de um jogador bloqueado por vários aparelhos)
-          python3 "$GITHUB_WORKSPACE/.github/diag/apelido_caso.py" $OUT 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
+          # 13/11, 14h: só leitura (os avisos da Sexta, da Quarta e da Copa que já saíram)
+          python3 "$GITHUB_WORKSPACE/.github/diag/avisos_sexta.py" $OUT 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
           rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
