@@ -2465,8 +2465,10 @@ body.calc-noite #calcCorpo .vivo-mesa.livre{background:linear-gradient(180deg,rg
 .calc-sexta{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#4a2a6e,#2a1745);color:#fff1dc;box-shadow:0 0 0 1px rgba(255,200,120,.25),0 8px 24px rgba(120,60,200,.25)}
 .calc-sexta .cs-fogo{font-size:26px}
 .calc-sexta .cs-lance{grid-column:1/-1;margin:2px 0 0;padding:7px 10px;border-radius:10px;background:rgba(0,0,0,.22);font-size:14px;font-weight:700;color:#ffe2b0}
-.calc-sexta .cs-chamar{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:2px;padding:10px 14px;border:0;border-radius:12px;background:#25d366;color:#0b2e17;font:inherit;font-size:15.5px;font-weight:800;cursor:pointer}
-.calc-sexta .cs-chamar svg{width:20px;height:20px;flex:none}
+.calc-sexta .cs-amigos{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:4px;padding:14px 16px;border:0;border-radius:14px;background:linear-gradient(180deg,#ffdc8a,#f3b94e);color:#2a1745;font:inherit;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(255,190,90,.3),inset 0 1px 0 rgba(255,255,255,.5)}
+.calc-sexta .cs-amigos svg{width:24px;height:24px;flex:none}
+.calc-sexta .cs-chamar{grid-column:1/-1;justify-self:center;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:0;padding:8px 14px;border:0;border-radius:11px;background:#25d366;color:#0b2e17;font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+.calc-sexta .cs-chamar svg{width:17px;height:17px;flex:none}
 /* 13/11: a mesa de jogo na Sexta: fundo de noite, cantos escurecidos e o varal no alto (atrás de tudo) */
 body.jogo-noite{--bg:#120c22;background:radial-gradient(120% 70% at 50% 0%,#33224f 0%,#170f2a 55%,#0d0918 100%) fixed}
 body.jogo-noite #scrGame{--bg:#120c22;--bg-2:#1e1634;--fg:#f6ecdc;--muted:#c9bbdc;--line:rgba(255,214,160,.2);--nos:#e5a650;--eles:#8fbcc2;--alert:#e58a6c;--ok:#86c98f;color:var(--fg);isolation:isolate}
@@ -4134,6 +4136,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.54.6', data: '13/11/2026', itens: ['Na Sexta da Calçada, um botão para montar a mesa com os amigos direto da Calçada.'] },
   { v: '3.54.5', data: '13/11/2026', itens: ['Sócios: ao abrir o app, ele confere a cópia do progresso guardada no servidor; se lá estiver maior (de outro celular), ele traz sozinho.', 'A foto do perfil agora também entra na cópia do progresso dos sócios.'] },
   { v: '3.54.4', data: '13/11/2026', itens: ['O cartão da Sexta da Calçada na tela inicial, antes das 20h, volta a só avisar a hora que começa (não abre mais o WhatsApp).'] },
   { v: '3.54.3', data: '13/11/2026', itens: ['Sexta da Calçada de cara nova: noite na Calçada (lua, céu estrelado e varal) e na tela do jogo (lua e estrelas), relógio de quanto falta, Placar da Sexta, fogos no galo, convite para a turma no WhatsApp e, depois das 23h, o resumo da sua noite para compartilhar.', 'Conquista nova para sócios: Boêmio da Calçada (3 Sextas seguidas), com o violão de seresta para o avatar.'] },
@@ -11568,7 +11571,10 @@ function sextaNoite(ev) {
   const lance = sextaLance();
   fx.innerHTML = `<span class="cs-fogo" aria-hidden="true">🔥</span><span class="cs-tx"><b>${temPlano() ? 'Moral em dobro para você' : 'Sócio ganha moral em dobro'}</b><small>${temPlano() ? 'Em toda partida, até as 23h.' : 'Toda partida até as 23h vale o dobro para quem é sócio.'}</small></span><span class="cs-relogio"><small>termina em</small><b>${sxFalta()}</b></span>`
     + (lance ? `<p class="cs-lance" aria-live="polite">${esc(lance)}</p>` : '')
+    // 13/11 (pedido do dono): montar a mesa com os amigos direto da Calçada (a mesma tela do Jogar); o convite fica embaixo, menor
+    + `<button type="button" class="cs-amigos" id="csAmigos"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="3.2" fill="currentColor"/><circle cx="5.2" cy="9.4" r="2.4" fill="currentColor" opacity=".8"/><circle cx="18.8" cy="9.4" r="2.4" fill="currentColor" opacity=".8"/><path d="M5.6 19.5c.5-3.6 3.1-5.8 6.4-5.8s5.9 2.2 6.4 5.8z" fill="currentColor"/><path d="M1 18.2c.3-2.5 1.9-4 4-4 .9 0 1.7.3 2.3.7-1.3 1.1-2.1 2.6-2.5 4.4H1.4zM23 18.2c-.3-2.5-1.9-4-4-4-.9 0-1.7.3-2.3.7 1.3 1.1 2.1 2.6 2.5 4.4h3.4z" fill="currentColor" opacity=".8"/></svg>Montar mesa com os amigos</button>`
     + `<button type="button" class="cs-chamar" id="csChamar">${WA_IC}Chamar a turma pra Sexta</button>`;
+  $('#csAmigos').addEventListener('click', () => { track('sexta-amigos'); $('#goOnline').click(); });
   $('#csChamar').addEventListener('click', () => sextaConvidar('calcada'));
   try { sextaPlacarDesenhar(); } catch (e) {}
 }
@@ -15477,7 +15483,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.54.5-315301b5';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.54.6-b0dbe257';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
