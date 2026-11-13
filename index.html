@@ -540,7 +540,48 @@ body{touch-action:manipulation}
 .fale-ok b{font-family:var(--font-display);font-weight:400;font-size:24px;line-height:1.15}
 .fale-ok small{font-size:15.5px;line-height:1.45;color:var(--wood-muted)}
 .fale-ok .primary{margin-top:8px}
+/* 12/11: conversa com o suporte (as suas mensagens à direita, as respostas à esquerda) */
+.fale-conversa{flex-shrink:0;display:grid;gap:10px;max-height:46vh;overflow-y:auto;padding:4px 2px;-webkit-overflow-scrolling:touch}
+.fc-b{max-width:86%;padding:10px 13px;border-radius:16px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg)}
+.fc-b small{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:3px}
+.fc-b p{margin:0;font-size:16px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.fc-b.eu{justify-self:end;border-bottom-right-radius:5px}
+.fc-b.sup{justify-self:start;border-bottom-left-radius:5px;border-color:var(--nos);box-shadow:inset 3px 0 0 var(--nos)}
+.fc-b.sup small{color:var(--nos)}
+.fc-b.sup.nova{box-shadow:inset 3px 0 0 var(--nos),0 0 0 2px rgba(229,166,80,.35)}
+.fc-espera{margin:0;text-align:center;font-size:14px;color:var(--muted)}
+.sheet .fc-b{max-width:100%;margin-top:8px}
+/* 12/11: Ajuda (respostas prontas) */
+.aj-conversa{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;text-align:left;cursor:pointer}
+.aj-conversa.nova{border-color:var(--nos);box-shadow:0 0 0 2px rgba(229,166,80,.25)}
+.aj-cv-tx{display:grid;gap:2px}.aj-cv-tx b{font-size:17px}.aj-cv-tx small{font-size:14.5px;color:var(--muted)}
+.aj-conversa.nova .aj-cv-tx small{color:var(--nos);font-weight:700}
+.aj-cv-go{font-size:24px;color:var(--muted)}
+.aj-lista{display:grid;gap:8px}
+.aj-g{margin:10px 2px 0;font-size:12.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.aj-it{border:1.5px solid var(--line);border-radius:14px;background:var(--bg-2);overflow:hidden}
+.aj-it summary{list-style:none;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:14px 16px;font-size:16.5px;font-weight:700;line-height:1.3;cursor:pointer}
+.aj-it summary::-webkit-details-marker{display:none}
+.aj-it summary::after{content:'+';font-size:22px;font-weight:400;color:var(--muted);line-height:1}
+.aj-it[open] summary::after{content:'−'}
+.aj-it[open]{border-color:var(--nos)}
+.aj-r{padding:0 16px 16px}
+.aj-r p{margin:0 0 10px;font-size:16px;line-height:1.5}
+.aj-bt{display:grid;gap:8px;margin-top:4px}
+.aj-bt button{box-sizing:border-box;width:100%;margin:0}
+.aj-fale{display:grid;gap:8px;padding:18px 18px 20px;border-radius:16px}
+.aj-fale .ck{font-size:12.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+.aj-fale p{margin:0;font-size:16px;line-height:1.45;color:var(--wood-ink)}
+.aj-fale .primary{margin-top:6px}
 /* ---- Caixa de mensagens do dono ---- */
+.dn-msglista .m-ctx{font-size:13.5px;line-height:1.4;color:var(--wood-ink);background:rgba(0,0,0,.18);border-radius:10px;padding:7px 10px}
+.dn-msglista .m-resp{border-left:3px solid var(--glow);padding:2px 0 2px 10px}
+.dn-msglista .m-resp small{display:block;font-size:12.5px;color:var(--wood-muted)}
+.dn-msglista .m-resp p{margin:2px 0 0;font-size:15px;line-height:1.4;white-space:pre-wrap;color:var(--wood-ink)}
+.dn-msglista .m-responder{display:grid;gap:8px}
+.dn-msglista .m-rtx{width:100%;box-sizing:border-box;font:inherit;font-size:16px;line-height:1.4;padding:10px 12px;border-radius:12px;border:1px solid rgba(239,226,204,.3);background:rgba(0,0,0,.22);color:var(--wood-ink);resize:vertical}
+.dn-msglista .m-responder button{justify-self:start;border:0;border-radius:999px;padding:9px 16px;font:inherit;font-size:15px;font-weight:700;background:var(--glow);color:#24180f;cursor:pointer}
+.dn-msglista .m-responder button:disabled{opacity:.6}
 .dn-msgs-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .dn-msgn{font-size:13px;font-weight:700;color:var(--wood-muted)}
 .dn-msgs .dn-seg{background:rgba(0,0,0,.2);border-color:rgba(239,226,204,.18)}
@@ -3231,7 +3272,8 @@ body.papo-aberto{overflow:hidden}
 
   <section class="screen panel" id="scrFale" hidden>
     <button type="button" class="backbtn" id="faleBack">← Voltar</button>
-    <div><p class="kicker">Fale com a gente</p><h2 class="brand" style="font-size:30px">Problema, ideia ou elogio?</h2></div>
+    <div><p class="kicker">Fale com a gente</p><h2 class="brand" style="font-size:30px" id="faleTitulo">Problema, ideia ou elogio?</h2></div>
+    <div class="fale-conversa" id="faleConversa" role="log" aria-label="Sua conversa com o suporte" hidden></div>
     <div class="fale-form" id="faleForm">
       <div class="dn-seg" id="faleTipo" role="group" aria-label="Tipo de mensagem">
         <button type="button" data-t="problema" aria-pressed="true">Problema</button><button type="button" data-t="ideia" aria-pressed="false">Ideia</button><button type="button" data-t="elogio" aria-pressed="false">Elogio</button>
@@ -3242,10 +3284,10 @@ body.papo-aberto{overflow:hidden}
         <small class="note fale-conta" id="faleConta">0/1000</small>
       </div>
       <div class="field">
-        <label for="faleContato">Quer resposta? <small>· opcional</small></label>
+        <label for="faleContato">Prefere a resposta no WhatsApp ou e-mail? <small>· opcional</small></label>
         <input id="faleContato" class="fale-contato" type="text" maxlength="60" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Seu WhatsApp ou e-mail">
       </div>
-      <p class="note">Junto vão o seu apelido, a versão do app e o tipo de aparelho, para achar o problema mais rápido. Sua foto não vai.</p>
+      <p class="note">A resposta chega aqui no app, em até 24 horas. Junto com a mensagem vão o seu apelido, a versão do app e o tipo de aparelho, para achar o problema mais rápido. Sua foto não vai.</p>
       <button type="button" class="primary" id="faleEnviar">Enviar</button>
     </div>
     <div class="fale-ok wood" id="faleOk" hidden>
@@ -3253,6 +3295,19 @@ body.papo-aberto{overflow:hidden}
       <b>Obrigado! Sua mensagem chegou.</b>
       <small id="faleOkTx"></small>
       <button type="button" class="primary" id="faleFim">Voltar</button>
+    </div>
+  </section>
+
+  <!-- 12/11 (pedido do dono): Ajuda: as dúvidas mais comuns com a resposta e o botão que resolve; no fim, falar com o suporte -->
+  <section class="screen panel" id="scrAjuda" hidden>
+    <button type="button" class="backbtn" id="ajudaBack">← Voltar</button>
+    <div><p class="kicker">Ajuda</p><h2 class="brand" style="font-size:30px">Como podemos ajudar?</h2></div>
+    <button type="button" class="aj-conversa" id="ajConversa" hidden><span class="aj-cv-tx"><b>Sua conversa com o suporte</b><small id="ajConversaTx">Ver as mensagens</small></span><span class="aj-cv-go" aria-hidden="true">›</span></button>
+    <div class="aj-lista" id="ajLista"></div>
+    <div class="aj-fale wood">
+      <span class="ck">Não achou a resposta?</span>
+      <p>Mande a sua dúvida. A resposta chega aqui no app, em até 24 horas.</p>
+      <button type="button" class="primary" id="ajFalar">Falar com o suporte</button>
     </div>
   </section>
 
@@ -4013,6 +4068,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.54.0', data: '12/11/2026', itens: ['Ajuda e suporte, em Mais: as dúvidas mais comuns (código de sócio, plano em outro aparelho, pagamento, partidas grátis, bloqueio, progresso, robô e regras) com a resposta e um botão que resolve.', 'Fale com a gente virou conversa: a resposta do suporte chega aqui no app, em até 24 horas, com aviso no celular.', 'Na sexta da Copa dos Sócios, o cartão da Sexta da Calçada aparece junto do cartão da Copa.'] },
   { v: '3.53.26', data: '12/11/2026', itens: ['Botões mais claros: o botão principal fica maior e o "Agora não" fica sempre menor. "Já sou sócio em outro aparelho" ficou do tamanho dos outros botões.', 'Quem assiste uma partida vê os nomes das duplas por inteiro: um nome por linha, sem cortar no meio da palavra.'] },
   { v: '3.53.25', data: '12/11/2026', itens: ['Sócio: o app lembra de guardar o seu código de sócio, mostra onde achar (Mais › Seu código de sócio) e como recuperar o plano em outro aparelho. Dá para copiar ou mandar o código para o seu WhatsApp.'] },
   { v: '3.53.24', data: '12/11/2026', itens: ['O recado "Bora chamar a turma?" não aparece mais ao abrir o app. O convite para os amigos continua na mesa com os amigos e em Mais.'] },
@@ -4829,7 +4885,7 @@ function toast(msg) {
   clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 4200);
 }
 // Troca de tela com fade: a tela atual some suave e a próxima aparece suave.
-const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Anuncie', 'Apoio', 'Patro', 'Instalar', 'Estilo', 'Calcada', 'Mais'];
+const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Ajuda', 'Anuncie', 'Apoio', 'Patro', 'Instalar', 'Estilo', 'Calcada', 'Mais'];   // 12/11: Ajuda
 let showTimer = null, showRaf = 0;
 function show(name) {
   screen = name;
@@ -4846,6 +4902,7 @@ function show(name) {
     if (name === 'profile') renderProfile();
     if (name === 'dono') renderDono();
     if (name === 'fale') renderFale();
+    if (name === 'ajuda') renderAjuda();   // 12/11
     if (name === 'sala') renderSala();
     if (name === 'anuncie') renderAnuncie();
     if (name === 'apoio') renderApoioTela();
@@ -5779,6 +5836,23 @@ async function dnCartaoMsgs() {
     else if (j.novas) $('#donoCardTx').textContent = `${j.novas} ${j.novas > 1 ? 'mensagens novas' : 'mensagem nova'} no Fale com a gente`;
   } catch (e) {}
 }
+// 12/11: na caixa do dono, o contexto de quem mandou (sócio, último pagamento, bloqueio, avisos), as respostas e o campo
+// para responder no app. Mensagens de antes da conversa (sem o aparelho) continuam com resposta só pelo contato.
+function dnSuporte(m) {
+  if (m.tipo === 'patrocinio') return '';
+  if (!m.conversa) return '<div class="m-ctx">Mensagem de antes da conversa no app: responda pelo contato.</div>';
+  const c = m.ctx || {}, ag = Date.now(), dd = ms => dnData(ms).split(' às ')[0];
+  const partes = [
+    c.socioAte > ag ? `★ sócio até ${dd(c.socioAte)}` : c.socioAte ? `plano acabou em ${dd(c.socioAte)}` : 'sem plano',
+    c.pedido ? `último pedido: ${esc(NOME_PRODUTO[c.pedido.produto] || c.pedido.produto)} ${reais(c.pedido.valor)} · ${c.pedido.status === 'pago' ? 'pago' : esc(c.pedido.status)} em ${dd(c.pedido.em)}` : 'nenhum pagamento',
+    c.bloqueio ? `🚫 bloqueado${c.bloqueio.motivo ? ': ' + esc(c.bloqueio.motivo) : ''}` : '',
+    c.avisos ? 'recebe aviso no celular' : 'sem aviso no celular (vê ao abrir o app)'
+  ].filter(Boolean);
+  const resp = (m.respostas || []).map(r => `<div class="m-resp"><small>Você respondeu · ${dnData(r.em)} · ${r.lida ? 'vista' : 'ainda não vista'}</small><p>${esc(r.texto)}</p></div>`).join('');
+  return `<div class="m-ctx">${partes.join(' · ')}</div>${resp}
+    <div class="m-responder"><textarea class="m-rtx" rows="3" maxlength="1500" placeholder="${m.respostas && m.respostas.length ? 'Escrever outra resposta' : 'Escreva a resposta: ela aparece no app de quem mandou'}"></textarea>
+    <button type="button" data-responder="1">Responder no app</button></div>`;
+}
 async function dnMsgCarregar() {
   const box = $('#dnMsgs');
   box.hidden = !CONFIG.api;
@@ -5795,6 +5869,7 @@ async function dnMsgCarregar() {
         <div class="m-top"><span class="m-tipo ${esc(m.tipo)}">${TIPO_NOME[m.tipo] || 'Outro'}${m.status === 'resolvido' ? ' · resolvida' : ''}</span><span>${dnData(m.criado_em)}</span></div>
         <div class="m-txt">${esc(m.texto)}</div>
         <div class="m-meta">${esc(m.nome || 'sem apelido')}${dnContato(m.contato)} · versão ${esc(m.versao || '?')} · ${esc(m.aparelho || '?')}</div>
+        ${dnSuporte(m)}
         <div class="m-acoes">${m.status === 'resolvido' ? '<button type="button" data-a="novo">Reabrir</button>' : '<button type="button" data-a="resolvido">Marcar como resolvida</button>'}<button type="button" class="perigo" data-a="apagado">Apagar</button></div>
       </li>`).join('') : `<li class="dn-empty"><span>${dnMsgFiltro === 'patrocinio' ? 'Nenhum pedido de patrocínio ainda.' : dnMsgFiltro ? 'Nenhuma mensagem nova.' : 'Nenhuma mensagem ainda.'}</span></li>`;
   } catch (e) {
@@ -5808,6 +5883,19 @@ $('#dnMsgFiltro').addEventListener('click', e => {
 });
 $('#dnMsgSenha').addEventListener('click', () => openDonoLogin(true));
 $('#dnMsgLista').addEventListener('click', async e => {
+  // 12/11: responder no app (a resposta vai para a conversa de quem mandou, com aviso no celular)
+  const rb = e.target.closest('button[data-responder]');
+  if (rb) {
+    const li = rb.closest('li'), tx = li.querySelector('.m-rtx'), texto = (tx && tx.value || '').trim();
+    if (texto.length < 2) { toast('Escreva a resposta antes de enviar.'); if (tx) tx.focus(); return; }
+    rb.disabled = true; rb.textContent = 'Enviando…';
+    try {
+      const j = await dnMsgPedir(`/dono/mensagens/${li.dataset.id}/responder`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ texto }) });
+      toast(j.avisados ? 'Resposta enviada. A pessoa recebeu o aviso no celular.' : 'Resposta enviada. Ela aparece no app quando a pessoa abrir.');
+      dnMsgCarregar();
+    } catch (err) { rb.disabled = false; rb.textContent = 'Responder no app'; toast('Não deu para enviar a resposta agora.'); }
+    return;
+  }
   const b = e.target.closest('button[data-a]'); if (!b) return;
   const li = b.closest('li'), id = li.dataset.id, a = b.dataset.a;
   if (a === 'apagado' && !b.dataset.armado) { b.dataset.armado = '1'; b.textContent = 'Toque de novo para apagar'; return; }
@@ -5887,12 +5975,14 @@ function abrirFale(deOnde) {
 }
 function renderFale() {
   $('#faleOk').hidden = true; $('#faleForm').hidden = false;
+  try { renderConversa(); } catch (e) {}   // 12/11: a conversa com o suporte, em cima do formulário
   $$('#faleTipo button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === faleTipo)));
   $('#faleTexto').placeholder = FALE_DICA[faleTipo];
   faleConta();
 }
 function faleConta() { $('#faleConta').textContent = `${$('#faleTexto').value.length}/1000`; }
 function faleSair() {
+  if (faleVolta === 'ajuda') { show('ajuda'); return; }   // 12/11
   if (faleVolta === 'game' && faleDoOnline && mesaGuardada()) { voltarMesa(); return; }
   if (faleVolta === 'game' && loadSavedGame()) { $('#goResume').click(); return; }
   show(profile ? 'home' : 'who');
@@ -5922,6 +6012,7 @@ async function saidaEsvaziar() {
   const resto = [];
   for (const m of lista) {
     const st = await faleMandar(m);
+    if (st === 201 && m.id) store.set(SUPKEY, String(Date.now()));   // 12/11: entrou na conversa
     if (st === 0 || st >= 500) resto.push(m);   // tenta de novo depois; recusadas (400/429) saem da fila
   }
   saidaGuardar(saidaLer().concat(resto));
@@ -5933,7 +6024,7 @@ setTimeout(saidaEsvaziar, 4000);
 $('#faleEnviar').addEventListener('click', async () => {
   const texto = $('#faleTexto').value.trim();
   if (texto.length < 3) { toast('Escreva a sua mensagem antes de enviar.'); $('#faleTexto').focus(); return; }
-  const msg = { tipo: faleTipo, texto, contato: $('#faleContato').value.trim(), nome: me || '', versao: APP_VERSION, aparelho: deviceInfo() };
+  const msg = { tipo: faleTipo, texto, contato: $('#faleContato').value.trim(), nome: me || '', versao: APP_VERSION, aparelho: deviceInfo(), id: meuId() };   // 12/11: id: a resposta volta para este aparelho
   const btn = $('#faleEnviar'); btn.disabled = true; btn.textContent = 'Enviando…';
   const st = await faleMandar(msg);
   btn.disabled = false; btn.textContent = 'Enviar';
@@ -5941,7 +6032,9 @@ $('#faleEnviar').addEventListener('click', async () => {
     track('opiniao-' + faleTipo);
     $('#faleTexto').value = ''; $('#faleContato').value = '';
     $('#faleForm').hidden = true; $('#faleOk').hidden = false;
-    $('#faleOkTx').textContent = faleTipo === 'problema' ? 'Vamos olhar o problema. Se você deixou contato, a gente responde.' : 'A gente lê todas as mensagens.';
+    $('#faleOkTx').textContent = 'A resposta chega aqui no app, em até 24 horas.' + (typeof avisosLigados === 'function' && avisosLigados() ? ' Você recebe um aviso no celular quando ela chegar.' : '');
+    store.set(SUPKEY, String(Date.now()));   // 12/11: a mensagem entra na conversa
+    (SUP.itens = SUP.itens || []).push({ de: 'j', texto, em: Date.now() }); renderConversa(); suporteBuscar(true).then(renderConversa);
     return;
   }
   if (st === 429) { toast('Muitas mensagens em pouco tempo. Tente de novo mais tarde.'); return; }
@@ -5952,6 +6045,153 @@ $('#faleEnviar').addEventListener('click', async () => {
   $('#faleForm').hidden = true; $('#faleOk').hidden = false;
   $('#faleOkTx').textContent = 'Sem conexão agora: a mensagem fica guardada e vai sozinha quando a internet voltar.';
 });
+
+// ---- 12/11 (pedido do dono): Ajuda com respostas prontas e conversa com o suporte ----
+// Os assuntos saíram das mensagens do Fale com a gente: código de sócio, plano em outro aparelho, "sou sócio e o app diz que
+// acabou o grátis", pagamento, bloqueio, progresso, robô na mesa e regras. Cada resposta tem o botão que resolve. A conversa:
+// a mensagem vai com o código do aparelho; o dono responde pelo painel e a resposta aparece aqui (e no celular, com aviso).
+const SUPKEY = 'dmz-suporte', SUPVISTO = 'dmz-suporte-visto';
+const SUP = { itens: null, novas: 0, em: 0, carregando: null };
+const suporteTem = () => !!store.get(SUPKEY);
+function suporteBuscar(forcar) {
+  if (!CONFIG.api || !suporteTem()) return Promise.resolve(SUP);
+  if (!forcar && Date.now() - SUP.em < 60000) return Promise.resolve(SUP);
+  if (SUP.carregando) return SUP.carregando;
+  SUP.carregando = (async () => {
+    try {
+      const r = await fetch(CONFIG.api + '/suporte?id=' + encodeURIComponent(meuId()), { cache: 'no-store' });
+      if (r.ok) { const j = await r.json(); SUP.itens = Array.isArray(j.itens) ? j.itens : []; SUP.novas = Number(j.novas) || 0; SUP.em = Date.now(); }
+    } catch (e) {}
+    SUP.carregando = null;
+    try { if (screen === 'mais') renderMais(); if (screen === 'ajuda') renderAjudaTopo(); } catch (e) {}
+    return SUP;
+  })();
+  return SUP.carregando;
+}
+function suporteMarcarLido() {
+  if (!SUP.novas) return;
+  SUP.novas = 0; (SUP.itens || []).forEach(x => { if (x.de === 'd') x.lida = true; });
+  fetch(CONFIG.api + '/suporte/lido', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: meuId() }) }).catch(() => {});
+}
+const supData = ms => { const d = new Date(ms), p = n => String(n).padStart(2, '0'); return `${p(d.getDate())}/${p(d.getMonth() + 1)} às ${p(d.getHours())}:${p(d.getMinutes())}`; };
+function renderConversa() {
+  const box = $('#faleConversa'); if (!box) return;
+  const it = SUP.itens || [];
+  box.hidden = !it.length;
+  $('#faleTitulo').textContent = it.length ? 'Sua conversa com o suporte' : 'Problema, ideia ou elogio?';
+  if (!it.length) { box.innerHTML = ''; if (suporteTem() && SUP.itens == null) suporteBuscar(true).then(() => { if (screen === 'fale' && (SUP.itens || []).length) renderConversa(); }); return; }
+  box.innerHTML = it.map(x => `<div class="fc-b ${x.de === 'd' ? 'sup' : 'eu'}${x.de === 'd' && !x.lida ? ' nova' : ''}"><small>${x.de === 'd' ? 'Suporte Dominó Manauara' : 'Você'} · ${supData(x.em)}</small><p>${esc(x.texto)}</p></div>`).join('')
+    + (it[it.length - 1].de === 'j' ? '<p class="fc-espera">A resposta chega aqui, em até 24 horas.</p>' : '');
+  if (SUP.novas && screen === 'fale') suporteMarcarLido();
+  setTimeout(() => { try { const u = box.querySelector('.fc-b.nova') || box.lastElementChild; if (u && screen === 'fale') u.scrollIntoView({ block: 'nearest' }); } catch (e) {} }, 80);
+}
+// resposta nova chegou: na tela inicial, uma janela com a resposta (uma vez por resposta)
+function suporteNaHome() {
+  if (!SUP.novas || !SUP.itens) return false;
+  const ult = [...SUP.itens].reverse().find(x => x.de === 'd' && !x.lida); if (!ult) return false;
+  if (store.get(SUPVISTO) === String(ult.id || ult.em)) return false;
+  store.set(SUPVISTO, String(ult.id || ult.em));
+  const t = ult.texto.length > 320 ? ult.texto.slice(0, 317).trimEnd() + '…' : ult.texto;
+  track('suporte-resposta-aviso');
+  openSheet('suporte', `<p class="eyebrow">Suporte</p><h2 id="sheetTitle">Chegou a resposta da sua mensagem</h2>
+    <div class="fc-b sup"><small>Suporte Dominó Manauara · ${supData(ult.em)}</small><p>${esc(t)}</p></div>
+    <button type="button" class="primary" id="supVer" style="width:100%;margin-top:14px">Ver a conversa</button>
+    <button type="button" class="linkbtn" id="supFechar" style="width:100%;margin-top:8px">Agora não</button>`);
+  $('#supVer').addEventListener('click', () => { closeSheet(); abrirFale('home'); });
+  $('#supFechar').addEventListener('click', closeSheet);
+  return true;
+}
+function suporteConferir(forcar) {
+  if (!suporteTem()) return;
+  suporteBuscar(forcar).then(() => { try { if (SUP.novas && screen === 'home' && !sheetKind && profile) suporteNaHome(); } catch (e) {} });
+}
+setTimeout(() => suporteConferir(true), 1500);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') suporteConferir(false); });
+
+// As dúvidas mais comuns. Os números do limite vêm do próprio app (mudam nos dias de bônus).
+async function ajConferirPlano(bt) {
+  if (bt) { bt.disabled = true; bt.textContent = 'Conferindo…'; }
+  try { store.del('dmz-plano-conferido'); await conferirPlano(true); } catch (e) {}
+  toast(temPlano() ? `Tudo certo: o seu plano está ativo neste aparelho até ${dataBR(planoLocal().ate)}.` : 'Não achei plano ativo neste aparelho. Se você é sócio em outro, traga o plano com o seu código.');
+  renderAjuda();
+}
+async function ajConferirPagamento(bt) {
+  const p = pedidoGuardado();
+  if (p) { acompanharPedido(p.id, true); return; }
+  await ajConferirPlano(bt);
+}
+const ajSuporte = () => abrirFale('ajuda');
+const AJ = [
+  { g: 'Sócio e pagamento', k: 'codigo', q: 'Onde está o meu código de sócio?',
+    a: () => temPlano() ? 'Em <b>Mais › Seu código de sócio</b>, junto com o seu número de sócio. Guarde o código (um print da tela já serve): é com ele que o plano e o progresso voltam se você trocar de celular.'
+      : 'No aparelho em que você é sócio, em <b>Mais › Seu código de sócio</b>. O número de sócio fica no mesmo lugar. Perdeu esse aparelho e não guardou o código? Fale com o suporte e diga o seu apelido e quando pagou.',
+    b: () => temPlano() ? [['Ver o meu código', abrirCodigoSocio]] : [['Falar com o suporte', ajSuporte]] },
+  { k: 'trazer', q: 'Troquei de celular, limpei o navegador ou quero jogar no computador',
+    a: () => 'O plano fica guardado com a gente. No aparelho novo, toque em <b>Mais › Já sou sócio em outro aparelho</b>, digite o código e toque em <b>Trazer o meu plano</b>. O plano vale em um aparelho por vez: ele passa para o novo e sai do outro.</p><p>O app não achou o código? Confira letra por letra: o código não tem as letras O e I nem os números 0 e 1.',
+    b: () => !temPlano() && pagamentosAtivos() ? [['Trazer o meu plano', abrirTrazerPlano]] : [] },
+  { k: 'gratis', q: 'Sou sócio, mas o app diz que acabaram as partidas grátis',
+    a: () => (temPlano() ? `Neste aparelho, o seu plano está ativo até <b>${dataBR(planoLocal().ate)}</b>. Se o aviso aparecer de novo, toque em <b>Conferir o meu plano</b>.</p><p>` : '')
+      + 'O plano vale em um aparelho por vez, e o app instalado e o navegador contam como aparelhos diferentes. Se o plano está em outro lugar, traga para cá com o seu código.',
+    b: () => temPlano() ? [['Conferir o meu plano', ajConferirPlano]] : pagamentosAtivos() ? [['Trazer o meu plano', abrirTrazerPlano]] : [] },
+  { k: 'pagamento', q: 'Paguei e o plano não liberou',
+    a: () => 'No cartão, o plano liga na hora; no Pix, em poucos minutos. Ele liga sozinho no aparelho em que você pagou: toque em <b>Conferir pagamento</b>. Pagou em outro aparelho? O plano está lá: use o código para trazer.</p><p>Passou mais de 1 hora e nada? Fale com o suporte: a gente confere o pagamento e resolve.',
+    b: () => [['Conferir pagamento', ajConferirPagamento], ['Falar com o suporte', ajSuporte]] },
+  { k: 'renovar', q: 'Como paro a renovação no cartão?',
+    a: () => 'Mensal, trimestral e anual no cartão renovam sozinhos. Para parar, abra a tela do Sócio da Calçada e toque em <b>Cancelar a renovação</b>. O tempo já pago vale até o fim. Pix, 1 mês avulso e Passe da semana não renovam.',
+    b: () => pagamentosAtivos() ? [['Abrir a tela do sócio', () => abrirApoio('ajuda')]] : [] },
+  { g: 'Conta e progresso', k: 'progresso', q: 'Perdi o meu progresso (nível, conquistas)',
+    a: () => 'Para o sócio, nível, conquistas e histórico ficam guardados com a gente e voltam junto quando ele traz o plano com o código.</p><p>Sem plano, o progresso fica só no aparelho: apagar o app, limpar os dados do navegador ou trocar de celular apaga junto. No iPhone, tirar o app da tela de início também apaga os dados dele.',
+    b: () => !temPlano() && pagamentosAtivos() ? [['Trazer o meu plano', abrirTrazerPlano]] : [] },
+  { k: 'bloqueio', q: 'Por que o meu acesso foi bloqueado?',
+    a: () => 'As partidas grátis são por pessoa, não por aparelho. O bloqueio acontece quando o sistema vê a mesma pessoa usando vários aparelhos ou apelidos para jogar além do limite grátis, ou um apelido ou uma foto fora das regras.</p><p>Acha que foi engano? Fale com o suporte e conte o que aconteceu: a gente confere.',
+    b: () => [['Falar com o suporte', ajSuporte]] },
+  { k: 'limite', q: 'Quantas partidas grátis eu tenho por dia?',
+    a: () => `Sem plano, por dia: <b>${limRapida()} na mesa rápida</b>, <b>${limAmigos()} nas mesas com os amigos</b> (na mesa de um sócio, até 3), <b>${OFF_POR_DIA} no jogo offline</b> (mais 1 cumprindo as missões do dia) e 2 desafios entre Turmas. Tudo zera à meia-noite de Brasília (23h em Manaus).</p><p>Toda quarta, das 20h às 23h, quem senta na mesa de um sócio joga sem limite. O sócio joga sem limite sempre.`,
+    b: () => !temPlano() && pagamentosAtivos() && !menorDeIdade() ? [['Conhecer o Sócio da Calçada', () => abrirApoio('ajuda', 'plano')]] : [] },
+  { g: 'Na mesa', k: 'robo', q: 'Robô na mesa e quem sai no meio da partida',
+    a: () => 'Quando alguém sai ou a internet cai, um jogador da turma do bairro (robô) joga no lugar até a pessoa voltar, com a marca "robô" no nome. O robô parceiro não mata a sua pedra: ele joga na outra ponta, a não ser para bater ou fazer muito ponto.</p><p>Sair no meio da partida com outras pessoas na mesa conta como derrota no ranking e na Copa. Queda de internet não conta se a pessoa voltar antes de a partida acabar.',
+    b: () => [] },
+  { k: 'regras', q: 'Regras: bucho, garagem, passe e galo',
+    a: () => 'Está tudo explicado em <b>Mais › Regras</b>. Quer treinar? Em <b>Aprender a jogar</b> tem lições curtas e uma partida treino com dicas.',
+    b: () => [['Ver as regras', () => { const h = $('#howBtn'); if (h) h.click(); }], ['Aprender a jogar', () => abrirAprender()]] },
+  { k: 'amigos', q: 'Como jogar com os amigos',
+    a: () => 'Na tela Jogar, toque em <b>Jogar com os amigos › Criar uma mesa</b> e mande o convite no WhatsApp. Quem recebe toca no link e já senta na mesa. Também dá para entrar digitando o número da mesa.',
+    b: () => [['Jogar com os amigos', () => { show('home'); setTimeout(() => { const g = $('#goOnline'); if (g && !g.hidden) g.click(); }, 300); }]] }
+];
+let ajAberto = null;
+function abrirAjuda() { track('ajuda-abrir'); show('ajuda'); }
+function renderAjudaTopo() {
+  const c = $('#ajConversa'); if (!c) return;
+  c.hidden = !suporteTem();
+  c.classList.toggle('nova', !!SUP.novas);
+  $('#ajConversaTx').textContent = SUP.novas ? (SUP.novas === 1 ? '1 resposta nova' : `${SUP.novas} respostas novas`) : 'Ver as suas mensagens e as respostas';
+}
+function renderAjuda() {
+  renderAjudaTopo(); suporteBuscar(false);
+  let g = '';
+  $('#ajLista').innerHTML = AJ.map(x => {
+    let bt = []; try { bt = x.b() || []; } catch (e) {}
+    const cab = x.g && x.g !== g ? `<p class="aj-g">${esc((g = x.g))}</p>` : '';
+    return `${cab}<details class="aj-it" data-k="${x.k}"${ajAberto === x.k ? ' open' : ''}><summary>${esc(x.q)}</summary><div class="aj-r"><p>${x.a()}</p>`
+      + (bt.length ? `<div class="aj-bt">${bt.map(([t], i) => `<button type="button" class="${i ? 'secondary' : 'primary'}" data-aj="${x.k}:${i}">${esc(t)}</button>`).join('')}</div>` : '') + '</div></details>';
+  }).join('');
+}
+$('#ajLista').addEventListener('toggle', e => {
+  const d = e.target; if (!d.matches || !d.matches('details.aj-it')) return;
+  if (d.open) { ajAberto = d.dataset.k; track('ajuda-' + d.dataset.k); $$('#ajLista details.aj-it[open]').forEach(o => { if (o !== d) o.open = false; }); }
+  else if (ajAberto === d.dataset.k) ajAberto = null;
+}, true);
+$('#ajLista').addEventListener('click', e => {
+  const b = e.target.closest('button[data-aj]'); if (!b) return;
+  const [k, i] = b.dataset.aj.split(':'), x = AJ.find(y => y.k === k); if (!x) return;
+  let bt = []; try { bt = x.b() || []; } catch (er) {}
+  const f = bt[Number(i)]; if (!f) return;
+  track('ajuda-acao-' + k + '-' + i);
+  f[1](b);
+});
+$('#ajConversa').addEventListener('click', () => abrirFale('ajuda'));
+$('#ajFalar').addEventListener('click', () => { track('ajuda-falar'); abrirFale('ajuda'); });
+$('#ajudaBack').addEventListener('click', () => show(profile ? 'home' : 'who'));
 
 // ---- Mesa: "Você passou" grande e passe automático ----
 (function () {
@@ -11679,9 +11919,9 @@ const MENU_ABAS = [
   { id: 'home', nome: 'Jogar', telas: ['home', 'setup'] },
   { id: 'calcada', nome: 'Calçada', telas: ['calcada'] },
   { id: 'profile', nome: 'Perfil', telas: ['profile', 'estilo'] },
-  { id: 'mais', nome: 'Mais', telas: ['mais', 'apoio', 'fale', 'anuncie', 'patro', 'instalar', 'dono'] }
+  { id: 'mais', nome: 'Mais', telas: ['mais', 'apoio', 'fale', 'ajuda', 'anuncie', 'patro', 'instalar', 'dono'] }
 ];
-const SUB_MAIS = ['apoio', 'fale', 'anuncie', 'patro', 'instalar', 'dono'];
+const SUB_MAIS = ['apoio', 'fale', 'ajuda', 'anuncie', 'patro', 'instalar', 'dono'];
 let abaVolta = null;   // sub-tela aberta pela aba Mais: o "Voltar" dela volta para Mais (e não para o início)
 const ABA_RAIZ = ['home', 'calcada', 'profile', 'mais'];
 let abaUltima = 'home';   // nas telas de dentro (Monte a mesa, Apoie, Personalizar...), fica marcada a aba de onde você veio
@@ -11798,7 +12038,7 @@ function renderMais() {
     temPlano() && { k: 'codigo', ic: 'codigo', t: 'Seu código de sócio', s: (() => { const p = planoLocal() || {}, d = carteiraDados() || {}; return (p.codigo ? codigoBonito(p.codigo) : 'Toque para ver') + (d.numero ? ` · Sócio nº ${d.numero}` : ''); })(), destaque: true },
     vis('footApoio') && { k: 'apoio', ic: 'apoio', t: 'Sócio da Calçada', s: temPlano() ? `Seu plano vale até ${dataBR((planoLocal() || {}).ate)}` : 'Mesas com os amigos sem limite e mais' },
     !temPlano() && pagamentosAtivos() && { k: 'trazer', ic: 'codigo', t: 'Já sou sócio em outro aparelho', s: 'Use o seu código para trazer o plano para cá' },
-    vis('fbCard') && { k: 'fale', ic: 'fale', t: 'Fale com a gente', s: 'Achou um erro ou tem uma ideia?' },
+    vis('fbCard') && { k: 'fale', ic: 'fale', t: 'Ajuda e suporte', s: SUP.novas ? (SUP.novas === 1 ? 'Chegou 1 resposta do suporte' : `Chegaram ${SUP.novas} respostas do suporte`) : 'Dúvidas comuns e fale com a gente', destaque: !!SUP.novas },   // 12/11
     { k: 'chamar', ic: 'chamar', t: 'Chamar os amigos', s: 'Mande o jogo no WhatsApp para a turma' },
     { k: 'insta', ic: 'insta', t: 'Siga no Instagram', s: '@dominomanauara · novidades e dicas', href: 'https://www.instagram.com/dominomanauara/' },
     vis('footInstalar') && { k: 'instalar', ic: 'instalar', t: 'Como instalar o app', s: 'Deixe o jogo na tela de início' },
@@ -11848,7 +12088,7 @@ function abasMaisClique(k) {
   else if (k === 'codigo') abrirCodigoSocio();
   else if (k === 'carteira') abrirCarteira();
   else if (k === 'trazer') abrirTrazerPlano();
-  else if (k === 'fale') clica('fbCard');
+  else if (k === 'fale') abrirAjuda();   // 12/11: Ajuda (respostas prontas) e a conversa com o suporte
   else if (k === 'chamar') clica('shareApp');
   else if (k === 'instalar') { clica('footInstalar'); const bt = $('#instPular'); if (bt) bt.textContent = 'Voltar'; }
   else if (k === 'anuncie') clica('anuncieLink');
@@ -13614,6 +13854,11 @@ window.addEventListener('popstate', () => {
 function abrirPeloAviso(alvo, ver) {
   if (alvo === 'dono') { if (!souAdmin()) return false; if (sheetKind) closeSheet(); show('dono'); setTimeout(() => { try { dnGrupoAbrir(DN_GRUPOS.findIndex(g => g[1].includes('dnBurlas')), true, false); } catch (e) {} const el = $('#dnBurlas'); if (el && !el.hidden) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 700); return true; }   // 12/11: aviso de burla para o dono (abre o grupo Dinheiro)
   if (alvo === 'amigos' && profile) { if (sheetKind) closeSheet(); if (screen !== 'home') show('home'); setTimeout(() => { const g = $('#goOnline'); if (g && !g.hidden) g.click(); }, 300); track('aviso-abrir-amigos'); return true; }   // 12/11: Quarta dos Amigos
+  if (alvo === 'suporte') {   // 12/11: aviso da resposta do suporte: abre a conversa (não no meio de uma partida)
+    if (!profile || ['game', 'sala', 'who'].includes(screen) || (typeof ON !== 'undefined' && (ON.ativo || ON.buscando))) return false;
+    if (sheetKind) closeSheet(); if (!store.get(SUPKEY)) store.set(SUPKEY, String(Date.now()));
+    track('aviso-abrir-suporte'); abrirFale('aviso'); return true;
+  }
   if (!profile || !['ranking', 'turma', 'copa', 'carteira', 'aovivo'].includes(alvo)) return false;
   if (['game', 'sala', 'who'].includes(screen) || (typeof ON !== 'undefined' && (ON.ativo || ON.buscando))) return false;
   if (sheetKind) closeSheet();
@@ -13933,6 +14178,14 @@ function casaInfo() {
 }
 
 // ---- Cartão na tela inicial: Copa (antes, ao vivo, depois) e Sexta da Calçada ----
+// 12/11 (pedido do dono): o cartão da Sexta da Calçada sozinho, para aparecer junto quando a Copa ocupa o cartão principal
+function sextaCartao(sx) {
+  if (sx === 'agora') return { tipo: 'sexta', ir: 'rapida', ck: 'Sexta da Calçada · até as 23h', ct: '🔥 Moral em dobro agora!', cd: temPlano() ? 'Toda partida vale o dobro de moral para você, sócio: o nível sobe duas vezes mais rápido. Bora pra mesa rápida?' : 'Até as 23h, os sócios ganham o dobro de moral em todas as partidas. Seja sócio e suba de nível duas vezes mais rápido!' };
+  if (sx === 'hoje') return { tipo: 'sexta', ir: 'sexta', ck: 'Hoje · das 20h às 23h', ct: '🔥 Sexta da Calçada', cd: temPlano() ? 'Moral em dobro para os sócios em todas as partidas: o seu nível sobe duas vezes mais rápido. Chama a turma!' : 'Das 20h às 23h, os sócios ganham moral em dobro em todas as partidas. Chama a turma!' };
+  return null;
+}
+// numa sexta em que a Copa ocupa o cartão (Vem aí, ao vivo ou o pódio), a Sexta ganha o seu cartão logo abaixo
+function evCardExtra(v) { const sx = sxAgora(); return v && v.tipo !== 'sexta' && sx ? sextaCartao(sx) : null; }
 function evCardDados() {
   const c = csAgora(), sx = sxAgora(), d = CSD.dados, socio = temPlano(), ed = c.ed;
   const eu = csMeu(d);
@@ -13943,7 +14196,7 @@ function evCardDados() {
   if (qa === 'agora') return { tipo: 'quarta', ir: 'amigos', ck: 'Quarta dos Amigos · até as 23h', ct: socio ? '🤝 Sua mesa está liberada!' : '🤝 Mesa de sócio liberada',
     cd: socio ? 'Quem você chamar joga sem limite na sua mesa, mesmo sem ser sócio. E você ganha moral em dobro. Crie a mesa e chame a turma!'
       : 'Na mesa com os amigos de um sócio, você joga sem limite até as 23h. Chame o seu amigo sócio, ou seja sócio e abra a mesa para a turma!' };
-  if (sx === 'agora') return { tipo: 'sexta', ir: 'rapida', ck: 'Sexta da Calçada · até as 23h', ct: '🔥 Moral em dobro agora!', cd: temPlano() ? 'Toda partida vale o dobro de moral para você, sócio: o nível sobe duas vezes mais rápido. Bora pra mesa rápida?' : 'Até as 23h, os sócios ganham o dobro de moral em todas as partidas. Seja sócio e suba de nível duas vezes mais rápido!' };
+  if (sx === 'agora') return sextaCartao(sx);
   if (c.fase === 'antes') return { tipo: 'copa', ir: 'copa', ck: 'Vem aí', ct: `🏆 ${ed.nome}`,
     cd: `${csQuando(ed).replace(/^d/, 'D')}. ${socio ? 'Você está dentro: o campeão leva o troféu na carteira e a mesa do campeão.' : 'Só sócios pontuam: o campeão leva o troféu na carteira e a mesa do campeão.'}` };
   if (c.fase === 'depois') {
@@ -13953,29 +14206,36 @@ function evCardDados() {
   }
   if (qa === 'hoje') return { tipo: 'quarta', ir: 'quarta', ck: 'Hoje · das 20h às 23h', ct: '🤝 Quarta dos Amigos',
     cd: socio ? 'Das 20h às 23h, a sua mesa fica liberada: quem você chamar joga sem limite. Já combina com a turma!' : 'Das 20h às 23h, na mesa de um amigo sócio você joga sem limite. Combine com a turma!' };
-  if (sx === 'hoje') return { tipo: 'sexta', ir: 'sexta', ck: 'Hoje · das 20h às 23h', ct: '🔥 Sexta da Calçada', cd: temPlano() ? 'Moral em dobro para os sócios em todas as partidas: o seu nível sobe duas vezes mais rápido. Chama a turma!' : 'Das 20h às 23h, os sócios ganham moral em dobro em todas as partidas. Chama a turma!' };
+  if (sx === 'hoje') return sextaCartao(sx);
   return null;
 }
-function desenharEvCard() {
-  let b = $('#evCard');
-  if (!b) {
-    const ref = $('#howBtn'); if (!ref) return;
-    ref.insertAdjacentHTML('beforebegin', '<button type="button" class="card wood ev-card" id="evCard" hidden><span class="ck"></span><span class="ct"></span><span class="cd"></span></button>');
-    b = $('#evCard');
-    b.addEventListener('click', () => {
-      const ir = b.dataset.ir; track('evento-cartao-' + ir);
-      if (ir === 'copa') abrirCopa();
-      else if (ir === 'rapida') mesaRapida();
-      else if (ir === 'amigos') { const g = $('#goOnline'); if (g && !g.hidden) g.click(); }   // 12/11
-      else if (ir === 'quarta') toast('A Quarta dos Amigos começa às 20h. Até lá!');
-      else toast('A Sexta da Calçada começa às 20h. Até lá!');
-    });
-  }
-  const v = profile ? evCardDados() : null;
+function evCardCriar(id) {
+  let b = $('#' + id); if (b) return b;
+  const ref = id === 'evCard' ? $('#howBtn') : $('#evCard'); if (!ref) return null;
+  ref.insertAdjacentHTML(id === 'evCard' ? 'beforebegin' : 'afterend', `<button type="button" class="card wood ev-card" id="${id}" hidden><span class="ck"></span><span class="ct"></span><span class="cd"></span></button>`);
+  b = $('#' + id);
+  b.addEventListener('click', () => {
+    const ir = b.dataset.ir; track('evento-cartao-' + ir);
+    if (ir === 'copa') abrirCopa();
+    else if (ir === 'rapida') mesaRapida();
+    else if (ir === 'amigos') { const g = $('#goOnline'); if (g && !g.hidden) g.click(); }   // 12/11
+    else if (ir === 'quarta') toast('A Quarta dos Amigos começa às 20h. Até lá!');
+    else toast('A Sexta da Calçada começa às 20h. Até lá!');
+  });
+  return b;
+}
+function evCardPintar(b, v) {
+  if (!b) return;
   b.hidden = !v;
   if (!v) return;
   b.className = 'card wood ev-card ' + v.tipo; b.dataset.ir = v.ir;
   b.querySelector('.ck').textContent = v.ck; b.querySelector('.ct').textContent = v.ct; b.querySelector('.cd').textContent = v.cd;
+}
+function desenharEvCard() {
+  const b = evCardCriar('evCard'); if (!b) return;
+  const v = profile ? evCardDados() : null;
+  evCardPintar(b, v);
+  evCardPintar(evCardCriar('evCard2'), v ? evCardExtra(v) : null);   // 12/11: a Sexta junto da Copa
 }
 
 // ---- Janela da Copa ----
@@ -14185,6 +14445,7 @@ function pertencimentoNaHome() {
   if (screen !== 'home' || sheetKind || !profile) return;
   try { if (copaComemorar()) return; } catch (e) {}
   try { if (casaComemorar()) return; } catch (e) {}
+  try { if (suporteNaHome()) { dsConviteHoje = true; return; } } catch (e) {}   // 12/11: chegou resposta do suporte
   try { if (codigoNaHome()) { dsConviteHoje = true; return; } } catch (e) {}   // 12/11
   try { if (recadoNaHome()) { dsConviteHoje = true; return; } } catch (e) {}
   try { if (fotoAvisoNaHome()) { dsConviteHoje = true; return; } } catch (e) {}
@@ -14878,7 +15139,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.26-086cddd3';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.54.0-1342e946';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

@@ -16,6 +16,7 @@ import { donoPapo, donoPapoApagar } from './papo.js';
 import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
 import { limitePessoa, donoVigiaTirar, vigiados } from './pessoa.js';
 import { donoQuarta } from './quarta.js';   // 12/11: Quarta dos Amigos
+import { anotarSuporte, suporteDoAparelho, suporteLido, donoResponder, juntarSuporte } from './suporte.js';   // 12/11: conversa com o suporte
 import { travaCodigo, anotarCodigoErrado, limparCodigos } from './codigos.js';
 import { saudeVoz, donoPapoVoz, limparVozesDenunciadas } from './voz.js';
 import { copaInfo, apurarCopa, avisosAgendados } from './copa.js';   // 10/11: Copa dos Sócios, Sexta da Calçada e tempo de casa
@@ -255,9 +256,11 @@ async function receberMensagem(req, env, origin) {
   const desde = Date.now() - 60 * 60 * 1000;
   const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM mensagens WHERE marca = ? AND criado_em > ?').bind(marca, desde).first();
   if (r && r.n >= LIMITE_POR_HORA) return json({ erro: 'muitas' }, 429, origin);
-  await env.DB.prepare(
+  const ins = await env.DB.prepare(
     'INSERT INTO mensagens (criado_em, tipo, texto, nome, contato, versao, aparelho, marca, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
   ).bind(Date.now(), tipo, texto, limpa(b.nome, 20), limpa(b.contato, 60), limpa(b.versao, 12), limpa(b.aparelho, 80), marca, 'novo').run();
+  // 12/11: o app novo manda o código do aparelho: a mensagem entra na conversa e a resposta do dono volta para o app
+  try { if (b.id) await anotarSuporte(env, ins && ins.meta && ins.meta.last_row_id, String(b.id), texto); } catch (e) {}
   return json({ ok: true }, 201, origin);
 }
 
@@ -271,9 +274,10 @@ async function listarMensagens(req, env, origin, url) {
     ? env.DB.prepare(`${CAMPOS} WHERE status = ? ORDER BY criado_em DESC LIMIT 200`).bind(filtro)
     : env.DB.prepare(`${CAMPOS} WHERE status != 'apagado' ORDER BY criado_em DESC LIMIT 200`);
   const { results } = await q.all();
+  const lista = await juntarSuporte(env, results || []);   // 12/11: respostas já dadas e o contexto do aparelho
   const novas = await env.DB.prepare("SELECT COUNT(*) AS n FROM mensagens WHERE status = 'novo'").first();
   const patro = await env.DB.prepare("SELECT COUNT(*) AS n FROM mensagens WHERE status = 'novo' AND tipo = 'patrocinio'").first();
-  return json({ mensagens: results || [], novas: (novas && novas.n) || 0, patrocinios: (patro && patro.n) || 0 }, 200, origin);
+  return json({ mensagens: lista, novas: (novas && novas.n) || 0, patrocinios: (patro && patro.n) || 0 }, 200, origin);
 }
 
 // ---- Lembretes para jogar (Web Push) ----
@@ -572,6 +576,8 @@ export default {
       // Plano Apoiador e doações (Asaas)
       const H = { json, marcaDoDia, ehDono, SITE };
       if (url.pathname === '/saude/ia' && req.method === 'GET') return await fotos.saudeIA(env, origin, H);
+      if (url.pathname === '/suporte' && req.method === 'GET') return await suporteDoAparelho(req, env, origin, H, url);   // 12/11: conversa com o suporte
+      if (url.pathname === '/suporte/lido' && req.method === 'POST') return await suporteLido(req, env, origin, H);
       if (url.pathname === '/saude/voz' && req.method === 'GET') return await saudeVoz(env, origin, H);   // 10/11: áudio do papo
       if ((url.pathname === '/turma' || url.pathname === '/desafio') && req.method === 'GET') return await turmas.ver(env, origin, H, url);
       if (url.pathname === '/turma/nova' && req.method === 'POST') return await turmas.nova(req, env, origin, H);
@@ -653,6 +659,8 @@ export default {
       if (url.pathname === '/dono/avisos/enviar' && req.method === 'POST') return await donoAvisosEnviar(req, env, origin);
       if (url.pathname === '/dono/mensagens' && req.method === 'GET') return await listarMensagens(req, env, origin, url);
       if (url.pathname === '/dono/aparelho' && req.method === 'POST') return await donoAparelho(req, env, origin);   // 11/11
+      const mr = url.pathname.match(/^\/dono\/mensagens\/(\d+)\/responder$/);   // 12/11: resposta do dono vai para o app
+      if (mr && req.method === 'POST') return await donoResponder(req, env, origin, H, Number(mr[1]));
       const m = url.pathname.match(/^\/dono\/mensagens\/(\d+)$/);
       if (m && req.method === 'POST') return await mudarStatus(req, env, origin, Number(m[1]));
       return json({ erro: 'nao-encontrado' }, 404, origin);

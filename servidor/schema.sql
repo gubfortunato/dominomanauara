@@ -325,3 +325,8 @@ CREATE TABLE IF NOT EXISTS vigia_tentativas (nome TEXT NOT NULL, aparelho TEXT N
 CREATE TABLE IF NOT EXISTS quarta_jog (dia TEXT NOT NULL, aparelho TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (dia, aparelho));
 CREATE TABLE IF NOT EXISTS convites (aparelho TEXT PRIMARY KEY, anfitriao TEXT, socio_anfitriao INTEGER NOT NULL DEFAULT 0, quarta INTEGER NOT NULL DEFAULT 0, mesa TEXT, em INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS convites_em ON convites (em);
+-- 12/11 (pedido do dono): conversa com o suporte (suporte.js). Cada mensagem do "Fale com a gente" mandada pelo app fica
+-- ligada ao aparelho (de = 'j'); a resposta do dono (de = 'd') aparece no app de quem mandou. msg: a mensagem da caixa.
+CREATE TABLE IF NOT EXISTS suporte (id INTEGER PRIMARY KEY AUTOINCREMENT, msg INTEGER, aparelho TEXT NOT NULL, de TEXT NOT NULL, texto TEXT NOT NULL, em INTEGER NOT NULL, lida INTEGER);
+CREATE INDEX IF NOT EXISTS suporte_ap ON suporte (aparelho, em);
+CREATE INDEX IF NOT EXISTS suporte_msg ON suporte (msg);
