@@ -582,6 +582,15 @@ body{touch-action:manipulation}
 .dn-msglista .m-rtx{width:100%;box-sizing:border-box;font:inherit;font-size:16px;line-height:1.4;padding:10px 12px;border-radius:12px;border:1px solid rgba(239,226,204,.3);background:rgba(0,0,0,.22);color:var(--wood-ink);resize:vertical}
 .dn-msglista .m-responder button{justify-self:start;border:0;border-radius:999px;padding:9px 16px;font:inherit;font-size:15px;font-weight:700;background:var(--glow);color:#24180f;cursor:pointer}
 .dn-msglista .m-responder button:disabled{opacity:.6}
+.dn-msglista .m-sug{font-size:13px;line-height:1.35;color:var(--glow)}
+/* 13/11: relatório do dia no painel */
+.dr-lista{list-style:none;margin:8px 0 6px;padding:0;display:grid;gap:6px}
+.dr-lista li{display:grid;grid-template-columns:104px minmax(0,1fr);gap:10px;align-items:baseline;padding:8px 10px;border-radius:12px;background:rgba(0,0,0,.18)}
+.dr-k{font-size:14px;font-weight:700;color:var(--wood-muted)}
+.dr-v{font-size:17px;font-weight:800;color:var(--wood-ink)}
+.dr-v small{display:block;font-size:13px;font-weight:500;color:var(--wood-muted);margin-top:2px}
+.dr-v i{font-style:normal;font-size:12px}.dr-up{color:var(--ok)}.dr-dn{color:var(--alert)}
+.dr-dest,.dr-hoje{margin:6px 0 0;font-size:14.5px;line-height:1.45;color:var(--wood-ink)}
 .dn-msgs-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .dn-msgn{font-size:13px;font-weight:700;color:var(--wood-muted)}
 .dn-msgs .dn-seg{background:rgba(0,0,0,.2);border-color:rgba(239,226,204,.18)}
@@ -3399,6 +3408,12 @@ body.papo-aberto{overflow:hidden}
       <p class="dn-avn" id="dnBurlasR">Carregando…</p>
       <ul class="dn-joglista" id="dnBurlasLista"></ul>
     </div>
+    <!-- 13/11 (pedido do dono): relatório do dia (o servidor fecha às 9h e avisa no celular) -->
+    <div class="dn-list wood dn-rel" id="dnRel" hidden>
+      <span class="ck">Relatório do dia</span>
+      <p class="dn-avn" id="dnRelR">Carregando…</p>
+      <div id="dnRelCorpo"></div>
+    </div>
     <div class="dn-list wood dn-jog" id="dnQuarta" hidden>
       <span class="ck">Quarta dos Amigos e convites</span>
       <p class="dn-avn" id="dnQuartaR">Carregando…</p>
@@ -4068,6 +4083,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.54.1', data: '13/11/2026', itens: ['Suporte mais rápido: as respostas às mensagens do Fale com a gente chegam mais depressa aqui no app.'] },
   { v: '3.54.0', data: '12/11/2026', itens: ['Ajuda e suporte, em Mais: as dúvidas mais comuns (código de sócio, plano em outro aparelho, pagamento, partidas grátis, bloqueio, progresso, robô e regras) com a resposta e um botão que resolve.', 'Fale com a gente virou conversa: a resposta do suporte chega aqui no app, em até 48 horas, com aviso no celular.', 'Na sexta da Copa dos Sócios, o cartão da Sexta da Calçada aparece junto do cartão da Copa.', 'Partidas grátis com o número certo em todas as telas: até 19/11 (bônus), 5 por dia na mesa rápida e 2 com os amigos; depois, 3 e 1.'] },
   { v: '3.53.26', data: '12/11/2026', itens: ['Botões mais claros: o botão principal fica maior e o "Agora não" fica sempre menor. "Já sou sócio em outro aparelho" ficou do tamanho dos outros botões.', 'Quem assiste uma partida vê os nomes das duplas por inteiro: um nome por linha, sem cortar no meio da palavra.'] },
   { v: '3.53.25', data: '12/11/2026', itens: ['Sócio: o app lembra de guardar o seu código de sócio, mostra onde achar (Mais › Seu código de sócio) e como recuperar o plano em outro aparelho. Dá para copiar ou mandar o código para o seu WhatsApp.'] },
@@ -5849,8 +5865,9 @@ function dnSuporte(m) {
     c.avisos ? 'recebe aviso no celular' : 'sem aviso no celular (vê ao abrir o app)'
   ].filter(Boolean);
   const resp = (m.respostas || []).map(r => `<div class="m-resp"><small>Você respondeu · ${dnData(r.em)} · ${r.lida ? 'vista' : 'ainda não vista'}</small><p>${esc(r.texto)}</p></div>`).join('');
+  const sug = m.sugestao ? '<small class="m-sug">✨ Sugestão da IA: confira e ajuste antes de enviar. Ela só vai quando você tocar em "Responder no app".</small>' : '';   // 13/11
   return `<div class="m-ctx">${partes.join(' · ')}</div>${resp}
-    <div class="m-responder"><textarea class="m-rtx" rows="3" maxlength="1500" placeholder="${m.respostas && m.respostas.length ? 'Escrever outra resposta' : 'Escreva a resposta: ela aparece no app de quem mandou'}"></textarea>
+    <div class="m-responder">${sug}<textarea class="m-rtx" rows="${m.sugestao ? 6 : 3}" maxlength="1500" placeholder="${m.respostas && m.respostas.length ? 'Escrever outra resposta' : 'Escreva a resposta: ela aparece no app de quem mandou'}">${m.sugestao ? esc(m.sugestao) : ''}</textarea>
     <button type="button" data-responder="1">Responder no app</button></div>`;
 }
 async function dnMsgCarregar() {
@@ -8598,9 +8615,36 @@ document.addEventListener('click', async e => {
   } catch (er) { toast('Não deu agora. Tente de novo.'); }
   dnBurlasCarregar(); if (typeof dnAplCarregar === 'function') dnAplCarregar();
 });
-renderDono = function () { renderDonoBase(); dnPagCarregar(); dnApoiadoresCarregar(); dnBurlasCarregar(); dnQuartaCarregar(); };
+renderDono = function () { renderDonoBase(); dnPagCarregar(); dnApoiadoresCarregar(); dnBurlasCarregar(); dnQuartaCarregar(); dnRelCarregar(); };
 // 12/11 (pedido do dono): se a Quarta dos Amigos traz gente. Só números: amigos novos pelo link da mesa, quantos voltaram
 // em outro dia e quantos viraram sócio; e, em cada Quarta, quantos sem plano jogaram na mesa de um sócio.
+// 13/11 (pedido do dono): relatório do dia. Números contados no banco (sem IA): ontem, os destaques, o parcial de hoje e os 6 dias antes
+async function dnRelCarregar() {
+  const box = $('#dnRel'); if (!box) return;
+  box.hidden = !CONFIG.api || !souAdmin(); if (box.hidden) return;
+  try {
+    const j = await dnMsgPedir('/dono/relatorio'), l = j.dias || [], r = l[0], h = j.hoje || {};
+    if (!r) { $('#dnRelR').textContent = 'O primeiro relatório sai amanhã às 9h.'; $('#dnRelCorpo').innerHTML = ''; return; }
+    const dm = d => d.slice(8, 10) + '/' + d.slice(5, 7), n = (k, um, v) => `${k} ${k === 1 ? um : v}`;
+    const seta = (v, m) => m >= 5 ? (v >= m * 1.15 ? ' <i class="dr-up">▲</i>' : v <= m * 0.85 ? ' <i class="dr-dn">▼</i>' : '') : '';
+    const vendas = x => x.vendas && x.vendas.n ? `${n(x.vendas.n, 'venda', 'vendas')} · ${reais(x.vendas.total)}` : 'nenhuma venda';
+    const prod = (r.vendas.produtos || []).map(p => `${p.n}× ${esc(NOME_PRODUTO[p.p] || p.p)}`).join(', ');
+    $('#dnRelR').innerHTML = `<b>Ontem, ${dm(r.dia)}</b> · aviso no celular às 9h`;
+    const linha = (k, v, s) => `<li><span class="dr-k">${k}</span><span class="dr-v">${v}${s ? `<small>${s}</small>` : ''}</span></li>`;
+    $('#dnRelCorpo').innerHTML = `<ul class="dr-lista">
+      ${linha('👥 Pessoas', `${r.pessoas}${seta(r.pessoas, r.pessoasMedia)}`, `${n(r.novos, 'nova', 'novas')}${r.pessoasMedia ? ` · média dos 7 dias: ${r.pessoasMedia}` : ''}${r.pico ? ` · pico de ${r.pico.n} às ${r.pico.hora}h` : ''}`)}
+      ${linha('🎲 Partidas', `${r.partidas}${seta(r.partidas, r.partidasMedia)}`, `${r.partidasMedia ? `média: ${r.partidasMedia}` : ''}${r.galos ? ` · ${n(r.galos, 'galo', 'galos')}` : ''}`)}
+      ${linha('💰 Vendas', vendas(r), prod)}
+      ${linha('★ Sócios', String(r.socios), r.acabaram ? `${n(r.acabaram, 'plano acabou', 'planos acabaram')} ontem sem renovar` : 'ativos agora')}
+      ${linha('✉️ Suporte', `${n(r.mensagens.novas, 'mensagem', 'mensagens')}`, `${r.mensagens.respondidas} ${r.mensagens.respondidas === 1 ? 'resposta enviada' : 'respostas enviadas'} · ${r.mensagens.pendentes} esperando agora`)}
+      ${linha('🚫 Fraude', `${n(r.fraude.bloqueios, 'bloqueio', 'bloqueios')}`, `${n(r.fraude.vigia, 'apelido', 'apelidos')} em vigia · ${n(r.fraude.burlas, 'aparelho barrado', 'aparelhos barrados')}`)}
+      ${linha('🤝 Convites', n(r.convites, 'amigo novo', 'amigos novos'), 'chegaram pelo link de uma mesa')}
+    </ul>
+    ${(r.destaques || []).length ? `<p class="dr-dest"><b>Chamou atenção:</b> ${r.destaques.map(esc).join(' · ')}</p>` : ''}
+    <p class="dr-hoje"><b>Hoje até agora:</b> ${n(h.pessoas || 0, 'pessoa', 'pessoas')} · ${n(h.partidas || 0, 'partida', 'partidas')} · ${vendas(h)}</p>
+    ${l.length > 1 ? `<ul class="dn-joglista dr-dias">${l.slice(1).map(x => `<li><span class="dn-jog-t"><b>${dm(x.dia)}</b><small>${n(x.pessoas, 'pessoa', 'pessoas')} · ${n(x.partidas, 'partida', 'partidas')} · ${vendas(x)}</small></span></li>`).join('')}</ul>` : ''}`;
+  } catch (e) { $('#dnRelR').textContent = 'Não deu para carregar o relatório agora.'; }
+}
 async function dnQuartaCarregar() {
   const box = $('#dnQuarta'); if (!box) return;
   box.hidden = !CONFIG.api || !souAdmin(); if (box.hidden) return;
@@ -13574,6 +13618,7 @@ function desenharDesafioCalcada() {
 // pendências (só o que pede ação; tocar leva ao cartão) e os grupos na ordem de uso. Tocar no título do grupo abre e
 // fecha (o app lembra); os de uso diário começam abertos.
 const DN_GRUPOS = [
+  ['Relatório do dia', ['dnRel'], true],   // 13/11: os números de ontem, os destaques e o parcial de hoje
   ['Precisa de você', ['dnMsgs', 'dnPapo', 'dnFotos', 'dnRobo'], true],
   ['Jogadores', ['dnNoApp', 'dnFilas', 'dnJog'], true],
   ['Números do jogo', ['dnNum', 'dnQuarta'], true],   // 12/11: Quarta dos Amigos e convites   // 03/11: jogadores desde o início, partidas, horários e picos
@@ -13858,6 +13903,7 @@ window.addEventListener('popstate', () => {
 // Nunca tira ninguém da partida ou da sala: aí o aviso só traz o app para a frente.
 function abrirPeloAviso(alvo, ver) {
   if (alvo === 'dono') { if (!souAdmin()) return false; if (sheetKind) closeSheet(); show('dono'); setTimeout(() => { try { dnGrupoAbrir(DN_GRUPOS.findIndex(g => g[1].includes('dnBurlas')), true, false); } catch (e) {} const el = $('#dnBurlas'); if (el && !el.hidden) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 700); return true; }   // 12/11: aviso de burla para o dono (abre o grupo Dinheiro)
+  if (alvo === 'relatorio') { if (!souAdmin()) return false; if (sheetKind) closeSheet(); show('dono'); setTimeout(() => { try { dnGrupoAbrir(DN_GRUPOS.findIndex(g => g[1].includes('dnRel')), true, false); } catch (e) {} const el = $('#dnRel'); if (el && !el.hidden) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 700); track('aviso-abrir-relatorio'); return true; }   // 13/11
   if (alvo === 'amigos' && profile) { if (sheetKind) closeSheet(); if (screen !== 'home') show('home'); setTimeout(() => { const g = $('#goOnline'); if (g && !g.hidden) g.click(); }, 300); track('aviso-abrir-amigos'); return true; }   // 12/11: Quarta dos Amigos
   if (alvo === 'suporte') {   // 12/11: aviso da resposta do suporte: abre a conversa (não no meio de uma partida)
     if (!profile || ['game', 'sala', 'who'].includes(screen) || (typeof ON !== 'undefined' && (ON.ativo || ON.buscando))) return false;
@@ -15144,7 +15190,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.54.0-1342e946';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.54.1-10696cd5';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
