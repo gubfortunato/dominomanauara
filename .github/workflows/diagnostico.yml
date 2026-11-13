@@ -27,8 +27,9 @@ jobs:
           sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
           AGORA=$(($(date +%s) * 1000))
           p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
-          # 12/11 (pedido do dono): assuntos do Fale com a gente dos últimos 30 dias, para a Ajuda. Só lê.
-          python3 "$GITHUB_WORKSPACE/.github/diag/fale_temas.py" $OUT 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
+          # 13/11: sugestão de resposta da IA com mensagens inventadas (o mesmo pedido do servidor, do rascunho). Só lê.
+          git fetch -q origin rascunho-3.45.1 && mkdir -p /tmp/srv && git --work-tree=/tmp/srv checkout origin/rascunho-3.45.1 -- servidor/src && echo '{"type":"module"}' > /tmp/srv/servidor/src/package.json
+          node "$GITHUB_WORKSPACE/.github/diag/ia_teste.mjs" $OUT /tmp/srv/servidor/src 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
           rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
