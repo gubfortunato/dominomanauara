@@ -4134,6 +4134,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.54.4', data: '13/11/2026', itens: ['O cartão da Sexta da Calçada na tela inicial, antes das 20h, volta a só avisar a hora que começa (não abre mais o WhatsApp).'] },
   { v: '3.54.3', data: '13/11/2026', itens: ['Sexta da Calçada de cara nova: noite na Calçada (lua, céu estrelado e varal) e na tela do jogo (lua e estrelas), relógio de quanto falta, Placar da Sexta, fogos no galo, convite para a turma no WhatsApp e, depois das 23h, o resumo da sua noite para compartilhar.', 'Conquista nova para sócios: Boêmio da Calçada (3 Sextas seguidas), com o violão de seresta para o avatar.'] },
   { v: '3.54.2', data: '13/11/2026', itens: ['A turma do bairro agora treina toda noite: quando acha um jeito melhor de jogar, passa a usar nas mesas online.'] },
   { v: '3.54.1', data: '13/11/2026', itens: ['Suporte mais rápido: as respostas às mensagens do Fale com a gente chegam mais depressa aqui no app.'] },
@@ -14550,7 +14551,7 @@ function evCardCriar(id) {
     else if (ir === 'amigos') { const g = $('#goOnline'); if (g && !g.hidden) g.click(); }   // 12/11
     else if (ir === 'quarta') toast('A Quarta dos Amigos começa às 20h. Até lá!');
     else if (ir === 'calcada') irAba('calcada');   // 13/11: na hora da Sexta, o cartão leva para as mesas jogando
-    else sextaConvidar('inicio');   // 13/11: o cartão da Sexta (à tarde) chama a turma no WhatsApp
+    else toast('A Sexta da Calçada começa às 20h. Até lá!');   // 13/11 (dono): antes das 20h, o toque só avisa a hora (não abre o WhatsApp)
   });
   return b;
 }
@@ -15472,7 +15473,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.54.3-42c55505';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.54.4-f7cb61e7';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
