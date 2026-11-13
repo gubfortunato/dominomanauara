@@ -17,6 +17,7 @@ import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelho
 import { limitePessoa, donoVigiaTirar, vigiados } from './pessoa.js';
 import { donoQuarta } from './quarta.js';   // 12/11: Quarta dos Amigos
 import { anotarSuporte, suporteDoAparelho, suporteLido, donoResponder, juntarSuporte } from './suporte.js';   // 12/11: conversa com o suporte
+import { relatorioDiario, donoRelatorio, alertas, sugerirResposta } from './gestor.js';   // 13/11: relatório do dia, alertas e rascunho de resposta
 import { travaCodigo, anotarCodigoErrado, limparCodigos } from './codigos.js';
 import { saudeVoz, donoPapoVoz, limparVozesDenunciadas } from './voz.js';
 import { copaInfo, apurarCopa, avisosAgendados } from './copa.js';   // 10/11: Copa dos Sócios, Sexta da Calçada e tempo de casa
@@ -246,7 +247,7 @@ async function receberPatrocinio(req, env, origin) {
   return json({ ok: true }, 201, origin);
 }
 
-async function receberMensagem(req, env, origin) {
+async function receberMensagem(req, env, origin, ctx) {
   let b;
   try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
   const texto = limpa(b.texto, 1000);
@@ -261,6 +262,8 @@ async function receberMensagem(req, env, origin) {
   ).bind(Date.now(), tipo, texto, limpa(b.nome, 20), limpa(b.contato, 60), limpa(b.versao, 12), limpa(b.aparelho, 80), marca, 'novo').run();
   // 12/11: o app novo manda o código do aparelho: a mensagem entra na conversa e a resposta do dono volta para o app
   try { if (b.id) await anotarSuporte(env, ins && ins.meta && ins.meta.last_row_id, String(b.id), texto); } catch (e) {}
+  // 13/11: a IA já deixa uma sugestão de resposta para o dono conferir no painel (nunca vai sozinha)
+  try { const mid = ins && ins.meta && ins.meta.last_row_id; if (b.id && mid && ctx) ctx.waitUntil(sugerirResposta(env, mid, String(b.id), texto, tipo, limpa(b.nome, 20))); } catch (e) {}
   return json({ ok: true }, 201, origin);
 }
 
@@ -571,7 +574,7 @@ export default {
         console.log('cliente:', JSON.stringify({ onde: String(b.onde || '').slice(0, 40), erro: String(b.erro || '').slice(0, 200), v: String(b.v || '').slice(0, 20), ua: (req.headers.get('user-agent') || '').slice(0, 160) }));
         return json({ ok: true }, 200, origin);
       }
-      if (url.pathname === '/mensagens' && req.method === 'POST') return await receberMensagem(req, env, origin);
+      if (url.pathname === '/mensagens' && req.method === 'POST') return await receberMensagem(req, env, origin, ctx);
       if (url.pathname === '/patrocinio' && req.method === 'POST') return await receberPatrocinio(req, env, origin);
       // Plano Apoiador e doações (Asaas)
       const H = { json, marcaDoDia, ehDono, SITE };
@@ -658,6 +661,7 @@ export default {
       if (url.pathname === '/dono/avisos' && req.method === 'GET') return await donoAvisos(req, env, origin);
       if (url.pathname === '/dono/avisos/enviar' && req.method === 'POST') return await donoAvisosEnviar(req, env, origin);
       if (url.pathname === '/dono/mensagens' && req.method === 'GET') return await listarMensagens(req, env, origin, url);
+      if (url.pathname === '/dono/relatorio' && req.method === 'GET') return await donoRelatorio(req, env, origin, { json, ehDono });   // 13/11
       if (url.pathname === '/dono/aparelho' && req.method === 'POST') return await donoAparelho(req, env, origin);   // 11/11
       const mr = url.pathname.match(/^\/dono\/mensagens\/(\d+)\/responder$/);   // 12/11: resposta do dono vai para o app
       if (mr && req.method === 'POST') return await donoResponder(req, env, origin, H, Number(mr[1]));
@@ -678,6 +682,8 @@ export default {
     if (evento && evento.cron === '0 0 * * 6') { ctx.waitUntil(rotinaEventos(env)); return; }
     ctx.waitUntil(rotinaEventos(env));   // 10/11: Copa (apuração e avisos), Sexta da Calçada e tempo de casa
     ctx.waitUntil(limparNumeros(env));   // 03/11: acessos por hora guardados por 60 dias
+    if (hora === 13) ctx.waitUntil(relatorioDiario(env).catch(() => {}));   // 13/11: 9h em Manaus: o relatório de ontem no celular do dono
+    ctx.waitUntil(alertas(env).catch(() => {}));   // 13/11: pagamentos parados ou movimento baixo
     if (hora >= 12 && hora < 18) { ctx.waitUntil((async () => { try { await lembreteDaData(env, EVENTO_POR_RODADA.manha); } catch (e) {} try { await reajustesPendentes(env); } catch (e) {} })()); return; }
     ctx.waitUntil((async () => { try { await reajustesPendentes(env); } catch (e) {} try { await lembretesPlano(env); } catch (e) {} try { await lembreteDaData(env, EVENTO_POR_RODADA.tarde); } catch (e) {} try { await fotos.moderarPendentes(env); } catch (e) {} try { await turmas.fecharDesafio(env); } catch (e) {} try { await manterChaveAsaas(env); } catch (e) {} try { await vivo.limparVivo(env); } catch (e) {} try { await limparVistos(env); } catch (e) {} try { await presenca.limparPresenca(env); } catch (e) {} await lembretesDoDia(env);  try { await rk.limparRanking(env); } catch (e) {} })());
   }
