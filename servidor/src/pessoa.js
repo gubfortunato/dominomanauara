@@ -171,7 +171,7 @@ async function bloquearVigia(env, v, n) {
 }
 
 // Aviso no celular do dono (os aparelhos dele ficam em dono_aparelhos), uma vez por chave
-async function avisarDono(env, chave, titulo, texto) {
+export async function avisarDono(env, chave, titulo, texto, url) {   // 13/11: exportado (relatório e alertas) e com o endereço
   if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return;
   try {
     const { results: ds } = await env.DB.prepare('SELECT aparelho FROM dono_aparelhos').all();
@@ -183,7 +183,7 @@ async function avisarDono(env, chave, titulo, texto) {
     const st = env.DB.prepare('INSERT OR IGNORE INTO avisos_ev (aviso, chave, em) VALUES (?, ?, ?)');
     await env.DB.batch(lista.map(x => st.bind(x.id, chave, Date.now())));
     for (const s of lista) {
-      let r = 0; try { r = await enviarPush(s, { titulo, texto, url: '/?abrir=dono' }, env); } catch (e) {}
+      let r = 0; try { r = await enviarPush(s, { titulo, texto, url: url || '/?abrir=dono' }, env); } catch (e) {}
       if (r === 404 || r === 410) { try { await env.DB.prepare('DELETE FROM avisos WHERE id = ?').bind(s.id).run(); await env.DB.prepare('DELETE FROM avisos_id WHERE endpoint = ?').bind(s.endpoint).run(); } catch (e) {} }
     }
   } catch (e) {}

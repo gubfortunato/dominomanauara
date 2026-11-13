@@ -78,6 +78,9 @@ export async function juntarSuporte(env, mensagens) {
     if (f.de === 'j') apDe[f.msg] = f.aparelho;
     else (resp[f.msg] = resp[f.msg] || []).push({ texto: f.texto, em: f.em, lida: !!f.lida });
   }
+  // 13/11: a sugestão de resposta da IA (só para as que ainda não foram respondidas)
+  const sug = {};
+  try { const { results } = await env.DB.prepare(`SELECT msg, texto FROM suporte_sugestao WHERE msg IN (${ids.map(() => '?').join(',')})`).bind(...ids).all(); for (const x of results || []) sug[x.msg] = x.texto; } catch (e) {}
   const aps = [...new Set(Object.values(apDe))];
   const ctx = {};
   if (aps.length) {
@@ -101,6 +104,6 @@ export async function juntarSuporte(env, mensagens) {
   }
   return lista.map(m => {
     const ap = apDe[m.id];
-    return ap ? Object.assign({}, m, { conversa: true, respostas: resp[m.id] || [], ctx: ctx[ap] || null }) : m;
+    return ap ? Object.assign({}, m, { conversa: true, respostas: resp[m.id] || [], ctx: ctx[ap] || null, sugestao: (resp[m.id] || []).length ? null : (sug[m.id] || null) }) : m;
   });
 }

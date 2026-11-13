@@ -330,3 +330,7 @@ CREATE INDEX IF NOT EXISTS convites_em ON convites (em);
 CREATE TABLE IF NOT EXISTS suporte (id INTEGER PRIMARY KEY AUTOINCREMENT, msg INTEGER, aparelho TEXT NOT NULL, de TEXT NOT NULL, texto TEXT NOT NULL, em INTEGER NOT NULL, lida INTEGER);
 CREATE INDEX IF NOT EXISTS suporte_ap ON suporte (aparelho, em);
 CREATE INDEX IF NOT EXISTS suporte_msg ON suporte (msg);
+-- 13/11 (pedido do dono): relatório do dia (gestor.js): os números de cada dia, fechados às 9h (Manaus) do dia seguinte, por 90 dias
+CREATE TABLE IF NOT EXISTS relatorios (dia TEXT PRIMARY KEY, dados TEXT NOT NULL, em INTEGER NOT NULL);
+-- 13/11: sugestão de resposta da IA para cada mensagem do suporte (o dono confere no painel; nunca vai sozinha)
+CREATE TABLE IF NOT EXISTS suporte_sugestao (msg INTEGER PRIMARY KEY, texto TEXT NOT NULL, modelo TEXT, em INTEGER NOT NULL);
