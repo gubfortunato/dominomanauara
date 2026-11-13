@@ -203,8 +203,8 @@ export async function avisosAgendados(env, agora) {
   agora = agora || agoraDe(env);
   const t = hm(agora), c = copaAgora(agora), out = [];
   const diaDe = ms => hm(ms).dia;
-  // sexta: 12h (o que não couber na rodada sai às 13h; cada um recebe uma vez) e 20h, quando começa (no dia da Copa, o texto junta as duas)
-  if (t.sem === 5 && (t.h === 12 || t.h === 13 || t.h === 20)) {
+  // sexta: 12h (o que não sair nessa rodada sai até as 15h; cada um recebe uma vez) e 20h, quando começa (no dia da Copa, o texto junta as duas)
+  if (t.sem === 5 && ((t.h >= 12 && t.h <= 15) || t.h === 20)) {
     const copaHoje = diaDe(c.atual.inicio) === t.dia;
     if (t.h !== 20) out.push({ chave: `sx:${t.dia}:12`, msg: copaHoje ? TEXTOS.copa12(c.atual) : TEXTOS.sexta12, para: 'todos', caixa: copaHoje });
     else out.push({ chave: `sx:${t.dia}:20`, msg: copaHoje ? TEXTOS.copa20(c.atual) : TEXTOS.sexta20, para: 'todos', caixa: copaHoje });

@@ -684,7 +684,10 @@ export default {
   async scheduled(evento, env, ctx) {
     const hora = new Date((evento && evento.scheduledTime) || Date.now()).getUTCHours();
     // 10/11: sexta às 20h (Manaus) só para a Sexta da Calçada e o começo da Copa
-    if (evento && (evento.cron === '0 0 * * 6' || evento.cron === '0 16,17 * * 5')) { ctx.waitUntil(rotinaEventos(env)); return; }   // 13/11: e sexta 12h/13h, o aviso da Sexta
+    // 13/11: pela hora (UTC) e não pelo texto do cron: sábado 0h (sexta 20h em Manaus) e sexta 16h-19h (12h-15h em Manaus)
+    // só fazem a rotina dos eventos (as rodadas de todo dia são às 13-15h e 21-23h UTC, nunca nessas horas)
+    const dow = new Date((evento && evento.scheduledTime) || Date.now()).getUTCDay();
+    if ((dow === 6 && hora === 0) || (dow === 5 && hora >= 16 && hora <= 19)) { ctx.waitUntil(rotinaEventos(env)); return; }
     ctx.waitUntil(rotinaEventos(env));   // 10/11: Copa (apuração e avisos), Sexta da Calçada e tempo de casa
     ctx.waitUntil(limparNumeros(env));   // 03/11: acessos por hora guardados por 60 dias
     if (hora === 13) ctx.waitUntil(relatorioDiario(env).catch(() => {}));   // 13/11: 9h em Manaus: o relatório de ontem no celular do dono
