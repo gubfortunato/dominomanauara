@@ -2448,6 +2448,19 @@ body.assistindo #scrGame.game{padding-bottom:calc(env(safe-area-inset-bottom,0px
 .ev-card .ck{color:#f3c25a}
 .ev-card.copa{--wood-1:#17664a;--wood-2:#05201a}
 .ev-card.sexta{--wood-1:#3d2c6e;--wood-2:#160e30}
+/* 13/11: Sexta da Calçada à noite (só na aba Calçada, das 20h às 23h de sexta) */
+body.calc-noite{--bg:#120c22;--bg-2:#1e1634;--fg:#f6ecdc;--muted:#bfb0d4;--line:rgba(255,214,160,.18);background:radial-gradient(120% 60% at 50% -10%,#3a2758 0%,#1a1130 45%,#0f0a1c 100%) fixed;color:var(--fg)}
+body.calc-noite #scrCalcada .aba-tit{color:#ffe2b0;text-shadow:0 0 18px rgba(255,170,80,.45)}
+body.calc-noite #calcCorpo .vivo-mesa{box-shadow:0 0 0 1px rgba(255,190,110,.22),0 10px 26px rgba(255,140,50,.10)}
+body.calc-noite #calcCorpo .vivo-mesa.livre{background:linear-gradient(180deg,rgba(255,170,80,.14),rgba(255,170,80,.05)),var(--bg-2)}
+#scrCalcada .varal{display:block;width:calc(100% + 32px);height:54px;margin:-6px -16px -8px;overflow:visible}
+#scrCalcada .varal .lp circle{filter:drop-shadow(0 0 6px rgba(255,190,90,.9));animation:lpPisca 2.4s ease-in-out infinite;animation-delay:var(--d)}
+@keyframes lpPisca{0%,100%{opacity:1}50%{opacity:.5}}
+@media (prefers-reduced-motion:reduce){#scrCalcada .varal .lp circle{animation:none}}
+.calc-sexta{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#4a2a6e,#2a1745);color:#fff1dc;box-shadow:0 0 0 1px rgba(255,200,120,.25),0 8px 24px rgba(120,60,200,.25)}
+.calc-sexta .cs-fogo{font-size:26px}
+.calc-sexta .cs-tx{display:grid;gap:2px}.calc-sexta .cs-tx b{font-size:16.5px}.calc-sexta .cs-tx small{font-size:13.5px;opacity:.85}
+.calc-sexta .cs-relogio{display:grid;justify-items:end;line-height:1.1}.calc-sexta .cs-relogio small{font-size:12px;opacity:.8}.calc-sexta .cs-relogio b{font-size:22px;font-variant-numeric:tabular-nums;color:#ffd27a}
 .ev-card.quarta{--wood-1:#1d5d78;--wood-2:#08222e}   /* 12/11: Quarta dos Amigos */
 /* Copa: janela e cartão da Calçada */
 .cs-status{margin:4px 0 10px;color:var(--muted);font-size:15.5px;line-height:1.4}
@@ -4094,6 +4107,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.54.3', data: '13/11/2026', itens: ['Sexta da Calçada com cara de noite: das 20h às 23h, a aba Calçada ganha varal de lâmpadas, o relógio de quanto falta e as mesas com lugar vago primeiro.'] },
   { v: '3.54.2', data: '13/11/2026', itens: ['A turma do bairro agora treina toda noite: quando acha um jeito melhor de jogar, passa a usar nas mesas online.'] },
   { v: '3.54.1', data: '13/11/2026', itens: ['Suporte mais rápido: as respostas às mensagens do Fale com a gente chegam mais depressa aqui no app.'] },
   { v: '3.54.0', data: '12/11/2026', itens: ['Ajuda e suporte, em Mais: as dúvidas mais comuns (código de sócio, plano em outro aparelho, pagamento, partidas grátis, bloqueio, progresso, robô e regras) com a resposta e um botão que resolve.', 'Fale com a gente virou conversa: a resposta do suporte chega aqui no app, em até 48 horas, com aviso no celular.', 'Na sexta da Copa dos Sócios, o cartão da Sexta da Calçada aparece junto do cartão da Copa.', 'Partidas grátis com o número certo em todas as telas: até 19/11 (bônus), 5 por dia na mesa rápida e 2 com os amigos; depois, 3 e 1.'] },
@@ -4931,6 +4945,7 @@ function show(name) {
     if (name === 'dono') renderDono();
     if (name === 'fale') renderFale();
     if (name === 'ajuda') renderAjuda();   // 12/11
+    if (name !== 'calcada') document.body.classList.remove('calc-noite'); else try { calcCabSexta(); } catch (e) {}   // 13/11: Sexta à noite só na Calçada
     if (name === 'sala') renderSala();
     if (name === 'anuncie') renderAnuncie();
     if (name === 'apoio') renderApoioTela();
@@ -11463,18 +11478,40 @@ function vivoVisivel() { const c = $('#vivoCard'); if (c) c.hidden = !vivoMostra
   const sub = $('#calcSub'); if (sub) sub.textContent = vivoDetalhes() ? 'Administrador: todas as mesas online jogando agora, inclusive as mesas com os amigos.' : 'As mesas jogando agora. Toque numa mesa rápida com lugar vago e entre na partida.';
   try { calcCabSexta(); } catch (e) {} }   // (na carga do app, o relógio de Manaus ainda não existe: a aba se acerta ao abrir)
 // 11/11 (pedido do dono): durante a Sexta da Calçada (sexta, das 20h às 23h), o título da aba vira "🔥 Sexta da Calçada"
+// 13/11 (pedido do dono: "deixar a tela da calçada diferente na hora da Sexta"): das 20h às 23h de sexta, a aba Calçada
+// fica com cara de rua à noite (fundo escuro, varal de lâmpadas que piscam de leve; parado para quem pediu menos movimento),
+// uma faixa com o tempo que falta e, para o sócio, "dobro" no botão de entrar. As mesas com lugar vago aparecem primeiro.
+const VARAL = (() => { const n = 11, pts = []; for (let i = 0; i < n; i++) { const x = 12 + i * (376 / (n - 1)), y = 10 + 22 * Math.sin(Math.PI * (x - 12) / 376); pts.push([x, y]); }
+  const cores = ['#ffd27a', '#ff9f5a', '#ffe9b0', '#ffb36b'];
+  return `<svg class="varal" viewBox="0 0 400 54" preserveAspectRatio="none" aria-hidden="true"><path d="M0 8 Q200 62 400 8" fill="none" stroke="rgba(30,20,10,.9)" stroke-width="1.6"/>`
+    + pts.map(([x, y], i) => `<g class="lp" style="--d:${(i * 0.37) % 2.2}s"><rect x="${(x - 1.6).toFixed(1)}" y="${(y + 2).toFixed(1)}" width="3.2" height="4" rx="1" fill="#2b2117"/><circle cx="${x.toFixed(1)}" cy="${(y + 10).toFixed(1)}" r="4.6" fill="${cores[i % 4]}"/></g>`).join('') + '</svg>'; })();
+function sxFalta() {   // até as 23h (Manaus) de hoje
+  const d = manausDe(Date.now()), fim = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 23) + 4 * 3600000;
+  const m = Math.max(0, Math.ceil((fim - Date.now()) / 60000));
+  return m >= 60 ? `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}` : `${m} min`;
+}
+function sextaNoite(ev) {
+  document.body.classList.toggle('calc-noite', !!ev && screen === 'calcada');
+  const cab = document.querySelector('#scrCalcada .aba-cab'); if (!cab) return;
+  let fx = $('#calcSexta');
+  if (!ev) { if (fx) fx.hidden = true; const v = $('#scrCalcada .varal'); if (v) v.remove(); return; }
+  if (!$('#scrCalcada .varal')) cab.insertAdjacentHTML('beforebegin', VARAL);
+  if (!fx) { cab.insertAdjacentHTML('afterend', '<div class="calc-sexta" id="calcSexta" role="status"></div>'); fx = $('#calcSexta'); }
+  fx.hidden = false;
+  fx.innerHTML = `<span class="cs-fogo" aria-hidden="true">🔥</span><span class="cs-tx"><b>${temPlano() ? 'Moral em dobro para você' : 'Sócio ganha moral em dobro'}</b><small>${temPlano() ? 'Em toda partida, até as 23h.' : 'Toda partida até as 23h vale o dobro para quem é sócio.'}</small></span><span class="cs-relogio"><small>termina em</small><b>${sxFalta()}</b></span>`;
+}
+setInterval(() => { try { if (screen === 'calcada' && sxAgora() === 'agora') sextaNoite(true); else if (document.body.classList.contains('calc-noite')) calcCabSexta(); } catch (e) {} }, 30000);
 function calcCabSexta() {
   const tit = document.querySelector('#scrCalcada .aba-tit'), sub = $('#calcSub'); if (!tit) return;
   const ev = typeof sxAgora === 'function' && sxAgora() === 'agora';
   const qa = !ev && typeof quaAgora === 'function' && quaAgora() === 'agora';   // 12/11: Quarta dos Amigos
   tit.textContent = ev ? '🔥 Sexta da Calçada' : qa ? '🤝 Quarta dos Amigos' : 'Agora na calçada';
   tit.closest('.aba-cab').classList.toggle('sexta', ev || qa);
+  try { sextaNoite(ev); } catch (e) {}   // 13/11: a Calçada vira rua à noite, com o varal de lâmpadas e o relógio
   if (qa && sub && !vivoDetalhes()) sub.textContent = temPlano()
     ? 'Até as 23h, a sua mesa com os amigos fica liberada: quem você chamar joga sem limite. E você ganha moral em dobro.'
     : 'Até as 23h, na mesa com os amigos de um sócio, você joga sem limite. As mesas jogando agora estão aqui.';
-  if (ev && sub && !vivoDetalhes()) sub.textContent = temPlano()
-    ? 'Até as 23h, você ganha moral em dobro em toda partida, sócio. As mesas jogando agora estão aqui: toque numa com lugar vago e entre.'
-    : 'Até as 23h, os sócios ganham moral em dobro em toda partida. As mesas jogando agora estão aqui: toque numa com lugar vago e entre.';
+  if (ev && sub && !vivoDetalhes()) sub.textContent = 'As mesas jogando agora estão aqui, com lugar vago primeiro: toque numa e entre.';   // 13/11: a faixa da Sexta já fala da moral
 }
 const VIVO = { mesas: [], timer: null, buscadoEm: 0, buscando: false, comoJogador: false };
 const VIVO_MIN = 10;   // a linha "Hoje" só aparece a partir de 10 partidas no dia
@@ -11561,7 +11598,9 @@ function vivoDesenha() {
     return;
   }
   if (pe) pe.hidden = false;
-  box.innerHTML = VIVO.mesas.map((v, i) => {
+  const sxNoite = sxAgora() === 'agora', sxSocio = sxNoite && temPlano();   // 13/11: na Sexta, vagas primeiro
+  const ordem = VIVO.mesas.map((v, i) => [v, i]); if (sxNoite) ordem.sort((a, b) => (b[0].livres > 0 && b[0].publica !== false) - (a[0].livres > 0 && a[0].publica !== false));
+  box.innerHTML = ordem.map(([v, i]) => {
     const m = MESAS.find(x => x.id === v.tema) || MESAS[0], c = v.cad || [];
     const rosto = p => { const x = c[p]; if (!x) return '<i></i>'; if (!x.nome) return `<i class="vivo-anon${x.bot ? ' bot' : ''}" aria-hidden="true"></i>`; if (!x.bot && x.foto) { const f = fotoAv(x); if (f) return f; } const a = !x.bot && typeof avatarDe === 'function' ? avatarDe(x.av) : null; const src = x.bot ? botFaceURI(x.nome) : a ? avatarURI(a) : ''; return src ? `<img src="${src}" alt="">` : `<i>${esc((x.nome || '?')[0])}</i>`; };
     const tipo = p => (c[p] || {}).tipo || ((c[p] || {}).bot ? 'robo' : 'pessoa');
@@ -11572,7 +11611,7 @@ function vivoDesenha() {
     // 3.28: dois botões — entrar (se tem lugar vago) e assistir (quem tem o número: mesa rápida; o administrador, todas)
     const ver = v.codigo || (v.desafio && v.desafio.ver) ? `<button type="button" class="vivo-assistir" data-i="${i}" data-acao="assistir" aria-label="Assistir a partida na mesa ${esc(m.nome)}"><span aria-hidden="true">👀</span> Assistir</button>` : '';   // 10/11: Desafio ao vivo
     const estado = `<span class="vivo-acoes">${convite ? `<span class="vivo-st vivo-cheia-st vivo-convite"><span aria-hidden="true">●</span> ${ver ? 'Só por convite' : 'Mesa com os amigos · só por convite'}</span>` : livre
-      ? `<button type="button" class="vivo-st vivo-entra" data-i="${i}" data-acao="entrar"><span aria-hidden="true">▶</span> Entrar · ${lugares} ${lugares === 1 ? 'lugar vago' : 'lugares vagos'}</button>`
+      ? `<button type="button" class="vivo-st vivo-entra" data-i="${i}" data-acao="entrar"><span aria-hidden="true">▶</span> Entrar · ${sxSocio ? `${lugares} ${lugares === 1 ? 'vaga' : 'vagas'} · 🔥 dobro` : `${lugares} ${lugares === 1 ? 'lugar vago' : 'lugares vagos'}`}</button>`
       : `<span class="vivo-st vivo-cheia-st"><span aria-hidden="true">●</span> Mesa cheia</span>`}${ver}</span>`;
     const abre = `<div class="vivo-mesa${livre ? ' livre' : ' cheia'}" role="group" data-i="${i}" aria-label="${esc(m.nome)}: ${nPessoas} ${nPessoas === 1 ? 'pessoa' : 'pessoas'}${adm ? `, ${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}` : ''}. ${livre ? `${lugares} ${lugares === 1 ? 'lugar vago' : 'lugares vagos'}` : convite ? 'Mesa com os amigos, só por convite' : 'Mesa cheia'}">
       <span class="vivo-sw" style="background:${fundoMesa(m)}"></span>`;
@@ -15224,7 +15263,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.54.2-f5c91221';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.54.3-42c55505';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
