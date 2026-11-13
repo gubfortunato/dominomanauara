@@ -338,3 +338,6 @@ CREATE TABLE IF NOT EXISTS suporte_sugestao (msg INTEGER PRIMARY KEY, texto TEXT
 -- versão que ganhou e confirmou (só a ativa mais nova vale nas mesas online); robo_treinos: o resultado de cada noite (só números).
 CREATE TABLE IF NOT EXISTS robo_pesos (versao INTEGER PRIMARY KEY AUTOINCREMENT, pesos TEXT NOT NULL, ganho REAL, z REAL, pares INTEGER, em INTEGER NOT NULL, ativo INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS robo_treinos (em INTEGER PRIMARY KEY, mudou INTEGER NOT NULL, motivo TEXT, media REAL, z REAL, segundos INTEGER);
+-- 13/11 (pedido do dono): Placar da Sexta (sexta.js): partidas, vitórias e galos nas mesas online das 20h às 23h de sexta
+CREATE TABLE IF NOT EXISTS sexta_placar (dia TEXT NOT NULL, aparelho TEXT NOT NULL, nome TEXT, partidas INTEGER NOT NULL DEFAULT 0, vitorias INTEGER NOT NULL DEFAULT 0, galos INTEGER NOT NULL DEFAULT 0, em INTEGER, PRIMARY KEY (dia, aparelho));
+CREATE INDEX IF NOT EXISTS sexta_placar_dia ON sexta_placar (dia, vitorias);

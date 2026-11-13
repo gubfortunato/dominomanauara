@@ -18,7 +18,8 @@ import { limitePessoa, donoVigiaTirar, vigiados } from './pessoa.js';
 import { donoQuarta } from './quarta.js';   // 12/11: Quarta dos Amigos
 import { anotarSuporte, suporteDoAparelho, suporteLido, donoResponder, juntarSuporte } from './suporte.js';   // 12/11: conversa com o suporte
 import { relatorioDiario, donoRelatorio, alertas, sugerirResposta } from './gestor.js';
-import { donoRobo, donoRoboVoltar } from './robo.js';   // 13/11: robô que treina toda noite   // 13/11: relatório do dia, alertas e rascunho de resposta
+import { donoRobo, donoRoboVoltar } from './robo.js';   // 13/11: robô que treina toda noite
+import { sextaPlacar } from './sexta.js';   // 13/11: Placar da Sexta   // 13/11: relatório do dia, alertas e rascunho de resposta
 import { travaCodigo, anotarCodigoErrado, limparCodigos } from './codigos.js';
 import { saudeVoz, donoPapoVoz, limparVozesDenunciadas } from './voz.js';
 import { copaInfo, apurarCopa, avisosAgendados } from './copa.js';   // 10/11: Copa dos Sócios, Sexta da Calçada e tempo de casa
@@ -580,6 +581,7 @@ export default {
       // Plano Apoiador e doações (Asaas)
       const H = { json, marcaDoDia, ehDono, SITE };
       if (url.pathname === '/saude/ia' && req.method === 'GET') return await fotos.saudeIA(env, origin, H);
+      if (url.pathname === '/sexta/placar' && req.method === 'GET') return await sextaPlacar(env, url, H, origin);   // 13/11
       if (url.pathname === '/suporte' && req.method === 'GET') return await suporteDoAparelho(req, env, origin, H, url);   // 12/11: conversa com o suporte
       if (url.pathname === '/suporte/lido' && req.method === 'POST') return await suporteLido(req, env, origin, H);
       if (url.pathname === '/saude/voz' && req.method === 'GET') return await saudeVoz(env, origin, H);   // 10/11: áudio do papo
