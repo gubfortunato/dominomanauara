@@ -1,6 +1,8 @@
 // Bloqueio de jogadores (3.25): o administrador bloqueia quem usar apelido ou foto ofensiva. Quem está bloqueado sai
 // da mesa na hora (um robô assume a cadeira), perde a foto e não entra mais na mesa online, na mesa rápida nem nas
 // turmas. O jogo offline continua. O servidor guarda só o código aleatório do aparelho, o apelido e quando foi.
+import { nomeComum } from './pessoa.js';   // 12/11
+import { nomeChave } from './planos.js';
 const DIA = 86400000;
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
 
@@ -46,11 +48,14 @@ export async function pegaPeloApelido(env, aparelho, nome) {
   return true;
 }
 // o apelido de quem o administrador bloqueou passa a valer para qualquer aparelho (se for pouco comum)
+// 12/11 (o bloqueado por burla voltou com um aparelho que escapou): "comum" era ter mais de 3 aparelhos com o apelido, e
+// quem burla tem justamente muitos aparelhos. Agora: nome da lista de nomes comuns (pessoa.js) fica de fora; os outros
+// entram, a não ser que mais de 12 aparelhos AINDA LIVRES (não bloqueados) usem o apelido (aí é de muita gente).
 async function bloquearApelido(env, nome, motivo) {
-  const t = termoLimpo(nome); if (t.length < 4) return;
+  const t = termoLimpo(nome); if (t.length < 4 || nomeComum(nomeChave(nome))) return;
   try {
-    const { results } = await env.DB.prepare('SELECT nome FROM jogadores_vistos WHERE visto_em > ?').bind(Date.now() - 60 * DIA).all();
-    if ((results || []).filter(r => termoLimpo(r.nome) === t).length > 3) return;   // apelido comum: não
+    const { results } = await env.DB.prepare('SELECT v.nome, (SELECT 1 FROM bloqueios b WHERE b.aparelho = v.aparelho) AS bloq FROM jogadores_vistos v WHERE v.visto_em > ?').bind(Date.now() - 60 * DIA).all();
+    if ((results || []).filter(r => !r.bloq && termoLimpo(r.nome) === t).length > 12) return;   // apelido de muita gente: não
     await env.DB.prepare('INSERT OR IGNORE INTO apelidos_bloqueados (termo, parte, motivo, em) VALUES (?, 0, ?, ?)').bind(t, motivo || null, Date.now()).run();
     termosMudaram();
   } catch (e) {}
