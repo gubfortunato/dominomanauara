@@ -1278,6 +1278,12 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
   body.assistindo #scrGame .score .tlabel{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;letter-spacing:.06em}
 }
 #scrGame .score .tlabel{overflow-wrap:anywhere}
+/* 12/11: quem assiste: um nome por linha, sem caixa alta, "…" só no fim do nome que não couber; o 🐟 fica acima */
+#scrGame .score .tlabel.tl-duo,body.assistindo #scrGame .score .tlabel.tl-duo{display:block;-webkit-line-clamp:unset;overflow:visible;position:relative;text-transform:none;letter-spacing:0;font-size:15px;line-height:1.25;overflow-wrap:normal;min-width:0;max-width:100%}
+.tl-duo .tl-n{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-duo .tl-peixe{position:absolute;bottom:100%;margin-bottom:3px;white-space:nowrap;font-size:14px}
+.team.L .tl-duo .tl-peixe{left:0}.team.R .tl-duo .tl-peixe{right:0}
+#scrGame .score .meta .pt.pt-linhas .pt-l{display:block;white-space:nowrap}
 /* 3.41: aviso da sua vez com o relógio dentro: a faixa dourada esvazia com o tempo e os segundos ficam no fim do aviso.
    O texto não quebra nem é cortado: a letra diminui até caber (ajustarPrompt) */
 #scrGame #prompt.you{white-space:nowrap;overflow:hidden;max-width:100%}
@@ -1926,6 +1932,13 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .ca-zap svg{width:30px;height:30px;flex:none}.ca-zap span{display:flex;flex-direction:column;gap:2px;line-height:1.2}
 .ca-zap b{font-size:17px;font-weight:800}.ca-zap small{font-size:13.5px;font-weight:600;opacity:.85}
 .primary.ca-depois{margin-top:10px;background:transparent;color:var(--fg);box-shadow:inset 0 0 0 1.5px var(--line)}
+/* 12/11 (pedido do dono): "Agora não" é sempre o menor botão. Nos cartões com dois botões lado a lado, o principal
+   (Renovar, Instalar, Quero lembretes, Bora jogar) ocupa o resto da linha e o "Agora não" fica pequeno, no fim. */
+.install .row,.avisos-card .row,.ap-convite-bt,.ap-convite .ap-convite-bt{align-items:center}
+.install .row .primary,.avisos-card .row .primary,.ap-convite-bt .primary,.ap-convite .ap-convite-bt .primary{flex:1 1 auto;padding:13px 20px}
+.install .row .linkbtn,.avisos-card .row .linkbtn,.ap-convite-bt .linkbtn,.ap-convite .ap-convite-bt .linkbtn{flex:0 0 auto;align-self:center;padding:8px 14px;font-size:15px;font-weight:600}
+.ch-bt .linkbtn{padding:8px 12px;font-size:15px;font-weight:600}
+.linkbtn:disabled{opacity:.5;cursor:default}
 .trz-dica{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:var(--bg-2);border:1px solid var(--line);font-size:14.5px;line-height:1.4;color:var(--fg)}   /* 12/11: o que conferir no código */
 .pl-passe{display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}.pl-passe small{font-size:13px;font-weight:600;opacity:.8}   /* 12/11: passe da semana */
 .ps-cmp{margin:12px 0 14px;padding:12px 14px;border-radius:14px;background:var(--bg-2);border:1px solid var(--line);font-size:15px;line-height:1.4}
@@ -4000,6 +4013,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.53.26', data: '12/11/2026', itens: ['Botões mais claros: o botão principal fica maior e o "Agora não" fica sempre menor. "Já sou sócio em outro aparelho" ficou do tamanho dos outros botões.', 'Quem assiste uma partida vê os nomes das duplas por inteiro: um nome por linha, sem cortar no meio da palavra.'] },
   { v: '3.53.25', data: '12/11/2026', itens: ['Sócio: o app lembra de guardar o seu código de sócio, mostra onde achar (Mais › Seu código de sócio) e como recuperar o plano em outro aparelho. Dá para copiar ou mandar o código para o seu WhatsApp.'] },
   { v: '3.53.24', data: '12/11/2026', itens: ['O recado "Bora chamar a turma?" não aparece mais ao abrir o app. O convite para os amigos continua na mesa com os amigos e em Mais.'] },
   { v: '3.53.23', data: '12/11/2026', itens: ['Mais proteção para o progresso do sócio: se o app for reinstalado ou o celular trocado, o progresso guardado com a gente não é mais apagado pelo da instalação nova. Ele volta sozinho para o celular.'] },
@@ -10153,7 +10167,7 @@ render = function () {
   try {
     if (mode !== 'on' || !ON.vista || !G || screen !== 'game' || emFila(ON.vista)) return;
     const v = ON.vista, f = v.fica, nf = (v.fila || []).length;
-    if (f && f.n && (nf || f.n >= 2)) { const el = $(((v.minha % 2 ? 1 - f.team : f.team) === 0) ? '#tL' : '#tR'); if (el) el.textContent = seatMe == null ? '🐟' + f.n + ' ' + el.textContent : el.textContent + ' 🐟' + f.n; }   // 3.37.1: quem assiste vê os nomes (compridos): o peixe vai na frente para não sumir no corte
+    if (f && f.n && (nf || f.n >= 2)) { const el = $(((v.minha % 2 ? 1 - f.team : f.team) === 0) ? '#tL' : '#tR'); if (el) { if (el.classList.contains('tl-duo')) el.insertAdjacentHTML('afterbegin', `<span class="tl-peixe">🐟${f.n}</span>`); else el.textContent = seatMe == null ? '🐟' + f.n + ' ' + el.textContent : el.textContent + ' 🐟' + f.n; } }   // 12/11: com um nome por linha, o peixe fica em cima   // 3.37.1: quem assiste vê os nomes (compridos): o peixe vai na frente para não sumir no corte
     if (nf) $('#ptLbl').textContent += ` · ${nf} na fila`;
   } catch (e) {}
 };
@@ -12999,7 +13013,7 @@ function convitePlano(motivo) {
     <div class="pr-acoes">${pode ? '<button type="button" class="primary" id="plVer" style="width:100%">Quero ser sócio</button>' : ''}
     ${pode && motivo !== 'papo' ? `<button type="button" class="secondary pl-passe" id="plPasse" style="width:100%;margin-top:10px"><b>Passe da semana: ${brl(precoDe('aps').valor)}</b><small>7 dias sem limite, sem renovar</small></button>` : ''}
     ${podeRapida ? '<button type="button" class="secondary" id="plRapida" style="width:100%;margin-top:10px">Jogar na mesa rápida</button>' : podeOff ? '<button type="button" class="secondary" id="plOffline" style="width:100%;margin-top:10px">Jogar offline</button>' : ''}
-    ${pagamentosAtivos() ? '<button type="button" class="linkbtn" id="plTrazer" style="width:100%;margin-top:6px">Já sou sócio em outro aparelho</button>' : ''}
+    ${pagamentosAtivos() ? '<button type="button" class="secondary" id="plTrazer" style="width:100%;margin-top:10px">Já sou sócio em outro aparelho</button>' : ''}
     <button type="button" class="linkbtn" id="plFechar" style="width:100%;margin-top:6px">Agora não</button></div>`);   // 05/11: os botões ficam sempre à vista
   track('plano-limite-' + motivo + (pessoa ? '-pessoa' : ''));
   if ($('#plVer')) $('#plVer').addEventListener('click', () => { track('plano-quero-' + motivo + (vit ? '-vitrine' : '')); closeSheet(); abrirApoio(screen === 'game' || screen === 'sala' ? 'home' : (screen || 'home'), 'plano'); });
@@ -13815,8 +13829,8 @@ function avisoPromoSocio(forcar, motivo) {
     <p class="note pr-nota">Sem fidelidade: você para a renovação quando quiser.</p>
     <div class="pr-acoes"><button type="button" class="primary" id="prQuero" style="width:100%">Quero ser sócio</button>
     ${motivo ? `<button type="button" class="secondary pl-passe" id="prPasse" style="width:100%;margin-top:8px"><b>Passe da semana: ${brl(precoDe('aps').valor)}</b><small>7 dias sem limite, sem renovar</small></button>` : ''}
-    <button type="button" class="secondary" id="prFechar" style="width:100%;margin-top:8px" disabled>Agora não (10)</button>
-    ${motivo ? '<button type="button" class="linkbtn" id="prTrazer" style="width:100%;margin-top:6px">Já sou sócio em outro aparelho</button>' : ''}</div>`);
+    ${motivo ? '<button type="button" class="secondary" id="prTrazer" style="width:100%;margin-top:8px">Já sou sócio em outro aparelho</button>' : ''}
+    <button type="button" class="linkbtn" id="prFechar" style="width:100%;margin-top:8px" disabled>Agora não (10)</button></div>`);   // 12/11: "Agora não" sempre o menor, no fim
   track('promo-socio-aviso');
   promoAte = Date.now() + 10000;
   const x = $('#sheet .folha-x'); if (x) { x.disabled = true; x.classList.add('pr-travado'); }
@@ -14126,7 +14140,7 @@ function desafioConviteNaHome() {
     <p class="note">Vale até 20/12.${d.total ? ` ${d.total === 1 ? '1 Turma já está' : d.total + ' Turmas já estão'} na disputa.` : ''}</p>
     <button type="button" class="primary" id="dscMontar" style="width:100%">Montar a minha Turma</button>
     <button type="button" class="secondary" id="dscCodigo" style="width:100%;margin-top:8px">Tenho o código de uma Turma</button>
-    <button type="button" class="secondary" id="dscFechar" style="width:100%;margin-top:8px">Agora não</button>`);
+    <button type="button" class="linkbtn" id="dscFechar" style="width:100%;margin-top:8px">Agora não</button>`);
   const vai = () => { closeSheet(); abrirTurma(); };
   $('#dscMontar').addEventListener('click', () => { track('desafio-convite-montar'); vai(); });
   $('#dscCodigo').addEventListener('click', () => { track('desafio-convite-codigo'); vai(); setTimeout(() => { const i = $('#tmCod'); if (i) i.focus(); }, 400); });
@@ -14222,6 +14236,18 @@ function miniTile(t) {
 function base() { return seatMe == null ? 0 : seatMe; }
 function who(p) { return p === seatMe ? 'Você' : G.names[p]; }
 function duo(team) { return `${G.names[team]} e ${G.names[team + 2]}`; }
+// 12/11 (pedido do dono: "os nomes das duplas precisam aparecer melhor"): quem assiste via "POWERGUID / O E…" (caixa alta,
+// cortado no meio da palavra). Agora o placar mostra um nome por linha, como o jogador escreveu; o que não couber termina
+// em "…" no fim do próprio nome. Jogando, continua "Nós" e "Eles"; no confronto do Desafio, o nome das Turmas.
+function rotuloDupla(el, team) {
+  if (!el) return;
+  const t = teamName(team);
+  if (seatMe == null && G && G.names && t === duo(team)) {
+    el.classList.add('tl-duo');
+    el.innerHTML = `<span class="tl-n">${esc(G.names[team])}</span><span class="tl-n">${esc(G.names[team + 2])}</span>`;
+    el.title = t;
+  } else { el.classList.remove('tl-duo'); el.removeAttribute('title'); el.textContent = t; }
+}
 function teamName(team) {
   // 11/11 (pedido do dono): quem assiste um confronto do Desafio vê o nome das Turmas (Os do Japiim × Galera do Coroado)
   const cf = seatMe == null && typeof ON !== 'undefined' && ON.assistindo && ON.vista && ON.vista.confronto;
@@ -14294,7 +14320,7 @@ function bubble(p, text, galo) {
 function render() {
   if (!G) return;
   const L = TEAM(base()), R = 1 - L;
-  $('#tL').textContent = teamName(L); $('#tR').textContent = teamName(R);
+  rotuloDupla($('#tL'), L); rotuloDupla($('#tR'), R);
   $('#sL').textContent = G.score[L]; $('#sR').textContent = G.score[R];
   $('#bL').style.width = Math.min(100, G.score[L] / TARGET * 100) + '%';
   $('#bR').style.width = Math.min(100, G.score[R] / TARGET * 100) + '%';
@@ -14852,7 +14878,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.53.25-cdd8da5f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.53.26-086cddd3';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -15356,6 +15382,16 @@ render = function () {
   } catch (e) {}
   return r;
 };
+// 12/11 (nomes das duplas para quem assiste): a linha do meio ("Partida 1 · até 200 · 1 na fila") vira uma informação por
+// linha, mais estreita, e sobra largura para os nomes dos dois lados. Fica por último: as outras partes só acrescentam texto.
+function ptEmLinhas() {
+  const pl = $('#ptLbl'); if (!pl) return;
+  const ver = seatMe == null && !!G && document.body.classList.contains('assistindo');
+  pl.classList.toggle('pt-linhas', ver);
+  if (ver && !pl.querySelector('.pt-l')) pl.innerHTML = pl.textContent.split(' · ').map(s => `<span class="pt-l">${esc(s)}</span>`).join('');
+}
+const renderLinhas = render;
+render = function () { const r = renderLinhas.apply(this, arguments); try { ptEmLinhas(); } catch (e) {} return r; };
 const showTreino = show;
 show = function (name) {
   if (TREINO.on && name !== 'game') sairTreino();
