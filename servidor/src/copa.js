@@ -11,7 +11,7 @@
 // TEMPO DE CASA — "sócio há 3 meses": a contagem é da conta de sócio (o código). Se o plano vencer e passar 7 dias sem
 // renovar, recomeça do zero (o dono escolheu). Marcas aos 3, 6 e 12 meses; quando chega uma, vai um aviso para o celular.
 //
-// SEXTA DA CALÇADA — toda sexta, das 20h às 23h: moral em dobro (a experiência do jogo se chama "moral"; o nível sobe duas vezes mais rápido) e aviso às 19h e às 20h.
+// SEXTA DA CALÇADA — toda sexta, das 20h às 23h: moral em dobro (a experiência do jogo se chama "moral"; o nível sobe duas vezes mais rápido) e aviso às 12h (13/11, pedido do dono; antes 19h) e às 20h.
 // QUARTA DOS AMIGOS — toda quarta, das 20h às 23h: ver quarta.js (aqui só os avisos das 18h).
 import { ordenados, lista, periodos } from './ranking.js';
 import { fotosDe } from './fotos.js';
@@ -186,9 +186,9 @@ const hm = ms => { const d = new Date(ms - MANAUS); return { dia: d.toISOString(
 const ddmm = ms => { const d = new Date(ms - MANAUS); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0'); };
 export const TEXTOS = {
   vemAi: e => ({ titulo: `Vem aí a ${e.nome}! 🏆`, texto: `De ${ddmm(e.inicio)} (sexta, 20h) a ${ddmm(e.fim)} (domingo, 22h). Só sócios pontuam: o campeão leva o troféu na carteira e a mesa do campeão.`, url: '/?abrir=copa' }),
-  sexta19: { titulo: 'Hoje tem Sexta da Calçada! 🔥', texto: 'Das 20h às 23h, sócio ganha moral em dobro: o nível sobe duas vezes mais rápido. Chama a turma e bora pra mesa!', url: '/' },
+  sexta12: { titulo: 'Hoje tem Sexta da Calçada! 🌙', texto: 'Das 20h às 23h, sócio ganha moral em dobro: o nível sobe duas vezes mais rápido. Chama a turma e bora pra mesa!', url: '/' },
   sexta20: { titulo: 'Começou a Sexta da Calçada!', texto: 'Até as 23h, sócio ganha moral em dobro: o nível sobe duas vezes mais rápido. Bora pra mesa?', url: '/' },
-  copa19: e => ({ titulo: `A ${e.nome} começa em 1 hora! 🏆`, texto: 'Às 20h começa a Copa e a Sexta da Calçada, com moral em dobro para os sócios. Só sócios pontuam na Copa.', url: '/?abrir=copa' }),
+  copa12: e => ({ titulo: `Hoje começa a ${e.nome}! 🏆`, texto: 'Às 20h começa a Copa e a Sexta da Calçada, com moral em dobro para os sócios. Só sócios pontuam na Copa.', url: '/?abrir=copa' }),
   copa20: e => ({ titulo: `Começou a ${e.nome}! 🏆`, texto: `Vai até domingo, 22h. Cada vitória online conta ponto para os sócios. E hoje o sócio tem moral em dobro até as 23h.`, url: '/?abrir=copa' }),
   ultimas: e => ({ titulo: `Últimas horas da ${e.nome}!`, texto: 'A Copa termina hoje às 22h. Ainda dá tempo de subir no ranking: bora pra mesa!', url: '/?abrir=copa' }),
   campeaoTodos: e => ({ titulo: `Temos campeão da ${e.nome}! 🏆`, texto: 'Veja quem levou o troféu. A próxima Copa já tem data: seja sócio e venha disputar.', url: '/?abrir=copa' }),
@@ -203,10 +203,10 @@ export async function avisosAgendados(env, agora) {
   agora = agora || agoraDe(env);
   const t = hm(agora), c = copaAgora(agora), out = [];
   const diaDe = ms => hm(ms).dia;
-  // sexta: 19h e 20h (no dia da Copa, o texto junta as duas)
-  if (t.sem === 5 && (t.h === 19 || t.h === 20)) {
+  // sexta: 12h (o que não couber na rodada sai às 13h; cada um recebe uma vez) e 20h, quando começa (no dia da Copa, o texto junta as duas)
+  if (t.sem === 5 && (t.h === 12 || t.h === 13 || t.h === 20)) {
     const copaHoje = diaDe(c.atual.inicio) === t.dia;
-    if (t.h === 19) out.push({ chave: `sx:${t.dia}:19`, msg: copaHoje ? TEXTOS.copa19(c.atual) : TEXTOS.sexta19, para: 'todos', caixa: copaHoje });
+    if (t.h !== 20) out.push({ chave: `sx:${t.dia}:12`, msg: copaHoje ? TEXTOS.copa12(c.atual) : TEXTOS.sexta12, para: 'todos', caixa: copaHoje });
     else out.push({ chave: `sx:${t.dia}:20`, msg: copaHoje ? TEXTOS.copa20(c.atual) : TEXTOS.sexta20, para: 'todos', caixa: copaHoje });
   }
   // 12/11: quarta, às 18h (o que não couber na rodada sai às 19h; cada um recebe uma vez)
