@@ -1897,6 +1897,11 @@ html[data-mesa="relogio"] .table.wood{--wood-1:#26323e;--wood-2:#26323e;--wood-e
 .mm-op i{position:absolute;top:-4px;right:-6px;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#2a1a08;color:#f0b45e}
 .mm-op i svg{width:11px;height:11px}
 .mesa-pick.alheia{grid-template-columns:auto minmax(0,1fr);cursor:default}
+/* 13/11: as suas pedras, na montagem da mesa */
+.pedra-pick .pp-th{display:grid;place-items:center;width:58px;height:44px}.pedra-pick .pp-th svg{width:58px;height:auto;display:block}
+.estilocard{position:relative}.es-novo{position:absolute;top:-11px;right:18px;padding:3px 10px;border-radius:999px;background:var(--nos);color:#fff;font-family:var(--font-body);font-size:12px;font-style:normal;font-weight:800;letter-spacing:.1em;text-transform:uppercase;line-height:1.3;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.pn-pedras{display:flex;justify-content:center;align-items:center;gap:4px;margin:6px 0 14px}.pn-pedras svg{width:30%;max-width:104px;height:auto;display:block}
+.pn-pedras svg:nth-child(1){transform:rotate(-10deg) translateY(8px)}.pn-pedras svg:nth-child(2){width:36%;max-width:126px;position:relative;z-index:1}.pn-pedras svg:nth-child(3){transform:rotate(10deg) translateY(8px)}
 .mesa-promo{margin:4px 0 10px;font-weight:600}
 .mesa-titulo i{font-style:normal;font-size:12.5px;font-weight:600;opacity:.9;margin-top:2px;text-align:center}
 .copa-card{box-shadow:inset 0 0 0 2px #c9a24a, inset 0 0 40px rgba(0,0,0,.35), 0 10px 30px -14px var(--shadow)}
@@ -3054,7 +3059,7 @@ body.papo-aberto{overflow:hidden}
       <span class="flabel">Sua cara na mesa</span>
       <button type="button" class="rulescard estilocard" id="goEstilo" hidden>
         <span class="rc-ic es-ic" id="goEstiloFace" aria-hidden="true"></span>
-        <span class="rc-tx"><b>Personalizar</b><small id="goEstiloTx">Avatar, mesa, pedras e conquistas</small></span>
+        <span class="rc-tx"><b>Personalizar <em class="es-novo" id="goEstiloNovo" hidden>Novo</em></b><small id="goEstiloTx">Avatar, mesa, pedras e conquistas</small></span>
         <span class="rc-go" aria-hidden="true">›</span>
       </button>
       <div class="avatars" id="avatarGrid" role="radiogroup" aria-label="Escolha sua foto ou um avatar"></div>
@@ -3180,6 +3185,7 @@ body.papo-aberto{overflow:hidden}
     <div class="field"><label for="selRight">Adversário à direita <small>· joga antes de você</small></label><select id="selRight"></select></div>
     <button type="button" class="menubtn sortear" id="shuffleBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.6" fill="currentColor"/></svg>Sortear outra turma</button>
     <button type="button" class="mesa-pick" id="setupMesa" aria-label="Trocar a mesa"></button>
+    <button type="button" class="mesa-pick pedra-pick" id="setupPedra" aria-label="Trocar as suas pedras"></button>
     <button type="button" class="primary" id="startOffline">Começar</button>
     <div id="setupPatro"></div>
   </section>
@@ -3201,6 +3207,7 @@ body.papo-aberto{overflow:hidden}
       <div class="sala-num"><span>Número da mesa</span><b id="salaNum">00000</b></div>
       <div class="sala-mesa" id="salaMesa"></div>
       <button type="button" class="mesa-pick" id="salaMesaPick" aria-label="Trocar a mesa"></button>
+      <button type="button" class="mesa-pick pedra-pick" id="salaPedraPick" aria-label="Trocar as suas pedras"></button>
       <p class="note sala-dica" id="salaDica">Toque numa cadeira vazia para trocar de lugar. Quem senta na sua frente é o seu parceiro.</p>
       <p class="sala-quarta" id="salaQuarta" hidden></p>
       <a class="share-wa sala-convite" id="salaConvite" href="https://wa.me/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.3 14.8L2.3 21.8l4.9-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-3-.4-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.1 11.1 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3Z"/></svg>Chamar os amigos no WhatsApp</a>
@@ -4193,6 +4200,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.55.1', data: '13/11/2026', itens: ['Pedras na montagem da mesa: no jogo offline, na mesa com os amigos e na mesa rápida, o botão "Suas pedras" troca o modelo na hora. Cada um escolhe as suas.', 'Aviso das pedras novas (uma vez só, para quem já tinha o app) e o selo "Novo" no Personalizar até a pessoa ver as pedras.'] },
   { v: '3.55.0', data: '13/11/2026', itens: ['Modelos novos de pedras: Preta de boteco, Madeira de lei, Guaraná, Verde mata, Açaí, Rio Negro, Madrepérola, Parintins e Dourada. São dos sócios da Calçada. A Dourada é do Campeão do Mês: o sócio que mais pontuar no ranking do mês joga com ela no mês seguinte, e na mesa online as pedras dele caem douradas para todos. Escolha em Personalizar.'] },
   { v: '3.54.9', data: '13/11/2026', itens: ['Mesa com os amigos: um aviso no botão do Papo de mesa conta que agora dá para mandar (sócios) e ouvir áudio da turma.'] },
   { v: '3.54.8', data: '13/11/2026', itens: ['Mesa nova para os sócios: Onça-pintada, deitada no galho no meio da mata.', 'Mesa nova para os sócios: Curumins, dois meninos na trilha da mata, perto do rio.'] },
@@ -10085,7 +10093,8 @@ function abrirEstilo(deOnde, provar, rolar) {
   if (provar) { esDraft[provar.k] = provar.i; esAba = abaDaParte(provar.k); }
   track('estilo-aberto');
   show('estilo');
-  if (rolar) setTimeout(() => { const el = $('#esMesas'); if (el) el.scrollIntoView({ block: 'center', behavior: reduzMov() ? 'auto' : 'smooth' }); }, 320);
+  try { pedrasVistas(); } catch (e) {}
+  if (rolar) setTimeout(() => { const el = $(rolar === 'pedras' ? '#esPedras' : '#esMesas'); if (el) el.scrollIntoView({ block: 'center', behavior: reduzMov() ? 'auto' : 'smooth' }); }, 320);
 }
 const meuAvAgora = () => estiloVolta === 'profile' ? draft.av : profile && profile.av;
 function opcaoHTML(k, p, i) {
@@ -10183,7 +10192,7 @@ function campeaoParabens() {
 }
 setTimeout(() => { try { campeaoBuscar(); } catch (e) {} }, 4000);
 function pedraAtual() { const pd = PEDRAS.find(x => x.id === store.get(PDRKEY)); return pd && pedraLivre(pd) ? pd : PEDRAS[0]; }
-function aplicarPedra() { const pd = pedraAtual(); if (pd.id === 'marfim') delete document.documentElement.dataset.pedra; else document.documentElement.dataset.pedra = pd.id; }
+function aplicarPedra() { const pd = pedraAtual(); if (pd.id === 'marfim') delete document.documentElement.dataset.pedra; else document.documentElement.dataset.pedra = pd.id; try { renderPedraPick(); } catch (e) {} }
 let pedraPrevN = 0;
 // a prévia de um modelo (com as cores dele mesmo, independente do que está em uso): pedra 6 e 3 deitada
 function pedraPrevSVG(pd) {
@@ -10200,8 +10209,8 @@ function pedraPrevSVG(pd) {
   for (const [hx, v] of [[0, 6], [1, 3]]) for (const [px, py] of PIPS[v]) s += `<circle cx="${(hx + py).toFixed(3)}" cy="${px.toFixed(3)}" r=".108" fill="${pip}"/>`;
   return s + `<circle cx="1" cy=".5" r=".072" fill="url(#ping)"/></svg>`;
 }
-function renderPedras() {
-  const el = $('#esPedras'); if (!el) return;
+function renderPedras(el) {
+  el = el || $('#esPedras'); if (!el) return;
   const atual = pedraAtual().id;
   el.innerHTML = PEDRAS.map(pd => {
     const livre = pedraLivre(pd);
@@ -10209,16 +10218,40 @@ function renderPedras() {
       + pedraPrevSVG(pd) + `<span>${esc(pd.nome)}</span>` + (livre ? '' : `<small>${pd.campeao ? '🥇 Campeão do mês' : 'Sócio'}</small><i aria-hidden="true">${LOCK_SVG}</i>`) + '</button>';
   }).join('');
 }
-$('#esPedras').addEventListener('click', e => {
-  const b = e.target.closest('[data-pd]'); if (!b) return;
-  const pd = PEDRAS.find(x => x.id === b.dataset.pd); if (!pd) return;
+// 13/11: escolher a pedra (no Personalizar e na montagem da mesa)
+function escolherPedra(id) {
+  const pd = PEDRAS.find(x => x.id === id); if (!pd) return false;
   if (!pedraLivre(pd)) {
     toast(pd.campeao ? 'A Dourada é do Campeão do Mês: o sócio que fizer mais pontos no ranking do mês joga com ela o mês seguinte inteiro.' + (mesManaus() < 'M2026-12' ? ' A primeira sai em 1º de dezembro.' : '') : `${pd.nome} é uma pedra dos sócios. Seja Sócio da Calçada e jogue com todos os modelos!`);
-    track('pedra-trancada-' + pd.id); return;
+    track('pedra-trancada-' + pd.id); return false;
   }
   store.set(PDRKEY, pd.id); aplicarPedra(); renderPedras(); track('pedra-' + pd.id);
   toast(`Pedra ${pd.nome} na mesa!`);
-});
+  return true;
+}
+$('#esPedras').addEventListener('click', e => { const b = e.target.closest('[data-pd]'); if (b) escolherPedra(b.dataset.pd); });
+// 13/11 (pedido do dono): na montagem da mesa (offline, com os amigos e rápida), cada um escolhe as suas pedras
+function renderPedraPick() {
+  const pd = pedraAtual();
+  $$('.pedra-pick').forEach(b => { b.innerHTML = `<span class="pp-th">${pedraPrevSVG(pd)}</span><span class="mp-tx"><small>Suas pedras</small><b>${esc(pd.nome)}</b></span><span class="mp-go">Trocar ›</span>`; });
+}
+function abrirPedras() {
+  const socio = temPlano() || souAdmin(), pode = !socio && pagamentosAtivos() && !(profile && profile.idade === 'menor');
+  pedrasVistas(); track('pedras-montagem');
+  openSheet('info', `<p class="eyebrow">Suas pedras</p><h2 id="sheetTitle">Escolha as suas pedras</h2>
+    <div class="ap-cores es-pedras" id="shPedras" role="radiogroup" aria-label="Pedras"></div>
+    <p class="note" style="margin-top:10px">${socio ? '' : 'Os modelos novos são dos Sócios da Calçada. '}Na mesa online, cada um vê as pedras no modelo que escolheu. As do Campeão do Mês caem douradas para todos.</p>
+    ${pode ? '<button type="button" class="primary" id="shPedrasSocio" style="width:100%;margin-top:14px">Ser Sócio da Calçada</button>' : ''}
+    <button type="button" class="${pode ? 'secondary' : 'primary'}" id="shPedrasOk" style="width:100%;margin-top:${pode ? 10 : 14}px">${pode ? 'Continuar com a Marfim' : 'Pronto'}</button>`);
+  const g = $('#shPedras'); renderPedras(g);
+  g.addEventListener('click', e => { const b = e.target.closest('[data-pd]'); if (b && escolherPedra(b.dataset.pd)) renderPedras(g); });
+  if ($('#shPedrasSocio')) $('#shPedrasSocio').addEventListener('click', () => { track('pedras-montagem-socio'); closeSheet(); abrirApoio(screen === 'sala' ? 'home' : (screen || 'home'), 'plano'); });
+  $('#shPedrasOk').addEventListener('click', closeSheet);
+}
+// selo "Novo" no Personalizar até a pessoa ver as pedras (some sozinho em 2027)
+const PDVKEY = 'dmz-pedras-vistas';
+function pedrasNovo() { return !store.get(PDVKEY) && Date.now() < Date.parse('2027-01-01T04:00:00Z'); }
+function pedrasVistas() { if (!store.get(PDVKEY)) store.set(PDVKEY, String(Date.now())); const n = $('#goEstiloNovo'); if (n) n.hidden = true; }
 function renderConquistas() {
   const t = loadHist(), base = esDraft || esBase();
   const lista = CONQUISTAS.filter(conquistaVisivel), feitas = lista.filter(c => progressoConquista(c, t) >= c.meta).length;
@@ -10272,10 +10305,11 @@ $('#esMesas').addEventListener('click', e => {
 // Botão "Mesa: Ponta Negra · Trocar" no jogo offline e na sala online: abre a grade numa folha
 function renderPickers() {
   const m = mesaAtual(), alheia = mesaAlheia();
-  $$('.mesa-pick').forEach(b => {
+  $$('.mesa-pick:not(.pedra-pick)').forEach(b => {
     b.classList.toggle('alheia', alheia);
     b.innerHTML = `<span class="ap-sw" style="background:${fundoMesa(m)}"></span><span class="mp-tx"><small>${alheia ? 'Mesa de quem criou' : 'Mesa'}</small><b>${esc(m.nome)}</b></span>${alheia ? '' : '<span class="mp-go">Trocar ›</span>'}`;
   });
+  try { renderPedraPick(); } catch (e) {}
 }
 function abrirMesas(online) {
   openSheet('info', `<p class="eyebrow">Sua mesa</p><h2 id="sheetTitle">Escolha a mesa</h2>
@@ -10288,6 +10322,8 @@ function abrirMesas(online) {
   $('#shMesasOk').addEventListener('click', closeSheet);
 }
 $('#setupMesa').addEventListener('click', () => abrirMesas(false));
+$('#setupPedra').addEventListener('click', () => abrirPedras());
+$('#salaPedraPick').addEventListener('click', () => abrirPedras());
 $('#salaMesaPick').addEventListener('click', () => { if (mesaAlheia()) toast('Na mesa online, quem escolhe a mesa é quem criou.'); else abrirMesas(true); });
 // No menu do jogo (offline e online): uma fileira de mesas para trocar sem sair da partida
 function menuMesas() {
@@ -10421,7 +10457,8 @@ renderProfile = function () {
   if (profile) {
     $('#goEstiloFace').innerHTML = faceImg(myFaceURI(), '');
     const lista = CONQUISTAS.filter(conquistaVisivel), feitas = lista.filter(c => conquistaFeita(c.id)).length;
-    $('#goEstiloTx').textContent = feitas ? `Avatar, mesa e conquistas · ${feitas} de ${lista.length}` : 'Monte o seu avatar, troque a mesa e ganhe prêmios jogando';
+    $('#goEstiloTx').textContent = feitas ? `Avatar, mesa, pedras e conquistas · ${feitas} de ${lista.length}` : 'Monte o seu avatar, escolha a mesa e as pedras e ganhe prêmios jogando';
+    $('#goEstiloNovo').hidden = !pedrasNovo();
   }
   const grid = $('#avatarGrid');
   const meu = [draft.av, profile && profile.av, store.get(AVMKEY)].find(v => COD_AV.test(v || ''));
@@ -10596,7 +10633,7 @@ function salaTorneio() {
   const v = ON.vista;
   if (screen !== 'sala' || !v || v.fase !== 'espera' || v.publica) { if (el) el.hidden = true; return; }
   if (!el) {
-    $('#salaMesaPick').insertAdjacentHTML('afterend', '<button type="button" class="torneio-op sala" id="salaTorneio"></button>');
+    $('#salaPedraPick').insertAdjacentHTML('afterend', '<button type="button" class="torneio-op sala" id="salaTorneio"></button>');
     el = $('#salaTorneio');
     el.addEventListener('click', () => {
       const w = ON.vista; if (!w) return;
@@ -14888,6 +14925,28 @@ function copaComemorar() {
 // de chegar não vê), e só até 1º/12.
 const WA_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.3 14.8L2.3 21.8l4.9-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-3-.4-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1l-.5-.3Z"/></svg>';
 const RECADO = { id: '2026-11-10', ate: Date.parse('2026-12-01T04:00:00Z') };
+// 13/11 (pedido do dono: "como os usuários vão descobrir as pedras?"): aviso único, só para quem já tinha o app antes
+// desta versão, até 1º/12. Quem já abriu o Personalizar (e viu as pedras) não recebe.
+const PEDRAS_AVISO = { id: 'pedras-2026-11', ate: Date.parse('2026-12-01T04:00:00Z') };
+function pedrasNaHome() {
+  if (Date.now() > PEDRAS_AVISO.ate || store.get('dmz-pedras-aviso') === PEDRAS_AVISO.id || store.get('dmz-pedras-aviso-pend') !== PEDRAS_AVISO.id) return false;
+  store.set('dmz-pedras-aviso', PEDRAS_AVISO.id);
+  if (store.get(PDVKEY)) return false;
+  track('pedras-aviso');
+  const socio = temPlano() || souAdmin(), pode = !socio && pagamentosAtivos() && !(profile && profile.idade === 'menor');
+  const P = id => pedraPrevSVG(PEDRAS.find(x => x.id === id));
+  openSheet('info', `<div class="pn-pedras" aria-hidden="true">${P('acai')}${P('ouro')}${P('parintins')}</div>
+    <p class="eyebrow">Novidade</p><h2 id="sheetTitle">Pedras novas na mesa</h2>
+    <p>${socio ? 'Agora você escolhe o modelo das suas pedras e, como é sócio, já pode usar todos' : 'Agora dá para escolher o modelo das pedras'}: Preta de boteco, Madeira de lei, Guaraná, Verde mata, Açaí, Rio Negro, Madrepérola e Parintins.${socio ? '' : ' Os modelos novos são dos Sócios da Calçada.'}</p>
+    <p class="note">🥇 E tem a Dourada, só do Campeão do Mês: o sócio que mais pontuar no ranking do mês joga com ela o mês seguinte inteiro, e na mesa online as pedras dele caem douradas para todo mundo.${mesManaus() < 'M2026-12' ? ' A primeira sai em 1º de dezembro.' : ''}</p>
+    <button type="button" class="primary" id="pnVer" style="width:100%;margin-top:6px">${socio ? 'Escolher minha pedra' : 'Ver os modelos'}</button>
+    ${pode ? '<button type="button" class="secondary" id="pnSocio" style="width:100%;margin-top:10px">Ser Sócio da Calçada</button>' : ''}
+    <button type="button" class="linkbtn" id="pnFechar" style="width:100%;margin-top:6px">Agora não</button>`);
+  $('#pnVer').addEventListener('click', () => { track('pedras-aviso-ver'); closeSheet(); abrirEstilo('home', null, 'pedras'); });
+  if ($('#pnSocio')) $('#pnSocio').addEventListener('click', () => { track('pedras-aviso-socio'); closeSheet(); abrirApoio('home', 'plano'); });
+  $('#pnFechar').addEventListener('click', closeSheet);
+  return true;
+}
 const RECADO_ZAP = 'Bora jogar dominó comigo? É o Dominó Manauara: bucho, garagem, passe e galo, do jeito de Manaus, no celular. Dá para montar a mesa só com a nossa turma.';
 function recadoNaHome() {
   return false;   // 12/11 (pedido do dono: "cancele pra não incomodar os usuários"): o recado "Bora chamar a turma?" não aparece mais
@@ -14994,6 +15053,7 @@ function pertencimentoNaHome() {
   try { if (suporteNaHome()) { dsConviteHoje = true; return; } } catch (e) {}   // 12/11: chegou resposta do suporte
   try { if (sextaResumoNaHome()) { dsConviteHoje = true; return; } } catch (e) {}   // 13/11: o resumo da Sexta, depois das 23h
   try { if (codigoNaHome()) { dsConviteHoje = true; return; } } catch (e) {}   // 12/11
+  try { if (pedrasNaHome()) { dsConviteHoje = true; return; } } catch (e) {}   // 13/11: as pedras novas
   try { if (recadoNaHome()) { dsConviteHoje = true; return; } } catch (e) {}
   try { if (fotoAvisoNaHome()) { dsConviteHoje = true; return; } } catch (e) {}
   try { if (!dsConviteHoje) desafioConviteNaHome(); } catch (e) {}
@@ -15691,7 +15751,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.55.0-20a5066f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.55.1-79da1f29';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -15840,7 +15900,8 @@ $$('.appver').forEach(el => { el.textContent = APP_VERSION; });
 (function () {
   const antes = store.get('dmz-versao');
   // 3.40 (pedido do dono): o público não precisa saber das atualizações; o aviso e a lista do que mudou ficam só para o administrador
-  if (antes && antes !== APP_VERSION && Date.now() < RECADO.ate && store.get('dmz-recado') !== RECADO.id) store.set('dmz-recado-pend', RECADO.id);   // 10/11: recado da atualização
+  if (antes && antes !== APP_VERSION && Date.now() < RECADO.ate && store.get('dmz-recado') !== RECADO.id) store.set('dmz-recado-pend', RECADO.id);
+  if (antes && antes !== APP_VERSION && Date.now() < PEDRAS_AVISO.ate && store.get('dmz-pedras-aviso') !== PEDRAS_AVISO.id) store.set('dmz-pedras-aviso-pend', PEDRAS_AVISO.id);   // 13/11   // 10/11: recado da atualização
   if (antes && antes !== APP_VERSION) setTimeout(() => { if (souAdmin()) toast(`App atualizado para a versão ${APP_VERSION}. Para ver o que mudou, toque em "Versão", no rodapé do Mais.`); }, 900);
   store.set('dmz-versao', APP_VERSION);
 })();
