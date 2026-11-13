@@ -3,7 +3,7 @@
 # rede do dia (hash), uso do limite, bloqueio, vigia e tentativas; e de qual aparelho veio a mensagem do suporte.
 import json, subprocess, sys, hashlib, time, unicodedata, re
 OUT = sys.argv[1]
-ALVO = '0b3446a78a37ee2ef133ebcf6f4dbbe7821c8febb082af3288676e20f6fbfef5'
+ALVO = sys.argv[2] if len(sys.argv) > 2 else '0b3446a78a37ee2ef133ebcf6f4dbbe7821c8febb082af3288676e20f6fbfef5'
 L = ['== caso do apelido (só leitura)']
 def q(sql):
     r = subprocess.run(['wrangler', 'd1', 'execute', 'dominomanauara', '--remote', '--json', '--command', sql], capture_output=True, text=True)
@@ -38,12 +38,17 @@ if lista:
     redes = {}; [redes.setdefault(r['aparelho'], set()).add(f"{r['dia'][5:]} rede {h(r['marca'])}") for r in q(f'SELECT dia, aparelho, marca FROM pessoa_dia WHERE aparelho IN ({marcas})')]
     rk = {r['aparelho']: r['n'] for r in q(f'SELECT aparelho, COUNT(*) AS n FROM ranking WHERE aparelho IN ({marcas}) GROUP BY aparelho')}
     sup = {r['aparelho'] for r in q(f'SELECT DISTINCT aparelho FROM suporte WHERE aparelho IN ({marcas})')}
+    mesa = {r['aparelho']: h(r['mesa']) for r in q(f'SELECT aparelho, mesa FROM jogadores_vistos WHERE aparelho IN ({marcas})')}
     for a in sorted(lista, key=lambda a: desde.get(a) or 0):
         x = aps[a]; b = bloq.get(a)
         L.append(f"- {h(a)} · apareceu {hm(desde.get(a))} · visto por último {hm(x.get('ult'))} · grafias {len(x['nomes'])} · avatar {','.join(sorted(x['av'])) or '-'} · fontes {','.join(sorted(x['fontes']))}"
-                 + f" · plano {'até ' + hm(plano[a]) if a in plano else 'não'} · bloqueio {(b['motivo'] + ' em ' + hm(b['em'])) if b else 'não'} · mandou mensagem {'SIM' if a in sup else 'não'}")
+                 + f" · última mesa {mesa.get(a, '-')} · plano {'até ' + hm(plano[a]) if a in plano else 'não'} · bloqueio {(b['motivo'] + ' em ' + hm(b['em'])) if b else 'não'} · mandou mensagem {'SIM' if a in sup else 'não'}")
         L.append(f"    limites: {' | '.join(lim.get(a, [])[:4]) or '-'} · offline: {' | '.join(off.get(a, [])[:4]) or '-'} · redes: {' | '.join(sorted(redes.get(a, set()))) or '-'} · linhas no ranking {rk.get(a, 0)}")
 for r in q('SELECT nome, motivo, desde, ate, avisado, bloqueado, aparelhos, perdao FROM apelidos_vigia'):
     if r['nome'] and hashlib.sha256(r['nome'].encode()).hexdigest() == ALVO:
         L.append(f"vigia: {r['motivo']} · desde {hm(r['desde'])} até {hm(r['ate'])} · avisado {hm(r['avisado'])} · bloqueado {hm(r['bloqueado'])} · perdão {hm(r['perdao'])} · aparelhos {len(json.loads(r['aparelhos'] or '[]'))}")
+for r in q('SELECT termo, parte, motivo, em FROM apelidos_bloqueados'):
+    if hashlib.sha256(chave(r['termo']).encode()).hexdigest() == ALVO: L.append(f"apelido bloqueado: {r['motivo']} em {hm(r['em'])}")
+for r in q('SELECT dia, aparelho, tipo, via, em FROM burlas ORDER BY em'):
+    if r['aparelho'] in aps: L.append(f"burla anotada: {r['dia'][5:]} {h(r['aparelho'])} {r['tipo']} via {r['via']} {hm(r['em'])}")
 open(OUT, 'a').write('\n'.join(L) + '\n')

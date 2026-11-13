@@ -29,6 +29,8 @@ jobs:
           p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
           # 13/11, 14h: só leitura (os avisos da Sexta, da Quarta e da Copa que já saíram)
           python3 "$GITHUB_WORKSPACE/.github/diag/avisos_sexta.py" $OUT 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
+          # 13/11, 19h30: só leitura (outro apelido bloqueado por vários aparelhos; o apelido entra só como hash)
+          python3 "$GITHUB_WORKSPACE/.github/diag/apelido_caso.py" $OUT 7d54b342f0ef805e56e2d4cd1fa62dd3c4196cae514b2ac216524929e2738564 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
           rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
