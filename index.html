@@ -3275,6 +3275,7 @@ body.papo-aberto{overflow:hidden}
         <div class="ap-cmp-l" role="row"><b role="rowheader">Sua foto no lugar do avatar</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s"><svg class="ap-ok" viewBox="0 0 24 24" aria-label="sim"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Selo de sócio ao lado do nome</b><span role="cell" class="ap-cmp-g"><span class="ap-nao" aria-label="não">—</span></span><span role="cell" class="ap-cmp-s"><svg class="selo-ic selo-estrela" viewBox="-0.3 0 24.6 24" aria-label="sim"><path d="M12 1.3L14.88 8.94 23.03 9.32 16.66 14.41 18.82 22.28 12 17.8 5.18 22.28 7.34 14.41 0.97 9.32 9.12 8.94Z"/></svg></span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Mesas</b><span role="cell" class="ap-cmp-g">Madeira, Vermelha e Azul</span><span role="cell" class="ap-cmp-s">Todas</span></div>
+        <div class="ap-cmp-l" role="row"><b role="rowheader">Pedras</b><span role="cell" class="ap-cmp-g">Marfim</span><span role="cell" class="ap-cmp-s">Todos os 10 modelos</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Avatar</b><span role="cell" class="ap-cmp-g">Os avatares prontos</span><span role="cell" class="ap-cmp-s">Monte o seu, mais os exclusivos</span></div>
       </div>
       <p class="ap-cmp-nota">Cada partida vai até 200 pontos. Os limites zeram à meia-noite (horário de Brasília).</p>
@@ -3328,12 +3329,12 @@ body.papo-aberto{overflow:hidden}
     <div class="es-sec">
       <span class="ap-k">Suas pedras</span>
       <div class="ap-cores es-pedras" id="esPedras" role="radiogroup" aria-label="Pedras"></div>
-      <p class="note">Cada modelo sai numa conquista. Sócio da Calçada usa todos na hora. Na mesa online, cada um vê as pedras do seu jeito.</p>
+      <p class="note">Os modelos novos são dos sócios da Calçada. Na mesa online, cada um vê as pedras do seu jeito.</p>
     </div>
     <div class="es-sec">
       <span class="ap-k">Conquistas <small id="esConqN"></small></span>
       <ul class="es-conq" id="esConq"></ul>
-      <p class="note">Valem partidas offline e na mesa online. Cada conquista libera um prêmio de Manaus para o avatar (comidas, camisas e bichos da região) e muitas liberam também um modelo de pedra.</p>
+      <p class="note">Valem partidas offline e na mesa online. Cada conquista libera um prêmio de Manaus para o avatar: comidas, camisas e bichos da região.</p>
     </div>
   </section>
 
@@ -4183,7 +4184,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.55.0', data: '13/11/2026', itens: ['Modelos novos de pedras: Preta de boteco, Madeira de lei, Guaraná, Verde mata, Açaí, Rio Negro, Madrepérola, Parintins e Dourada. Cada um sai numa conquista, e o sócio da Calçada usa todos na hora. Escolha em Personalizar.'] },
+  { v: '3.55.0', data: '13/11/2026', itens: ['Modelos novos de pedras: Preta de boteco, Madeira de lei, Guaraná, Verde mata, Açaí, Rio Negro, Madrepérola, Parintins e Dourada. São dos sócios da Calçada. Escolha em Personalizar.'] },
   { v: '3.54.9', data: '13/11/2026', itens: ['Mesa com os amigos: um aviso no botão do Papo de mesa conta que agora dá para mandar (sócios) e ouvir áudio da turma.'] },
   { v: '3.54.8', data: '13/11/2026', itens: ['Mesa nova para os sócios: Onça-pintada, deitada no galho no meio da mata.', 'Mesa nova para os sócios: Curumins, dois meninos na trilha da mata, perto do rio.'] },
   { v: '3.54.7', data: '13/11/2026', itens: ['Mesa nova para os sócios: Palacete Provincial, a antiga sede da Província do Amazonas, hoje casa de museus, com a fachada vermelha e amarela e as duas estátuas de soldado na porta.'] },
@@ -10122,21 +10123,21 @@ function renderMesas(el) {
       + (livre ? '' : `<small>${m.plano || mesaDoSocio(m) ? 'Sócio' : esc(conquistaDe(m.req).curto)}</small><i aria-hidden="true">${LOCK_SVG}</i>`) + '</button>';
   }).join('');
 }
-// ---- Pedras (13/11, pedido do dono: modelos novos, ganhos nas conquistas; o sócio libera todos na hora) ----
+// ---- Pedras (13/11, pedido do dono: modelos novos, só para os sócios da Calçada; quem não é sócio joga com a Marfim) ----
 const PDRKEY = 'dmz-pedra';
 const PEDRAS = [
   { id: 'marfim', nome: 'Marfim', c1: '#f6eedf', c2: '#e4d5bb', sh: '#cbb895', pinta: 'escura' },
-  { id: 'preta', nome: 'Preta de boteco', c1: '#2b2724', c2: '#141110', sh: '#4a4440', pinta: 'clara', req: 'galo1' },
-  { id: 'madeira', nome: 'Madeira de lei', c1: '#b47a44', c2: '#7c4e27', sh: '#5e3a1c', pinta: 'clara', req: 'vit5' },
-  { id: 'guarana', nome: 'Guaraná', c1: '#e8962a', c2: '#ad5c12', sh: '#7a3f0a', pinta: 'clara', req: 'bat10' },
-  { id: 'mata', nome: 'Verde mata', c1: '#2f7a44', c2: '#1b4f2b', sh: '#143a20', pinta: 'clara', req: 'par25' },
-  { id: 'acai', nome: 'Açaí', c1: '#5a2560', c2: '#2e0f33', sh: '#24102a', pinta: 'clara', req: 'jogo5' },
-  { id: 'rionegro', nome: 'Rio Negro', c1: '#2a2017', c2: '#120c08', sh: '#3a2c20', pinta: 'ouro', req: 'galo10' },
-  { id: 'perola', nome: 'Madrepérola', c1: '#f7f2f7', c2: '#dfe6f1', sh: '#c7c3d6', pinta: 'escura', req: 'mis7' },
-  { id: 'parintins', nome: 'Parintins', c1: '#d23a2f', c2: '#1f4fb0', sh: '#4a2f5a', pinta: 'clara', req: 'vit25', meio: true },
-  { id: 'ouro', nome: 'Dourada', c1: '#f0cf6a', c2: '#c08f2c', sh: '#8c6420', pinta: 'escura', req: 'vit50' }
+  { id: 'preta', nome: 'Preta de boteco', c1: '#2b2724', c2: '#141110', sh: '#4a4440', pinta: 'clara', plano: true },
+  { id: 'madeira', nome: 'Madeira de lei', c1: '#b47a44', c2: '#7c4e27', sh: '#5e3a1c', pinta: 'clara', plano: true },
+  { id: 'guarana', nome: 'Guaraná', c1: '#e8962a', c2: '#ad5c12', sh: '#7a3f0a', pinta: 'clara', plano: true },
+  { id: 'mata', nome: 'Verde mata', c1: '#2f7a44', c2: '#1b4f2b', sh: '#143a20', pinta: 'clara', plano: true },
+  { id: 'acai', nome: 'Açaí', c1: '#5a2560', c2: '#2e0f33', sh: '#24102a', pinta: 'clara', plano: true },
+  { id: 'rionegro', nome: 'Rio Negro', c1: '#2a2017', c2: '#120c08', sh: '#3a2c20', pinta: 'ouro', plano: true },
+  { id: 'perola', nome: 'Madrepérola', c1: '#f7f2f7', c2: '#dfe6f1', sh: '#c7c3d6', pinta: 'escura', plano: true },
+  { id: 'parintins', nome: 'Parintins', c1: '#d23a2f', c2: '#1f4fb0', sh: '#4a2f5a', pinta: 'clara', plano: true, meio: true },
+  { id: 'ouro', nome: 'Dourada', c1: '#f0cf6a', c2: '#c08f2c', sh: '#8c6420', pinta: 'escura', plano: true }
 ];
-function pedraLivre(pd) { return !!pd && (!pd.req || souAdmin() || temPlano() || conquistaFeita(pd.req)); }
+function pedraLivre(pd) { return !!pd && (!pd.plano || souAdmin() || temPlano()); }
 function pedraAtual() { const pd = PEDRAS.find(x => x.id === store.get(PDRKEY)); return pd && pedraLivre(pd) ? pd : PEDRAS[0]; }
 function aplicarPedra() { const pd = pedraAtual(); if (pd.id === 'marfim') delete document.documentElement.dataset.pedra; else document.documentElement.dataset.pedra = pd.id; }
 let pedraPrevN = 0;
@@ -10159,19 +10160,15 @@ function renderPedras() {
   const el = $('#esPedras'); if (!el) return;
   const atual = pedraAtual().id;
   el.innerHTML = PEDRAS.map(pd => {
-    const livre = pedraLivre(pd), c = pd.req && conquistaDe(pd.req);
+    const livre = pedraLivre(pd);
     return `<button type="button" class="ap-cor${livre ? '' : ' trancado'}" role="radio" aria-checked="${pd.id === atual}" data-pd="${pd.id}" aria-label="Pedra ${esc(pd.nome)}${livre ? '' : ', ainda não liberada'}">`
-      + pedraPrevSVG(pd) + `<span>${esc(pd.nome)}</span>` + (livre ? '' : `<small>${esc(c ? c.curto : 'Sócio')}</small><i aria-hidden="true">${LOCK_SVG}</i>`) + '</button>';
+      + pedraPrevSVG(pd) + `<span>${esc(pd.nome)}</span>` + (livre ? '' : `<small>Sócio</small><i aria-hidden="true">${LOCK_SVG}</i>`) + '</button>';
   }).join('');
 }
 $('#esPedras').addEventListener('click', e => {
   const b = e.target.closest('[data-pd]'); if (!b) return;
   const pd = PEDRAS.find(x => x.id === b.dataset.pd); if (!pd) return;
-  if (!pedraLivre(pd)) {
-    const c = conquistaDe(pd.req), f = c ? c.meta - progressoConquista(c) : 0;
-    toast(`${pd.nome}: ${c ? minusc(c.tx) : 'conquista'} para liberar${f > 0 && c.meta > 1 ? ` (faltam ${f})` : ''}.${pagamentosAtivos() && !temPlano() ? ' O sócio da Calçada usa na hora.' : ''}`);
-    return;
-  }
+  if (!pedraLivre(pd)) { toast(`${pd.nome} é uma pedra dos sócios. Seja Sócio da Calçada e jogue com todos os modelos!`); track('pedra-trancada-' + pd.id); return; }
   store.set(PDRKEY, pd.id); aplicarPedra(); renderPedras(); track('pedra-' + pd.id);
   toast(`Pedra ${pd.nome} na mesa!`);
 });
