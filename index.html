@@ -3167,8 +3167,8 @@ body.papo-aberto{overflow:hidden}
       <span class="ap-k" id="apPlanoK">Grátis ou sócio</span>
       <div class="ap-cmp-tab" id="apGratis" role="table" aria-label="O que tem no plano grátis e sendo sócio">
         <div class="ap-cmp-cab" role="row"><span role="columnheader"></span><span role="columnheader" class="ap-cmp-g">Grátis</span><span role="columnheader" class="ap-cmp-s">Sócio ★</span></div>
-        <div class="ap-cmp-l" role="row"><b role="rowheader">Mesa rápida online</b><span role="cell" class="ap-cmp-g">3 partidas por dia</span><span role="cell" class="ap-cmp-s">Sem limite</span></div>
-        <div class="ap-cmp-l" role="row"><b role="rowheader">Mesas com os amigos</b><span role="cell" class="ap-cmp-g">1 partida por dia, ou 3 na mesa de um sócio</span><span role="cell" class="ap-cmp-s">Sem limite, e crie quantas mesas quiser</span></div>
+        <div class="ap-cmp-l" role="row"><b role="rowheader">Mesa rápida online</b><span role="cell" class="ap-cmp-g" id="apCmpRapida">3 partidas por dia</span><span role="cell" class="ap-cmp-s">Sem limite</span></div>
+        <div class="ap-cmp-l" role="row"><b role="rowheader">Mesas com os amigos</b><span role="cell" class="ap-cmp-g" id="apCmpAmigos">1 partida por dia, ou 3 na mesa de um sócio</span><span role="cell" class="ap-cmp-s">Sem limite, e crie quantas mesas quiser</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Jogo offline</b><span role="cell" class="ap-cmp-g">5 partidas por dia</span><span role="cell" class="ap-cmp-s">Sem limite</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Papo de mesa (com os amigos)</b><span role="cell" class="ap-cmp-g">Na partida do dia, e ouve os áudios</span><span role="cell" class="ap-cmp-s">Em todas as partidas, e manda áudio</span></div>
         <!-- 11/11 (pedido do dono): a tabela mostra também a Sexta e a reta final do Desafio, como a oferta e a carta -->
@@ -3287,7 +3287,7 @@ body.papo-aberto{overflow:hidden}
         <label for="faleContato">Prefere a resposta no WhatsApp ou e-mail? <small>· opcional</small></label>
         <input id="faleContato" class="fale-contato" type="text" maxlength="60" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Seu WhatsApp ou e-mail">
       </div>
-      <p class="note">A resposta chega aqui no app, em até 24 horas. Junto com a mensagem vão o seu apelido, a versão do app e o tipo de aparelho, para achar o problema mais rápido. Sua foto não vai.</p>
+      <p class="note">A resposta chega aqui no app, em até 48 horas. Junto com a mensagem vão o seu apelido, a versão do app e o tipo de aparelho, para achar o problema mais rápido. Sua foto não vai.</p>
       <button type="button" class="primary" id="faleEnviar">Enviar</button>
     </div>
     <div class="fale-ok wood" id="faleOk" hidden>
@@ -3306,7 +3306,7 @@ body.papo-aberto{overflow:hidden}
     <div class="aj-lista" id="ajLista"></div>
     <div class="aj-fale wood">
       <span class="ck">Não achou a resposta?</span>
-      <p>Mande a sua dúvida. A resposta chega aqui no app, em até 24 horas.</p>
+      <p>Mande a sua dúvida. A resposta chega aqui no app, em até 48 horas.</p>
       <button type="button" class="primary" id="ajFalar">Falar com o suporte</button>
     </div>
   </section>
@@ -4068,7 +4068,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
-  { v: '3.54.0', data: '12/11/2026', itens: ['Ajuda e suporte, em Mais: as dúvidas mais comuns (código de sócio, plano em outro aparelho, pagamento, partidas grátis, bloqueio, progresso, robô e regras) com a resposta e um botão que resolve.', 'Fale com a gente virou conversa: a resposta do suporte chega aqui no app, em até 24 horas, com aviso no celular.', 'Na sexta da Copa dos Sócios, o cartão da Sexta da Calçada aparece junto do cartão da Copa.'] },
+  { v: '3.54.0', data: '12/11/2026', itens: ['Ajuda e suporte, em Mais: as dúvidas mais comuns (código de sócio, plano em outro aparelho, pagamento, partidas grátis, bloqueio, progresso, robô e regras) com a resposta e um botão que resolve.', 'Fale com a gente virou conversa: a resposta do suporte chega aqui no app, em até 48 horas, com aviso no celular.', 'Na sexta da Copa dos Sócios, o cartão da Sexta da Calçada aparece junto do cartão da Copa.', 'Partidas grátis com o número certo em todas as telas: até 19/11 (bônus), 5 por dia na mesa rápida e 2 com os amigos; depois, 3 e 1.'] },
   { v: '3.53.26', data: '12/11/2026', itens: ['Botões mais claros: o botão principal fica maior e o "Agora não" fica sempre menor. "Já sou sócio em outro aparelho" ficou do tamanho dos outros botões.', 'Quem assiste uma partida vê os nomes das duplas por inteiro: um nome por linha, sem cortar no meio da palavra.'] },
   { v: '3.53.25', data: '12/11/2026', itens: ['Sócio: o app lembra de guardar o seu código de sócio, mostra onde achar (Mais › Seu código de sócio) e como recuperar o plano em outro aparelho. Dá para copiar ou mandar o código para o seu WhatsApp.'] },
   { v: '3.53.24', data: '12/11/2026', itens: ['O recado "Bora chamar a turma?" não aparece mais ao abrir o app. O convite para os amigos continua na mesa com os amigos e em Mais.'] },
@@ -6032,7 +6032,7 @@ $('#faleEnviar').addEventListener('click', async () => {
     track('opiniao-' + faleTipo);
     $('#faleTexto').value = ''; $('#faleContato').value = '';
     $('#faleForm').hidden = true; $('#faleOk').hidden = false;
-    $('#faleOkTx').textContent = 'A resposta chega aqui no app, em até 24 horas.' + (typeof avisosLigados === 'function' && avisosLigados() ? ' Você recebe um aviso no celular quando ela chegar.' : '');
+    $('#faleOkTx').textContent = 'A resposta chega aqui no app, em até 48 horas.' + (typeof avisosLigados === 'function' && avisosLigados() ? ' Você recebe um aviso no celular quando ela chegar.' : '');
     store.set(SUPKEY, String(Date.now()));   // 12/11: a mensagem entra na conversa
     (SUP.itens = SUP.itens || []).push({ de: 'j', texto, em: Date.now() }); renderConversa(); suporteBuscar(true).then(renderConversa);
     return;
@@ -6081,7 +6081,7 @@ function renderConversa() {
   $('#faleTitulo').textContent = it.length ? 'Sua conversa com o suporte' : 'Problema, ideia ou elogio?';
   if (!it.length) { box.innerHTML = ''; if (suporteTem() && SUP.itens == null) suporteBuscar(true).then(() => { if (screen === 'fale' && (SUP.itens || []).length) renderConversa(); }); return; }
   box.innerHTML = it.map(x => `<div class="fc-b ${x.de === 'd' ? 'sup' : 'eu'}${x.de === 'd' && !x.lida ? ' nova' : ''}"><small>${x.de === 'd' ? 'Suporte Dominó Manauara' : 'Você'} · ${supData(x.em)}</small><p>${esc(x.texto)}</p></div>`).join('')
-    + (it[it.length - 1].de === 'j' ? '<p class="fc-espera">A resposta chega aqui, em até 24 horas.</p>' : '');
+    + (it[it.length - 1].de === 'j' ? '<p class="fc-espera">A resposta chega aqui, em até 48 horas.</p>' : '');
   if (SUP.novas && screen === 'fale') suporteMarcarLido();
   setTimeout(() => { try { const u = box.querySelector('.fc-b.nova') || box.lastElementChild; if (u && screen === 'fale') u.scrollIntoView({ block: 'nearest' }); } catch (e) {} }, 80);
 }
@@ -6146,7 +6146,7 @@ const AJ = [
     a: () => 'As partidas grátis são por pessoa, não por aparelho. O bloqueio acontece quando o sistema vê a mesma pessoa usando vários aparelhos ou apelidos para jogar além do limite grátis, ou um apelido ou uma foto fora das regras.</p><p>Acha que foi engano? Fale com o suporte e conte o que aconteceu: a gente confere.',
     b: () => [['Falar com o suporte', ajSuporte]] },
   { k: 'limite', q: 'Quantas partidas grátis eu tenho por dia?',
-    a: () => `Sem plano, por dia: <b>${limRapida()} na mesa rápida</b>, <b>${limAmigos()} nas mesas com os amigos</b> (na mesa de um sócio, até 3), <b>${OFF_POR_DIA} no jogo offline</b> (mais 1 cumprindo as missões do dia) e 2 desafios entre Turmas. Tudo zera à meia-noite de Brasília (23h em Manaus).</p><p>Toda quarta, das 20h às 23h, quem senta na mesa de um sócio joga sem limite. O sócio joga sem limite sempre.`,
+    a: () => `Sem plano, por dia: <b>${limRapida()} na mesa rápida</b>, <b>${limAmigos()} nas mesas com os amigos</b> (na mesa de um sócio, até 3), <b>${OFF_POR_DIA} no jogo offline</b> (mais 1 cumprindo as missões do dia) e 2 desafios entre Turmas. Tudo zera à meia-noite de Brasília (23h em Manaus).${bonusHoje() ? ` Até ${bonusAte()} tem bônus: depois, volta para 3 na mesa rápida e 1 com os amigos.` : ''}</p><p>Toda quarta, das 20h às 23h, quem senta na mesa de um sócio joga sem limite. O sócio joga sem limite sempre.`,
     b: () => !temPlano() && pagamentosAtivos() && !menorDeIdade() ? [['Conhecer o Sócio da Calçada', () => abrirApoio('ajuda', 'plano')]] : [] },
   { g: 'Na mesa', k: 'robo', q: 'Robô na mesa e quem sai no meio da partida',
     a: () => 'Quando alguém sai ou a internet cai, um jogador da turma do bairro (robô) joga no lugar até a pessoa voltar, com a marca "robô" no nome. O robô parceiro não mata a sua pedra: ele joga na outra ponta, a não ser para bater ou fazer muito ponto.</p><p>Sair no meio da partida com outras pessoas na mesa conta como derrota no ranking e na Copa. Queda de internet não conta se a pessoa voltar antes de a partida acabar.',
@@ -8277,6 +8277,9 @@ function renderPrecos() {
   const pb = $('#apPromo');
   if (pb) { pb.hidden = !pr; if (pr) pb.innerHTML = `<b>Promoção de lançamento até ${PROMO_DIA}</b><span>Mensal: ${condicaoDe('apm')}. Trimestral: ${condicaoDe('ap3')}. Anual: ${condicaoDe('ap12')}.</span>`; }
   const an = $('#apAntes'); if (an) an.hidden = typeof planosValem !== 'function' || planosValem();
+  try { const b = bonusHoje(), r = $('#apCmpRapida'), a = $('#apCmpAmigos');   // 12/11: no bônus, o número do dia e até quando
+    if (r) r.textContent = b ? `${limRapida()} partidas por dia até ${bonusAte()} (depois, 3)` : '3 partidas por dia';
+    if (a) a.textContent = b ? `${limAmigos()} partidas por dia até ${bonusAte()} (depois, 1), ou 3 na mesa de um sócio` : '1 partida por dia, ou 3 na mesa de um sócio'; } catch (e) {}
   const ps = $('#apPasse'); if (ps) { ps.hidden = !pagamentosAtivos(); ps.innerHTML = `<b>Só quer jogar esta semana?</b> Passe de 7 dias por ${brl(precoDe('aps').valor)}, sem renovar`; }   // 12/11
 }
 $('#apPasse').addEventListener('click', () => abrirPasse('tela-socio'));
@@ -13208,6 +13211,7 @@ const planosValem = () => Math.max(Date.now(), +(store.get('dmz-hora-max') || 0)
 // Os números vêm do que vale hoje (de 5/11 a 19/11: 5 na mesa rápida e 2 com os amigos) e a hora de "ter mais" é a do
 // celular: o dia dos limites vira à meia-noite de Brasília (23h em Manaus).
 const bonusHoje = () => typeof BONUS_INI !== 'undefined' && Date.now() >= BONUS_INI && Date.now() < BONUS_FIM;
+const bonusAte = () => ddmmM(BONUS_FIM - 1);   // 12/11: último dia do bônus (19/11)
 const limRapida = () => bonusHoje() ? 5 : 3, limAmigos = () => bonusHoje() ? 2 : 1;
 function quandoTemMais() {
   const ag = Date.now(), d = new Date(ag); d.setUTCHours(3, 0, 0, 0); if (d.getTime() <= ag) d.setUTCDate(d.getUTCDate() + 1);
@@ -13319,7 +13323,7 @@ function avisoPlanoSala() {
   const ap = menorDeIdade() ? '' : ' Sócio da Calçada joga sem limite.';   // menor de 18: só a regra, sem oferta de plano
   const deSocio = !!(ON && ON.vista && ON.vista.daSocio);
   if (mostra) el.textContent = deSocio ? `Mesa de sócio: quem não tem plano joga até ${AMIGOS_SOCIO} partidas por dia aqui, com papo de mesa.` + ap
-    : (planosValem() ? 'Sem plano: 1 mesa e 1 partida por dia nas mesas com os amigos (até 3 na mesa de um sócio), com papo de mesa.'
+    : (planosValem() ? `Sem plano: 1 mesa e ${limAmigos() === 1 ? '1 partida' : limAmigos() + ' partidas'} por dia nas mesas com os amigos${bonusHoje() ? ` até ${bonusAte()} (depois, 1)` : ''} (até 3 na mesa de um sócio), com papo de mesa.`   // 12/11: segue o bônus
     : `Até 4/11, tudo liberado. A partir de ${PLANOS_DIA}, sem plano: 1 mesa e 1 partida por dia nas mesas com os amigos.`) + ap;
 }
 (function () {
@@ -13344,7 +13348,8 @@ function avisoPlanoRapida() {
   if (!el) { b.insertAdjacentHTML('beforeend', '<span class="cd cd-plano" id="rapidaPlano" hidden></span>'); el = $('#rapidaPlano'); }
   const mostra = !temPlano() && typeof pagamentosAtivos === 'function' && pagamentosAtivos();
   el.hidden = !mostra;
-  if (mostra) el.textContent = planosValem() ? 'Sem plano: 3 partidas por dia. Sócio joga sem limite.' : `Até 4/11, sem limite para todos. A partir de ${PLANOS_DIA}, sem plano: 3 partidas por dia.`;
+  // 12/11 (dono): no bônus (até 19/11) são 5; o cartão dizia 3. Agora segue o número do dia
+  if (mostra) el.textContent = planosValem() ? (bonusHoje() ? `Sem plano: ${limRapida()} partidas por dia até ${bonusAte()} (depois, 3). Sócio joga sem limite.` : 'Sem plano: 3 partidas por dia. Sócio joga sem limite.') : `Até 4/11, sem limite para todos. A partir de ${PLANOS_DIA}, sem plano: 3 partidas por dia.`;
 }
 const renderHomePlano = renderHome;
 renderHome = function () { const r = renderHomePlano.apply(this, arguments); try { avisoPlanoRapida(); } catch (e) {} return r; };
@@ -16200,7 +16205,8 @@ function avisoPlanoAmigos() {
   if (!el) { b.insertAdjacentHTML('beforeend', '<span class="cd cd-plano" id="amigosPlano" hidden></span>'); el = $('#amigosPlano'); }
   const mostra = !temPlano() && !souAdmin() && typeof pagamentosAtivos === 'function' && pagamentosAtivos();
   el.hidden = !mostra;
-  if (mostra) el.textContent = planosValem() ? `Sem plano: 1 partida por dia, ou até ${AMIGOS_SOCIO} na mesa de um sócio.` : `Até 4/11, sem limite para todos. A partir de ${PLANOS_DIA}, sem plano: 1 partida por dia, ou até ${AMIGOS_SOCIO} na mesa de um sócio.`;
+  if (mostra) el.textContent = planosValem() ? `Sem plano: ${limAmigos() === 1 ? '1 partida' : limAmigos() + ' partidas'} por dia${bonusHoje() ? ` até ${bonusAte()} (depois, 1)` : ''}, ou até ${AMIGOS_SOCIO} na mesa de um sócio.` :   // 12/11: segue o bônus
+     `Até 4/11, sem limite para todos. A partir de ${PLANOS_DIA}, sem plano: 1 partida por dia, ou até ${AMIGOS_SOCIO} na mesa de um sócio.`;
 }
 const renderHomeOff = renderHome;
 renderHome = function () { const r = renderHomeOff.apply(this, arguments); try { avisoPlanoOffline(); avisoPlanoAmigos(); } catch (e) {} return r; };
