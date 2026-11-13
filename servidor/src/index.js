@@ -15,7 +15,7 @@ import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, 
 import { donoPapo, donoPapoApagar } from './papo.js';
 import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
 import { limitePessoa, donoVigiaTirar, vigiados } from './pessoa.js';
-import { donoQuarta } from './quarta.js';   // 12/11: Quarta dos Amigos
+import { donoQuarta, quartaPlacar } from './quarta.js';   // 12/11: Quarta dos Amigos (13/11: e as Duplas da Quarta)
 import { anotarSuporte, suporteDoAparelho, suporteLido, donoResponder, juntarSuporte } from './suporte.js';   // 12/11: conversa com o suporte
 import { relatorioDiario, donoRelatorio, alertas, sugerirResposta } from './gestor.js';
 import { donoRobo, donoRoboVoltar } from './robo.js';   // 13/11: robô que treina toda noite
@@ -582,6 +582,7 @@ export default {
       const H = { json, marcaDoDia, ehDono, SITE };
       if (url.pathname === '/saude/ia' && req.method === 'GET') return await fotos.saudeIA(env, origin, H);
       if (url.pathname === '/sexta/placar' && req.method === 'GET') return await sextaPlacar(env, url, H, origin);   // 13/11
+      if (url.pathname === '/quarta/placar' && req.method === 'GET') return await quartaPlacar(env, url, H, origin);   // 13/11: Duplas da Quarta
       if (url.pathname === '/suporte' && req.method === 'GET') return await suporteDoAparelho(req, env, origin, H, url);   // 12/11: conversa com o suporte
       if (url.pathname === '/suporte/lido' && req.method === 'POST') return await suporteLido(req, env, origin, H);
       if (url.pathname === '/saude/voz' && req.method === 'GET') return await saudeVoz(env, origin, H);   // 10/11: áudio do papo
@@ -688,7 +689,8 @@ export default {
     // 13/11: pela hora (UTC) e não pelo texto do cron: sábado 0h (sexta 20h em Manaus) e sexta 16h-19h (12h-15h em Manaus)
     // só fazem a rotina dos eventos (as rodadas de todo dia são às 13-15h e 21-23h UTC, nunca nessas horas)
     const dow = new Date((evento && evento.scheduledTime) || Date.now()).getUTCDay();
-    if ((dow === 6 && hora === 0) || (dow === 5 && hora >= 16 && hora <= 19)) { ctx.waitUntil(rotinaEventos(env)); return; }
+    // 13/11: quinta 0h UTC (quarta 20h em Manaus) e quarta 16h-19h UTC (12h-15h em Manaus): avisos da Quarta dos Amigos
+    if ((dow === 6 && hora === 0) || (dow === 5 && hora >= 16 && hora <= 19) || (dow === 4 && hora === 0) || (dow === 3 && hora >= 16 && hora <= 19)) { ctx.waitUntil(rotinaEventos(env)); return; }
     ctx.waitUntil(rotinaEventos(env));   // 10/11: Copa (apuração e avisos), Sexta da Calçada e tempo de casa
     ctx.waitUntil(limparNumeros(env));   // 03/11: acessos por hora guardados por 60 dias
     if (hora === 13) ctx.waitUntil(relatorioDiario(env).catch(() => {}));   // 13/11: 9h em Manaus: o relatório de ontem no celular do dono

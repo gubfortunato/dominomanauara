@@ -17,7 +17,7 @@ import { campeaoAte } from './copa.js';   // 10/11: o campeão da Copa dos Sóci
 import { VOZ, transcrever } from './voz.js';
 import { limitesValem, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteHerdado, limiteDoIrmao, anotarLimite, mesasDoDia, bonusConfig } from './planos.js';
 import { limitePessoa } from './pessoa.js';
-import { quartaValendo, contarQuarta, anotarConvite } from './quarta.js';
+import { quartaValendo, contarQuarta, anotarConvite, anotarQuarta } from './quarta.js';
 import { pesosRobo } from './robo.js';   // 13/11: robô treinado toda noite
 import { sextaValendo, anotarSexta } from './sexta.js';   // 13/11: Placar da Sexta   // 12/11: Quarta dos Amigos
 // 3.38.2: na Calçada, apelido que o filtro passou a barrar (de quem entrou antes) aparece como "Jogador"
@@ -1424,6 +1424,7 @@ export class Mesa {
     const quem = quemContaNoRanking(m, r.matchWinner);
     if (quem.length) { try { await somarRanking(this.env, quem); } catch (e) {} }
     if (quem.length && sextaValendo(this.env)) { try { await anotarSexta(this.env, m, quem); } catch (e) {} }   // 13/11: Placar da Sexta
+    if (quem.length && !m.publica && quartaValendo(this.env)) { try { await anotarQuarta(this.env, m, quem); } catch (e) {} }   // 13/11: Duplas da Quarta
     // 10/11: quem abandonou a partida perde como se tivesse perdido para pessoas; na mesa rápida, conta para a trava do dia
     const sairam = quemAbandonou(m);
     if (sairam.length) {
