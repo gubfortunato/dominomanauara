@@ -27,8 +27,8 @@ jobs:
           sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
           AGORA=$(($(date +%s) * 1000))
           p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
-          # 13/11, 5h (combinado com o dono em 12/11): recuperação do progresso dele (volta, copia, DESFAZ a volta e grava)
-          python3 "$GITHUB_WORKSPACE/.github/diag/recuperar_dono.py" $OUT 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
+          # 13/11: só leitura (informações do Time Travel do banco), até a próxima consulta
+          python3 "$GITHUB_WORKSPACE/.github/diag/tt_info.py" $OUT 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
           rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
