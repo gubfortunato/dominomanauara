@@ -9,7 +9,7 @@ import { nivelDoador, cortesiaDe } from './pagamentos.js';
 import { fotoPublica } from './fotos.js';
 import { pontuar, nomeDaTurma, apelido as apelidoNaTurma, edicao, campeaDesafioAte, avisarConfronto } from './turmas.js';
 import { somarVivo } from './vivo.js';
-import { somarRanking, reiDaSemana, anotarAbandono } from './ranking.js';
+import { somarRanking, reiDaSemana, anotarAbandono, campeaoDoMes } from './ranking.js';
 import { bloqueado, visto, apelidoBarrado, exigeApp, appAberto, anotarRitmo, RAPIDA_MS, pegaPeloApelido } from './bloqueio.js';
 import { PAPO, limparPapo, tamanho, papoRuim } from './papo.js';
 import { anotarCodigoErrado } from './codigos.js';
@@ -470,9 +470,10 @@ export class Mesa {
       let ct = null; try { ct = await cortesiaDe(this.env, id); } catch (e) {}
       let rei = false; try { const k = await reiDaSemana(this.env); rei = !!(k && k.aparelho === id); } catch (e) {}   // 3.37: coroa do Rei da Calçada
       let campeao = false; try { campeao = (await campeaoAte(this.env, id)) > Date.now(); } catch (e) {}   // 10/11: campeão da Copa dos Sócios
+      let dourada = false; try { const k = await campeaoDoMes(this.env); dourada = !!(k && k.aparelho === id); } catch (e) {}   // 13/11: Campeão do Mês (pedra Dourada)
       let campea = false; try { campea = (await campeaDesafioAte(this.env, id)) > Date.now(); } catch (e) {}   // 10/11: da Turma campeã do Desafio
-      return { apoiador: !!(p && p.ate > Date.now()), planoIncerto: incerto, doador: Math.max(nivelDoador((d && d.t) || 0), (ct && ct.nivel) || 0), foto, turma, rei, campeao, campea };
-    } catch (e) { return { apoiador: !!(p && p.ate > Date.now()), planoIncerto: incerto, doador: 0, foto: null, turma: null, rei: false, campeao: false, campea: false }; }
+      return { apoiador: !!(p && p.ate > Date.now()), planoIncerto: incerto, doador: Math.max(nivelDoador((d && d.t) || 0), (ct && ct.nivel) || 0), foto, turma, rei, campeao, campea, dourada };
+    } catch (e) { return { apoiador: !!(p && p.ate > Date.now()), planoIncerto: incerto, doador: 0, foto: null, turma: null, rei: false, campeao: false, campea: false, dourada: false }; }
   }
   // 10/11: confere no banco, de novo, quem está na mesa sem o selo de sócio (no começo e no fim de cada partida, antes de
   // contar o limite ou tirar alguém da mesa). Quem tem plano valendo vira sócio na hora. Devolve false se o banco falhou.
@@ -531,7 +532,7 @@ export class Mesa {
     const f = (m.fila || []).findIndex(c => c.id === quem.id);
     if (p < 0 && f >= 0) {
       // já estava na fila (voltou): continua esperando a vez
-      Object.assign(m.fila[f], { apoiador: quem.planoIncerto ? m.fila[f].apoiador : quem.apoiador, doador: quem.doador, foto: quem.foto, turma: quem.turma, nv: quem.nv, rei: quem.rei, campeao: quem.campeao, campea: quem.campea, uso: quem.uso || m.fila[f].uso, rede: quem.rede || m.fila[f].rede });
+      Object.assign(m.fila[f], { apoiador: quem.planoIncerto ? m.fila[f].apoiador : quem.apoiador, doador: quem.doador, foto: quem.foto, turma: quem.turma, nv: quem.nv, rei: quem.rei, campeao: quem.campeao, campea: quem.campea, dourada: quem.dourada, uso: quem.uso || m.fila[f].uso, rede: quem.rede || m.fila[f].rede });
       att.id = quem.id; ws.serializeAttachment(att);
       m.ultimo = Date.now(); await this.salvar(); this.espalhar(); this.mandarPapo(ws, att);
       return;
@@ -540,7 +541,7 @@ export class Mesa {
       // voltou (ou abriu em outro aparelho): retoma a cadeira; se tinha saído, volta a jogar
       const c = m.cad[p];
       if (m.fase === 'espera') { c.nome = quem.nome; c.av = quem.av; c.bairro = quem.bairro; }
-      c.apoiador = quem.planoIncerto ? c.apoiador : quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv; c.menor = quem.menor; c.rei = quem.rei; c.campeao = quem.campeao; c.campea = quem.campea; c.apelidoRuim = quem.apelidoRuim;   // 10/11: falha do banco não tira o selo
+      c.apoiador = quem.planoIncerto ? c.apoiador : quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv; c.menor = quem.menor; c.rei = quem.rei; c.campeao = quem.campeao; c.campea = quem.campea; c.dourada = quem.dourada; c.apelidoRuim = quem.apelidoRuim;   // 10/11: falha do banco não tira o selo
       if (quem.uso) c.uso = quem.uso;
       if (quem.rede) c.rede = quem.rede;
       if (c.saiu) { c.saiu = false; c.bot = false; }
@@ -1486,7 +1487,7 @@ export class Mesa {
       leituraMs: G && G.phase === 'handEnd' ? Math.max(0, Math.round(m.turnoDesde + this.T.leitura - Date.now())) : 0, proximaPedida: !!(G && G.phase === 'handEnd' && m.proximaPedida === m.seq),   // 28/10
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, foto: c.menor ? null : c.foto || null, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), quarta: !m.publica && this.socioArg() === 'livre', meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
-      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, campea: !!c.campea && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || c.menor ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
+      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, campea: !!c.campea && !c.saiu && !c.bot, dourada: !!c.dourada && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || c.menor ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
       tempos: minha >= 0 && m.tempos ? m.tempos[minha] || 0 : 0, tolerado: TEMPO_TOLERADO,   // 03/11
       jogo, agora: Date.now(), assistindo: this.quantosAssistem(),
