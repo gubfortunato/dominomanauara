@@ -12,7 +12,9 @@ hm = lambda ms: time.strftime('%d/%m %H:%M', time.gmtime((ms - 4 * 3600000) / 10
 L = ['== quem mandou a mensagem (só leitura)']
 msgs = [r for r in q('SELECT id, criado_em, tipo, nome, aparelho, versao FROM mensagens ORDER BY criado_em DESC LIMIT 400') if hs(r.get('nome')) == ALVO]
 L.append(f'mensagens com esse apelido: {len(msgs)}')
-aps = sorted({r['aparelho'] for r in msgs if r.get('aparelho')})
+ids = ','.join(str(int(r['id'])) for r in msgs) or '0'
+aps = sorted({r['aparelho'] for r in q(f"SELECT DISTINCT aparelho FROM suporte WHERE de = 'j' AND msg IN ({ids})") if r.get('aparelho')})
+L.append(f'aparelhos dessas mensagens: {len(aps)}')
 alvos = {ALVO}
 for a in aps:
     b = q(f"SELECT nome, motivo, em FROM bloqueios WHERE aparelho = '{a.replace(chr(39), '')}'")
