@@ -7,7 +7,7 @@ AS = 'https://api-sandbox.asaas.com/v3' if '_hmlg_' in K else 'https://api.asaas
 def criar(tipos):
     corpo = {'billingTypes': tipos, 'chargeTypes': ['DETACHED'], 'minutesToExpire': 10,
              'callback': {'successUrl': 'https://dominomanauara.com.br/?pago=teste', 'cancelUrl': 'https://dominomanauara.com.br/?pago=cancelado', 'expiredUrl': 'https://dominomanauara.com.br/?pago=expirado'},
-             'items': [{'name': 'Dominó Manauara - teste (não pagar)', 'description': 'Teste da tela de pagamento', 'quantity': 1, 'value': 5.9}]}
+             'items': [{'name': 'Teste - não pagar', 'description': 'Teste da tela de pagamento', 'quantity': 1, 'value': 5.9}]}
     req = urllib.request.Request(AS + '/checkouts', data=json.dumps(corpo).encode(), method='POST', headers={'access_token': K, 'content-type': 'application/json', 'User-Agent': 'dominomanauara-diag'})
     try: j = json.loads(urllib.request.urlopen(req, timeout=30).read().decode()); return j.get('id'), j.get('link')
     except urllib.error.HTTPError as e: return None, 'erro %s %s' % (e.code, e.read().decode()[:200])
