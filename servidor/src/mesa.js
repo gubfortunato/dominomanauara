@@ -57,7 +57,7 @@ const nivelRobo = () => 1 + Math.floor(Math.pow(Math.random(), 1.8) * 24);
 const temaOk = v => typeof v === 'string' && /^[a-z][a-z0-9]{2,15}$/.test(v) ? v : null;   // manaus357 tem número
 // 28/10 (pedido do dono): o desenho da mesa é sorteado por igual entre todas — a cada mesa nova e a cada partida nova
 // (sem repetir o da partida anterior). Quem criou continua trocando como sempre; trocou, fica a escolha dele.
-// (De fora: a Manaus 357, que é prêmio da Copa, e a Igreja de São Sebastião, que é da época de janeiro.)
+// (De fora: a Manaus 357, que é prêmio da Copa. 14/11: a Igreja de São Sebastião entrou, agora é o ano todo.)
 const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pontanegra', 'acai', 'ponte', 'rionegro',   // 14/11: a Açaí de desenho (acairoxo) saiu
   'tucuma', 'arena', 'mercado', 'vitoria', 'calcadao', 'centro', 'relogio', 'teatro', 'palacio', 'chamine',   // 11/11: a Anavilhanas saiu (pedido do dono)
   'arara', 'boto', 'beiradao', 'barco', 'skylinenoite',   // 28/10: Manaus Skyline
@@ -66,7 +66,8 @@ const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pont
   'pianoblack', 'amazonas',   // 10/11: Black Piano e Amazonas (a Branca saiu no mesmo dia, pedido do dono)
   'metropole',   // 11/11: Metrópole da Amazônia
   'palacete', 'onca',   // 13/11: Palacete Provincial e Onça-pintada (a Curumins saiu no mesmo dia, pedido do dono)
-  'pirarucu', 'tucunare', 'tambaqui'];   // 14/11: Pirarucu, Tucunaré e Tambaqui
+  'pirarucu', 'tucunare', 'tambaqui',   // 14/11: Pirarucu, Tucunaré e Tambaqui
+  'igreja'];   // 14/11: Igreja de São Sebastião, agora o ano todo
 // 28/10 (regras do dono): a partir de 5/11, a mesa com os amigos de quem não é sócio só usa as mesas grátis (Madeira,
 // Vermelha e Azul): no sorteio e na troca. Na mesa rápida o sorteio continua entre todas.
 export const TEMAS_GRATIS = ['madeira', 'garantido', 'caprichoso'];
