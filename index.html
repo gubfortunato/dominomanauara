@@ -4218,6 +4218,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.55.12', data: '14/11/2026', itens: ['Miniatura da mesa Igreja de São Sebastião mostra a igreja inteira: a torre, a cúpula e a fachada.'] },
   { v: '3.55.11', data: '14/11/2026', itens: ['Mesa Teatro Amazonas com desenho novo: a fachada rosa, as colunas brancas e a cúpula colorida.', 'A mesa Igreja de São Sebastião agora fica o ano todo para os sócios (antes era só em janeiro).'] },
   { v: '3.55.10', data: '14/11/2026', itens: ['Mesa Igreja de São Sebastião com desenho novo: a torre única, a cúpula, o largo e a charrete.'] },
   { v: '3.55.9', data: '14/11/2026', itens: ['Mesa MUSA com desenho novo: a torre no pôr do sol, com a arara voando.', 'Mesa Arena da Amazônia com desenho novo, vista do alto.'] },
@@ -7988,7 +7989,7 @@ const MESAS = [
   { id: 'tucano', nome: 'Tucano', bg: 'var(--img-tucano-sw) 40% 2%/170% auto no-repeat, #6f8a6a' },
   { id: 'peixeboi', nome: 'Peixe-boi', bg: 'var(--img-peixeboi-sw) 100% 43%/200% auto no-repeat, #3f5e3c' },
   // Mesa da época: livre para todo mundo só nos meses dela (horário de Manaus); fora da época, some
-  { id: 'igreja', nome: 'Igreja de São Sebastião', bg: 'var(--img-igreja-sw) 62% 30%/160% auto no-repeat, #c9d7e2' },   // 14/11 (dono): ilustração nova e o ano todo (antes só aparecia em janeiro)
+  { id: 'igreja', nome: 'Igreja de São Sebastião', bg: 'var(--img-igreja-sw) 58% 14%/100% auto no-repeat, #c9d7e2' },   // 14/11 (dono): ilustração nova e o ano todo (antes só aparecia em janeiro)
   // 03/11 (pedido do dono): a mesa Manaus 357 (prêmio da Copa 357) saiu do jogo; quem estava com ela volta para a de madeira
 ];
 let apoioVolta = 'home';
@@ -15781,7 +15782,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.55.11-bc878405';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.55.12-0f311faa';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
