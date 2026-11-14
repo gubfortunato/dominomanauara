@@ -188,6 +188,9 @@ export const TEXTOS = {
   vemAi: e => ({ titulo: `Vem aí a ${e.nome}! 🏆`, texto: `De ${ddmm(e.inicio)} (sexta, 20h) a ${ddmm(e.fim)} (domingo, 22h). Só sócios pontuam: o campeão leva o troféu na carteira e a mesa do campeão.`, url: '/?abrir=copa' }),
   sexta12: { titulo: 'Hoje tem Sexta da Calçada! 🌙', texto: 'Das 20h às 23h, sócio ganha moral em dobro: o nível sobe duas vezes mais rápido. Chama a turma e bora pra mesa!', url: '/' },
   sexta20: { titulo: 'Começou a Sexta da Calçada!', texto: 'Até as 23h, sócio ganha moral em dobro: o nível sobe duas vezes mais rápido. Bora pra mesa?', url: '/' },
+  // 14/11 (pedido do dono): Domingão da Calçada, às 10h (um texto para o sócio e outro para quem não é)
+  domingoSocio: { titulo: '☀️ Hoje é Domingão da Calçada!', texto: 'Das 10h às 22h tem sol, churrasco e pagode na mesa. Chama a turma e bora jogar!', url: '/' },
+  domingoTodos: { titulo: '☀️ Hoje é Domingão da Calçada!', texto: 'Das 10h às 22h a calçada fica cheia. Chama a turma! E se quiser jogar sem limite o dia todo, seja Sócio da Calçada.', url: '/' },
   copa12: e => ({ titulo: `Hoje começa a ${e.nome}! 🏆`, texto: 'Às 20h começa a Copa e a Sexta da Calçada, com moral em dobro para os sócios. Só sócios pontuam na Copa.', url: '/?abrir=copa' }),
   copa20: e => ({ titulo: `Começou a ${e.nome}! 🏆`, texto: `Vai até domingo, 22h. Cada vitória online conta ponto para os sócios. E hoje o sócio tem moral em dobro até as 23h.`, url: '/?abrir=copa' }),
   ultimas: e => ({ titulo: `Últimas horas da ${e.nome}!`, texto: 'A Copa termina hoje às 22h. Ainda dá tempo de subir no ranking: bora pra mesa!', url: '/?abrir=copa' }),
@@ -216,6 +219,11 @@ export async function avisosAgendados(env, agora) {
     const k = t.h === 20 ? '20' : '12';
     out.push({ chave: `qa:${t.dia}:${k}:socio`, msg: k === '20' ? TEXTOS.quarta20Socio : TEXTOS.quartaSocio, para: 'socios', caixa: false });
     out.push({ chave: `qa:${t.dia}:${k}:todos`, msg: k === '20' ? TEXTOS.quarta20Todos : TEXTOS.quartaTodos, para: 'naoSocios', caixa: false });
+  }
+  // 14/11: domingo, às 10h (o que não sair nessa rodada sai às 11h; cada um recebe uma vez)
+  if (t.sem === 0 && (t.h === 10 || t.h === 11)) {
+    out.push({ chave: `dm:${t.dia}:socio`, msg: TEXTOS.domingoSocio, para: 'socios', caixa: false });
+    out.push({ chave: `dm:${t.dia}:todos`, msg: TEXTOS.domingoTodos, para: 'naoSocios', caixa: false });
   }
   // uma semana antes da Copa (de manhã)
   if (t.h >= 9 && t.h < 12 && diaDe(c.atual.inicio - 7 * DIA) === t.dia) out.push({ chave: `cp:${c.atual.id}:vem`, msg: TEXTOS.vemAi(c.atual), para: 'todos', caixa: true });
