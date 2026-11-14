@@ -2522,7 +2522,7 @@ body.jogo-noite #scrGame .score .meta .pt{opacity:1}
 #fogos{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60}
 .sx-card{display:block;width:100%;aspect-ratio:4/5;border-radius:16px;background:#1a1130;margin:6px 0 4px}
 .sx-placar{display:grid;gap:8px;padding:14px 16px;border-radius:16px;background:var(--bg-2);border:1px solid var(--line)}
-.sxp-tit{margin:0;display:flex;align-items:baseline;justify-content:space-between;gap:10px}.sxp-tit b{font-size:17px}.sxp-tit small{font-size:13px;color:var(--muted)}
+.sxp-tit{margin:0;display:flex;align-items:baseline;justify-content:space-between;gap:10px}.sxp-tit small{white-space:nowrap}.sxp-tit b{font-size:17px}.sxp-tit small{font-size:13px;color:var(--muted)}
 .sx-placar ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .sx-placar li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:8px;padding:7px 10px;border-radius:10px;background:rgba(0,0,0,.12)}
 .sx-placar li.eu{box-shadow:inset 0 0 0 1.5px var(--nos)}
@@ -4200,6 +4200,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.55.5', data: '13/11/2026', itens: ['Placar da Sexta: a bolinha vermelha piscando antes do "ao vivo".'] },
   { v: '3.55.4', data: '13/11/2026', itens: ['A pedra Parintins voltou a ser como era: um número de cada cor.', 'Saiu a mesa Curumins (pedido do dono).'] },
   { v: '3.55.3', data: '13/11/2026', itens: ['Pedra Parintins com as cores divididas ao comprido: vermelho e azul ao longo da pedra, em vez de um número de cada cor.'] },
   { v: '3.55.2', data: '13/11/2026', itens: ['Correção: na Sexta da Calçada, o Papo de mesa ficava com as mensagens e as frases prontas escuras demais para ler. Agora o papo tem as cores de sempre, e a faixa "Assistindo" não cobre mais o fim do papo.'] },
@@ -11868,7 +11869,7 @@ function sextaPlacarDesenhar() {
     box.hidden = false;
     const d = j.dia.slice(8, 10) + '/' + j.dia.slice(5, 7), med = ['🥇', '🥈', '🥉'];
     const lin = (j.top || []).map((q, i) => `<li${j.eu && j.eu.pos === i + 1 ? ' class="eu"' : ''}><span class="sxp-pos">${med[i] || (i + 1) + 'º'}</span><span class="sxp-nome">${esc(q.nome)}</span><span class="sxp-n"><b>${q.vitorias}</b> ${q.vitorias === 1 ? 'vitória' : 'vitórias'}${q.galos ? ` · ${q.galos} ${q.galos === 1 ? 'galo' : 'galos'}` : ''}</span></li>`).join('');
-    box.innerHTML = `<p class="sxp-tit"><b>🏆 Placar da Sexta</b><small>${j.aoVivo ? 'ao vivo · mesas online' : 'resultado de ' + d}</small></p>`
+    box.innerHTML = `<p class="sxp-tit"><b>🏆 Placar da Sexta</b><small>${j.aoVivo ? '<span class="vivo-ponto vivo-ponto-p" aria-hidden="true"></span>ao vivo · mesas online' : 'resultado de ' + d}</small></p>`
       + (lin ? `<ol>${lin}</ol>` : `<p class="sxp-vazio">${j.aoVivo ? 'Ninguém venceu partida ainda: a primeira vitória aparece aqui.' : 'Ninguém pontuou nessa Sexta.'}</p>`)
       + (j.eu && j.eu.pos > (j.top || []).length ? `<p class="sxp-eu">Você: ${j.eu.pos}º · ${j.eu.vitorias} ${j.eu.vitorias === 1 ? 'vitória' : 'vitórias'}</p>` : '');
   };
@@ -15750,7 +15751,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.55.4-adf287d5';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.55.5-2b4a318c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
