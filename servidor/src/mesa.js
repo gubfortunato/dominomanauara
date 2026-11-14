@@ -58,7 +58,7 @@ const temaOk = v => typeof v === 'string' && /^[a-z][a-z0-9]{2,15}$/.test(v) ? v
 // 28/10 (pedido do dono): o desenho da mesa é sorteado por igual entre todas — a cada mesa nova e a cada partida nova
 // (sem repetir o da partida anterior). Quem criou continua trocando como sempre; trocou, fica a escolha dele.
 // (De fora: a Manaus 357, que é prêmio da Copa, e a Igreja de São Sebastião, que é da época de janeiro.)
-const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pontanegra', 'acai', 'acairoxo', 'ponte', 'rionegro',
+const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pontanegra', 'acai', 'ponte', 'rionegro',   // 14/11: a Açaí de desenho (acairoxo) saiu
   'tucuma', 'arena', 'mercado', 'vitoria', 'calcadao', 'centro', 'relogio', 'teatro', 'palacio', 'chamine',   // 11/11: a Anavilhanas saiu (pedido do dono)
   'arara', 'boto', 'beiradao', 'barco', 'skylinenoite',   // 28/10: Manaus Skyline
   'roxoacai', 'floresta', 'pordosol',   // 03/11: Cor de Açaí, Floresta e Sol de setembro
