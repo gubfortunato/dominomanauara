@@ -263,6 +263,7 @@ html[data-pedra="rionegro"]{--pedra-1:#2a2017;--pedra-2:#120c08;--pedra-sh:#3a2c
 html[data-pedra="mata"]{--pedra-1:#2f7a44;--pedra-2:#1b4f2b;--pedra-sh:#143a20}
 html[data-pedra="ouro"]{--pedra-1:#f0cf6a;--pedra-2:#c08f2c;--pedra-sh:#8c6420}
 html[data-pedra="perola"]{--pedra-1:#f7f2f7;--pedra-2:#dfe6f1;--pedra-sh:#c7c3d6}
+/* 13/11 (dono): a Parintins dividida ao comprido (vermelho e azul ao longo da pedra), não mais um número de cada cor */
 html[data-pedra="parintins"]{--pedra-sh:#4a2f5a}
 html[data-pedra="parintins"] .t-body{fill:url(#pedParV)}
 html[data-pedra="parintins"] .t-body.t-bh{fill:url(#pedParH)}
@@ -3014,8 +3015,8 @@ body.papo-aberto{overflow:hidden}
     <!-- 13/11: modelos de pedras -->
     <radialGradient id="pipClara" cx=".38" cy=".36" r=".7"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f1e8d6"/><stop offset="1" stop-color="#bfb3a0"/></radialGradient>
     <linearGradient id="pedOuro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0cf6a"/><stop offset="1" stop-color="#c08f2c"/></linearGradient>
-    <linearGradient id="pedParV" x1="0" y1="0" x2="0" y2="1"><stop offset=".5" stop-color="#d23a2f"/><stop offset=".5" stop-color="#1f4fb0"/></linearGradient>
-    <linearGradient id="pedParH" x1="0" y1="0" x2="1" y2="0"><stop offset=".5" stop-color="#d23a2f"/><stop offset=".5" stop-color="#1f4fb0"/></linearGradient>
+    <linearGradient id="pedParV" x1="0" y1="0" x2="1" y2="0"><stop offset=".5" stop-color="#d23a2f"/><stop offset=".5" stop-color="#1f4fb0"/></linearGradient>
+    <linearGradient id="pedParH" x1="0" y1="0" x2="0" y2="1"><stop offset=".5" stop-color="#d23a2f"/><stop offset=".5" stop-color="#1f4fb0"/></linearGradient>
     <pattern id="pedVeio" width=".5" height=".14" patternUnits="userSpaceOnUse"><path d="M0 .07q.12-.03.25 0t.25 0" fill="none" stroke="rgba(60,30,10,.35)" stroke-width=".012"/></pattern>
     <radialGradient id="ping" cx=".36" cy=".34" r=".72">
       <stop offset="0" stop-color="#fff0c2"/><stop offset=".35" stop-color="#e2b764"/><stop offset=".8" stop-color="#a87a33"/><stop offset="1" stop-color="#6e4d1c"/>
@@ -4218,6 +4219,7 @@ const TURMA = 'a turma do bairro';
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
   { v: '3.56.0', data: '13/11/2026', itens: ['Quarta dos Amigos com cara própria: das 20h às 23h, a Calçada e a mesa de jogo ficam azul-noite com um varal de luzes no alto, e o cartão da tela inicial ganha o varal e o "Agora · até as 23h" com a bolinha do ao vivo.', 'Duplas da Quarta: na Calçada, as duplas de parceiros que mais venceram juntas nas mesas com os amigos (ao vivo na quarta e o resultado na quinta).', 'Avisos da Quarta às 12h e às 20h, quando começa (antes era às 18h).'] },
+  { v: '3.55.3', data: '13/11/2026', itens: ['Pedra Parintins com as cores divididas ao comprido: vermelho e azul ao longo da pedra, em vez de um número de cada cor.'] },
   { v: '3.55.2', data: '13/11/2026', itens: ['Correção: na Sexta da Calçada, o Papo de mesa ficava com as mensagens e as frases prontas escuras demais para ler. Agora o papo tem as cores de sempre, e a faixa "Assistindo" não cobre mais o fim do papo.'] },
   { v: '3.55.1', data: '13/11/2026', itens: ['Pedras na montagem da mesa: no jogo offline, na mesa com os amigos e na mesa rápida, o botão "Suas pedras" troca o modelo na hora. Cada um escolhe as suas.', 'Aviso das pedras novas (uma vez só, para quem já tinha o app) e o selo "Novo" no Personalizar até a pessoa ver as pedras.'] },
   { v: '3.55.0', data: '13/11/2026', itens: ['Modelos novos de pedras: Preta de boteco, Madeira de lei, Guaraná, Verde mata, Açaí, Rio Negro, Madrepérola, Parintins e Dourada. São dos sócios da Calçada. A Dourada é do Campeão do Mês: o sócio que mais pontuar no ranking do mês joga com ela no mês seguinte, e na mesa online as pedras dele caem douradas para todos. Escolha em Personalizar.'] },
@@ -10217,7 +10219,7 @@ let pedraPrevN = 0;
 function pedraPrevSVG(pd) {
   if (!pd) return '';
   const n = ++pedraPrevN, g = `pv${n}`, pip = pd.pinta === 'clara' ? 'url(#pipClara)' : pd.pinta === 'ouro' ? 'url(#ping)' : 'url(#pipg)';
-  const corpo = pd.meio ? `<linearGradient id="${g}" x1="0" y1="0" x2="1" y2="0"><stop offset=".5" stop-color="${pd.c1}"/><stop offset=".5" stop-color="${pd.c2}"/></linearGradient>`
+  const corpo = pd.meio ? `<linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset=".5" stop-color="${pd.c1}"/><stop offset=".5" stop-color="${pd.c2}"/></linearGradient>`
     : `<linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${pd.c1}"/><stop offset="1" stop-color="${pd.c2}"/></linearGradient>`;
   let s = `<svg viewBox="-0.04 -0.04 2.12 1.18" aria-hidden="true"><defs>${corpo}</defs>`
     + `<rect x=".035" y=".08" width="1.93" height=".93" rx=".13" fill="${pd.sh}" opacity=".85"/>`
