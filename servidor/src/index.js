@@ -14,7 +14,7 @@ import * as rk from './ranking.js';
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos, pegaPeloApelido, donoApelidos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
 import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
-import { limitePessoa, donoVigiaTirar, vigiados } from './pessoa.js';
+import { limitePessoa, donoVigiaTirar, donoVigiaVoltar, vigiados } from './pessoa.js';
 import { donoQuarta } from './quarta.js';   // 12/11: Quarta dos Amigos
 import { anotarSuporte, suporteDoAparelho, suporteLido, donoResponder, juntarSuporte } from './suporte.js';   // 12/11: conversa com o suporte
 import { relatorioDiario, donoRelatorio, alertas, sugerirResposta } from './gestor.js';
@@ -648,6 +648,7 @@ export default {
       if (url.pathname === '/dono/burlas' && req.method === 'GET') return await donoBurlas(req, env, origin, H, vigiados);   // 10/11: possíveis burlas dos limites (12/11: e os apelidos em vigia)
       if (url.pathname === '/dono/quarta' && req.method === 'GET') return await donoQuarta(req, env, origin, H);   // 12/11: Quarta dos Amigos e convites
       if (url.pathname === '/dono/vigia/tirar' && req.method === 'POST') return await donoVigiaTirar(req, env, origin, H);   // 12/11: o dono tira da vigia (e desfaz o bloqueio automático)
+      if (url.pathname === '/dono/vigia/voltar' && req.method === 'POST') return await donoVigiaVoltar(req, env, origin, H);   // 14/11: o dono põe de volta na vigia (desfaz o Tirar sem querer)
       if (url.pathname === '/dono/cofre' && req.method === 'GET') return await donoCofre(env, origin);   // 10/11: troca da senha do dono
       if (url.pathname === '/dono/cofre' && req.method === 'POST') return await donoCofreTrocar(req, env, origin);
       if (url.pathname === '/vivo/hoje' && req.method === 'GET') return await vivo.hoje(env, origin, H);

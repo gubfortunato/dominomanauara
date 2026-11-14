@@ -4252,6 +4252,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.55.20', data: '14/11/2026', itens: ['Administrador: quem foi tirado da vigia pode voltar para ela (botão Pôr de volta). Se estava bloqueado, bloqueia de novo.'] },
   { v: '3.55.19', data: '14/11/2026', itens: ['Mesa Mercado Adolpho Lisboa com desenho novo: a fachada vermelha e amarela, com a torre do relógio.'] },
   { v: '3.55.18', data: '14/11/2026', itens: ['A mesa Ponta Negra agora é Praia da Ponta Negra, com desenho novo: a praia de dia, com o hotel, os guarda-sóis e o rio.', 'Mesa MUSA mais limpa: sem a arara e sem gente na torre, com dois pássaros voando para o sol.', 'Mesa Barco regional com desenho novo: o barco de três andares, com as redes, subindo o Rio Negro.', 'Mesa Arara-Azul com desenho novo: a arara voando de asas abertas no meio da mata.', 'Mesa Arara-Vermelha com desenho novo: o casal de araras voando na mata.', 'Mesa Tucano com desenho novo: o tucano pousado no galho, no meio da mata.'] },
   { v: '3.55.17', data: '14/11/2026', itens: ['Mesa Metrópole da Amazônia com desenho novo: os prédios no meio da mata.', 'Mesa Palacete Provincial com desenho novo, com as nuvens e o sol.', 'Mesa Manaus Skyline com desenho novo: a cidade acesa à noite.', 'Mesa Ponte Rio Negro com desenho novo: o pôr do sol atrás da ponte.'] },
@@ -8827,7 +8828,8 @@ async function dnBurlasCarregar() {
       const dm = t => new Date(t).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Manaus' });
       const det = [`desde ${dm(x.desde)} ${horaMan(x.desde)}`, x.ativo ? `até ${dm(x.ate)}` : '', x.motivo || '', x.avisado ? `avisado ${quandoFoi(x.avisado)}` : 'ainda sem aviso',
         x.tentativas ? `${x.tentativas} ${x.tentativas === 1 ? 'aparelho novo tentou' : 'aparelhos novos tentaram'} depois do aviso` : ''].filter(Boolean).join(' · ');
-      const bt = !x.tirado && (x.ativo || x.bloqueado) ? `<button type="button" class="linkbtn dn-jog-b" data-vig-tirar="${esc(x.nome)}">${x.bloqueado ? 'Desfazer' : 'Tirar'}</button>` : '';
+      const bt = !x.tirado && (x.ativo || x.bloqueado) ? `<button type="button" class="linkbtn dn-jog-b" data-vig-tirar="${esc(x.nome)}">${x.bloqueado ? 'Desfazer' : 'Tirar'}</button>` 
+        : x.tirado ? `<button type="button" class="linkbtn dn-jog-b" data-vig-voltar="${esc(x.nome)}">Pôr de volta</button>` : '';   // 14/11: desfaz o Tirar
       return `<li class="vig${x.bloqueado && !x.tirado ? ' bloq' : ''}"><span class="dn-jog-t"><b>${esc(x.apelido || x.nome)}</b><small><strong>${esc(est)}</strong> · ${esc(det)}</small></span>${bt}</li>`;
     });
     const itens = vig.concat((j.suspeitos || []).map(x => `<li><span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')} · jogou</b><small>${esc(`Aparelho novo às ${horaMan(x.novo)}, depois de bater o limite da ${TIPO_LIM[x.tipo] || x.tipo} às ${horaMan(x.bateu)}`)} · ${esc([x.rapidas ? `${x.rapidas} na rápida` : '', x.amigos ? `${x.amigos} com os amigos` : '', x.offline ? `${x.offline} offline` : ''].filter(Boolean).join(', ') || 'ainda sem partida')}</small></span></li>`)
@@ -8844,6 +8846,17 @@ document.addEventListener('click', async e => {
   try {
     const j = await dnMsgPedir('/dono/vigia/tirar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nome: b.dataset.vigTirar }) });
     toast(j.soltos ? `Pronto. ${j.soltos} ${j.soltos === 1 ? 'aparelho desbloqueado' : 'aparelhos desbloqueados'}, e o apelido saiu da vigia.` : 'Pronto. O apelido saiu da vigia.');
+  } catch (er) { toast('Não deu agora. Tente de novo.'); }
+  dnBurlasCarregar(); if (typeof dnAplCarregar === 'function') dnAplCarregar();
+});
+// 14/11 (pedido do dono): pôr de volta na vigia quem foi tirado sem querer (se estava bloqueado, bloqueia de novo)
+document.addEventListener('click', async e => {
+  const b = e.target.closest && e.target.closest('[data-vig-voltar]'); if (!b) return;
+  if (!b.dataset.armado) { b.dataset.armado = '1'; b.textContent = 'Toque de novo'; return; }
+  b.disabled = true;
+  try {
+    const j = await dnMsgPedir('/dono/vigia/voltar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nome: b.dataset.vigVoltar }) });
+    toast(j.bloqueados ? `Pronto. Voltou para a vigia e ${j.bloqueados} ${j.bloqueados === 1 ? 'aparelho foi bloqueado' : 'aparelhos foram bloqueados'} de novo.` : 'Pronto. O apelido voltou para a vigia por 7 dias.');
   } catch (er) { toast('Não deu agora. Tente de novo.'); }
   dnBurlasCarregar(); if (typeof dnAplCarregar === 'function') dnAplCarregar();
 });
@@ -15870,7 +15883,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.55.19-a0fffb98';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.55.20-c15bfd0e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

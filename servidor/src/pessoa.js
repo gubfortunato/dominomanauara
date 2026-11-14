@@ -231,3 +231,25 @@ export async function donoVigiaTirar(req, env, origin, h) {
   livreMudou(n);
   return h.json({ ok: true, soltos }, 200, origin);
 }
+
+// 14/11 (pedido do dono): POST /dono/vigia/voltar { nome }: desfaz o "Tirar" tocado sem querer. A vigia volta por mais 7 dias
+// (a partir de agora) e o perdão de 30 dias some. Se o apelido estava bloqueado quando foi tirado, bloqueia de novo os
+// aparelhos (a mesma regra do bloqueio automático: quem virou sócio fica de fora).
+export async function donoVigiaVoltar(req, env, origin, h) {
+  if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
+  let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
+  const n = nomeChave(b && b.nome); if (!n) return h.json({ erro: 'dados' }, 400, origin);
+  const v = await vigiaDe(env, n); if (!v) return h.json({ erro: 'nao-existe' }, 404, origin);
+  const agora = Date.now();
+  let tinhaBloqueio = false; try { tinhaBloqueio = !v.bloqueado && JSON.parse(v.aparelhos || '[]').length > 0; } catch (e) {}
+  await env.DB.prepare('UPDATE apelidos_vigia SET ate = ?, perdao = NULL WHERE nome = ?').bind(agora + VIGIA_DIAS * DIA, n).run();
+  livreMudou(n);
+  let bloqueados = 0;
+  if (tinhaBloqueio) {
+    const v2 = await vigiaDe(env, n);
+    await bloquearVigia(env, v2, n);
+    const v3 = await vigiaDe(env, n);
+    if (v3 && v3.bloqueado) { try { bloqueados = JSON.parse(v3.aparelhos || '[]').length; } catch (e) {} }
+  }
+  return h.json({ ok: true, bloqueados }, 200, origin);
+}
