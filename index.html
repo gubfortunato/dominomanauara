@@ -2504,6 +2504,7 @@ body.calc-noite #calcCorpo .vivo-mesa.livre{background:linear-gradient(180deg,rg
 @media (prefers-reduced-motion:reduce){#scrCalcada .varal .est,#scrCalcada .varal .lp circle{animation:none}}
 .calc-sexta{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#4a2a6e,#2a1745);color:#fff1dc;box-shadow:0 0 0 1px rgba(255,200,120,.25),0 8px 24px rgba(120,60,200,.25)}
 .calc-sexta .cs-fogo{font-size:26px}
+.calc-sexta .cs-2x{font-family:var(--font-display);font-size:34px;line-height:1;letter-spacing:-.02em;color:#ffd27a;text-shadow:0 0 16px rgba(255,190,90,.55)}   /* 13/11 (dono): "2x" grande no lugar do fogo */
 .calc-sexta .cs-lance{grid-column:1/-1;margin:2px 0 0;padding:7px 10px;border-radius:10px;background:rgba(0,0,0,.22);font-size:14px;font-weight:700;color:#ffe2b0}
 .calc-sexta .cs-chamar{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:2px;padding:10px 14px;border:0;border-radius:12px;background:#25d366;color:#0b2e17;font:inherit;font-size:15.5px;font-weight:800;cursor:pointer}
 .calc-sexta .cs-chamar svg{width:20px;height:20px;flex:none}
@@ -4200,6 +4201,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.55.6', data: '13/11/2026', itens: ['Sexta da Calçada: um "2x" grande no lugar do fogo, na faixa da Calçada.'] },
   { v: '3.55.5', data: '13/11/2026', itens: ['Placar da Sexta: a bolinha vermelha piscando antes do "ao vivo".'] },
   { v: '3.55.4', data: '13/11/2026', itens: ['A pedra Parintins voltou a ser como era: um número de cada cor.', 'Saiu a mesa Curumins (pedido do dono).'] },
   { v: '3.55.3', data: '13/11/2026', itens: ['Pedra Parintins com as cores divididas ao comprido: vermelho e azul ao longo da pedra, em vez de um número de cada cor.'] },
@@ -11770,7 +11772,7 @@ function sextaNoite(ev) {
   if (!fx) { cab.insertAdjacentHTML('afterend', '<div class="calc-sexta" id="calcSexta" role="status"></div>'); fx = $('#calcSexta'); }
   fx.hidden = false;
   const lance = sextaLance();
-  fx.innerHTML = `<span class="cs-fogo" aria-hidden="true">🔥</span><span class="cs-tx"><b>${temPlano() ? 'Moral em dobro para você' : 'Sócio ganha moral em dobro'}</b><small>${temPlano() ? 'Em toda partida, até as 23h.' : 'Toda partida até as 23h vale o dobro para quem é sócio.'}</small></span><span class="cs-relogio"><small>termina em</small><b>${sxFalta()}</b></span>`
+  fx.innerHTML = `<span class="cs-fogo cs-2x" aria-hidden="true">2x</span><span class="cs-tx"><b>${temPlano() ? 'Moral em dobro para você' : 'Sócio ganha moral em dobro'}</b><small>${temPlano() ? 'Em toda partida, até as 23h.' : 'Toda partida até as 23h vale o dobro para quem é sócio.'}</small></span><span class="cs-relogio"><small>termina em</small><b>${sxFalta()}</b></span>`
     + (lance ? `<p class="cs-lance" aria-live="polite">${esc(lance)}</p>` : '')
     + `<button type="button" class="cs-chamar" id="csChamar">${WA_IC}Chamar a turma pra Sexta</button>`;
   $('#csChamar').addEventListener('click', () => sextaConvidar('calcada'));
@@ -15751,7 +15753,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.55.5-2b4a318c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.55.6-97fe810f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
