@@ -3031,8 +3031,26 @@ body.papo-aberto{overflow:hidden}
   #scrWho .entry-frase{margin-top:18px}
 }
 </style>
+<style>
+/* 14/11 (pedido do dono): tela de abertura. Aparece logo que a página começa a chegar e some quando o jogo termina de
+   carregar (no lugar da tela branca, que parecia travada, principalmente logo depois de uma versão nova) */
+#abertura{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  padding:24px;background:var(--bg);color:var(--fg);font-family:var(--font-body);text-align:center;transition:opacity .3s ease}
+#abertura.sai{opacity:0;pointer-events:none}
+#abertura img{width:96px;height:96px;border-radius:22px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+#abertura b{font-family:var(--font-display);font-weight:400;font-size:34px;line-height:1.05;letter-spacing:.01em}
+#abertura b span{display:block;color:var(--nos)}
+#abertura p{margin:6px 0 0;font-size:18px;color:var(--muted)}
+#abertura i{display:flex;gap:8px;margin-top:4px}
+#abertura i u{width:10px;height:10px;border-radius:50%;background:var(--nos);opacity:.25;animation:abPisca 1.2s infinite ease-in-out}
+#abertura i u:nth-child(2){animation-delay:.2s} #abertura i u:nth-child(3){animation-delay:.4s}
+@keyframes abPisca{0%,100%{opacity:.25;transform:scale(.85)}40%{opacity:1;transform:scale(1)}}
+@media (prefers-reduced-motion: reduce){#abertura i u{animation:none;opacity:.7}}
+</style>
 </head>
 <body>
+<div id="abertura" role="status" aria-live="polite"><img src="icons/icon-192-v4.png" alt="" width="96" height="96"><b>Dominó<span>Manauara</span></b><p id="aberturaT">Carregando o jogo…</p><i aria-hidden="true"><u></u><u></u><u></u></i></div>
+<script>try{if(/[?&]v=/.test(location.search))document.getElementById('aberturaT').textContent='Atualizando o jogo…'}catch(e){}</script>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
@@ -4252,6 +4270,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.55.21', data: '14/11/2026', itens: ['Abertura com a logo e "Carregando o jogo…" (ou "Atualizando o jogo…") no lugar da tela branca, enquanto o jogo baixa.'] },
   { v: '3.55.20', data: '14/11/2026', itens: ['Administrador: quem foi tirado da vigia pode voltar para ela (botão Pôr de volta). Se estava bloqueado, bloqueia de novo.'] },
   { v: '3.55.19', data: '14/11/2026', itens: ['Mesa Mercado Adolpho Lisboa com desenho novo: a fachada vermelha e amarela, com a torre do relógio.'] },
   { v: '3.55.18', data: '14/11/2026', itens: ['A mesa Ponta Negra agora é Praia da Ponta Negra, com desenho novo: a praia de dia, com o hotel, os guarda-sóis e o rio.', 'Mesa MUSA mais limpa: sem a arara e sem gente na torre, com dois pássaros voando para o sol.', 'Mesa Barco regional com desenho novo: o barco de três andares, com as redes, subindo o Rio Negro.', 'Mesa Arara-Azul com desenho novo: a arara voando de asas abertas no meio da mata.', 'Mesa Arara-Vermelha com desenho novo: o casal de araras voando na mata.', 'Mesa Tucano com desenho novo: o tucano pousado no galho, no meio da mata.'] },
@@ -15883,7 +15902,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.55.20-c15bfd0e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.55.21-5669125c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -17066,6 +17085,10 @@ showResult = function () {
   } catch (e) {}
   return r;
 };
+</script>
+<script>
+// 14/11: o jogo carregou: some a tela de abertura (num script separado, para sumir mesmo se algo acima der erro)
+(function(){var a=document.getElementById('abertura');if(!a)return;a.classList.add('sai');setTimeout(function(){if(a.parentNode)a.parentNode.removeChild(a)},400)})();
 </script>
 </body>
 </html>
