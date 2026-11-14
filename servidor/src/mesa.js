@@ -58,14 +58,15 @@ const temaOk = v => typeof v === 'string' && /^[a-z][a-z0-9]{2,15}$/.test(v) ? v
 // 28/10 (pedido do dono): o desenho da mesa é sorteado por igual entre todas — a cada mesa nova e a cada partida nova
 // (sem repetir o da partida anterior). Quem criou continua trocando como sempre; trocou, fica a escolha dele.
 // (De fora: a Manaus 357, que é prêmio da Copa, e a Igreja de São Sebastião, que é da época de janeiro.)
-const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pontanegra', 'acai', 'acairoxo', 'ponte', 'rionegro',
+const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pontanegra', 'acai', 'ponte', 'rionegro',   // 14/11: a Açaí de desenho (acairoxo) saiu
   'tucuma', 'arena', 'mercado', 'vitoria', 'calcadao', 'centro', 'relogio', 'teatro', 'palacio', 'chamine',   // 11/11: a Anavilhanas saiu (pedido do dono)
   'arara', 'boto', 'beiradao', 'barco', 'skylinenoite',   // 28/10: Manaus Skyline
   'roxoacai', 'floresta', 'pordosol',   // 03/11: Cor de Açaí, Floresta e Sol de setembro
   'araraazul', 'tucano', 'peixeboi',   // 04/11: Arara-Azul, Tucano e Peixe-boi
   'pianoblack', 'amazonas',   // 10/11: Black Piano e Amazonas (a Branca saiu no mesmo dia, pedido do dono)
   'metropole',   // 11/11: Metrópole da Amazônia
-  'palacete', 'onca'];   // 13/11: Palacete Provincial e Onça-pintada (a Curumins saiu no mesmo dia, pedido do dono)
+  'palacete', 'onca',   // 13/11: Palacete Provincial e Onça-pintada (a Curumins saiu no mesmo dia, pedido do dono)
+  'pirarucu', 'tucunare', 'tambaqui'];   // 14/11: Pirarucu, Tucunaré e Tambaqui
 // 28/10 (regras do dono): a partir de 5/11, a mesa com os amigos de quem não é sócio só usa as mesas grátis (Madeira,
 // Vermelha e Azul): no sorteio e na troca. Na mesa rápida o sorteio continua entre todas.
 export const TEMAS_GRATIS = ['madeira', 'garantido', 'caprichoso'];
