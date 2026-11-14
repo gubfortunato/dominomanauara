@@ -2510,7 +2510,9 @@ body.calc-noite #calcCorpo .vivo-mesa.livre{background:linear-gradient(180deg,rg
 .calc-sexta .cs-chamar{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:2px;padding:10px 14px;border:0;border-radius:12px;background:#25d366;color:#0b2e17;font:inherit;font-size:15.5px;font-weight:800;cursor:pointer}
 .calc-sexta .cs-chamar svg{width:20px;height:20px;flex:none}
 /* 13/11: a mesa de jogo na Sexta: fundo de noite, cantos escurecidos e o varal no alto (atrás de tudo) */
-body.jogo-noite{--bg:#120c22;background:radial-gradient(120% 70% at 50% 0%,#33224f 0%,#170f2a 55%,#0d0918 100%) fixed}
+/* 13/11 (bug do papo à noite): a cor de fundo (--bg) muda só dentro da tela do jogo; o papo e as outras folhas ficam com as cores de sempre */
+body.jogo-noite{background:radial-gradient(120% 70% at 50% 0%,#33224f 0%,#170f2a 55%,#0d0918 100%) fixed}
+body.papo-aberto .assistir-faixa{display:none}   /* 13/11: com o papo aberto, a faixa "Assistindo" não cobre o fim do papo */
 body.jogo-noite #scrGame{--bg:#120c22;--bg-2:#1e1634;--fg:#f6ecdc;--muted:#c9bbdc;--line:rgba(255,214,160,.2);--nos:#e5a650;--eles:#8fbcc2;--alert:#e58a6c;--ok:#86c98f;color:var(--fg);isolation:isolate}
 body.jogo-noite #scrGame .score .meta .pt{opacity:1}
 #scrGame .mesa-noite{position:absolute;inset:0;pointer-events:none;z-index:-1;opacity:.85}
@@ -2540,7 +2542,7 @@ body.calc-quarta #calcCorpo .vivo-mesa{box-shadow:0 0 0 1px rgba(255,200,120,.2)
 .calc-sexta.quarta{background:linear-gradient(135deg,#1f6684,#0b3344);box-shadow:0 0 0 1px rgba(255,210,120,.24),0 8px 24px rgba(20,90,140,.3)}
 .calc-sexta .cs-criar{background:#ffd27a;color:#2a1a05}
 #scrCalcada .varal.qa{height:70px;margin-bottom:-2px}
-body.jogo-noite.jogo-quarta{--bg:#081c26;background:radial-gradient(120% 70% at 50% 0%,#1d5470 0%,#0b2633 55%,#061620 100%) fixed}
+body.jogo-noite.jogo-quarta{background:radial-gradient(120% 70% at 50% 0%,#1d5470 0%,#0b2633 55%,#061620 100%) fixed}
 body.jogo-noite.jogo-quarta #scrGame{--bg:#081c26;--bg-2:#0f2c3a;--muted:#b4cfda;--line:rgba(170,225,255,.18)}
 #scrGame .mesa-noite .mn-varal{position:absolute;top:calc(env(safe-area-inset-top,0px) - 2px);left:0;width:100%;height:44px}
 #scrGame .mesa-noite .mn-varal .lp circle{filter:drop-shadow(0 0 5px rgba(255,190,90,.9));animation:lpPisca 2.4s ease-in-out infinite;animation-delay:var(--d)}
@@ -4216,6 +4218,7 @@ const TURMA = 'a turma do bairro';
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
   { v: '3.56.0', data: '13/11/2026', itens: ['Quarta dos Amigos com cara própria: das 20h às 23h, a Calçada e a mesa de jogo ficam azul-noite com um varal de luzes no alto, e o cartão da tela inicial ganha o varal e o "Agora · até as 23h" com a bolinha do ao vivo.', 'Duplas da Quarta: na Calçada, as duplas de parceiros que mais venceram juntas nas mesas com os amigos (ao vivo na quarta e o resultado na quinta).', 'Avisos da Quarta às 12h e às 20h, quando começa (antes era às 18h).'] },
+  { v: '3.55.2', data: '13/11/2026', itens: ['Correção: na Sexta da Calçada, o Papo de mesa ficava com as mensagens e as frases prontas escuras demais para ler. Agora o papo tem as cores de sempre, e a faixa "Assistindo" não cobre mais o fim do papo.'] },
   { v: '3.55.1', data: '13/11/2026', itens: ['Pedras na montagem da mesa: no jogo offline, na mesa com os amigos e na mesa rápida, o botão "Suas pedras" troca o modelo na hora. Cada um escolhe as suas.', 'Aviso das pedras novas (uma vez só, para quem já tinha o app) e o selo "Novo" no Personalizar até a pessoa ver as pedras.'] },
   { v: '3.55.0', data: '13/11/2026', itens: ['Modelos novos de pedras: Preta de boteco, Madeira de lei, Guaraná, Verde mata, Açaí, Rio Negro, Madrepérola, Parintins e Dourada. São dos sócios da Calçada. A Dourada é do Campeão do Mês: o sócio que mais pontuar no ranking do mês joga com ela no mês seguinte, e na mesa online as pedras dele caem douradas para todos. Escolha em Personalizar.'] },
   { v: '3.54.9', data: '13/11/2026', itens: ['Mesa com os amigos: um aviso no botão do Papo de mesa conta que agora dá para mandar (sócios) e ouvir áudio da turma.'] },
