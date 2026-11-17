@@ -4315,6 +4315,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.55.30', data: '17/11/2026', itens: ['História da mesa Azul: o “Você sabia?” agora conta que, em Parintins, todos os patrocinadores adotam as cores dos bois nas suas marcas.'] },
   { v: '3.55.29', data: '17/11/2026', itens: ['Arrume a sua mão: segure uma pedra e arraste para o lado, dentro da mão, para mudar a ordem. Dá para arrumar a qualquer hora, até fora da sua vez. Na mão seguinte, as pedras voltam na ordem de sempre.', 'Pedras maiores na mesa em pé: a fileira vira mais cedo e a mesa usa melhor o espaço de cima e de baixo.', 'Histórias das mesas mais fáceis de achar: em Mais, em cima das mesas em Personalizar, tocando numa mesa trancada e tocando no nome da mesa no começo da partida.'] },
   { v: '3.55.28', data: '17/11/2026', itens: ['História das mesas: cada bicho, fruta, lugar e monumento das mesas agora tem a sua história, com curiosidades de Manaus e da Amazônia. Veja em Personalizar (embaixo das mesas), na hora de escolher a mesa ou no menu da partida.'] },
   { v: '3.55.27', data: '17/11/2026', itens: ['Encaixe direto: solte a pedra em qualquer lugar da mesa e ela vai para a ponta onde encaixa (se encaixa nas duas, vai para a mais perto). O voo até o lugar ficou reto e suave.', 'A mesa Amazonas saiu por enquanto (vai voltar redesenhada).'] },
@@ -10583,7 +10584,7 @@ const HIST_MESA = {
   caprichoso: { k: 'Cultura do Amazonas', p: [
     'O azul é a cor do Boi Caprichoso, de Parintins. Pela tradição oral, ele também nasceu por volta de 1913, e a marca dele é a estrela na testa do boi.',
     'A rivalidade com o Garantido divide a ilha ao meio: cada torcida tem o seu lado da cidade, e um boi chama o outro só de “contrário”.'],
-    s: 'Em Parintins, até a Coca-Cola ganha lata azul na época do festival.' },
+    s: 'Em Parintins, todos os patrocinadores adotam as cores dos bois nas suas marcas: vermelho do lado do Garantido e azul do lado do Caprichoso.' },
   roxoacai: { k: 'Fruta da Amazônia', p: [
     'O açaí nasce em cachos no alto de palmeiras finas e altas, os açaizeiros. A fruta é pequena, quase toda caroço, e a polpa roxa sai batida com água.',
     'No Norte, açaí é comida de verdade: grosso, sem açúcar, com farinha e, para muita gente, com peixe frito.'],
@@ -16347,7 +16348,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.55.29-82aaa7c4';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.55.30-bca43da2';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
