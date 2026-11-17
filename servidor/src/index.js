@@ -2,7 +2,7 @@
 // Caixa de mensagens "Fale com a gente", lembretes para jogar (Web Push), painel do dono e mesa online por convite.
 import { enviarPush } from './webpush.js';
 import { Mesa } from './mesa.js';
-import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolver, manterChaveAsaas, donoCortesia, guardarProgresso, verProgresso, donoApoiadores, cancelarAssinatura, precos, reajustesPendentes } from './pagamentos.js';
+import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolver, manterChaveAsaas, donoCortesia, donoPresenteBuscar, donoPresentear, donoPresenteTirar, guardarProgresso, verProgresso, donoApoiadores, cancelarAssinatura, precos, reajustesPendentes } from './pagamentos.js';
 import { atuais, imagem, contar, donoLista, donoImagem, donoSalvar, donoApagar } from './patrocinadores.js';
 import * as fotos from './fotos.js';
 import * as turmas from './turmas.js';
@@ -435,6 +435,7 @@ async function lembretesPlano(env) {
     JOIN avisos_id i ON i.aparelho = p.aparelho JOIN avisos a ON a.endpoint = i.endpoint
     WHERE p.ate > ? AND p.ate <= ? AND NOT EXISTS (SELECT 1 FROM lembretes_plano l WHERE l.aparelho = p.aparelho AND l.ate = p.ate)
       AND NOT EXISTS (SELECT 1 FROM assinaturas s WHERE s.aparelho = p.aparelho AND s.status = 'ativa')
+      AND NOT EXISTS (SELECT 1 FROM presentes_dono g WHERE g.aparelho = p.aparelho AND g.ate = p.ate AND g.tipo = 'hoje' AND g.tirado IS NULL)   -- 17/11: o "sem limite hoje" do dono não tem aviso de fim
     ORDER BY p.ate LIMIT 8`).bind(agora, agora + 3 * DIA).all();
   const lista = results || [];
   for (const s of lista) await env.DB.prepare('INSERT OR IGNORE INTO lembretes_plano (aparelho, ate, enviado_em) VALUES (?, ?, ?)').bind(s.aparelho, s.ate, agora).run();
@@ -444,6 +445,7 @@ async function lembretesPlano(env) {
     JOIN avisos_id i ON i.aparelho = p.aparelho JOIN avisos a ON a.endpoint = i.endpoint
     WHERE p.ate > 0 AND p.ate <= ? AND p.ate > ? AND NOT EXISTS (SELECT 1 FROM lembretes_plano_fim l WHERE l.aparelho = p.aparelho AND l.ate = p.ate)
       AND NOT EXISTS (SELECT 1 FROM assinaturas s WHERE s.aparelho = p.aparelho AND s.status = 'ativa')
+      AND NOT EXISTS (SELECT 1 FROM presentes_dono g WHERE g.aparelho = p.aparelho AND g.ate = p.ate AND g.tipo = 'hoje' AND g.tirado IS NULL)   -- 17/11: o "sem limite hoje" do dono não tem aviso de fim
     ORDER BY p.ate LIMIT 6`).bind(agora, agora - DIA).all();
   const lf = fim || [];
   for (const s of lf) await env.DB.prepare('INSERT OR IGNORE INTO lembretes_plano_fim (aparelho, ate, enviado_em) VALUES (?, ?, ?)').bind(s.aparelho, s.ate, agora).run();
@@ -604,6 +606,9 @@ export default {
       if (url.pathname === '/asaas/webhook' && req.method === 'POST') return await webhook(req, env, origin, H);
       if (url.pathname === '/dono/pagamentos' && req.method === 'GET') return await donoPagamentos(req, env, origin, H);
       if (url.pathname === '/dono/apoiadores' && req.method === 'GET') return await donoApoiadores(req, env, origin, H);   // 3.41
+      if (url.pathname === '/dono/presente/buscar' && req.method === 'GET') return await donoPresenteBuscar(req, env, origin, H, url);   // 17/11: presentes do dono
+      if (url.pathname === '/dono/presente' && req.method === 'POST') return await donoPresentear(req, env, origin, H);
+      if (url.pathname === '/dono/presente/tirar' && req.method === 'POST') return await donoPresenteTirar(req, env, origin, H);
       if (url.pathname === '/dono/cortesia' && req.method === 'POST') return await donoCortesia(req, env, origin, H);
       if (url.pathname === '/dono/jogadores' && req.method === 'GET') return await donoJogadores(req, env, origin, H);
       if (url.pathname === '/dono/bloquear' && req.method === 'POST') return await donoBloquear(req, env, origin, H);

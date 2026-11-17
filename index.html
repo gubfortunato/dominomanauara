@@ -2059,6 +2059,11 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .dn-jog-t small{color:var(--wood-muted);font-size:13.5px}
 .dn-jog-st{font-size:13px;font-weight:800;color:#e58a6c;text-transform:uppercase}
 .dn-jog-b{white-space:nowrap}
+/* 17/11: presentes do dono */
+.dn-pr-acoes{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.dn-pr-b{font:inherit;font-size:14px;font-weight:700;padding:7px 11px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);cursor:pointer}
+.dn-pr-b[data-armado]{background:var(--nos);border-color:var(--nos);color:var(--bg)}
+.dn-pr-b.tirar{color:var(--alert);border-color:var(--alert)}
 /* 3.41: pedir outro apelido (ao lado do Bloquear) */
 .dn-jog-acoes{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
 .dn-bloq-forte{color:#e5484d}
@@ -3602,6 +3607,13 @@ body.papo-aberto{overflow:hidden}
       </div>
       <input type="search" class="dn-ap-busca" id="dnApBusca" placeholder="Buscar sócio pelo nome" autocomplete="off" aria-label="Buscar sócio pelo nome">
       <ul class="dn-joglista" id="dnApoiadoresLista"></ul>
+    </div>
+    <!-- 17/11 (pedido do dono): dar presente a um jogador -->
+    <div class="dn-list wood dn-jog" id="dnPresente" hidden>
+      <span class="ck">Dar presente a um jogador</span>
+      <p class="dn-avn">Busque pelo apelido e escolha o presente (toque duas vezes para confirmar). O jogador recebe um aviso no celular. "Sem limite hoje" vale até a meia-noite.</p>
+      <input type="search" class="dn-ap-busca" id="dnPrBusca" placeholder="Apelido do jogador" autocomplete="off" aria-label="Apelido do jogador">
+      <ul class="dn-joglista" id="dnPrLista"></ul>
     </div>
     <div class="dn-list wood dn-jog" id="dnBurlas" hidden>
       <span class="ck">Possíveis burlas dos limites</span>
@@ -8178,7 +8190,7 @@ async function conferirPlano(agora) {
   const p = planoLocal(), d = doadorLocal();
   if (!pagamentosAtivos()) return;
   if (!p && !d) {   // 10/11: sem plano guardado aqui, confere no máximo a cada 6 h (quem perdeu só parte dos dados volta a ser sócio)
-    if (Date.now() - (+store.get('dmz-plano-conferido') || 0) < 6 * 3600000) return;
+    if (Date.now() - (+store.get('dmz-plano-conferido') || 0) < 3600000) return;   // 17/11: era 6 h (presente do dono)
     store.set('dmz-plano-conferido', String(Date.now()));
     agora = true;
   }
@@ -8191,16 +8203,34 @@ async function conferirPlano(agora) {
       const j = await r.json();
       guardarConta(j);
       if (antes !== foto() && screen === 'home') renderHome();
+      try { if (j && j.presente && j.presente.dono) store.set('dmz-presente-dono', JSON.stringify({ dono: j.presente.dono, ate: j.presente.ate })); else store.del('dmz-presente-dono'); } catch (e) {}   // 17/11
       if (j && j.presente && store.get('dmz-presente') !== j.presente.tipo) setTimeout(() => mostrarPresente(j.presente), 1200);
     }
   } catch (e) {}
 }
 
 // 28/10 (pedido do dono): quem já tinha pago antes do Sócio da Calçada ganhou 1 ano de sócio de presente; agradece uma vez
+// 17/11: o plano de agora é presente do dono? (o "até" é o do presente)
+function presenteDono() { try { const g = JSON.parse(store.get('dmz-presente-dono') || 'null'), p = planoLocal(); return g && p && p.ate === g.ate ? g : null; } catch (e) { return null; } }
 function mostrarPresente(g) {
   if (!g || sheetKind != null || (screen !== 'home' && screen !== 'apoio') || menorDeIdade()) return;
   store.set('dmz-presente', g.tipo);
   const nome = profile && profile.name ? ', ' + esc(profile.name) : '';
+  // 17/11: presente do administrador (jogar sem limite hoje, dias de sócio ou sócio para sempre)
+  if (g.dono) {
+    const PRT = { hoje: 'Hoje você joga <b>sem limite até a meia-noite</b>: mesa rápida, mesa com os amigos e jogo offline.',
+      d7: 'Você ganhou <b>7 dias de Sócio da Calçada</b>', d30: 'Você ganhou <b>30 dias de Sócio da Calçada</b>', d365: 'Você ganhou <b>1 ano de Sócio da Calçada</b>',
+      vitalicio: 'Agora você é <b>Sócio da Calçada para sempre</b>' };
+    const vant = g.dono === 'hoje' ? '' : ': partidas e mesas com os amigos sem limite, todas as mesas, ranking completo, estatísticas, foto, selo e avatares exclusivos.';
+    openSheet('presente', `<p class="eyebrow">Presente do Dominó Manauara</p><h2 id="sheetTitle">Um presente pra você${nome}!</h2>
+      <p>${PRT[g.dono] || PRT.d7}${vant}</p>
+      ${g.ate && g.dono !== 'vitalicio' && g.dono !== 'hoje' ? `<p>Seu tempo de sócio vale até <b>${dataBR(g.ate)}</b>.</p>` : ''}
+      <p class="carta-ass">Boa diversão.<br>Time Dominó Manauara</p>
+      <button type="button" class="primary" id="prOk" style="width:100%">Valeu! Bora pra mesa</button>`);
+    track('presente-dono-' + g.dono);
+    $('#prOk').addEventListener('click', closeSheet);
+    return;
+  }
   openSheet('presente', `<p class="eyebrow">Sócio da Calçada</p><h2 id="sheetTitle">Um presente pra você${nome}!</h2>
     <p>Você já estava com a gente antes do Sócio da Calçada existir. Para agradecer, ganhou <b>1 ano de sócio de presente</b>: partidas e mesas com os amigos sem limite, todas as mesas, ranking completo, estatísticas, foto, selo e avatares exclusivos.</p>
     ${g.ate ? `<p>Seu tempo de sócio vale até <b>${dataBR(g.ate)}</b>.</p>` : ''}
@@ -8760,6 +8790,7 @@ apoioInvite = function () {
   if (!(t.jogos > 0 && t.jogos % 3 === 1)) return '';
   if (temPlano()) {
     const dias = Math.ceil((planoLocal().ate - Date.now()) / 86400000);
+    if (presenteDono()) return '';   // 17/11: presente do dono (o convite aparece no início, nos 2 últimos dias)
     return dias <= RENOVA_DIAS && !renovaSozinho() ? `<button type="button" class="res-apoio" id="resApoio">Seu plano de sócio acaba ${quandoAcaba(planoLocal().ate)}. Renovar ★</button>` : '';
   }
   return `<button type="button" class="res-apoio" id="resApoio">${souDoador() ? 'Volte a ser sócio ★' : 'Curtiu? Seja Sócio da Calçada'}</button>`;
@@ -8827,7 +8858,7 @@ async function dnApoiadoresCarregar() {
 }
 function dnApoiadoresMostrar() {
   const agora = DN_AP.agora || Date.now(), l = DN_AP.lista;
-  const ativo = x => x.ate && x.ate > agora && !x.cortesia;   // pagando: é o que entra no número
+  const ativo = x => x.ate && x.ate > agora && !x.cortesia && !x.presente;   // pagando: é o que entra no número (17/11: presente do dono também não)
   const socio = x => x.ate && x.ate > agora;   // 10/11 (pedido do dono): cortesia aparece como sócio na lista
   const ativos = l.filter(ativo).length, pagaram = l.filter(x => x.n > 0).length, cort = l.filter(x => x.cortesia).length;
   $('#dnApoiadoresK').textContent = `Sócios da Calçada · ${ativos} com plano ativo`;
@@ -8835,7 +8866,7 @@ function dnApoiadoresMostrar() {
   const busca = (($('#dnApBusca') || {}).value || '').trim().toLowerCase();   // 10/11: achar um sócio pelo nome
   const vis = l.filter(x => (DN_AP.f === 'ativos' ? socio(x) : DN_AP.f === 'antigos' ? !socio(x) && x.n > 0 : true) && (!busca || String(x.nome || '').toLowerCase().includes(busca)));
   $('#dnApoiadoresLista').innerHTML = vis.length ? vis.map(x => {
-    const tags = [socio(x) ? `★ Sócio até ${dataBR(x.ate)}${x.cortesia ? ' (cortesia)' : ''}` : x.cortesia ? 'cortesia' : x.ate ? `plano acabou em ${dataBR(x.ate)}` : '',
+    const tags = [socio(x) ? `★ Sócio até ${dataBR(x.ate)}${x.cortesia ? ' (cortesia)' : x.presente ? ' (presente)' : ''}` : x.cortesia ? 'cortesia' : x.ate ? `plano acabou em ${dataBR(x.ate)}` : '',
       x.n ? `♥ ${reais(x.total)} em ${x.n} ${x.n === 1 ? 'plano' : 'planos'}` : '', x.ultimo ? `último: ${dataBR(x.ultimo)}` : '', x.codigo ? `código ${codigoBonito(x.codigo)}` : ''].filter(Boolean).join(' · ');   // 10/11: o código, para ajudar quem perdeu
     return `<li class="${socio(x) ? 'ativo' : ''}"><span class="dn-jog-r">${dnJogRosto(x)}</span><span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')}</b><small>${esc(tags)}</small></span></li>`;
   }).join('') : '<li class="dn-jog-vazio">Ninguém aqui ainda.</li>';
@@ -8898,6 +8929,47 @@ document.addEventListener('click', async e => {
   dnBurlasCarregar(); if (typeof dnAplCarregar === 'function') dnAplCarregar();
 });
 renderDono = function () { renderDonoBase(); dnPagCarregar(); dnApoiadoresCarregar(); dnBurlasCarregar(); dnQuartaCarregar(); dnRelCarregar(); dnTreinoCarregar(); };
+// 17/11 (pedido do dono): dar presente a um jogador (busca pelo apelido; dois toques para confirmar)
+const DN_PR = { t: null, lista: [], agora: 0 };
+const PR_ROT = { hoje: 'Sem limite hoje', d7: '7 dias', d30: '30 dias', d365: '1 ano', vitalicio: 'Para sempre' };
+const PR_FRASE = { hoje: 'jogar sem limite até a meia-noite', d7: '7 dias de sócio', d30: '30 dias de sócio', d365: '1 ano de sócio', vitalicio: 'sócio para sempre' };
+function dnPrStatus(x, agora) {
+  const seu = x.presente ? ' (seu presente)' : '';
+  if (x.ate > agora) return x.cortesia && x.ate - agora > 5 * 365 * 864e5 ? '★ Sócio para sempre' + seu : `★ Sócio até ${dataBR(x.ate)}${seu}`;
+  return x.ate ? `sem plano (acabou em ${dataBR(x.ate)})` : 'sem plano';
+}
+function dnPrMostrar() {
+  const agora = DN_PR.agora || Date.now(), l = DN_PR.lista;
+  $('#dnPrLista').innerHTML = l.length ? l.map((x, i) => `<li class="${x.ate > agora ? 'ativo' : ''}"><span class="dn-jog-r">${dnJogRosto(x)}</span><span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')}</b><small>${esc(dnPrStatus(x, agora))}${x.pagos ? ' · já pagou' : ''} · visto ${quandoFoi(x.visto)}</small>
+      <span class="dn-pr-acoes">${Object.keys(PR_ROT).map(k => `<button type="button" class="dn-pr-b" data-pr="${k}" data-i="${i}">${PR_ROT[k]}</button>`).join('')}${x.presente ? `<button type="button" class="dn-pr-b tirar" data-pr="tirar" data-i="${i}">Tirar presente</button>` : ''}</span></span></li>`).join('')
+    : '<li class="dn-jog-vazio">Ninguém com esse apelido.</li>';
+}
+async function dnPrBuscar() {
+  const q = (($('#dnPrBusca') || {}).value || '').trim(), ul = $('#dnPrLista'); if (!ul) return;
+  if (q.length < 2) { DN_PR.lista = []; ul.innerHTML = ''; return; }
+  try { const j = await dnMsgPedir('/dono/presente/buscar?q=' + encodeURIComponent(q)); DN_PR.lista = j.lista || []; DN_PR.agora = j.agora || Date.now(); dnPrMostrar(); }
+  catch (e) { ul.innerHTML = '<li class="dn-jog-vazio">Não deu para buscar agora.</li>'; }
+}
+$('#dnPrBusca').addEventListener('input', () => { clearTimeout(DN_PR.t); DN_PR.t = setTimeout(dnPrBuscar, 400); });
+$('#dnPrLista').addEventListener('click', async e => {
+  const b = e.target.closest('[data-pr]'); if (!b) return;
+  const x = DN_PR.lista[+b.dataset.i], k = b.dataset.pr; if (!x) return;
+  if (!b.dataset.armado) {
+    document.querySelectorAll('#dnPrLista [data-armado]').forEach(o => { delete o.dataset.armado; o.textContent = o.dataset.pr === 'tirar' ? 'Tirar presente' : PR_ROT[o.dataset.pr]; });
+    b.dataset.armado = '1'; b.textContent = 'Toque de novo'; return;
+  }
+  b.disabled = true;
+  try {
+    const tirar = k === 'tirar';
+    const j = await dnMsgPedir(tirar ? '/dono/presente/tirar' : '/dono/presente', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(tirar ? { aparelho: x.aparelho } : { aparelho: x.aparelho, tipo: k }) });
+    const nome = x.nome || 'O jogador';
+    toast(tirar ? `Presente tirado de ${nome}.` : j.nada ? `${nome} já tem mais tempo de sócio que isso.` : `Pronto! ${nome} ganhou ${PR_FRASE[k]} e vai receber o aviso no celular.`);
+    track('dono-presente-' + k);
+  } catch (er) { toast('Não deu agora. Tente de novo.'); }
+  dnPrBuscar();
+});
+const renderDonoPr = renderDono;
+renderDono = function () { renderDonoPr.apply(this, arguments); try { const b = $('#dnPresente'); if (b) b.hidden = !CONFIG.api || !souAdmin(); } catch (e) {} };
 // 12/11 (pedido do dono): se a Quarta dos Amigos traz gente. Só números: amigos novos pelo link da mesa, quantos voltaram
 // em outro dia e quantos viraram sócio; e, em cada Quarta, quantos sem plano jogaram na mesa de um sócio.
 // 13/11 (pedido do dono): relatório do dia. Números contados no banco (sem IA): ontem, os destaques, o parcial de hoje e os 6 dias antes
@@ -9110,6 +9182,7 @@ function renderApBanner() {
   // As explicações (o que a doação mantém e os extras) ficam na tela de apoio.
   let t = null, s = '', cta = 'Ser sócio';
   if (!pagamentosAtivos() || !profile || menorDeIdade()) t = null;
+  else if (on && presenteDono()) { const g = presenteDono(); if (g.dono !== 'hoje' && g.dono !== 'vitalicio' && dias <= 2) { t = `Seu presente de sócio acaba ${quandoAcaba(p.ate)}`; s = 'Vire sócio para continuar com as partidas sem limite e os extras.'; cta = 'Ser sócio'; } }   // 17/11: presente do dono
   else if (on) { if (dias <= RENOVA_DIAS && !p.renova) { t = `Seu plano de sócio acaba ${quandoAcaba(p.ate)}`; s = 'Renove para manter as partidas sem limite e os extras.'; cta = 'Renovar'; } }
   else if (souDoador()) { t = 'Volte a ser sócio'; s = emPromocao() ? `Promoção até ${PROMO_DIA}: ${brl(precoDe('apm').valor)} por mês nos 3 primeiros meses.` : 'Partidas sem limite, ranking completo e todas as mesas.'; }
   else { t = 'Seja Sócio da Calçada'; s = emPromocao() ? `Promoção até ${PROMO_DIA}: ${brl(precoDe('apm').valor)} por mês nos 3 primeiros meses.` : 'Partidas sem limite, ranking completo e todas as mesas.'; }
@@ -14371,7 +14444,7 @@ function desenharDesafioCalcada() {
 const DN_GRUPOS = [
   ['Relatório do dia', ['dnRel'], true],   // 13/11: os números de ontem, os destaques e o parcial de hoje
   ['Precisa de você', ['dnMsgs', 'dnPapo', 'dnFotos', 'dnRobo'], true],
-  ['Jogadores', ['dnNoApp', 'dnFilas', 'dnJog'], true],
+  ['Jogadores', ['dnNoApp', 'dnFilas', 'dnJog', 'dnPresente'], true],   // 17/11: presentes
   ['Números do jogo', ['dnNum', 'dnQuarta', 'dnTreino'], true],   // 13/11: robô que treina toda noite   // 12/11: Quarta dos Amigos e convites   // 03/11: jogadores desde o início, partidas, horários e picos
   ['Dinheiro', ['dnPag', 'dnApoiadores', 'dnBurlas', 'dnPatroCard', 'dnAnuncieLink'], false],
   ['Falar com os jogadores', ['dnAvisos'], false],
@@ -14653,6 +14726,7 @@ window.addEventListener('popstate', () => {
 // ?abrir=turma (a folha da Turma). Com o app fechado, vem no endereço; com o app aberto, o sw.js manda uma mensagem.
 // Nunca tira ninguém da partida ou da sala: aí o aviso só traz o app para a frente.
 function abrirPeloAviso(alvo, ver) {
+  if (alvo === 'presente') { try { store.del('dmz-plano-conferido'); conferirPlano(true); } catch (e) {} return true; }   // 17/11: presente do dono
   if (alvo === 'dono') { if (!souAdmin()) return false; if (sheetKind) closeSheet(); show('dono'); setTimeout(() => { try { dnGrupoAbrir(DN_GRUPOS.findIndex(g => g[1].includes('dnBurlas')), true, false); } catch (e) {} const el = $('#dnBurlas'); if (el && !el.hidden) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 700); return true; }   // 12/11: aviso de burla para o dono (abre o grupo Dinheiro)
   if (alvo === 'relatorio') { if (!souAdmin()) return false; if (sheetKind) closeSheet(); show('dono'); setTimeout(() => { try { dnGrupoAbrir(DN_GRUPOS.findIndex(g => g[1].includes('dnRel')), true, false); } catch (e) {} const el = $('#dnRel'); if (el && !el.hidden) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 700); track('aviso-abrir-relatorio'); return true; }   // 13/11
   if (alvo === 'amigos' && profile) { if (sheetKind) closeSheet(); if (screen !== 'home') show('home'); setTimeout(() => { const g = $('#goOnline'); if (g && !g.hidden) g.click(); }, 300); track('aviso-abrir-amigos'); return true; }   // 12/11: Quarta dos Amigos

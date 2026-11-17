@@ -205,6 +205,9 @@ INSERT OR IGNORE INTO marcos (chave, em) VALUES ('presente-fundador', CAST(strft
 -- data de Manaus; 1825470000000 = 06/11/2027 00:00 de Brasília), e não 1 ano somado ao tempo comprado. Ninguém perde tempo pago (todos tinham comprado menos de 1
 -- ano). Não mexe em quem pagou de novo depois do presente (o tempo novo é dele) nem nas cortesias. A data de antes fica
 -- guardada em presentes_ajuste (dá para desfazer). Roda uma vez (marco 'presente-fundador-1ano').
+-- 17/11 (pedido do dono): presentes que o administrador deu (ate_antes: o "até" do plano antes, para desfazer)
+CREATE TABLE IF NOT EXISTS presentes_dono (id INTEGER PRIMARY KEY AUTOINCREMENT, aparelho TEXT NOT NULL, tipo TEXT NOT NULL, ate_antes INTEGER, ate INTEGER NOT NULL, cortesia_nova INTEGER NOT NULL DEFAULT 0, em INTEGER NOT NULL, tirado INTEGER);
+CREATE INDEX IF NOT EXISTS presentes_dono_ap ON presentes_dono (aparelho, em);
 CREATE TABLE IF NOT EXISTS presentes_ajuste (aparelho TEXT PRIMARY KEY, ate_antes INTEGER NOT NULL, em INTEGER NOT NULL);
 INSERT OR IGNORE INTO presentes_ajuste (aparelho, ate_antes, em)
   SELECT aparelho, ate, CAST(strftime('%s', 'now') AS INTEGER) * 1000 FROM planos
