@@ -290,11 +290,12 @@ export class Mesa {
           partida: j.partida, mao: j.mao, placar: j.placar, desafio: j.desafio || null,
           lance: j.lance ? { type: j.lance.type, pts: j.lance.pts, carroca: j.lance.carroca, voided: j.lance.voided } : null });
       }
-      if (mesas.length >= 16) break;
+      if (mesas.length >= 40) break;   // 17/11 (dono): eram 16
     }
     // primeiro as mesas rápidas com lugar vago (dá para entrar), depois as rápidas cheias, depois as com os amigos
     const ordem = v => v.espera ? 3 : v.publica ? (v.livres > 0 ? 0 : 1) : 2;   // as da sala (só o administrador vê) por último
-    mesas = mesas.map((v, i) => [v, i]).sort((a, b) => ordem(a[0]) - ordem(b[0]) || a[1] - b[1]).map(x => x[0]).slice(0, todas ? 16 : 10);
+    // 17/11 (pedido do dono): até 30 mesas na Calçada (eram 10, e com mais mesas jogando as dos amigos sumiam); o administrador vê até 40
+    mesas = mesas.map((v, i) => [v, i]).sort((a, b) => ordem(a[0]) - ordem(b[0]) || a[1] - b[1]).map(x => x[0]).slice(0, todas ? 40 : 30);
     return { mesas };
   }
   // 28/10: a mesa conta à fila como está — só quando muda o que a lista mostra (quem está, conexão, placar), ou a cada

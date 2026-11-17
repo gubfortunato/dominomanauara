@@ -4278,6 +4278,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.55.24', data: '17/11/2026', itens: ['A Calçada agora mostra até 30 mesas jogando ao mesmo tempo (eram 10). Nos horários cheios, as mesas com os amigos não somem mais da lista.', 'Mesa Tucano: a frase de abertura agora fala do tucano da mesa, o de bico laranja.'] },
   { v: '3.55.23', data: '17/11/2026', itens: ['No tema claro, as linhas da tela de vitória (falta pouco para uma conquista, nível e prêmio) estavam quase invisíveis. Corrigido.', 'Na linha "falta pouco" do fim da partida e nas missões, o prêmio aparece com um emoji ao lado (sorvete de cupuaçu 🍦, cuia de açaí 🫐, arara no ombro 🦜…).', 'Mesas Pirarucu, Tucunaré e Tambaqui: o peixe agora fica no meio da mesa.', 'Mesas Largo de São Sebastião, Cupuaçu, Relógio Municipal e Arara-Vermelha: o desenho ficou um pouco menor, todo dentro da mesa.'] },
   { v: '3.55.22', data: '14/11/2026', itens: ['Corrigido: quem tinha a Mesa da Campeã escolhida ficava com a tela parada ao abrir o jogo.', 'Se o jogo não abrir direito, a tela de abertura mostra o motivo, com os botões Tentar de novo e Continuar mesmo assim.'] },
   { v: '3.55.21', data: '14/11/2026', itens: ['Abertura com a logo e "Carregando o jogo…" (ou "Atualizando o jogo…") no lugar da tela branca, enquanto o jogo baixa.'] },
@@ -10043,7 +10044,7 @@ const SUB_MESA = {
   chamine: 'De usina a teatro',
   arara: 'Grita de longe, voa em casal',
   araraazul: 'A maior arara do mundo',
-  tucano: 'Bico de arco-íris',
+  tucano: 'Bico laranja gigante, e leve que só',   // 17/11 (dono): o da mesa é o tucano-toco (antes: bico de arco-íris)
   peixeboi: 'O manso dos rios da Amazônia',
   boto: 'O encantado do rio',
   beiradao: 'Os recreios saindo do porto',   // 14/11: Porto de Manaus
@@ -15918,7 +15919,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.55.23-a960fa02';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.55.24-81695faf';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
