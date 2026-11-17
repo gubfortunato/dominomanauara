@@ -10115,7 +10115,7 @@ const SUB_MESA = {
   acai: 'Primo do cacau e rei dos cremes',   // 17/11 (dono): frase melhorada
   rionegro: 'O maior rio de água preta do mundo',   // 17/11 (dono): frase melhorada
   tucuma: 'Fruto da palmeira, recheio do X-Caboquinho',   // 17/11 (dono): frase melhorada
-  arena: 'Um cesto de palha que recebeu a Copa de 2014',   // 17/11 (dono): frase melhorada
+  arena: 'Cesto de palha gigante: Copa de 2014 e Olimpíada de 2016',   // 17/11 (dono): frase melhorada
   mercado: 'Na beira do Rio Negro desde 1883',   // 17/11 (dono): frase melhorada
   vitoria: 'Naiá, a índia que virou estrela das águas',   // 17/11 (dono): frase melhorada
   calcadao: 'O Encontro das Águas desenhado no chão',
@@ -10140,15 +10140,16 @@ const SUB_MESA = {
   tambaqui: 'Come fruta no igapó e vira costela na brasa',
   pordosol: 'Fim de tarde na beira do rio',
   manaus357: '357 anos de Manaus',
-  igreja: 'Vizinha do Teatro, no Largo de São Sebastião'   // 17/11 (dono): frase nova
+  igreja: 'A igreja de uma torre só, e ninguém sabe por quê'   // 17/11 (dono): frase nova
 };
 function subMesa(m) {
   if (m.id === 'pontanegra' && ehReveillon()) return 'Réveillon: fogos na Ponta Negra! Liberada hoje';
   if (m.id === 'ponte') {   // inaugurada em 24/10/2011, no aniversário da cidade
     const hoje = diaManaus(), mmdd = hoje.slice(5), anos = +hoje.slice(0, 4) - 2011 - (mmdd < '10-24' ? 1 : 0);
-    if (mmdd === '10-24') return `Faz ${anos} anos hoje!`;
-    if (mmdd >= '10-14' && mmdd < '10-24') return `Faz ${anos + 1} anos em 24/10`;
-    return `${anos} anos`;
+    // 17/11 (dono): com a extensão (3.595 m, liga Manaus a Iranduba)
+    if (mmdd === '10-24') return `3,6 km sobre o Rio Negro · faz ${anos} anos hoje!`;
+    if (mmdd >= '10-14' && mmdd < '10-24') return `3,6 km sobre o Rio Negro · ${anos + 1} anos em 24/10`;
+    return `3,6 km sobre o Rio Negro · ${anos} anos`;
   }
   if (SUB_MESA[m.id]) return SUB_MESA[m.id];
   if (m.epoca) return m.sub || (m.epoca[0] === m.epoca[1] ? `Mesa da época: só em ${MESES[m.epoca[0] - 1]}` : `Mesa da época: ${MESES[m.epoca[0] - 1]} a ${MESES[m.epoca[1] - 1]}`);
