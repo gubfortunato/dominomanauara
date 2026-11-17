@@ -15,6 +15,9 @@
 <meta name="apple-mobile-web-app-title" content="Dominó Manauara">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script>if (navigator.standalone === true) document.documentElement.classList.add('iosapp');</script>
+<script>/* 14/11: guarda os erros da abertura (aparecem na tela de abertura se o jogo não terminar de abrir) */
+window.__erros=[];window.addEventListener('error',function(e){try{if(__erros.length<6)__erros.push(String(e.message||'erro').slice(0,160)+' (linha '+(e.lineno||'?')+':'+(e.colno||'?')+')')}catch(x){}});
+window.addEventListener('unhandledrejection',function(e){try{if(__erros.length<6)__erros.push('promessa: '+String(e.reason&&e.reason.message||e.reason).slice(0,160))}catch(x){}});</script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Dominó Manauara">
 <meta property="og:title" content="Dominó Manauara">
@@ -3046,6 +3049,9 @@ body.papo-aberto{overflow:hidden}
 #abertura i u:nth-child(2){animation-delay:.2s} #abertura i u:nth-child(3){animation-delay:.4s}
 @keyframes abPisca{0%,100%{opacity:.25;transform:scale(.85)}40%{opacity:1;transform:scale(1)}}
 @media (prefers-reduced-motion: reduce){#abertura i u{animation:none;opacity:.7}}
+#abertura .ab-erro{max-width:92%;max-height:30vh;overflow:auto;margin:6px 0 0;padding:10px 12px;border-radius:12px;background:var(--bg-2);color:var(--fg);font-size:13px;line-height:1.35;text-align:left;white-space:pre-wrap;word-break:break-word}
+#abertura button{font:inherit;font-size:18px;font-weight:700;padding:12px 22px;border-radius:14px;border:0;background:var(--nos);color:var(--bg);min-width:220px}
+#abertura button.ab-seg{background:transparent;color:var(--muted);border:1.5px solid var(--line);font-weight:600}
 </style>
 </head>
 <body>
@@ -4270,6 +4276,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.55.22', data: '14/11/2026', itens: ['Corrigido: quem tinha a Mesa da Campeã escolhida ficava com a tela parada ao abrir o jogo.', 'Se o jogo não abrir direito, a tela de abertura mostra o motivo, com os botões Tentar de novo e Continuar mesmo assim.'] },
   { v: '3.55.21', data: '14/11/2026', itens: ['Abertura com a logo e "Carregando o jogo…" (ou "Atualizando o jogo…") no lugar da tela branca, enquanto o jogo baixa.'] },
   { v: '3.55.20', data: '14/11/2026', itens: ['Administrador: quem foi tirado da vigia pode voltar para ela (botão Pôr de volta). Se estava bloqueado, bloqueia de novo.'] },
   { v: '3.55.19', data: '14/11/2026', itens: ['Mesa Mercado Adolpho Lisboa com desenho novo: a fachada vermelha e amarela, com a torre do relógio.'] },
@@ -14867,7 +14874,8 @@ async function csBuscar(forcar) {
 }
 const podeVirarSocio = () => typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !menorDeIdade();
 // 10/11 (pedido do dono): da Turma campeã do Desafio (brasão dourado, selo 🏆 e a Mesa da Campeã até o fim do próximo Desafio)
-function souCampea() { let a = Number(TM && TM.campeaAte) || 0; if (!a) { try { a = Number(store.get('dmz-campea-ate')) || 0; } catch (e) {} } return a > Date.now(); }
+function souCampea() { let a = 0; try { a = Number(TM && TM.campeaAte) || 0; } catch (e) {}   // 14/11: TM ainda não existe na abertura (Mesa da Campeã escolhida travava o jogo)
+  if (!a) { try { a = Number(store.get('dmz-campea-ate')) || 0; } catch (e) {} } return a > Date.now(); }
 function souCampeao() { const p = planoLocal(); return !!(p && temPlano() && p.campeaoAte > Date.now()); }
 // --- Sexta da Calçada ---
 function sxAgora(t) { const d = manausDe(t || Date.now()); if (d.getUTCDay() !== 5) return null; const h = d.getUTCHours(); return h >= 20 && h < 23 ? 'agora' : h < 20 ? 'hoje' : null; }
@@ -15902,7 +15910,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.55.21-5669125c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.55.22-4dc543ae';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -17085,10 +17093,21 @@ showResult = function () {
   } catch (e) {}
   return r;
 };
+window.__iniciou = true;   // 14/11: o script principal chegou ao fim (a tela de abertura confere)
 </script>
 <script>
 // 14/11: o jogo carregou: some a tela de abertura (num script separado, para sumir mesmo se algo acima der erro)
-(function(){var a=document.getElementById('abertura');if(!a)return;a.classList.add('sai');setTimeout(function(){if(a.parentNode)a.parentNode.removeChild(a)},400)})();
+(function(){var a=document.getElementById('abertura');if(!a)return;
+  function sai(){a.classList.add('sai');setTimeout(function(){if(a.parentNode)a.parentNode.removeChild(a)},400)}
+  if(window.__iniciou){sai();return}
+  // 14/11: o jogo não terminou de abrir: mostra o erro (o dono manda o print) e deixa tentar de novo ou seguir
+  try{var t=document.getElementById('aberturaT'),i=a.querySelector('i');if(i)i.remove();
+    t.textContent='O jogo não abriu direito. Tire um print desta tela e mande para o suporte.';
+    var pre=document.createElement('pre');pre.className='ab-erro';pre.textContent=(window.__erros&&__erros.length?__erros.join('\n'):'sem mensagem de erro')+'\n'+navigator.userAgent.slice(0,140);
+    var b1=document.createElement('button');b1.type='button';b1.textContent='Tentar de novo';b1.onclick=function(){location.reload()};
+    var b2=document.createElement('button');b2.type='button';b2.className='ab-seg';b2.textContent='Continuar mesmo assim';b2.onclick=sai;
+    a.appendChild(pre);a.appendChild(b1);a.appendChild(b2);}catch(e){sai()}
+})();
 </script>
 </body>
 </html>
