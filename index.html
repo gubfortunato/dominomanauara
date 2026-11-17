@@ -980,6 +980,8 @@ body{touch-action:manipulation}
 @media (max-width: 389px){ .friend .fn{font-size:14px;padding:3px 9px} }
 @media (max-width: 400px){ .sn{font-size:15.5px;letter-spacing:-.1px} }
 /* Festa de fim de partida */
+/* 17/11 (pedido do dono): a festa é sempre escura; no tema claro as linhas extras (falta pouco, nível, prêmio) ficavam escuras e sumiam */
+.festa{--bg:#15100c;--bg-2:#211812;--fg:#f2e7d5;--muted:#bba78c;--line:#3b2d22;--nos:#e5a650;--eles:#8fbcc2;--alert:#e58a6c;--ok:#86c98f;--nos-t:#e9ab55;--eles-t:#96c4c9;color:var(--fg)}
 .festa{position:fixed;inset:0;z-index:28;display:grid;place-items:center;padding:24px 16px;background:radial-gradient(ellipse at 50% 40%,rgba(74,47,30,.97) 0%,rgba(21,16,12,.98) 70%);animation:backIn .3s ease-out}
 .festa canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .festa-card{position:relative;display:grid;justify-items:center;gap:8px;text-align:center;max-width:460px;width:100%;animation:festaIn .6s cubic-bezier(.2,1.4,.4,1)}
