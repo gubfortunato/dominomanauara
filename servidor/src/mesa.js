@@ -63,7 +63,7 @@ const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pont
   'arara', 'boto', 'beiradao', 'barco', 'skylinenoite',   // 28/10: Manaus Skyline
   'roxoacai', 'floresta', 'pordosol',   // 03/11: Cor de Açaí, Floresta e Sol de setembro
   'araraazul', 'tucano', 'peixeboi',   // 04/11: Arara-Azul, Tucano e Peixe-boi
-  'pianoblack', 'amazonas',   // 10/11: Black Piano e Amazonas (a Branca saiu no mesmo dia, pedido do dono)
+  'pianoblack',   // 10/11: Black Piano (a Branca saiu no mesmo dia, pedido do dono); 17/11: a Amazonas saiu (vai ser refeita)
   'metropole',   // 11/11: Metrópole da Amazônia
   'palacete', 'onca',   // 13/11: Palacete Provincial e Onça-pintada (a Curumins saiu no mesmo dia, pedido do dono)
   'pirarucu', 'tucunare', 'tambaqui',   // 14/11: Pirarucu, Tucunaré e Tambaqui
