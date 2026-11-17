@@ -22,8 +22,11 @@ const semAcento = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 // Ditos comuns que contêm palavra da lista dos apelidos e no papo são inocentes ("tá pau a pau", "deu pau", "rola um tacacá?")
 const LIBERADOS = [/\bpau a pau\b/g, /\bdeu pau\b/g, /\brola\b/g];
 // Palavrões que num apelido quase não aparecem, mas no papo sim
-const PALAVRA_PAPO = ['krl', 'vtnc', 'vtmnc', 'tmnc', 'pnc', 'fuder', 'fudeu', 'fodeu', 'fodeo', 'fudeo', 'fudendo', 'fodendo', 'bct', 'prr', 'crl', 'cuzudo'];
-const FRASE_PAPO = [/\bsenta (no meu|na minha|em mim|nele|no colo)\b/, /\bmama (no meu|na minha|aqui|nele)\b/, /\b(vai|va) (tomar|toma) no\b/];
+const PALAVRA_PAPO = ['krl', 'vtnc', 'vtmnc', 'tmnc', 'pnc', 'fuder', 'fudeu', 'fodeu', 'fodeo', 'fudeo', 'fudendo', 'fodendo', 'bct', 'prr', 'crl', 'cuzudo',
+  'fude', 'fudido', 'fudida', 'fodido', 'fodida', 'fodase', 'fodasse', 'vsf', 'vsfd', 'tnc', 'vtmc'];   // 17/11: e as variações que passaram no papo
+// 17/11 (dono: passaram "vao tumar no cool" e "vai ti fhuder"): o mandar tomar e o mandar se f* com o erro de propósito
+const FRASE_PAPO = [/\bsenta (no meu|na minha|em mim|nele|no colo)\b/, /\bmama (no meu|na minha|aqui|nele)\b/, /\b(vai|va|vao) (tomar|toma|tumar|tuma) no\b/,
+  /\b(tomar|toma|tumar|tuma) no (cu|cuh|cul|cool|kool|ku|kuh)\b/, /\b(vai|va|vao) (se|te|ti|tu) (fuder|foder|fude|fode|f[a-z]{0,2}der)\b/];
 // Convite para conversar fora do jogo (golpe, propaganda, "me chama no zap")
 const APPS = ['zap', 'zapzap', 'zapp', 'zapi', 'whats', 'whatsapp', 'whatsap', 'watsap', 'watts', 'wats', 'uats', 'uatsap', 'wpp', 'wpps', 'whatz',
   'insta', 'instagram', 'telegram', 'telegran', 'tiktok', 'kwai', 'discord', 'facebook', 'face', 'snap', 'snapchat', 'pix', 'onlyfans', 'privacy'];
@@ -58,7 +61,8 @@ export function papoRuim(txt) {
   if (FRASE_PAPO.some(r => r.test(norm))) return 'palavra';
   let t2 = t; for (const r of LIBERADOS) t2 = t2.replace(new RegExp(r.source, 'gi'), ' ');
   const ws2 = palavras(t2);
-  const testa = w => { const l = soLetras(w); return nomeOfensivo(w) || PALAVRA_PAPO.includes(l) || PALAVRA_PAPO.includes(l.replace(/(.)\1+/g, '$1')); };
+  // 17/11: e sem o h enfiado no meio ("fhuder")
+  const testa = w => { const l = soLetras(w), sh = l.replace(/h/g, ''); return nomeOfensivo(w) || PALAVRA_PAPO.includes(l) || PALAVRA_PAPO.includes(l.replace(/(.)\1+/g, '$1')) || (sh !== l && (PALAVRA_PAPO.includes(sh) || PALAVRA_PAPO.includes(sh.replace(/(.)\1+/g, '$1')))); };
   if (ws2.some(testa) || soletradas(ws2).some(testa)) return 'palavra';
   return null;
 }
