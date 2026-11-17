@@ -9936,7 +9936,12 @@ const CQKEY = 'dmz-conquistas-vistas', AVMKEY = 'dmz-avatar-montado';
 const minusc = s => s && /^[A-ZÀ-Ú][a-zà-ú ]/.test(s) ? s[0].toLowerCase() + s.slice(1) : s || '';
 // Nome do prêmio dentro de uma frase: "tapioca", "X-caboquinho", "a mesa Ponta Negra"
 // 3.41 (o dono viu "vitória-régia" com v minúsculo): nome de mesa é nome próprio e fica como é ("a mesa Vitória-régia")
-const premioFrase = p => p.tipo === 'mesa' ? 'a mesa ' + p.nome : p.tipo === 'pedra' ? 'a pedra ' + p.nome : minusc(p.nome);
+// 17/11 (pedido do dono): um emoji ao lado do nome do prêmio (ex.: "sorvete de cupuaçu 🍦")
+const EMOJI_PREMIO = { tacaca: '🥣', tapioca: '🫓', xcaboquinho: '🥪', cupuacu: '🥥', tambaqui: '🐟', jaraqui: '🐟', kikao: '🌭',
+  pirarucu: '🍲', guarana: '🍒', tapereba: '🧃', acaicuia: '🫐', sorvete: '🍦', trofeu: '🏆', arara: '🦜', violao: '🎸',
+  bolo: '🍰', bodo: '🍲', ovinha: '🌾', passeio: '🚤' };
+const emojiPremio = p => { try { const e = p && p.tipo === 'parte' ? EMOJI_PREMIO[PARTES[p.k][p.i].v] : ''; return e ? ' ' + e : ''; } catch (e) { return ''; } };
+const premioFrase = p => (p.tipo === 'mesa' ? 'a mesa ' + p.nome : p.tipo === 'pedra' ? 'a pedra ' + p.nome : minusc(p.nome)) + emojiPremio(p);
 const juntaE = l => l.length < 2 ? (l[0] || '') : l.slice(0, -1).join(', ') + ' e ' + l[l.length - 1];
 const conquistaDe = id => CONQUISTAS.find(x => x.id === id);
 function progressoConquista(c, t) { if (c.campo === 'copa357') return copaGanha() ? 1 : 0; if (c.campo === 'sextas') return Math.min(c.meta, sextasSeguidas(t)); return Math.min(c.meta, (t || loadHist())[c.campo] || 0); }
@@ -11414,7 +11419,7 @@ function misEstado() {
   return s;
 }
 function misGuardar(s) { store.set(MIS_KEY, JSON.stringify(s)); }
-const misPremios = () => [['mis3', 3], ['mis7', 7], ['mis15', 15]].map(([id, n]) => ({ n, nome: (premiosDe(id)[0] || {}).nome || '' }));
+const misPremios = () => [['mis3', 3], ['mis7', 7], ['mis15', 15]].map(([id, n]) => { const pr = premiosDe(id)[0]; return { n, nome: pr ? pr.nome + emojiPremio(pr) : '' }; });   // 17/11: com o emoji
 // partida extra no offline de quem não tem plano: cumpriu as três hoje
 const misPartidaExtra = () => { try { return misEstado().completo ? 1 : 0; } catch (e) { return 0; } };
 // O que cada jogada vale para as missões (você é sempre a cadeira 0, offline e online). G.events traz o que aconteceu
