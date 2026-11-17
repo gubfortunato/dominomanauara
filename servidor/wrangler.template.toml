@@ -20,7 +20,7 @@ binding = "AI"
 # Lembretes para jogar: 17h, 18h e 19h em Manaus (21h, 22h e 23h UTC).
 # Avisos de evento (aniversário de Manaus, Desafio, Rei da Calçada): 9h, 10h e 11h em Manaus (13h, 14h e 15h UTC).
 [triggers]
-crons = ["0 21,22,23 * * *", "0 13,14,15 * * *", "0 0 * * SAT", "0 16,17,18,19 * * FRI"]   # sábado 0h UTC = sexta 20h em Manaus (Sexta da Calçada e Copa); sexta 16h-19h UTC = 12h-15h em Manaus (aviso da Sexta). 13/11: dia da semana pelo nome (no Cloudflare 1 é domingo; "6" caía na sexta UTC, que é quinta à noite em Manaus)
+crons = ["0 21,22,23 * * *", "0 13,14,15 * * *", "0 0 * * THU,SAT", "0 16,17,18,19 * * WED,FRI"]   # 13/11: quinta 0h UTC = quarta 20h em Manaus e quarta 16h-19h UTC = 12h-15h (avisos da Quarta dos Amigos). sábado 0h UTC = sexta 20h em Manaus (Sexta da Calçada e Copa); sexta 16h-19h UTC = 12h-15h em Manaus (aviso da Sexta). 13/11: dia da semana pelo nome (no Cloudflare 1 é domingo; "6" caía na sexta UTC, que é quinta à noite em Manaus)
 
 [[d1_databases]]
 binding = "DB"

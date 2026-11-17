@@ -4,7 +4,8 @@
 //     do sócio não gastam as partidas grátis do dia. É o sócio que abre a mesa para a turma: o benefício é dele.
 //   - na mesa de quem não é sócio, vale o limite de sempre (quem chega novo tem as partidas grátis dele).
 //   - o sócio ganha moral em dobro nas mesas com os amigos (a conta da moral é do app).
-//   - aviso no celular às 18h (um texto para o sócio e outro para quem não é; o que sobrar sai às 19h).
+//   - aviso no celular às 12h e às 20h, quando começa (um texto para o sócio e outro para quem não é). 13/11: antes era às 18h.
+//   - 13/11: Duplas da Quarta: as duplas de parceiros que mais venceram juntas nas mesas com os amigos (ver no fim).
 // CONVITE (sem prêmio, só para medir): quem abre o app pela 1ª vez pelo link de uma mesa e entra nela fica anotado. O painel
 // do dono mostra quantos amigos novos chegaram (e quantos na Quarta), quantos voltaram em outro dia e quantos viraram sócio.
 const MANAUS = 4 * 3600000, DIA = 86400000;
@@ -61,4 +62,52 @@ export async function donoQuarta(req, env, origin, h) {
     }),
     convites: Object.assign(resumo(conv), { naQuarta: conv.filter(c => c.quarta).length, deSocio: conv.filter(c => c.socio_anfitriao).length })
   }, 200, origin);
+}
+
+// ---- 13/11 (pedido do dono): Duplas da Quarta. Das 20h às 23h de quarta, nas mesas com os amigos (não a rápida), cada
+// partida inteira conta para a dupla de parceiros (cadeiras 0 e 2, 1 e 3) quando os dois são pessoas que jogaram a partida
+// toda. Quem conta é o servidor. Dupla com menor de 18 não aparece. O placar fica na Calçada na Quarta e, com o resultado, na quinta.
+export async function anotarQuarta(env, m, quem) {
+  if (!m || m.publica) return;
+  const dia = diaManaus(Date.now()), agora = Date.now(), por = {};
+  for (const q of quem || []) if (idOk(q.id)) por[q.id] = q;
+  for (const p of [0, 1]) {
+    const a = m.cad && m.cad[p], b = m.cad && m.cad[p + 2];
+    const qa = a && por[a.id], qb = b && por[b.id];
+    if (!qa || !qb || qa.id === qb.id || qa.menor || qb.menor) continue;
+    const [x, y] = [qa, qb].sort((u, v) => (u.id < v.id ? -1 : 1));
+    const g = m.sxG ? Math.min(6, (m.sxG[p] || 0) + (m.sxG[p + 2] || 0)) : 0;
+    try {
+      await env.DB.prepare(`INSERT INTO quarta_duplas (dia, chave, a, b, nome_a, nome_b, partidas, vitorias, galos, em) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
+        ON CONFLICT (dia, chave) DO UPDATE SET nome_a = excluded.nome_a, nome_b = excluded.nome_b, partidas = partidas + 1, vitorias = vitorias + excluded.vitorias, galos = galos + excluded.galos, em = excluded.em`)
+        .bind(dia, x.id + '|' + y.id, x.id, y.id, String(x.nome || '').slice(0, 24), String(y.nome || '').slice(0, 24), qa.ganhou ? 1 : 0, g, agora).run();
+    } catch (e) {}
+  }
+}
+// GET /quarta/placar?id=&dia=: na Quarta, o de hoje (ao vivo); na quinta, o de ontem; nos outros dias, nada (a não ser com dia=)
+export async function quartaPlacar(env, url, h, origin) {
+  const agora = Number(env && env.COPA_AGORA) || Date.now(), d = new Date(agora - MANAUS), ws = d.getUTCDay(), hr = d.getUTCHours();
+  let dia = null, aoVivo = false;
+  const pedido = url.searchParams.get('dia') || '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(pedido)) dia = pedido;
+  else if (env.QUARTA_TESTE === '1') { dia = diaManaus(Date.now()); aoVivo = true; }
+  else if (ws === 3 && hr >= QUARTA_HORA.inicio) { dia = diaManaus(agora); aoVivo = hr < QUARTA_HORA.fim; }
+  else if (ws === 4) dia = diaManaus(agora - DIA);
+  if (!dia) return h.json({ dia: null }, 200, origin);
+  let top = [], eu = null;
+  try {
+    top = (await env.DB.prepare('SELECT a, b, nome_a, nome_b, partidas, vitorias, galos FROM quarta_duplas WHERE dia = ? AND vitorias > 0 ORDER BY vitorias DESC, galos DESC, partidas ASC, em ASC LIMIT 10').bind(dia).all()).results || [];
+    const id = url.searchParams.get('id') || '';
+    if (idOk(id)) {
+      const r = await env.DB.prepare('SELECT nome_a, nome_b, a, partidas, vitorias, galos, em FROM quarta_duplas WHERE dia = ? AND (a = ? OR b = ?) AND vitorias > 0 ORDER BY vitorias DESC, galos DESC, partidas ASC, em ASC LIMIT 1').bind(dia, id, id).first();
+      if (r) {
+        const acima = await env.DB.prepare('SELECT COUNT(*) AS n FROM quarta_duplas WHERE dia = ? AND vitorias > 0 AND (vitorias > ? OR (vitorias = ? AND (galos > ? OR (galos = ? AND (partidas < ? OR (partidas = ? AND em < ?))))))')
+          .bind(dia, r.vitorias, r.vitorias, r.galos, r.galos, r.partidas, r.partidas, r.em).first();
+        eu = { pos: ((acima && acima.n) || 0) + 1, parceiro: r.a === id ? r.nome_b : r.nome_a, vitorias: r.vitorias, galos: r.galos, partidas: r.partidas };
+      }
+    }
+    const meu = idOk(id) ? id : '';
+    top = top.map(x => ({ nomes: [x.nome_a, x.nome_b], vitorias: x.vitorias, galos: x.galos, partidas: x.partidas, eu: !!meu && (x.a === meu || x.b === meu) }));
+  } catch (e) { top = []; }
+  return h.json({ dia, aoVivo, top, eu }, 200, origin);
 }
