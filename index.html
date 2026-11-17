@@ -9936,12 +9936,12 @@ const CQKEY = 'dmz-conquistas-vistas', AVMKEY = 'dmz-avatar-montado';
 const minusc = s => s && /^[A-ZÀ-Ú][a-zà-ú ]/.test(s) ? s[0].toLowerCase() + s.slice(1) : s || '';
 // Nome do prêmio dentro de uma frase: "tapioca", "X-caboquinho", "a mesa Ponta Negra"
 // 3.41 (o dono viu "vitória-régia" com v minúsculo): nome de mesa é nome próprio e fica como é ("a mesa Vitória-régia")
-// 17/11 (pedido do dono): um emoji ao lado do nome do prêmio (ex.: "sorvete de cupuaçu 🍦")
+// 17/11 (pedido do dono): um emoji ao lado do nome do prêmio (ex.: "sorvete de cupuaçu 🍦"), só onde não tem o desenho do prêmio: a linha "falta pouco" e as missões
 const EMOJI_PREMIO = { tacaca: '🥣', tapioca: '🫓', xcaboquinho: '🥪', cupuacu: '🥥', tambaqui: '🐟', jaraqui: '🐟', kikao: '🌭',
   pirarucu: '🍲', guarana: '🍒', tapereba: '🧃', acaicuia: '🫐', sorvete: '🍦', trofeu: '🏆', arara: '🦜', violao: '🎸',
   bolo: '🍰', bodo: '🍲', ovinha: '🌾', passeio: '🚤' };
 const emojiPremio = p => { try { const e = p && p.tipo === 'parte' ? EMOJI_PREMIO[PARTES[p.k][p.i].v] : ''; return e ? ' ' + e : ''; } catch (e) { return ''; } };
-const premioFrase = p => (p.tipo === 'mesa' ? 'a mesa ' + p.nome : p.tipo === 'pedra' ? 'a pedra ' + p.nome : minusc(p.nome)) + emojiPremio(p);
+const premioFrase = p => p.tipo === 'mesa' ? 'a mesa ' + p.nome : p.tipo === 'pedra' ? 'a pedra ' + p.nome : minusc(p.nome);   // (sem emoji: onde aparece já tem o desenho do prêmio)
 const juntaE = l => l.length < 2 ? (l[0] || '') : l.slice(0, -1).join(', ') + ' e ' + l[l.length - 1];
 const conquistaDe = id => CONQUISTAS.find(x => x.id === id);
 function progressoConquista(c, t) { if (c.campo === 'copa357') return copaGanha() ? 1 : 0; if (c.campo === 'sextas') return Math.min(c.meta, sextasSeguidas(t)); return Math.min(c.meta, (t || loadHist())[c.campo] || 0); }
@@ -14206,7 +14206,7 @@ function quaseConquista() {
 function linhaFaltaPouco(onde, como) {
   if (!onde) return;
   const p = quaseConquista(); if (!p) return;
-  const f = p.c.meta - p.n, pr = premioDaConquista(p.c);
+  const f = p.c.meta - p.n; let pr = ''; try { pr = juntaE(premiosDe(p.c.id).map(x => premioFrase(x) + emojiPremio(x))); } catch (e) {}   // 17/11: com emoji
   onde.insertAdjacentHTML(como, `<p class="cq-falta">🏆 Falta pouco: <b>${esc(p.c.nome)}</b> · ${p.n} de ${p.c.meta}${pr ? ` <span>(prêmio: ${esc(pr)})</span>` : ''}</p>`);
 }
 const showResultMetas = showResult;
