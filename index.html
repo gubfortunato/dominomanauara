@@ -1839,6 +1839,25 @@ img.foto-online{-webkit-touch-callout:none;-webkit-user-select:none;user-select:
 .es-sec{display:grid;gap:10px}
 .es-sec .ap-k small{font-size:inherit;letter-spacing:inherit;font-weight:inherit}
 .es-mesas{grid-template-columns:repeat(3,1fr)}
+/* 17/11: História da mesa */
+.hm-link{display:block;width:100%;margin:12px 0 0;font:inherit;font-size:15.5px;font-weight:700;color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;text-align:left;cursor:pointer;line-height:1.3}
+.hm-link b{color:var(--nos)}
+.hm-link span{float:right;color:var(--muted);font-weight:800}
+.hm-link:active{transform:scale(.99)}
+.menu-mesas .hm-link{margin-top:10px}
+#sheet > .hm-link{margin:14px 0 0}
+.hm-topo{display:flex;gap:14px;align-items:center;margin:2px 0 14px}
+.hm-img{flex:0 0 auto;width:84px;height:122px;border-radius:12px;border:2px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.28)}
+.hm-cab{min-width:0}
+.hm-cab h2{margin:2px 0 6px}
+.hm-k{display:block;font-size:12.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--nos)}
+.hm-sub{margin:0;color:var(--muted);font-style:italic;font-size:15px;line-height:1.35}
+.hm-tag{display:inline-block;margin-top:7px;font-size:13.5px;font-weight:800;color:var(--muted)}
+.hm-tx p{margin:0 0 12px;font-size:16.5px;line-height:1.55}
+.hm-tx .hm-sabia{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.hm-nav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.hm-nav button{width:100%;margin:0}
+.hm-n{text-align:center;color:var(--muted);font-size:13.5px;margin:8px 0 0}
 .es-mesas .ap-cor{gap:5px;padding:10px 4px}
 .es-mesas .ap-cor small{font-size:12.5px;color:var(--muted);font-weight:700}
 .es-mesas .ap-sw{width:52px;height:52px}
@@ -3424,6 +3443,7 @@ body.papo-aberto{overflow:hidden}
       <span class="ap-k">Sua mesa</span>
       <p class="note mesa-promo" id="esPromo" hidden></p>
       <div class="ap-cores es-mesas" id="esMesas" role="radiogroup" aria-label="Mesa"></div>
+      <button type="button" class="hm-link" id="esHist" hidden></button>
     </div>
     <div class="es-sec">
       <span class="ap-k">Suas pedras</span>
@@ -4290,6 +4310,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.55.28', data: '17/11/2026', itens: ['História das mesas: cada bicho, fruta, lugar e monumento das mesas agora tem a sua história, com curiosidades de Manaus e da Amazônia. Veja em Personalizar (embaixo das mesas), na hora de escolher a mesa ou no menu da partida.'] },
   { v: '3.55.27', data: '17/11/2026', itens: ['Encaixe direto: solte a pedra em qualquer lugar da mesa e ela vai para a ponta onde encaixa (se encaixa nas duas, vai para a mais perto). O voo até o lugar ficou reto e suave.', 'A mesa Amazonas saiu por enquanto (vai voltar redesenhada).'] },
   { v: '3.55.26', data: '17/11/2026', itens: ['Mesas Relógio Municipal, Largo de São Sebastião e Arara-Vermelha com desenho novo, todo dentro da mesa (e as araras voando mais juntas).', 'As pedras ficam maiores quando a mesa enche: a mesa só se afasta o necessário.', 'Ranking: o apelido aparece inteiro.', 'Frases novas embaixo do nome das mesas, com um fato de cada lugar ou bicho.'] },
   { v: '3.55.25', data: '17/11/2026', itens: ['Mesa Barco regional: o barco subiu um pouco na mesa.', 'Administrador: dar presente a um jogador (jogar sem limite hoje, 7, 30 ou 365 dias de sócio, ou sócio para sempre). O jogador recebe um aviso no celular.'] },
@@ -10541,6 +10562,216 @@ function menuMesas() {
   if (sel) el.scrollLeft = Math.max(0, sel.offsetLeft - el.clientWidth / 2 + sel.offsetWidth / 2);
   el.addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b && escolherMesa(b.dataset.m)) { const x = el.scrollLeft; desenha(); el.scrollLeft = x; } });
 }
+// ---- 17/11 (pedido do dono: "história dos animais/monumentos das mesas") ----
+// Cada mesa de bicho, fruta, lugar ou monumento tem a sua história. Fatos conferidos em 17/11/2026 (Portal Amazônia, Iphan,
+// Inpa, Embrapa, Museu Goeldi, UNESCO, leis federais 11.675/2008 e 15.330/2026). Abre em Personalizar (embaixo das mesas),
+// na folha de escolher a mesa e no menu da partida. p: parágrafos; s: "Você sabia?" (opcional); k: o tipo, em cima do nome.
+const HIST_MESA = {
+  madeira: { k: 'Tradição de Manaus', p: [
+    'Em Manaus, o dominó mora na calçada: mesa de madeira na frente de casa ou da taberna, quatro cadeiras e a turma jogando em duplas, parceiro de frente para parceiro.',
+    'É ali que se aprende a contar de cinco em cinco, a aplicar galo e a bater de carroça. As regras deste jogo seguem o regulamento de dominó dos Jogos dos Servidores da Prefeitura de Manaus.'] },
+  garantido: { k: 'Cultura do Amazonas', p: [
+    'O vermelho é a cor do Boi Garantido, de Parintins, fundado em 1913 por Lindolfo Monteverde. A marca dele é o coração na testa do boi.',
+    'No último fim de semana de junho, Garantido e Caprichoso se enfrentam no Bumbódromo, em três noites de toadas, alegorias e muita rivalidade.'],
+    s: 'Desde 2018, o boi-bumbá de Parintins é Patrimônio Cultural do Brasil, reconhecido pelo Iphan.' },
+  caprichoso: { k: 'Cultura do Amazonas', p: [
+    'O azul é a cor do Boi Caprichoso, de Parintins. Pela tradição oral, ele também nasceu por volta de 1913, e a marca dele é a estrela na testa do boi.',
+    'A rivalidade com o Garantido divide a ilha ao meio: cada torcida tem o seu lado da cidade, e um boi chama o outro só de “contrário”.'],
+    s: 'Em Parintins, até a Coca-Cola ganha lata azul na época do festival.' },
+  roxoacai: { k: 'Fruta da Amazônia', p: [
+    'O açaí nasce em cachos no alto de palmeiras finas e altas, os açaizeiros. A fruta é pequena, quase toda caroço, e a polpa roxa sai batida com água.',
+    'No Norte, açaí é comida de verdade: grosso, sem açúcar, com farinha e, para muita gente, com peixe frito.'],
+    s: 'Em 2026, uma lei federal declarou o açaí fruta nacional, como já era o cupuaçu desde 2008.' },
+  floresta: { k: 'Natureza', p: [
+    'A Floresta Amazônica é a maior floresta tropical do mundo e se espalha por nove países. Cerca de 60% dela fica no Brasil.',
+    'As árvores puxam água do chão e soltam no ar como vapor. Esses “rios voadores” levam chuva para outras regiões do Brasil.'],
+    s: 'Uma em cada dez espécies conhecidas de plantas e animais do planeta vive na Amazônia.' },
+  encontro: { k: 'Natureza', p: [
+    'Na frente de Manaus, o Rio Negro, de água escura, encontra o Solimões, de água barrenta. Os dois correm lado a lado por quilômetros sem se misturar.',
+    'O segredo está na diferença: o Negro é mais quente e mais lento; o Solimões é mais frio, mais rápido e carrega mais terra. Dali em diante, o rio passa a se chamar Amazonas.'],
+    s: 'Em 2010, o Iphan aprovou o tombamento do Encontro das Águas como patrimônio do Brasil.' },
+  feltro: { k: 'Lugar de Manaus', p: [
+    'O Museu da Amazônia, o MUSA, foi criado em 2009 dentro da Reserva Adolpho Ducke, uma floresta do Inpa na zona norte de Manaus.',
+    'Ali, o museu é a própria mata: trilhas, orquídeas, borboletas, sapos e uma torre de 42 metros, com 242 degraus, que passa da copa das árvores.'],
+    s: 'Lá de cima, a floresta parece um mar verde sem fim.' },
+  pontanegra: { k: 'Lugar de Manaus', p: [
+    'A Ponta Negra é a praia de Manaus: areia clara e a água escura do Rio Negro, na zona oeste, com calçadão, anfiteatro e um dos pores do sol mais bonitos da cidade.',
+    'Como o rio sobe e desce cerca de 10 metros por ano, a praia muda de tamanho: na seca ela cresce, na cheia quase some.'],
+    s: 'No Réveillon, a queima de fogos sobre o rio reúne milhares de pessoas na orla.' },
+  acai: { k: 'Fruta da Amazônia', p: [
+    'O cupuaçu é primo do cacau: os dois são do mesmo gênero de plantas, o Theobroma. A casca é dura e marrom, e a polpa branca é azedinha e perfumada.',
+    'Vira suco, creme, sorvete, doce e bombom. Das sementes, a Embrapa criou o cupulate, um “chocolate” de cupuaçu.'],
+    s: 'Desde 2008, uma lei federal reconhece o cupuaçu como fruta nacional.' },
+  ponte: { k: 'Monumento de Manaus', p: [
+    'A Ponte Rio Negro liga Manaus a Iranduba e foi inaugurada em 24 de outubro de 2011, no aniversário da cidade. São 3.595 metros sobre o rio.',
+    'O vão central, de 400 metros, fica preso por cabos: é considerada a maior ponte estaiada do Brasil. Como a água do Negro é ácida, o concreto recebeu um material especial contra a corrosão.'],
+    s: 'Desde 2017, o nome oficial é Ponte Jornalista Phelippe Daou.' },
+  rionegro: { k: 'Rio da Amazônia', p: [
+    'O Rio Negro nasce na Colômbia e é o maior rio de água preta do mundo. A cor de chá vem das folhas que se desmancham na mata alagada, o igapó.',
+    'No caminho, forma o arquipélago de Anavilhanas, com cerca de 400 ilhas. Em Manaus, o nível do rio é medido desde 1902: a maior cheia foi em 2021, e a maior seca, em 2024.'],
+    s: 'A água ácida do Negro costuma ter menos carapanã que a dos rios de água barrenta.' },
+  tucuma: { k: 'Fruta da Amazônia', p: [
+    'O tucumã é o fruto de uma palmeira cheia de espinhos. A polpa é laranja, oleosa e rica em vitamina A, e se come pura, com farinha ou no pão.',
+    'No café da manhã de Manaus, ele é o rei do X-Caboquinho: pão francês, lascas de tucumã, queijo coalho e banana pacovã frita.'] },
+  arena: { k: 'Lugar de Manaus', p: [
+    'A Arena da Amazônia foi construída para a Copa do Mundo de 2014, no lugar do antigo Vivaldão. A fachada lembra um grande cesto de palha indígena.',
+    'Recebeu quatro jogos da Copa e seis do futebol da Olimpíada de 2016, e cabe mais de 44 mil torcedores.'],
+    s: 'As cadeiras têm sete cores, que representam frutas tropicais.' },
+  mercado: { k: 'Monumento de Manaus', p: [
+    'O Mercado Adolpho Lisboa abriu em 1883, na beira do Rio Negro. Foi inspirado no antigo mercado Les Halles, de Paris, e a estrutura de ferro veio da Europa de navio.',
+    'Tombado pelo Iphan em 1987, passou sete anos em reforma e reabriu em 2013. Hoje tem peixe, farinha, frutas, ervas e artesanato da região.'],
+    s: 'O nome homenageia Adolpho Lisboa, que foi prefeito de Manaus.' },
+  vitoria: { k: 'Planta da Amazônia', p: [
+    'A vitória-régia é uma planta aquática com folhas redondas que chegam a 2,5 metros de diâmetro e aguentam o peso de sapos e garças.',
+    'A flor abre ao pôr do sol, branca e perfumada, e depois fica rosa: o ciclo dura dois dias. O nome homenageia a rainha Vitória, da Inglaterra.',
+    'Pela lenda, a índia Naiá se apaixonou por Jaci, a Lua, e mergulhou no rio atrás do reflexo dela. Comovida, Jaci a transformou na estrela das águas.'] },
+  calcadao: { k: 'Lugar de Manaus', p: [
+    'O Largo de São Sebastião fica em frente ao Teatro Amazonas. O piso de pedras pretas e brancas em ondas, do começo dos anos 1900, representa o Encontro das Águas dos rios Negro e Solimões.',
+    'No centro está o Monumento à Abertura dos Portos, de 1900, em mármore, granito e bronze: quatro navios representam a Europa, a Ásia, a África e a América.'],
+    s: 'As ondas do Largo são mais antigas que as do calçadão de Copacabana, no Rio. A ideia veio de Lisboa, de uma praça que tem esse desenho desde 1848.' },
+  centro: { k: 'Lugar de Manaus', p: [
+    'Manaus começou em 1669, com o Forte de São José da Barra do Rio Negro, erguido pelos portugueses na beira do rio. Em volta dele nasceu o Lugar da Barra.',
+    'Com o ciclo da borracha, a cidade ganhou teatro, palácios, porto, luz elétrica e bondes, e ficou conhecida como a Paris dos Trópicos.'],
+    s: 'Em 2012, o Iphan tombou o Centro Histórico, da orla do Rio Negro até o entorno do Teatro Amazonas.' },
+  relogio: { k: 'Monumento de Manaus', p: [
+    'O Relógio Municipal está na Avenida Eduardo Ribeiro, na Praça da Matriz, desde 1927. A máquina veio da Suíça e foi montada sobre uma base de pedra por ourives de Manaus.',
+    'Em volta do mostrador está escrito em latim “Vulnerant omnes, ultima necat”: “todas ferem, a última mata”. É um lembrete de que cada hora passa, e a última ninguém sabe quando chega.'] },
+  teatro: { k: 'Monumento de Manaus', p: [
+    'O Teatro Amazonas foi inaugurado em 31 de dezembro de 1896, no auge do ciclo da borracha. A cúpula é coberta por cerca de 36 mil peças de cerâmica vindas da França, nas cores da bandeira do Brasil.',
+    'Desde 1997, recebe o Festival Amazonas de Ópera.'],
+    s: 'Em julho de 2026, a UNESCO declarou o Teatro Amazonas Patrimônio Mundial, junto com o Theatro da Paz, de Belém.' },
+  palacio: { k: 'Monumento de Manaus', p: [
+    'O Palácio Rio Negro foi construído em 1903 como casa do barão da borracha Karl Waldemar Scholz. Na época, era o Palacete Scholz.',
+    'Depois virou sede do governo do Amazonas e hoje é centro cultural na Avenida Sete de Setembro, aberto à visitação.'],
+    s: 'Ainda guarda peças de 1903, como um lustre de bronze e as duas estátuas ao pé da escada, que representam a poesia e a música.' },
+  chamine: { k: 'Monumento de Manaus', p: [
+    'A Usina Chaminé foi construída em 1910 por uma empresa inglesa para tratar o esgoto de Manaus. O sistema nunca funcionou.',
+    'Em 1993 virou centro de artes e, depois de uma reforma em 2002, ganhou o nome de Usina Chaminé, por causa da chaminé de 24 metros. Hoje recebe teatro, dança e exposições.'],
+    s: 'Lá dentro há um bonde centenário, lembrança de que Manaus foi a terceira cidade do Brasil a ter bonde elétrico.' },
+  arara: { k: 'Bicho da Amazônia', p: [
+    'A arara-vermelha é uma das maiores araras do Brasil: com a cauda, passa de 80 centímetros. Vive em casal a vida toda, e o par voa sempre junto, gritando alto pela mata.',
+    'O bico forte quebra castanhas e sementes duras. Em alguns lugares da Amazônia, bandos inteiros descem aos barrancos dos rios para comer barro.'],
+    s: 'Faz ninho em ocos de árvores altas, onde o casal cria os filhotes junto.' },
+  araraazul: { k: 'Bicho do Brasil', p: [
+    'A arara-azul é a maior arara do mundo: tem cerca de 1 metro, da cabeça à ponta da cauda. O anel amarelo em volta dos olhos e na base do bico é a marca dela.',
+    'Vive no Pantanal, no Cerrado e em partes da Amazônia, e o bico quebra cocos duríssimos de palmeiras.'],
+    s: 'Nos anos 1980, o tráfico quase acabou com ela. Com projetos de proteção, como o Projeto Arara Azul, a população voltou a crescer.' },
+  tucano: { k: 'Bicho do Brasil', p: [
+    'O tucano-toco é o maior dos tucanos, e o bico laranja ocupa cerca de um terço do corpo. Parece pesado, mas é leve: por dentro é uma espuma de osso cheia de ar.',
+    'Come frutas e espalha as sementes pela mata.'],
+    s: 'Em 2009, cientistas do Brasil e do Canadá descobriram que o bico funciona como um radiador: no calor, o sangue corre para ele e solta o calor do corpo.' },
+  peixeboi: { k: 'Bicho da Amazônia', p: [
+    'O peixe-boi-da-amazônia não é peixe: é um mamífero que vive só na água doce da Amazônia e sobe para respirar. Pode passar dos 2,5 metros.',
+    'Passa até oito horas por dia comendo plantas aquáticas, cerca de 10% do próprio peso. A fêmea tem um filhote a cada poucos anos, depois de uma gestação de cerca de 13 meses, por isso a espécie demora a se recuperar da caça.'],
+    s: 'Em Manaus, o Inpa e a Associação Amigos do Peixe-boi cuidam de filhotes órfãos e depois devolvem os animais aos rios.' },
+  boto: { k: 'Bicho da Amazônia', p: [
+    'O boto-cor-de-rosa é o maior golfinho de rio do mundo: chega a cerca de 2,5 metros. Os machos adultos costumam ser os mais rosados.',
+    'Diferente dos golfinhos do mar, consegue virar a cabeça para os lados, o que ajuda a caçar entre as raízes da mata alagada. Hoje está ameaçado de extinção.',
+    'Pela lenda, nas noites de festa ele vira um moço bonito, de roupa branca e chapéu, que encanta as moças e volta para o rio antes de amanhecer. O chapéu esconde o furo de respirar no alto da cabeça.'] },
+  beiradao: { k: 'Lugar de Manaus', p: [
+    'O Porto de Manaus foi construído pela empresa inglesa Manaos Harbour a partir de 1902. O cais é flutuante: sobe e desce junto com o rio, que varia cerca de 10 metros entre a seca e a cheia.',
+    'É dali que saem recreios para o interior, carregados de gente, redes, rancho e encomendas.'],
+    s: 'No porto fica a régua que mede o nível do Rio Negro desde 1902.' },
+  barco: { k: 'Cultura do Amazonas', p: [
+    'O barco regional, o recreio, é o ônibus dos rios: dois ou três andares de madeira, carga embaixo e passageiros em cima, cada um na sua rede.',
+    'Muitas cidades do Amazonas não têm estrada, e é o barco que leva gente, rancho, moto e até geladeira para o interior, em viagens que duram horas ou dias.'] },
+  skylinenoite: { k: 'Lugar de Manaus', p: [
+    'Manaus tem mais de 2 milhões de habitantes: é a maior cidade da Amazônia e a sétima do Brasil, pelo Censo de 2022.',
+    'De noite, as luzes dos prédios, da orla e da Ponte Rio Negro desenham a cidade no meio da floresta.'],
+    s: 'Manaus faz aniversário em 24 de outubro.' },
+  metropole: { k: 'Lugar de Manaus', p: [
+    'Manaus é a Metrópole da Amazônia: uma capital de mais de 2 milhões de pessoas cercada de floresta e de rio.',
+    'Desde 1967, a Zona Franca atrai fábricas para a cidade, e o Polo Industrial de Manaus produz motos, celulares e TVs para o Brasil inteiro.'],
+    s: 'Dentro da cidade ainda tem floresta de verdade, como a Reserva Adolpho Ducke, do Inpa.' },
+  palacete: { k: 'Monumento de Manaus', p: [
+    'O Palacete Provincial fica na Praça Heliodoro Balbi, a Praça da Polícia, e é de 1874. Por mais de 100 anos foi quartel da Polícia Militar do Amazonas.',
+    'Restaurado, reabriu em 2009 como centro cultural, com o Museu da Imagem e do Som, o Museu de Numismática, o Museu Tiradentes e a Pinacoteca do Amazonas.'],
+    s: 'Só o Museu de Numismática guarda mais de 35 mil moedas e peças antigas.' },
+  onca: { k: 'Bicho da Amazônia', p: [
+    'A onça-pintada é o maior felino das Américas e o terceiro maior do mundo, atrás do tigre e do leão.',
+    'Tem uma das mordidas mais fortes entre os felinos, capaz de quebrar casco de tartaruga. Nada muito bem e caça até jacaré.'],
+    s: 'As manchas, chamadas rosetas, são diferentes em cada onça, como uma impressão digital. E a onça-preta é a mesma espécie, só que de pelo escuro.' },
+  pirarucu: { k: 'Peixe da Amazônia', p: [
+    'O pirarucu é um dos maiores peixes de água doce do mundo: chega a 3 metros e 200 quilos. Precisa subir à superfície para respirar ar, e é aí que o pescador o encontra.',
+    'O nome vem do tupi: pira, peixe, e urucum, vermelho, por causa da cauda avermelhada na época da reprodução.'],
+    s: 'Ele já esteve perto de sumir. O manejo feito pelas comunidades, que contam os peixes e pescam só uma parte, trouxe o pirarucu de volta.' },
+  tucunare: { k: 'Peixe da Amazônia', p: [
+    'O tucunaré é um caçador rápido e brigador, e por isso é o queridinho da pesca esportiva no Amazonas. Todo tucunaré tem uma mancha redonda na cauda, que parece um olho.',
+    'Os pais cuidam juntos do ninho e acompanham os filhotes enquanto eles crescem.'],
+    s: 'Na pesca esportiva, a regra é fisgar, tirar a foto e devolver o peixe ao rio.' },
+  tambaqui: { k: 'Peixe da Amazônia', p: [
+    'Na cheia, o tambaqui entra na mata alagada, o igapó, para comer frutos e sementes que caem das árvores, e espalha essas sementes pelo rio. Os dentes parecem dentes de gente, bons para quebrar caroço.',
+    'Pode passar de 1 metro de comprimento. Em Manaus, a costela de tambaqui na brasa é prato de domingo.'],
+    s: 'É o peixe nativo mais criado em tanques no Brasil.' },
+  pordosol: { k: 'Natureza', p: [
+    'Em Manaus, o “verão” é a época de menos chuva, mais ou menos de julho a novembro. O rio baixa, aparecem as praias, e o sol se põe vermelho no fim da tarde.',
+    'O vermelho vem da poeira e da fumaça no ar, que filtram a luz. O céu bonito também é um alerta: boa parte dessa fumaça vem das queimadas.'] },
+  igreja: { k: 'Monumento de Manaus', p: [
+    'A Igreja de São Sebastião fica no Largo de São Sebastião, perto do Teatro Amazonas. A primeira capela é de 1859, e a construção de alvenaria, de 1888.',
+    'Tem uma torre só, e ninguém sabe ao certo por quê. Há três versões: a segunda torre afundou no mar quando vinha da Europa, o construtor sumiu com parte do dinheiro, ou a verba acabou com o fim do ciclo da borracha.'] }
+};
+function mesasComHistoria() { return MESAS.filter(m => HIST_MESA[m.id] && parteVisivel(m)); }
+function imgHistoria(m) {
+  const v = (m.bg || '').match(/var\(--img-[\w-]+-sw\)/);
+  return v ? `${v[0]} center/cover no-repeat, ${(m.bg.match(/#[0-9a-f]{3,6}\s*$/i) || ['#333'])[0]}` : fundoMesa(m);
+}
+function linkHistoria(m) { return `História da mesa <b>${esc(m.nome)}</b> <span aria-hidden="true">›</span>`; }
+function abrirHistoria(id) {
+  const lista = mesasComHistoria(); if (!lista.length) return;
+  let i = lista.findIndex(m => m.id === id); if (i < 0) i = 0;
+  const m = lista[i], h = HIST_MESA[m.id], sub = subMesa(m), n = lista.length;
+  const livre = mesaLivre(m), atual = mesaAtual().id === m.id, alheia = mesaAlheia(), jogo = screen === 'game';
+  const doSocio = !livre && (m.plano || mesaDoSocio(m));
+  const pode = doSocio && !temPlano() && !souAdmin() && pagamentosAtivos() && !menorDeIdade() && !jogo;
+  const trava = livre ? '' : doSocio ? '🔒 Mesa dos sócios' : m.req ? `🔒 Para liberar: ${faltaTexto(m.req)}` : '';
+  // no jogo, abre como o menu ("rules"): a partida continua parada e volta sozinha ao fechar
+  openSheet(jogo ? 'rules' : 'info', `<p class="eyebrow">História da mesa</p>
+    <div class="hm-topo"><span class="hm-img" style="background:${imgHistoria(m)}" aria-hidden="true"></span>
+      <div class="hm-cab"><span class="hm-k">${esc(h.k)}</span><h2 id="sheetTitle">${esc(m.nome)}</h2>${sub ? `<p class="hm-sub">${esc(sub)}</p>` : ''}${trava ? `<span class="hm-tag">${esc(trava)}</span>` : ''}</div></div>
+    <div class="hm-tx">${h.p.map(t => `<p>${esc(t)}</p>`).join('')}${h.s ? `<p class="hm-sabia"><b>Você sabia?</b> ${esc(h.s)}</p>` : ''}</div>
+    ${livre && !atual && !alheia ? '<button type="button" class="primary" id="hmUsar" style="width:100%;margin-bottom:10px">Jogar nesta mesa</button>' : ''}
+    ${pode ? '<button type="button" class="primary" id="hmSocio" style="width:100%;margin-bottom:10px">Ser Sócio da Calçada</button>' : ''}
+    <div class="hm-nav"><button type="button" class="secondary" id="hmAnt">‹ Anterior</button><button type="button" class="secondary" id="hmProx">Próxima ›</button></div>
+    <p class="hm-n">${i + 1} de ${n} histórias</p>
+    ${jogo ? '<button type="button" class="secondary" id="hmMenu" style="width:100%;margin-top:10px">Voltar ao menu</button>' : ''}`);
+  $('#hmAnt').addEventListener('click', () => abrirHistoria(lista[(i - 1 + n) % n].id));
+  $('#hmProx').addEventListener('click', () => abrirHistoria(lista[(i + 1) % n].id));
+  if ($('#hmUsar')) $('#hmUsar').addEventListener('click', () => {
+    if (!escolherMesa(m.id, true)) return;
+    try { renderMesas(); renderPickers(); } catch (e) {}
+    abrirHistoria(m.id);
+  });
+  if ($('#hmSocio')) $('#hmSocio').addEventListener('click', () => { track('historia-mesa-socio'); closeSheet(); abrirApoio(screen === 'sala' ? 'home' : (screen || 'home'), 'plano'); });
+  if ($('#hmMenu')) $('#hmMenu').addEventListener('click', () => { showMenu(); menuMesas(); });
+}
+// Personalizar: embaixo das mesas, a história da mesa escolhida
+const renderMesasHist = renderMesas;
+renderMesas = function (el) {
+  renderMesasHist.apply(this, arguments);
+  if (el) return;
+  const b = $('#esHist'), m = mesaAtual(); if (!b) return;
+  b.hidden = !HIST_MESA[m.id]; b.innerHTML = linkHistoria(m);
+};
+$('#esHist').addEventListener('click', () => { track('historia-mesa'); abrirHistoria(mesaAtual().id); });
+// Folha de escolher a mesa (montar o jogo offline e sala online)
+const abrirMesasHist = abrirMesas;
+abrirMesas = function () {
+  abrirMesasHist.apply(this, arguments);
+  const ok = $('#shMesasOk'); if (!ok) return;
+  ok.insertAdjacentHTML('beforebegin', '<button type="button" class="hm-link" id="shHist">Conheça a história das mesas <span aria-hidden="true">›</span></button>');
+  $('#shHist').addEventListener('click', () => { track('historia-mesa'); abrirHistoria(mesaAtual().id); });
+};
+// Menu da partida: embaixo da fileira de mesas
+const menuMesasHist = menuMesas;
+menuMesas = function () {
+  menuMesasHist.apply(this, arguments);
+  const box = $('#sheet .menu-mesas'); if (!box || box.querySelector('.hm-link')) return;
+  box.insertAdjacentHTML('beforeend', '<button type="button" class="hm-link" id="mmHist"></button>');
+  const b = $('#mmHist'), poe = () => { const m = mesaAtual(); b.hidden = !HIST_MESA[m.id]; b.innerHTML = linkHistoria(m); };
+  poe();
+  const l = $('#mmLista'); if (l) l.addEventListener('click', () => setTimeout(poe, 0));
+  b.addEventListener('click', () => { track('historia-mesa-jogo'); abrirHistoria(mesaAtual().id); });
+};
 // (o menu abre depois deste clique: o jogo registra o dele mais adiante)
 $('#menuBtn').addEventListener('click', () => setTimeout(() => { if (sheetKind === 'rules') menuMesas(); }, 0));
 $('#estiloBack').addEventListener('click', () => show(estiloVolta));
@@ -16015,7 +16246,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.55.27-cee9f236';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.55.28-9732b52e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
