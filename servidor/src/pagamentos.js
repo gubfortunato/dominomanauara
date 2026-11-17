@@ -5,7 +5,8 @@
 // quem paga preenche tudo na página do Asaas. Aqui fica só o código do aparelho, o produto, o valor e as datas.
 import { promoValendo, promoAte } from './planos.js';
 import { motivoBloqueio, liberarQuemPagou } from './bloqueio.js';   // 11/11
-import { casaAoLigar, casaDe, premiosDe, campeaoAte } from './copa.js';   // 10/11: tempo de casa e Copa dos Sócios
+import { casaAoLigar, casaDe, premiosDe, campeaoAte } from './copa.js';
+import { enviarPush } from './webpush.js';   // 17/11: aviso do presente do dono   // 10/11: tempo de casa e Copa dos Sócios
 const DIA = 86400000;
 export const PRODUTOS = {
   // 3.22: um jeito só de apoiar. Cada valor compra tempo de Apoiador (foto na mesa, selo ★, avatares exclusivos e o
@@ -157,6 +158,8 @@ async function contaDe(env, aparelho) {
   const conta = { ate: p && p.ate ? p.ate : null, codigo: p ? p.codigo : null, doador: await doadorDe(env, aparelho), renova: await renovaDe(env, aparelho) };
   // 28/10: presente de quem já tinha pago antes do Sócio da Calçada (o app mostra o agradecimento uma vez)
   try { const g = await env.DB.prepare("SELECT dias, ate FROM presentes WHERE aparelho = ? AND tipo = 'fundador'").bind(aparelho).first(); if (g) conta.presente = { tipo: 'fundador', dias: g.dias, ate: g.ate }; } catch (e) {}
+  // 17/11: o último presente do administrador (o app mostra o "presente pra você" uma vez)
+  try { const g = await env.DB.prepare('SELECT id, tipo, ate FROM presentes_dono WHERE aparelho = ? AND tirado IS NULL ORDER BY em DESC LIMIT 1').bind(aparelho).first(); if (g) conta.presente = { tipo: 'dono:' + g.id, dono: g.tipo, ate: g.ate }; } catch (e) {}
   // 03/11 (pedido do dono): carteira de sócio. O número é a ordem de chegada de cada conta de sócio (o código, que vale
   // para todos os aparelhos dela), pela primeira vez que virou sócio; "desde" é essa data. Nunca muda.
   if (p && p.ate && p.codigo) {
@@ -534,7 +537,7 @@ export async function donoPagamentos(req, env, origin, h) {
   const d = new Date(); const inicioMes = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1) + 4 * 3600000;   // meia-noite em Manaus
   const mes = await env.DB.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(valor), 0) AS soma FROM pedidos WHERE status = 'pago' AND pago_em >= ?").bind(inicioMes).first();
   const tudo = await env.DB.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(valor), 0) AS soma FROM pedidos WHERE status = 'pago'").first();
-  const ativos = await env.DB.prepare('SELECT COUNT(*) AS n FROM planos WHERE ate > ? AND aparelho NOT IN (SELECT aparelho FROM cortesias)').bind(Date.now()).first();
+  const ativos = await env.DB.prepare('SELECT COUNT(*) AS n FROM planos WHERE ate > ? AND aparelho NOT IN (SELECT aparelho FROM cortesias) AND NOT EXISTS (SELECT 1 FROM presentes_dono g WHERE g.aparelho = planos.aparelho AND g.ate = planos.ate AND g.tirado IS NULL AND NOT EXISTS (SELECT 1 FROM pedidos d WHERE d.aparelho = g.aparelho AND d.status = \'pago\'))').bind(Date.now()).first();
   const { results } = await env.DB.prepare("SELECT id, produto, valor, pago_em, status FROM pedidos WHERE status IN ('pago', 'devolvido') ORDER BY pago_em DESC LIMIT 20").all();
   // 28/10: assinaturas ativas e as que passaram da promoção sem conseguir mudar o valor no Asaas (com o último erro)
   let assin = null;
@@ -558,6 +561,7 @@ export async function donoApoiadores(req, env, origin, h) {
       (SELECT COUNT(*) FROM pedidos d WHERE d.aparelho = a.aparelho AND d.status = 'pago') AS n,
       (SELECT MAX(pago_em) FROM pedidos d WHERE d.aparelho = a.aparelho AND d.status = 'pago') AS ultimo,
       (SELECT 1 FROM cortesias c WHERE c.aparelho = a.aparelho) AS cortesia,
+      (SELECT 1 FROM presentes_dono g WHERE g.aparelho = a.aparelho AND g.tirado IS NULL AND g.ate = (SELECT ate FROM planos p WHERE p.aparelho = a.aparelho) AND NOT EXISTS (SELECT 1 FROM pedidos d WHERE d.aparelho = g.aparelho AND d.status = 'pago')) AS presente,   -- 17/11
       (SELECT 1 FROM assinaturas s WHERE s.aparelho = a.aparelho AND s.status = 'ativa') AS renova,
       COALESCE((SELECT nome FROM presenca WHERE aparelho = a.aparelho AND nome IS NOT NULL), (SELECT nome FROM jogadores_vistos WHERE aparelho = a.aparelho),
         (SELECT nome FROM ranking WHERE aparelho = a.aparelho ORDER BY atualizado DESC LIMIT 1)) AS nome,
@@ -567,3 +571,79 @@ export async function donoApoiadores(req, env, origin, h) {
     ORDER BY COALESCE(ultimo, desde) DESC LIMIT 300`).all();
   return h.json({ lista: results || [], agora: Date.now() }, 200, origin);
 }
+
+// ===== 17/11 (pedido do dono): presentes do administrador =====
+// O dono busca o jogador pelo apelido e dá: jogar sem limite até a meia-noite (hoje), 7, 30 ou 365 dias de sócio, ou sócio
+// para sempre (cortesia). Usa o mesmo plano de quem paga (o jogo inteiro já sabe tratar), fica anotado em presentes_dono
+// com o "até" de antes (para desfazer) e não entra na conta de sócios pagantes. O jogador recebe um aviso no celular.
+const PRESENTE = { hoje: 0, d7: 7, d30: 30, d365: 365, vitalicio: 3650 };
+const PRESENTE_AVISO = {
+  hoje: ['🎁 Presente pra você!', 'Hoje você joga sem limite até a meia-noite. Bora pra mesa?'],
+  d7: ['🎁 Você ganhou 7 dias de sócio!', 'Partidas sem limite e todas as vantagens do Sócio da Calçada por 7 dias. Aproveita!'],
+  d30: ['🎁 Você ganhou 30 dias de sócio!', 'Partidas sem limite e todas as vantagens do Sócio da Calçada por 30 dias. Aproveita!'],
+  d365: ['🎁 Você ganhou 1 ano de sócio!', 'Partidas sem limite e todas as vantagens do Sócio da Calçada por 1 ano. Aproveita!'],
+  vitalicio: ['🎁 Agora você é sócio para sempre!', 'Partidas sem limite e todas as vantagens do Sócio da Calçada, para sempre. Obrigado por fazer parte!']
+};
+const fimDoDiaManaus = t => { const d = new Date(t - 4 * 3600000); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1) + 4 * 3600000; };
+// GET /dono/presente/buscar?q=apelido: quem usou esse apelido (no app agora, na mesa online ou no ranking), com o plano
+export async function donoPresenteBuscar(req, env, origin, h, url) {
+  if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
+  const q = String(url.searchParams.get('q') || '').trim().toLowerCase().replace(/[%_]/g, '').slice(0, 30);
+  if (q.length < 2) return h.json({ lista: [], agora: Date.now() }, 200, origin);
+  const { results } = await env.DB.prepare(`SELECT x.aparelho, x.nome, x.av, MAX(x.visto) AS visto,
+      (SELECT ate FROM planos p WHERE p.aparelho = x.aparelho) AS ate,
+      (SELECT 1 FROM cortesias c WHERE c.aparelho = x.aparelho) AS cortesia,
+      (SELECT COUNT(*) FROM pedidos d WHERE d.aparelho = x.aparelho AND d.status = 'pago') AS pagos,
+      (SELECT g.tipo FROM presentes_dono g JOIN planos p ON p.aparelho = g.aparelho AND p.ate = g.ate WHERE g.aparelho = x.aparelho AND g.tirado IS NULL ORDER BY g.em DESC LIMIT 1) AS presente
+    FROM (SELECT aparelho, nome, av, visto_em AS visto FROM presenca WHERE lower(nome) LIKE ?1
+      UNION ALL SELECT aparelho, nome, av, visto_em AS visto FROM jogadores_vistos WHERE lower(nome) LIKE ?1
+      UNION ALL SELECT aparelho, nome, av, atualizado AS visto FROM ranking WHERE lower(nome) LIKE ?1) x
+    WHERE x.aparelho NOT LIKE 'teste-%' GROUP BY x.aparelho ORDER BY visto DESC LIMIT 15`).bind('%' + q + '%').all();
+  return h.json({ lista: results || [], agora: Date.now() }, 200, origin);
+}
+// POST /dono/presente {aparelho, tipo}
+export async function donoPresentear(req, env, origin, h) {
+  if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
+  let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
+  const tipo = String((b && b.tipo) || '');
+  if (!idOk(b && b.aparelho) || !(tipo in PRESENTE)) return h.json({ erro: 'dados' }, 400, origin);
+  const agora = Date.now(), p = await planoDe(env, b.aparelho), atual = (p && p.ate) || 0;
+  const ate = tipo === 'hoje' ? fimDoDiaManaus(agora) : Math.max(agora, atual) + PRESENTE[tipo] * DIA;
+  if (ate <= atual) return h.json({ ok: true, nada: true, ate: atual }, 200, origin);   // já tem mais tempo de sócio que isso
+  let cortesiaNova = 0;
+  if (tipo === 'vitalicio' && !(await cortesiaDe(env, b.aparelho))) {
+    await env.DB.prepare('INSERT INTO cortesias (aparelho, nivel, desde) VALUES (?, 1, ?) ON CONFLICT (aparelho) DO NOTHING').bind(b.aparelho, agora).run(); cortesiaNova = 1;
+  }
+  if (p) await env.DB.prepare('UPDATE planos SET ate = ? WHERE aparelho = ?').bind(ate, b.aparelho).run();
+  else await novaConta(env, b.aparelho, ate);
+  try { await casaAoLigar(env, b.aparelho, p && p.ate, agora); } catch (e) {}
+  try { await liberarQuemPagou(env, b.aparelho); } catch (e) {}   // bloqueado por burlar o limite grátis: virou sócio, desbloqueia
+  await env.DB.prepare('INSERT INTO presentes_dono (aparelho, tipo, ate_antes, ate, cortesia_nova, em) VALUES (?, ?, ?, ?, ?, ?)').bind(b.aparelho, tipo, p ? p.ate : null, ate, cortesiaNova, agora).run();
+  await avisarPresente(env, b.aparelho, tipo);
+  return h.json({ ok: true, ate }, 200, origin);
+}
+// POST /dono/presente/tirar {aparelho}: desfaz o último presente (o plano volta ao "até" de antes, se ninguém mexeu depois)
+export async function donoPresenteTirar(req, env, origin, h) {
+  if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
+  let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
+  if (!idOk(b && b.aparelho)) return h.json({ erro: 'dados' }, 400, origin);
+  const g = await env.DB.prepare('SELECT id, ate_antes, ate, cortesia_nova FROM presentes_dono WHERE aparelho = ? AND tirado IS NULL ORDER BY em DESC LIMIT 1').bind(b.aparelho).first();
+  if (!g) return h.json({ erro: 'nao-existe' }, 404, origin);
+  const p = await planoDe(env, b.aparelho);
+  if (p && p.ate === g.ate) await env.DB.prepare('UPDATE planos SET ate = ? WHERE aparelho = ?').bind(g.ate_antes || 0, b.aparelho).run();
+  if (g.cortesia_nova) await env.DB.prepare('DELETE FROM cortesias WHERE aparelho = ?').bind(b.aparelho).run();
+  await env.DB.prepare('UPDATE presentes_dono SET tirado = ? WHERE id = ?').bind(Date.now(), g.id).run();
+  return h.json({ ok: true }, 200, origin);
+}
+async function avisarPresente(env, aparelho, tipo) {
+  if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return;
+  try {
+    const { results } = await env.DB.prepare('SELECT DISTINCT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a JOIN avisos_id i ON i.endpoint = a.endpoint WHERE i.aparelho = ? LIMIT 5').bind(aparelho).all();
+    const [titulo, texto] = PRESENTE_AVISO[tipo];
+    for (const s of results || []) {
+      let r = 0; try { r = await enviarPush(s, { titulo, texto, url: '/?abrir=presente' }, env); } catch (e) {}
+      if (r === 404 || r === 410) { try { await env.DB.prepare('DELETE FROM avisos WHERE id = ?').bind(s.id).run(); await env.DB.prepare('DELETE FROM avisos_id WHERE endpoint = ?').bind(s.endpoint).run(); } catch (e) {} }
+    }
+  } catch (e) {}
+}
+

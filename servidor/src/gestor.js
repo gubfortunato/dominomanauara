@@ -30,8 +30,8 @@ export async function montarRelatorio(env, dia) {
   const vivo7 = await todos(env, `SELECT dia, partidas FROM vivo_dia WHERE dia IN (${dias7.map(() => '?').join(',')})`, ...dias7);
   const pico = await um(env, 'SELECT hora, maximo FROM pico_hora WHERE dia = ? ORDER BY maximo DESC, em ASC LIMIT 1', dia);
   const vendasL = await todos(env, "SELECT produto, COUNT(*) AS n, SUM(valor) AS total FROM pedidos WHERE status = 'pago' AND pago_em >= ? AND pago_em < ? GROUP BY produto", ini, fim);
-  const socios = (await um(env, 'SELECT COUNT(DISTINCT codigo) AS n FROM planos WHERE ate > ? AND aparelho NOT IN (SELECT aparelho FROM cortesias)', agora)).n || 0;
-  const acabaram = (await um(env, 'SELECT COUNT(*) AS n FROM planos WHERE ate >= ? AND ate < ? AND ate < ? AND aparelho NOT IN (SELECT aparelho FROM cortesias)', ini, fim, agora)).n || 0;
+  const socios = (await um(env, 'SELECT COUNT(DISTINCT codigo) AS n FROM planos WHERE ate > ? AND aparelho NOT IN (SELECT aparelho FROM cortesias) AND NOT EXISTS (SELECT 1 FROM presentes_dono g WHERE g.aparelho = planos.aparelho AND g.ate = planos.ate AND g.tirado IS NULL AND NOT EXISTS (SELECT 1 FROM pedidos d WHERE d.aparelho = g.aparelho AND d.status = \'pago\'))', agora)).n || 0;
+  const acabaram = (await um(env, 'SELECT COUNT(*) AS n FROM planos WHERE ate >= ? AND ate < ? AND ate < ? AND aparelho NOT IN (SELECT aparelho FROM cortesias) AND NOT EXISTS (SELECT 1 FROM presentes_dono g WHERE g.aparelho = planos.aparelho AND g.ate = planos.ate AND g.tirado IS NULL AND NOT EXISTS (SELECT 1 FROM pedidos d WHERE d.aparelho = g.aparelho AND d.status = \'pago\'))', ini, fim, agora)).n || 0;
   const msgs = (await um(env, "SELECT COUNT(*) AS n FROM mensagens WHERE criado_em >= ? AND criado_em < ? AND tipo <> 'patrocinio'", ini, fim)).n || 0;
   const pendentes = (await um(env, "SELECT COUNT(*) AS n FROM mensagens WHERE status = 'novo' AND tipo <> 'patrocinio'")).n || 0;
   const respondidas = (await um(env, "SELECT COUNT(*) AS n FROM suporte WHERE de = 'd' AND em >= ? AND em < ?", ini, fim)).n || 0;
