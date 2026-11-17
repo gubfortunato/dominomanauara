@@ -1845,6 +1845,11 @@ img.foto-online{-webkit-touch-callout:none;-webkit-user-select:none;user-select:
 .hm-link span{float:right;color:var(--muted);font-weight:800}
 .hm-link:active{transform:scale(.99)}
 .menu-mesas .hm-link{margin-top:10px}
+.hm-topo-link{margin:0 0 12px}
+.hm-livro{width:19px;height:19px;vertical-align:-4px;margin-right:8px;color:var(--nos)}
+.mesa-titulo.com-historia{pointer-events:auto;cursor:pointer;animation-duration:4.2s}
+.mesa-titulo .mt-hist{margin-top:6px;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,.16);font-style:normal;font-size:12.5px;font-weight:700}
+.mesa-titulo .mt-hist .hm-livro{width:15px;height:15px;vertical-align:-3px;margin-right:6px;color:inherit}
 #sheet > .hm-link{margin:14px 0 0}
 .hm-topo{display:flex;gap:14px;align-items:center;margin:2px 0 14px}
 .hm-img{flex:0 0 auto;width:84px;height:122px;border-radius:12px;border:2px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.28)}
@@ -3457,8 +3462,8 @@ body.papo-aberto{overflow:hidden}
     <div class="es-sec">
       <span class="ap-k">Sua mesa</span>
       <p class="note mesa-promo" id="esPromo" hidden></p>
+      <button type="button" class="hm-link hm-topo-link" id="esHist" hidden></button>
       <div class="ap-cores es-mesas" id="esMesas" role="radiogroup" aria-label="Mesa"></div>
-      <button type="button" class="hm-link" id="esHist" hidden></button>
     </div>
     <div class="es-sec">
       <span class="ap-k">Suas pedras</span>
@@ -6860,7 +6865,7 @@ let xmAtual = null;
 let patroReserva = false, PATRO_PERDA = 1.06;
 function xmaxMelhor(W, H, a, Xpadrao) {
   const n = G && G.chain ? G.chain.length : 0;
-  if (!n || xmAtual == null || Math.abs(Xpadrao - xmAtual) / xmAtual > 0.15) xmAtual = Xpadrao;
+  if (n <= 2 || xmAtual == null || Math.abs(Xpadrao - xmAtual) / xmAtual > 0.15) xmAtual = Xpadrao;   // 17/11: era só com a mesa vazia
   return xmAtual;
 }
 // Quando a mesa se rearruma (largura da fileira nova), as pedras deslizam para o lugar novo em vez de pular
@@ -10182,7 +10187,7 @@ function tituloMesa() {
   const sub = subMesa(m);
   document.body.insertAdjacentHTML('beforeend', `<div class="mesa-titulo" aria-hidden="true" style="left:${r.left + r.width / 2}px;top:${r.top + r.height / 2}px"><small>Mesa</small><b>${esc(m.nome)}</b>${sub ? `<i>${esc(sub)}</i>` : ''}</div>`);
   const el = $('.mesa-titulo');
-  setTimeout(() => { if (el.isConnected) el.remove(); }, 2900);
+  setTimeout(() => { if (el.isConnected && !el.classList.contains('com-historia')) el.remove(); }, 2900);   // 17/11: com a história, fica 4,3 s
 }
 // 10/11 (dono: "tudo deve converter grátis em sócio"): vitrine das mesas de sócio. Sem plano, a mesa rápida (e a mesa de
 // um sócio) pode cair numa mesa de sócio: o título avisa, o fim da partida convida e a janela do limite lembra dela.
@@ -10720,7 +10725,8 @@ function imgHistoria(m) {
   const v = (m.bg || '').match(/var\(--img-[\w-]+-sw\)/);
   return v ? `${v[0]} center/cover no-repeat, ${(m.bg.match(/#[0-9a-f]{3,6}\s*$/i) || ['#333'])[0]}` : fundoMesa(m);
 }
-function linkHistoria(m) { return `História da mesa <b>${esc(m.nome)}</b> <span aria-hidden="true">›</span>`; }
+function linkHistoria(m) { return `${LIVRO_SVG}História da mesa <b>${esc(m.nome)}</b> <span aria-hidden="true">›</span>`; }
+const LIVRO_SVG = '<svg class="hm-livro" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C10.2 5.2 7.6 4.6 4 4.8v13.4c3.6-.2 6.2.4 8 1.7 1.8-1.3 4.4-1.9 8-1.7V4.8c-3.6-.2-6.2.4-8 1.7zM12 6.5v13.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>';
 function abrirHistoria(id) {
   const lista = mesasComHistoria(); if (!lista.length) return;
   let i = lista.findIndex(m => m.id === id); if (i < 0) i = 0;
@@ -10730,6 +10736,7 @@ function abrirHistoria(id) {
   const pode = doSocio && !temPlano() && !souAdmin() && pagamentosAtivos() && !menorDeIdade() && !jogo;
   const trava = livre ? '' : doSocio ? '🔒 Mesa dos sócios' : m.req ? `🔒 Para liberar: ${faltaTexto(m.req)}` : '';
   // no jogo, abre como o menu ("rules"): a partida continua parada e volta sozinha ao fechar
+  if (jogo && mode === 'off') clearTimeout(timer);
   openSheet(jogo ? 'rules' : 'info', `<p class="eyebrow">História da mesa</p>
     <div class="hm-topo"><span class="hm-img" style="background:${imgHistoria(m)}" aria-hidden="true"></span>
       <div class="hm-cab"><span class="hm-k">${esc(h.k)}</span><h2 id="sheetTitle">${esc(m.nome)}</h2>${sub ? `<p class="hm-sub">${esc(sub)}</p>` : ''}${trava ? `<span class="hm-tag">${esc(trava)}</span>` : ''}</div></div>
@@ -10749,7 +10756,21 @@ function abrirHistoria(id) {
   if ($('#hmSocio')) $('#hmSocio').addEventListener('click', () => { track('historia-mesa-socio'); closeSheet(); abrirApoio(screen === 'sala' ? 'home' : (screen || 'home'), 'plano'); });
   if ($('#hmMenu')) $('#hmMenu').addEventListener('click', () => { showMenu(); menuMesas(); });
 }
-// Personalizar: embaixo das mesas, a história da mesa escolhida
+// 17/11: o nome da mesa que aparece no começo da partida vira um botão (fica um pouco mais na tela)
+const tituloMesaHist = tituloMesa;
+tituloMesa = function () {
+  tituloMesaHist.apply(this, arguments);
+  const el = $('.mesa-titulo'), m = mesaAtual(); if (!el || !HIST_MESA[m.id]) return;
+  el.classList.add('com-historia'); el.removeAttribute('aria-hidden'); el.setAttribute('role', 'button'); el.setAttribute('aria-label', `Ler a história da mesa ${m.nome}`);
+  el.insertAdjacentHTML('beforeend', `<em class="mt-hist">${LIVRO_SVG}Toque para ler a história</em>`);
+  el.addEventListener('click', () => {
+    el.remove();
+    if (myTurnNow() && !G.chain.length) return;   // a sua saída: o toque era para o meio da mesa, não para a história
+    track('historia-mesa-titulo'); abrirHistoria(m.id);
+  });
+  setTimeout(() => { if (el.isConnected) el.remove(); }, 4300);
+};
+// Personalizar: em cima das mesas, a história da mesa escolhida
 const renderMesasHist = renderMesas;
 renderMesas = function (el) {
   renderMesasHist.apply(this, arguments);
@@ -10758,13 +10779,23 @@ renderMesas = function (el) {
   b.hidden = !HIST_MESA[m.id]; b.innerHTML = linkHistoria(m);
 };
 $('#esHist').addEventListener('click', () => { track('historia-mesa'); abrirHistoria(mesaAtual().id); });
+// 17/11: tocar numa mesa ainda trancada abre a história dela (com o cadeado e, para quem pode, o botão de sócio)
+function trancadaAbreHistoria(e) {
+  const b = e.target.closest('[data-m]'); if (!b) return;
+  const m = MESAS.find(x => x.id === b.dataset.m);
+  if (!m || mesaLivre(m) || !HIST_MESA[m.id] || mesaAlheia()) return;
+  e.stopImmediatePropagation(); e.preventDefault();
+  track('historia-mesa-trancada'); abrirHistoria(m.id);
+}
+$('#esMesas').addEventListener('click', trancadaAbreHistoria, true);
 // Folha de escolher a mesa (montar o jogo offline e sala online)
 const abrirMesasHist = abrirMesas;
 abrirMesas = function () {
   abrirMesasHist.apply(this, arguments);
-  const ok = $('#shMesasOk'); if (!ok) return;
-  ok.insertAdjacentHTML('beforebegin', '<button type="button" class="hm-link" id="shHist">Conheça a história das mesas <span aria-hidden="true">›</span></button>');
+  const g = $('#shMesas'); if (!g) return;
+  g.insertAdjacentHTML('beforebegin', `<button type="button" class="hm-link hm-topo-link" id="shHist">${LIVRO_SVG}Conheça a história das mesas <span aria-hidden="true">›</span></button>`);
   $('#shHist').addEventListener('click', () => { track('historia-mesa'); abrirHistoria(mesaAtual().id); });
+  g.addEventListener('click', trancadaAbreHistoria, true);
 };
 // Menu da partida: embaixo da fileira de mesas
 const menuMesasHist = menuMesas;
@@ -12994,6 +13025,7 @@ const ABA_IC = {
   mais: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="ic-c" x="3.5" y="3.5" width="7" height="7" rx="2"/><rect class="ic-c" x="13.5" y="3.5" width="7" height="7" rx="2"/><rect class="ic-c" x="3.5" y="13.5" width="7" height="7" rx="2"/><rect class="ic-c" x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>'
 };
 const MAIS_IC = {
+  historia: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C10.2 5.2 7.6 4.6 4 4.8v13.4c3.6-.2 6.2.4 8 1.7 1.8-1.3 4.4-1.9 8-1.7V4.8c-3.6-.2-6.2.4-8 1.7zM12 6.5v13.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>',   // 17/11
   estat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19.5V12M10 19.5V6M15 19.5v-9M20 19.5V9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
   carteira: '<svg viewBox="0 0 24 24"><rect x="2.8" y="5.5" width="18.4" height="13" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="8.4" cy="10.8" r="2.1" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 15.7c.6-1.4 1.6-2.1 2.9-2.1s2.3.7 2.9 2.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M13.8 10h4.2M13.8 13.4h2.8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',   // 10/11
   codigo: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12.5" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M6.8 10.2h5M6.8 13.9h3.4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M16.6 9.4l.8 1.7 1.9.2-1.4 1.3.4 1.9-1.7-1-1.7 1 .4-1.9-1.4-1.3 1.9-.2z" fill="currentColor"/></svg>',   // 10/11
@@ -13090,6 +13122,7 @@ function renderMais() {
     souAdmin() && vis('donoCard') && { k: 'dono', ic: 'dono', t: 'Área do administrador', s: (el('donoCardTx') || {}).textContent || 'Os números do jogo', destaque: true },
     { k: 'aprender', ic: 'aprender', t: 'Aprender a jogar', s: 'Lições curtas e partida treino com dicas' },   // 03/11
     { k: 'regras', ic: 'regras', t: 'Regras', s: 'Bucho, garagem, passe e galo, explicados' },
+    { k: 'historia', ic: 'historia', t: 'Histórias das mesas', s: 'Bichos, frutas, lugares e monumentos de Manaus' },   // 17/11
     { k: 'som', ic: 'som', t: 'Som e vibração', s: typeof somRotulo === 'function' ? somRotulo() : '' },   // 03/11
     typeof gaMostraNoMais === 'function' && gaMostraNoMais() && { k: 'estat', ic: 'estat', t: 'Estatísticas do Google', s: gaLigado() ? 'Ligadas · toque para desligar' : 'Desligadas · toque para ligar' },   // 11/11
     // 10/11 (pedido do dono: sócios não achavam o código): o código fica aqui, à vista
@@ -13142,6 +13175,7 @@ function abasMaisClique(k) {
   if (k === 'dono') clica('donoCard');
   else if (k === 'regras') clica('howBtn');
   else if (k === 'aprender') abrirAprender();
+  else if (k === 'historia') abrirHistoria(mesaAtual().id);   // 17/11
   else if (k === 'som') abrirSom();
   else if (k === 'apoio') clica('footApoio');
   else if (k === 'codigo') abrirCodigoSocio();
@@ -15775,13 +15809,61 @@ function renderPrompt() {
   const pb = $('#passBtn');
   pb.hidden = !(you && G.chain.length) || dealing;
 }
+// ---- 17/11 (pedido do dono: "opção dos próprios usuários organizarem suas pedras") ----
+// Segure uma pedra e arraste para o lado, dentro da mão: ela muda de lugar (as outras abrem espaço enquanto você arrasta).
+// Dá para arrumar a qualquer hora da mão, até fora da sua vez. Só a tela muda: o jogo e o servidor não sabem da ordem.
+// Pedra nova na mão = mão nova: a arrumação anterior deixa de valer e as pedras voltam na ordem de sempre.
+let ordemMao = null;   // chaves das pedras (tkey), na ordem que a pessoa arrumou
+function ordemVista() {
+  const h = (G && seatMe != null && G.hands[seatMe]) || [], idx = h.map((t, i) => i);
+  const o = (drag && drag.ordemPrev) || ordemMao;
+  if (!o) return idx;
+  if (h.some(t => !o.includes(tkey(t)))) { if (o === ordemMao) ordemMao = null; return idx; }
+  return idx.sort((a, b) => o.indexOf(tkey(h[a])) - o.indexOf(tkey(h[b])));
+}
+function podeArrumar() { return !!G && !dealing && seatMe != null && G.phase === 'play' && ((G.hands[seatMe] || []).length > 1) && !(typeof TREINO !== 'undefined' && TREINO.on); }
+// onde a pedra entraria se fosse solta aqui (null: o dedo não está em cima da mão)
+function lugarNaMao(x, y) {
+  const hr = $('#hand').getBoundingClientRect();
+  if (y < hr.top + 6 || y > hr.bottom + 44 || x < hr.left - 30 || x > hr.right + 30) return null;
+  let n = 0;
+  $$('#hand .ht').forEach(b => {
+    if (+b.dataset.i === drag.i) return;
+    const r = b.getBoundingClientRect(), cy = r.top + r.height / 2;
+    if (cy < y - r.height / 2 || (Math.abs(cy - y) <= r.height / 2 && r.left + r.width / 2 < x)) n++;
+  });
+  return n;
+}
+function arrumarDurante(x, y) {
+  const h = G.hands[seatMe], t = h && h[drag.i]; if (!t) return false;
+  // a base é a ordem de antes do arrasto (guardada no primeiro passo, antes de qualquer prévia)
+  if (!drag.base) drag.base = ordemVista().map(i => tkey(h[i]));
+  const k = lugarNaMao(x, y);
+  let nova = null;
+  if (k != null) { nova = drag.base.filter(c => c !== tkey(t)); nova.splice(k, 0, tkey(t)); }
+  const antes = drag.ordemPrev ? drag.ordemPrev.join() : '', depois = nova ? nova.join() : '';
+  if (antes !== depois) { drag.ordemPrev = nova; maoSuave(); }
+  return k != null;
+}
+// as outras pedras deslizam para abrir espaço (em vez de pular de lugar)
+function maoSuave() {
+  const antes = {}; $$('#hand .ht').forEach(b => { antes[b.dataset.i] = b.getBoundingClientRect().left; });
+  renderHand();
+  if (reduzMov()) return;
+  $$('#hand .ht').forEach(b => {
+    const a = antes[b.dataset.i]; if (a == null) return;
+    const d = a - b.getBoundingClientRect().left;
+    if (Math.abs(d) > 1) b.animate([{ transform: `translateX(${d}px)` }, { transform: 'none' }], { duration: 150, easing: 'ease-out' });
+  });
+}
 function renderHand() {
   const hand = $('#hand');
   if (seatMe == null) {
     hand.innerHTML = G.hands[0].map(() => `<span class="ht costas"><svg viewBox="-0.04 -0.04 1.08 2.08">${backSVG}</svg></span>`).join('');
     return;
   }
-  hand.innerHTML = G.hands[seatMe].map((t, i) => {
+  hand.innerHTML = ordemVista().map(i => {   // 17/11: na ordem que a pessoa arrumou
+    const t = G.hands[seatMe][i];
     const cls = ['ht', drag && drag.moved && drag.i === i ? 'lift' : ''].join(' ');
     return `<button type="button" class="${cls}" data-i="${i}" aria-label="Pedra ${t[0]} e ${t[1]}"><svg viewBox="-0.04 -0.04 1.08 2.08">${tileSVG({ x: .5, y: 1, o: 'v', v1: t[0], v2: t[1] }, '', false)}</svg></button>`;
   }).join('');
@@ -15830,7 +15912,8 @@ function renderBoard() {
   // pedras ~10% maiores no fim da mão e ~14% no meio dela; na mesa quadrada ou deitada fica como estava.
   const xPin = Math.max(5.5, Math.min(12, base * 1.25)), aMesa = W / H;
   // 03/11 (bug: pedras uma por cima da outra): com 4,5 as pontas se cruzavam em ~14% das mãos; de 5,5 para cima, nenhuma
-  Xmax = pin ? (aMesa < 0.8 ? 5.5 : aMesa < 0.9 ? 5.5 + (xPin - 5.5) * (aMesa - 0.8) / 0.1 : xPin) : Math.max(5.5, Math.min(10, base * 1.1));   // 3.25: fileiras longas e retas, viram só perto da borda (3.40.1: no celular em pé, 2 pedras de cada lado antes de virar, em vez de 3: a mesa fica mais estreita e as pedras maiores)
+  // 17/11 (o dono, com foto: pedras pequenas com a fileira de 3 pedras na mesa em pé): mesa em pé ou quadrada, sempre 2 pedras de cada lado
+  Xmax = pin ? (aMesa < 1 ? 5.5 : xPin) : Math.max(5.5, Math.min(10, base * 1.1));   // 3.25: fileiras longas e retas, viram só perto da borda (3.40.1: no celular em pé, 2 pedras de cada lado antes de virar, em vez de 3: a mesa fica mais estreita e as pedras maiores)
   mesaA = a; Xmax = xmaxMelhor(W, H, a, Xmax);   // a mesma largura a mão inteira (a mesa não se rearruma no meio)
   let lay = layoutTable(G, Xmax);
   // segurança: se alguma pedra ficar por cima de outra, a fileira alarga até não ficar (vale para o resto da mão)
@@ -15839,7 +15922,7 @@ function renderBoard() {
   const bTiles = [];
   for (const k of ['U', 'D']) ((G.bucho && G.bucho[k]) || []).forEach((t, j) => bTiles.push({ key: tkey([t.n, t.f]), pos: lay[k][j] }));
   const todasZonas = dropZones(), zones = zonasDaPedra(todasZonas);
-  const showZones = !!(drag && drag.moved) || !!pedraEscolhida();
+  const showZones = !!(drag && drag.moved && !drag.soArrumar) || !!pedraEscolhida();   // 17/11: fora da sua vez, arrastar só arruma a mão
   // 03/11 (jogadores: "aponto a pedra para um lado e às vezes joga do outro"): arrastando, as pontas onde a pedra NÃO
   // encaixa também entram na conta (invisíveis). Soltou mais perto delas: a pedra volta para a mão, nunca vai sozinha
   // para a outra ponta.
@@ -16144,7 +16227,8 @@ function onDragMove(e) {
   placeGhostTile(x, y);
   // a pedra flutua acima do dedo: o alvo é o centro da pedra, não a ponta do dedo
   const h = drag.el.getBoundingClientRect().height || 90;
-  const side = ladoDoSolto(x, y - h * 0.65);   // 17/11: era nearestZone (precisava acertar a ponta)
+  let naMao = false; try { naMao = podeArrumar() && arrumarDurante(x, y); } catch (er) {}   // 17/11: arrumar a mão
+  const side = naMao ? null : ladoDoSolto(x, y - h * 0.65);   // 17/11: era nearestZone (precisava acertar a ponta)
   if (side !== drag.side) {
     drag.side = side;
     drag.zones.forEach(z => z.g.classList.toggle('over', z.ok && z.side === side));
@@ -16158,7 +16242,13 @@ function onDragEnd(e) {
     // 03/11: confere de novo onde a pedra foi solta (a mesa pode ter acabado de se ajustar depois do último movimento)
     try { side = ladoDoSolto(e.clientX, e.clientY - (r.height || 90) * 0.65); } catch (er) {}   // 17/11
   }
+  const arrumou = moved && drag.ordemPrev;   // 17/11: solta em cima da mão = arrumar
   endDrag();
+  if (arrumou) {
+    ordemMao = arrumou; render();
+    try { if (!store.get('dmz-arrumou')) { store.set('dmz-arrumou', String(Date.now())); track('arrumar-mao'); } } catch (er) {}
+    return;
+  }
   if (!moved) { tocarPedra(i); return; }
   if (side === 'nao') { render(); shakeTile(i, 'Essa pedra não encaixa nessa ponta.'); return; }
   if (!myTurnNow() || !side) { render(); if (myTurnNow()) $('#feed').textContent = 'Solte a pedra em cima da mesa. Ou toque na pedra e depois na ponta.'; return; }
@@ -16168,11 +16258,21 @@ function onDragEnd(e) {
   shakeTile(i, G.chain.length ? 'Essa pedra não encaixa nessa ponta.' : 'Essa pedra não pode abrir a mão.');
 }
 function onDragCancel(e) { if (drag && e.pointerId === drag.pid) { endDrag(); render(); } }
+// 17/11: dica uma vez só, quando a pessoa recebe a primeira mão depois da atualização
+const renderHandDica = renderHand;
+renderHand = function () {
+  renderHandDica.apply(this, arguments);
+  try {
+    if (screen !== 'game' || !podeArrumar() || G.hands[seatMe].length < 7 || store.get('dmz-arrumar-dica')) return;
+    store.set('dmz-arrumar-dica', String(Date.now()));
+    setTimeout(() => { if (screen === 'game') toast('Novidade: segure uma pedra e arraste para o lado para arrumar a sua mão.'); }, 1800);
+  } catch (e) {}
+};
 $('#hand').addEventListener('pointerdown', e => {
   const b = e.target.closest('.ht'); if (!b || b.classList.contains('costas') || !G || seatMe == null || drag) return;
-  if (!myTurnNow()) return;
+  if (!myTurnNow() && !podeArrumar()) return;   // 17/11: fora da sua vez, dá para arrastar para arrumar a mão
   e.preventDefault();
-  drag = { i: +b.dataset.i, x0: e.clientX, y0: e.clientY, moved: false, el: null, side: null, zones: [], pid: e.pointerId };
+  drag = { i: +b.dataset.i, x0: e.clientX, y0: e.clientY, moved: false, el: null, side: null, zones: [], pid: e.pointerId, soArrumar: !myTurnNow() };
   window.addEventListener('pointermove', onDragMove, { passive: false });
   window.addEventListener('pointerup', onDragEnd);
   window.addEventListener('pointercancel', onDragCancel);
