@@ -2665,6 +2665,26 @@ body.calc-quarta #calcCorpo .vivo-mesa.livre{background:linear-gradient(180deg,r
 body.jogo-noite.jogo-quarta{background:radial-gradient(120% 70% at 50% 0%,#2c4c3e 0%,#172a22 55%,#0e1a15 100%) fixed}
 body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1;--line:rgba(243,241,231,.18)}
 #scrGame .mesa-noite .mn-giz{position:absolute;inset:0;width:100%;height:100%}
+/* 17/11 (pedido do dono): aba Ranking. Cada ranking aparece na sua aba de cima (os de fora ficam escondidos) */
+.rnk-abas{display:flex;flex:none;width:100%;box-sizing:border-box;overflow-x:auto;scrollbar-width:none;margin:-4px 0 -2px}
+.rnk-abas::-webkit-scrollbar{display:none}
+.rnk-abas button{flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;padding:6px 11px;font-size:14px}
+/* os placares de lousa (Quarta) e de neon (Segunda) têm fundo escuro próprio: as letras claras vão junto, em qualquer tela */
+.sg-placar{--fg:#fff0f3;--muted:#d6b5bf;color:var(--fg)}.qa-placar{--fg:#f3f1e7;--muted:#b7c8bc;color:var(--fg)}
+.rnk-corpo{display:grid;flex:none;gap:14px}
+#scrRanking .rk{margin-top:0}
+#scrRanking #rkCard > .rk-cab{display:none}
+#scrRanking #rkMeu{order:-1}
+#scrRanking:not([data-seg="semana"]):not([data-seg="mes"]) #rkCard,#scrRanking:not([data-seg="copa"]) #csCard,#scrRanking:not([data-seg="turmas"]) #dcCard,
+#scrRanking:not([data-seg="hoje"]) #sxPlacar,#scrRanking:not([data-seg="hoje"]) #qaPlacar,#scrRanking:not([data-seg="hoje"]) #sgPlacar{display:none}
+/* na Calçada, o resumo: os 3 primeiros (na noite de evento, os do placar ao vivo) e o botão para a aba */
+.rk-resumo{gap:8px}
+.rr-ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.rr-ol li{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:8px;padding:7px 10px;border-radius:10px;background:color-mix(in srgb,var(--fg) 5%,transparent)}
+.rr-pos{font-size:18px;text-align:center}.rr-nome{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rr-n{font-size:14px;color:var(--muted);white-space:nowrap}
+.rr-vazio{margin:0;font-size:14.5px;color:var(--muted)}
+.rr-vivo{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.rr-ver{width:100%}
 /* 17/11 (pedido do dono): Segunda é de Lei = parede de tijolo com letreiro de neon (pedras emendadas). Para todos, das 19h às 22h */
 body.calc-noite.calc-segunda{--bg:#1a0c10;--bg-2:#2a141a;--fg:#fff0f3;--muted:#d6b5bf;--line:rgba(255,120,160,.2);
   background:radial-gradient(80% 22% at 50% 0%,rgba(255,79,123,.24),transparent 70%),linear-gradient(180deg,rgba(18,7,10,.5),rgba(18,7,10,.86) 34%,rgba(18,7,10,.94)),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='52' viewBox='0 0 120 52'%3E%3Crect width='120' height='52' fill='%23170a0c'/%3E%3Crect x='1.5' y='1.5' width='57' height='23' rx='1.5' fill='%235a2a2b'/%3E%3Crect x='61.5' y='1.5' width='57' height='23' rx='1.5' fill='%234f2427'/%3E%3Crect x='-28.5' y='27.5' width='57' height='23' rx='1.5' fill='%2362302d'/%3E%3Crect x='31.5' y='27.5' width='57' height='23' rx='1.5' fill='%23542729'/%3E%3Crect x='91.5' y='27.5' width='57' height='23' rx='1.5' fill='%235d2b2f'/%3E%3C/svg%3E") 0 0/120px 52px,#1a0c10;background-attachment:fixed}
@@ -3353,6 +3373,16 @@ body.papo-aberto{overflow:hidden}
     <button type="button" class="calc-abrir" id="calcAbrir"><span class="ca-tx" id="calcAbrirTx">Nenhuma mesa com lugar vago agora.</span><span class="ca-go">Abrir uma mesa rápida <span aria-hidden="true">›</span></span></button>
     <p class="aba-nota" id="calcNota">Na mesa com os amigos, só entra quem tem o número da mesa.</p>
     <div class="aba-patro" id="calcPatro"></div>
+  </section>
+  <!-- 17/11 (pedido do dono): aba Ranking. Semana e mês, o placar da noite de evento, a Copa e as Turmas, cada um quando existe -->
+  <section class="screen panel" id="scrRanking" hidden>
+    <header class="aba-cab">
+      <p class="kicker">Mesas online</p>
+      <h2 class="aba-tit">Ranking</h2>
+      <p class="aba-sub">Quem mais ganha nas mesas online. Quem conta é o servidor: só valem partidas jogadas do começo ao fim.</p>
+    </header>
+    <div class="rk-abas rnk-abas" id="rnkAbas" role="tablist" aria-label="Rankings"></div>
+    <div class="rnk-corpo" id="rnkCorpo"><span id="rnkAncora" hidden></span></div>
   </section>
   <section class="screen panel" id="scrMais" hidden>
     <header class="aba-cab">
@@ -4394,6 +4424,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.58.0', data: '17/11/2026', itens: ['Aba nova no menu de baixo: Ranking. Junta o ranking da semana e do mês (com a sua posição, o Rei da Calçada e o Campeão do Mês), o placar da noite de evento (Sexta, Quarta e Segunda), a Copa dos Sócios e o Desafio das Confrarias. Na noite de evento, abre no placar ao vivo.', 'Na Calçada ficam as mesas jogando agora e um resumo com os 3 primeiros, com o botão para o ranking completo.'] },
   { v: '3.57.0', data: '17/11/2026', itens: ['Segunda é de Lei: toda segunda, das 19h às 22h, a Calçada e a mesa de jogo viram parede de tijolo com letreiro de neon. Cada vitória online entra no Placar da Segunda, ao vivo na Calçada (na terça, fica o resultado).'] },
   { v: '3.56.3', data: '17/11/2026', itens: ['O nome da mesa no começo da partida ficou mais fácil de ler: a placa é mais escura e o texto de baixo, mais forte, sem o desenho da mesa atravessando. Na sala de espera, o nome da mesa também ganhou fundo.'] },
   { v: '3.56.2', data: '17/11/2026', itens: ['Mesas Peixe-boi e Boto-rosa com desenho novo: o peixe-boi subindo para respirar e o boto saindo do rio, com a mata no fundo.', 'Mesa nova: Guaraná, o cacho com os frutos abertos de olho preto, com a história do guaraná de Maués.'] },
@@ -5258,7 +5289,7 @@ function toast(msg) {
   clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 4200);
 }
 // Troca de tela com fade: a tela atual some suave e a próxima aparece suave.
-const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Ajuda', 'Anuncie', 'Apoio', 'Patro', 'Instalar', 'Estilo', 'Calcada', 'Mais'];   // 12/11: Ajuda
+const SCREENS = ['Who', 'Profile', 'Home', 'Setup', 'Sala', 'Game', 'Dono', 'Fale', 'Ajuda', 'Anuncie', 'Apoio', 'Patro', 'Instalar', 'Estilo', 'Calcada', 'Mais', 'Ranking'];   // 12/11: Ajuda
 let showTimer = null, showRaf = 0;
 function show(name) {
   screen = name;
@@ -12353,10 +12384,10 @@ async function quartaPlacarBuscar() {
   return QAP.j;
 }
 function quartaPlacarDesenhar() {
-  const cab = $('#calcNota'); if (!cab) return;
+  const cab = $('#rnkAncora'); if (!cab) return;
   let box = $('#qaPlacar');
   const pinta = j => {
-    if (!j || !j.dia) { if (box) box.hidden = true; return; }
+    if (!j || !j.dia || (!j.aoVivo && !(j.top || []).length)) { if (box) box.hidden = true; return; }
     if (!box) { cab.insertAdjacentHTML('afterend', '<section class="sx-placar qa-placar" id="qaPlacar" aria-label="Duplas da Quarta"></section>'); box = $('#qaPlacar'); }
     else if (box.previousElementSibling !== cab) cab.insertAdjacentElement('afterend', box);
     box.hidden = false;
@@ -12519,10 +12550,10 @@ async function sextaPlacarBuscar() {
   return SXP.j;
 }
 function sextaPlacarDesenhar() {
-  const cab = $('#calcNota'); if (!cab) return;   // 13/11 (dono): o placar vem depois das mesas jogando
+  const cab = $('#rnkAncora'); if (!cab) return;   // 13/11 (dono): o placar vem depois das mesas jogando
   let box = $('#sxPlacar');
   const pinta = j => {
-    if (!j || !j.dia) { if (box) box.hidden = true; return; }
+    if (!j || !j.dia || (!j.aoVivo && !(j.top || []).length)) { if (box) box.hidden = true; return; }
     if (!box) { cab.insertAdjacentHTML('afterend', '<section class="sx-placar" id="sxPlacar" aria-label="Placar da Sexta"></section>'); box = $('#sxPlacar'); }
     else if (box.previousElementSibling !== cab) cab.insertAdjacentElement('afterend', box);
     box.hidden = false;
@@ -13109,18 +13140,21 @@ setTimeout(() => presAvisar(true), 1500);
 const MENU_ABAS = [
   { id: 'home', nome: 'Jogar', telas: ['home', 'setup'] },
   { id: 'calcada', nome: 'Calçada', telas: ['calcada'] },
+  { id: 'ranking', nome: 'Ranking', telas: ['ranking'] },   // 17/11
   { id: 'profile', nome: 'Perfil', telas: ['profile', 'estilo'] },
   { id: 'mais', nome: 'Mais', telas: ['mais', 'apoio', 'fale', 'ajuda', 'anuncie', 'patro', 'instalar', 'dono'] }
 ];
 const SUB_MAIS = ['apoio', 'fale', 'ajuda', 'anuncie', 'patro', 'instalar', 'dono'];
 let abaVolta = null;   // sub-tela aberta pela aba Mais: o "Voltar" dela volta para Mais (e não para o início)
-const ABA_RAIZ = ['home', 'calcada', 'profile', 'mais'];
+const ABA_RAIZ = ['home', 'calcada', 'ranking', 'profile', 'mais'];
 let abaUltima = 'home';   // nas telas de dentro (Monte a mesa, Apoie, Personalizar...), fica marcada a aba de onde você veio
 const ABA_IC = {
   // pedra de dominó (cheia quando a aba está marcada)
   home: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="ic-c" x="6.5" y="2.5" width="11" height="19" rx="3"/><path class="ic-l" d="M8.5 12h7"/><circle class="ic-p" cx="12" cy="7.3" r="1.45"/><circle class="ic-p" cx="9.9" cy="15.1" r="1.3"/><circle class="ic-p" cx="14.1" cy="18" r="1.3"/></svg>',
   // a turma reunida (04/11: três pessoas separadas, sem virar um borrão quando a aba está marcada)
   calcada: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="ic-c" cx="12" cy="6.6" r="3"/><path class="ic-c" d="M7.8 20.4v-1c0-2.8 1.9-4.7 4.2-4.7s4.2 1.9 4.2 4.7v1z"/><circle class="ic-c" cx="4.1" cy="9.8" r="1.9"/><circle class="ic-c" cx="19.9" cy="9.8" r="1.9"/><path class="ic-c" d="M.8 20.4v-.7c0-2.2 1.3-3.6 3.2-3.6.5 0 1 .1 1.4.3-.3.8-.5 1.7-.5 2.7v1.3z"/><path class="ic-c" d="M23.2 20.4v-.7c0-2.2-1.3-3.6-3.2-3.6-.5 0-1 .1-1.4.3.3.8.5 1.7.5 2.7v1.3z"/></svg>',
+  // 17/11: taça (cheia quando a aba está marcada)
+  ranking: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5.4H4.4v1.2a3.3 3.3 0 0 0 3.3 3.3M17 5.4h2.6v1.2a3.3 3.3 0 0 1-3.3 3.3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path class="ic-c" d="M7 3.3h10v5.1a5 5 0 0 1-10 0z"/><path class="ic-c" d="M12 13.4v3.3"/><path class="ic-c" d="M8 20.6h8v-1.4a2.4 2.4 0 0 0-2.4-2.4h-3.2A2.4 2.4 0 0 0 8 19.2z"/></svg>',
   profile: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="ic-c" cx="12" cy="8.2" r="4.2"/><path class="ic-c" d="M4 21c.8-4.2 4-6.6 8-6.6s7.2 2.4 8 6.6z"/></svg>',
   // quatro quadradinhos: "mais coisas"
   mais: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="ic-c" x="3.5" y="3.5" width="7" height="7" rx="2"/><rect class="ic-c" x="13.5" y="3.5" width="7" height="7" rx="2"/><rect class="ic-c" x="3.5" y="13.5" width="7" height="7" rx="2"/><rect class="ic-c" x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>'
@@ -13169,13 +13203,14 @@ function irAba(id) {
   if (id === 'calcada' && typeof turmaCarregar === 'function') { try { desenharDesafioCalcada(); turmaCarregar(); } catch (e) {} }
   abaVolta = null;
   const atual = abaDe(screen);
-  if (id === atual && ['home', 'calcada', 'mais', 'profile'].includes(screen)) {   // tocou na aba em que já está: volta para o alto
+  if (id === atual && ['home', 'calcada', 'ranking', 'mais', 'profile'].includes(screen)) {   // tocou na aba em que já está: volta para o alto
     const scr = $('#scr' + screen[0].toUpperCase() + screen.slice(1));
     if (scr) scr.scrollTo({ top: 0, behavior: reduzMovAbas() ? 'auto' : 'smooth' });
     return;
   }
   if (id === 'home') show('home');
   else if (id === 'calcada') show('calcada');
+  else if (id === 'ranking') show('ranking');   // 17/11
   else if (id === 'profile') openProfile('home');
   else if (id === 'mais') show('mais');
 }
@@ -13189,6 +13224,7 @@ function abasAtualiza(tela) {
   if (!ver) return;
   $$('#abas .aba').forEach(b => { const on = b.dataset.aba === aba; b.classList.toggle('on', on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   const calc = $('#aba-calcada'); if (calc) calc.hidden = !vivoMostra();
+  const rnk = $('#aba-ranking'); if (rnk) rnk.hidden = !vivoMostra();   // 17/11: como a Calçada (menor de 18 não entra no ranking)
   // o rosto só é redesenhado quando muda (redesenhar no meio de um toque fazia o toque em "Perfil" se perder)
   const face = $('#abaFace'); if (face) { const uri = myFaceURI() || ''; if (face.dataset.uri !== uri) { face.dataset.uri = uri; face.innerHTML = uri ? `<img src="${uri}" alt="">` : ABA_IC.profile; } }
   abasVivo();
@@ -14715,7 +14751,7 @@ function rkDesenhar() {
   if (d.quaseRei) {
     const podeSer = typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !(typeof menorDeIdade === 'function' && menorDeIdade());
     qr.innerHTML = `<b>👑 Você foi o 1º da semana passada!</b><span>A coroa de Rei da Calçada é dos sócios.${podeSer ? ' Seja sócio e, na próxima vez, ela é sua.' : ''}</span>${podeSer ? '<button type="button" class="primary" id="rkQuaseSer">Quero a coroa</button>' : ''}`;
-    const qb = $('#rkQuaseSer'); if (qb) qb.addEventListener('click', () => { track('ranking-quase-rei'); abrirApoio('calcada', 'plano'); });
+    const qb = $('#rkQuaseSer'); if (qb) qb.addEventListener('click', () => { track('ranking-quase-rei'); abrirApoio(screen === 'ranking' ? 'ranking' : 'calcada', 'plano'); });
   }
   // 28/10 planos: sem plano, o servidor manda só os 3 primeiros da semana (o mês e a sua posição são dos sócios)
   const pode = typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !(typeof menorDeIdade === 'function' && menorDeIdade());
@@ -14729,7 +14765,7 @@ function rkDesenhar() {
       <span class="rk-nome"><b>${x.rei ? '<span class="rk-coroa" title="Rei da Calçada">👑</span> ' : ''}${x.socio ? `<span class="nome-selo rk-socio" title="Sócio da Calçada">${seloEstrela()}</span>` : ''}${esc(x.nome)}${x.eu ? ' <small class="rk-voce">você</small>' : ''}</b><small>Nível ${x.nv || 1}</small></span>
       ${p.pontos ? `<span class="rk-pts"><b>${rkPts(x.pontos)}</b><small>${rkVit(x.ganhas)}<br>em ${rkPart(x.jogadas)}</small></span>`
         : `<span class="rk-pts"><b>${rkVit(x.ganhas)}</b><small>em ${rkPart(x.jogadas)}</small></span>`}</li>`).join('')}</ol>` + trava;
-  const sb = $('#rkSocio'); if (sb) sb.addEventListener('click', () => { track('ranking-socio'); abrirApoio('calcada', 'plano'); });
+  const sb = $('#rkSocio'); if (sb) sb.addEventListener('click', () => { track('ranking-socio'); abrirApoio(screen === 'ranking' ? 'ranking' : 'calcada', 'plano'); });
   const eu = p.eu, meu = $('#rkMeu');
   meu.hidden = !(eu || d.fora);
   if (d.fora) meu.innerHTML = 'Você não aparece no ranking. <button type="button" class="linkbtn" id="rkVoltar">Voltar a aparecer</button>';
@@ -14756,9 +14792,9 @@ async function rkFora(fora) {
 }
 // 04/11 (dono): o Desafio das Confrarias também na aba Calçada (as 5 primeiras Turmas e o botão)
 function desenharDesafioCalcada() {
-  let box = $('#dcCard'); const ref = $('#calcNota'); if (!ref) return;
+  let box = $('#dcCard'); const ref = $('#rnkAncora'); if (!ref) return;
   const d = desafioAgora(), t = TM.info;
-  if (!box) { ref.insertAdjacentHTML('afterend', '<section class="rk dc" id="dcCard" hidden></section>'); box = $('#dcCard'); box.addEventListener('click', e => { const vv = e.target.closest('[data-ver]'); if (vv) { assistirDesafio(vv.dataset.ver); return; } if (e.target.closest('[data-socio]')) { track('desafio-reta-socio'); abrirApoio('calcada', 'plano'); return; } if (e.target.closest('#dcDesafiar')) desafiarTurma(); else if (e.target.closest('#dcTurma')) abrirTurma(); }); }
+  if (!box) { ref.insertAdjacentHTML('afterend', '<section class="rk dc" id="dcCard" hidden></section>'); box = $('#dcCard'); box.addEventListener('click', e => { const vv = e.target.closest('[data-ver]'); if (vv) { assistirDesafio(vv.dataset.ver); return; } if (e.target.closest('[data-socio]')) { track('desafio-reta-socio'); abrirApoio(screen === 'ranking' ? 'ranking' : 'calcada', 'plano'); return; } if (e.target.closest('#dcDesafiar')) desafiarTurma(); else if (e.target.closest('#dcTurma')) abrirTurma(); }); }
   box.hidden = !d.aberto || !profile;
   if (box.hidden) return;
   const top = (d.ranking || []).slice(0, 5);
@@ -14772,7 +14808,7 @@ function desenharDesafioCalcada() {
     ${t ? '<button type="button" class="linkbtn" id="dcTurma" style="width:100%">Ver a minha Turma</button>' : ''}`;
 }
 (function () {
-  const ref = $('#calcNota'); if (!ref) return;
+  const ref = $('#rnkAncora'); if (!ref) return;
   ref.insertAdjacentHTML('afterend', `<section class="rk" id="rkCard" aria-labelledby="rkTit">
     <div class="rk-cab"><h3 id="rkTit">🏆 Ranking da calçada</h3>
       <div class="rk-abas" id="rkAbas" role="tablist"><button type="button" role="tab" data-aba="semana" aria-selected="true">Semana</button><button type="button" role="tab" data-aba="mes" aria-selected="false">Mês</button></div></div>
@@ -15109,7 +15145,7 @@ function abrirPeloAviso(alvo, ver) {
   if (alvo === 'aovivo') {
     if (typeof irAba === 'function') irAba('calcada'); else show('calcada');
     const ok = () => /^[0-9a-f]{16}$/.test(ver || '') && VIVO.mesas.some(v => v.desafio && v.desafio.ver === ver && v.fase === 'jogo');
-    const mostrar = () => { const c = $('#dcCard'); if (c && !c.hidden) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+    const mostrar = () => { const c = $('#dcCard'); if (c && !c.hidden) rankingAbrir('turmas'); };   // 17/11: as Turmas ficam na aba Ranking
     let n = 0;
     const tentar = async () => {
       try { await vivoMesas(true); } catch (e) {}
@@ -15123,9 +15159,7 @@ function abrirPeloAviso(alvo, ver) {
   if (alvo === 'copa') { if (screen !== 'home') show('home'); setTimeout(() => abrirCopa(), 300); return true; }   // 10/11
   if (alvo === 'carteira') { setTimeout(() => abrirCarteira(), 300); return true; }
   if (alvo === 'ranking') {
-    if (typeof irAba === 'function') irAba('calcada'); else show('calcada');
-    if (typeof rkBuscar === 'function') rkBuscar(true);
-    setTimeout(() => { const el = $('#rkCard'); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 500);
+    rankingAbrir('semana');   // 17/11: a aba Ranking
   } else {
     if (!onlineAtivo() || typeof abrirTurma !== 'function') return false;
     if (screen !== 'home') show('home');
@@ -15554,7 +15588,7 @@ async function abrirCopa() {
 
 // ---- Cartão da Copa na aba Calçada (antes, durante e uma semana depois) ----
 function desenharCsCalcada() {
-  let box = $('#csCard'); const ref = $('#calcNota'); if (!ref) return;
+  let box = $('#csCard'); const ref = $('#rnkAncora'); if (!ref) return;
   if (!box) { ref.insertAdjacentHTML('afterend', '<section class="rk cs" id="csCard" hidden></section>'); box = $('#csCard'); box.addEventListener('click', e => { if (e.target.closest('#csVer')) abrirCopa(); }); }
   const c = csAgora(), d = CSD.dados;
   box.hidden = c.fase === 'longe' || !profile;
@@ -15562,7 +15596,7 @@ function desenharCsCalcada() {
   const ed = c.ed, cp = d && d.campeao && c.fase === 'depois' && d.campeao.n === ed.n ? d.campeao : null;
   const status = c.fase === 'agora' ? 'Ao vivo até domingo, 22h. Só sócios pontuam.' : c.fase === 'depois' ? (cp ? `Campeão: ${esc(cp.nome)}` : 'Terminou. Veja o pódio.') : `${csQuando(ed).replace(/^d/, 'D')}.`;
   box.innerHTML = `<div class="rk-cab"><h3>🏆 ${ed.nome}</h3></div><p class="cs-status">${status}</p>
-    ${c.fase === 'agora' && d ? csLista((d.top || []).slice(0, 3)) : ''}
+    ${c.fase === 'agora' && d ? csLista((d.top || []).slice(0, 10)) : ''}
     <button type="button" class="primary" id="csVer" style="width:100%">Ver a Copa</button>`;
 }
 
@@ -16518,7 +16552,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.57.0-9e76ed4f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.58.0-9d722d6c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -17690,10 +17724,10 @@ async function segundaPlacarBuscar() {
   return SGP.j;
 }
 function segundaPlacarDesenhar() {
-  const cab = $('#calcNota'); if (!cab) return;
+  const cab = $('#rnkAncora'); if (!cab) return;
   let box = $('#sgPlacar');
   const pinta = j => {
-    if (!j || !j.dia) { if (box) box.hidden = true; return; }
+    if (!j || !j.dia || (!j.aoVivo && !(j.top || []).length)) { if (box) box.hidden = true; return; }
     if (!box) { cab.insertAdjacentHTML('afterend', '<section class="sx-placar sg-placar" id="sgPlacar" aria-label="Placar da Segunda"></section>'); box = $('#sgPlacar'); }
     else if (box.previousElementSibling !== cab) cab.insertAdjacentElement('afterend', box);
     box.hidden = false;
@@ -17708,7 +17742,7 @@ function segundaPlacarDesenhar() {
 }
 function segundaPlacarAqui() {
   const d = manausDe(Date.now()), dw = d.getUTCDay(), h = d.getUTCHours();
-  if (screen === 'calcada' && ((dw === 1 && h >= 19) || dw === 2)) segundaPlacarDesenhar(); else if ($('#sgPlacar')) $('#sgPlacar').hidden = true;
+  if ((dw === 1 && h >= 19) || dw === 2) segundaPlacarDesenhar(); else if ($('#sgPlacar')) $('#sgPlacar').hidden = true;
 }
 const calcCabSextaEv = calcCabSexta;
 calcCabSexta = function () {
@@ -17782,6 +17816,105 @@ setInterval(() => {
     if (screen === 'home' && !sheetKind && profile) hhConviteNaHome();
   } catch (e) {}
 }, 30000);
+
+// ===== 17/11 (pedido do dono): aba Ranking =====
+// Os rankings saem da Calçada e ficam juntos numa aba do menu: Semana e Mês (o Ranking da calçada, com a sua posição, o
+// Rei da Calçada e o Campeão do Mês), o placar da noite de evento (Sexta, Quarta ou Segunda; no dia seguinte, o
+// resultado), a Copa e as Turmas (Desafio das Confrarias), cada um só quando existe. Na noite de evento, a aba abre no
+// placar ao vivo. A Calçada fica com o que está rolando agora e um resumo (os 3 primeiros) com o botão para a aba.
+const RNK = { seg: 'semana', auto: true, pedido: false, assin: '' };
+function rnkSegs() {
+  const vis = id => { const el = $('#' + id); return !!el && !el.hidden; };
+  const l = [{ id: 'semana', nome: 'Semana' }, { id: 'mes', nome: 'Mês' }];
+  const ev = vis('sgPlacar') ? ['Segunda', SGP.j] : vis('sxPlacar') ? ['Sexta', SXP.j] : vis('qaPlacar') ? ['Quarta', QAP.j] : null;
+  if (ev) l.push({ id: 'hoje', nome: ev[0], vivo: !!(ev[1] && ev[1].aoVivo) });
+  if (vis('csCard')) l.push({ id: 'copa', nome: 'Copa' });
+  if (vis('dcCard')) l.push({ id: 'turmas', nome: 'Turmas' });
+  return l;
+}
+function rnkAbasPintar() {
+  const box = $('#rnkAbas'), scr = $('#scrRanking'); if (!box || !scr) return;
+  const l = rnkSegs();
+  if (RNK.auto && l.some(x => x.id === 'hoje' && x.vivo)) { RNK.seg = 'hoje'; RNK.auto = false; }   // noite de evento: abre no placar ao vivo
+  if (!l.some(x => x.id === RNK.seg)) RNK.seg = RK.aba === 'mes' ? 'mes' : 'semana';
+  if ((RNK.seg === 'semana' || RNK.seg === 'mes') && RK.aba !== RNK.seg) { RK.aba = RNK.seg; try { rkDesenhar(); } catch (e) {} }
+  scr.dataset.seg = RNK.seg;
+  const assin = l.map(x => x.id + x.nome + (x.vivo ? '*' : '')).join(',') + '|' + RNK.seg;
+  if (assin === RNK.assin && box.children.length) return;
+  RNK.assin = assin;
+  box.innerHTML = l.map(x => `<button type="button" role="tab" data-seg="${x.id}" aria-selected="${x.id === RNK.seg}">${x.vivo ? '<span class="vivo-ponto vivo-ponto-p" aria-hidden="true"></span>' : ''}${x.nome}</button>`).join('');
+  const sel = box.querySelector('[aria-selected="true"]'); if (sel && box.scrollWidth > box.clientWidth) box.scrollLeft = Math.max(0, sel.offsetLeft - (box.clientWidth - sel.offsetWidth) / 2);   // a aba marcada fica à vista
+}
+// os placares da noite de evento: na noite (das 19h ou 20h) e no dia seguinte, o resultado
+function rnkPlacares() {
+  const d = manausDe(Date.now()), dw = d.getUTCDay(), h = d.getUTCHours();
+  if ((dw === 5 && h >= 20) || dw === 6) sextaPlacarDesenhar(); else if ($('#sxPlacar')) $('#sxPlacar').hidden = true;
+  if ((dw === 3 && h >= 20) || dw === 4) quartaPlacarDesenhar(); else if ($('#qaPlacar')) $('#qaPlacar').hidden = true;
+  if ((dw === 1 && h >= 19) || dw === 2) segundaPlacarDesenhar(); else if ($('#sgPlacar')) $('#sgPlacar').hidden = true;
+}
+function rnkAtualizar(forcar) {
+  try { rkBuscar(forcar); } catch (e) {}
+  try { desenharCsCalcada(); if (csAgora().fase !== 'longe') csBuscar(forcar).then(() => { try { desenharCsCalcada(); } catch (e) {} }); } catch (e) {}
+  try { desenharDesafioCalcada(); if (typeof turmaCarregar === 'function') turmaCarregar(); } catch (e) {}
+  try { rnkPlacares(); } catch (e) {}
+  rnkAbasPintar();
+}
+// abre a aba Ranking (seg: semana, mes, hoje, copa ou turmas)
+function rankingAbrir(seg) {
+  if (seg) { RNK.seg = seg; RNK.auto = false; RNK.pedido = true; if (seg === 'semana' || seg === 'mes') RK.aba = seg; }
+  if (screen === 'ranking') { rnkAtualizar(true); return; }
+  if (typeof irAba === 'function') irAba('ranking'); else show('ranking');
+}
+(function () {
+  const box = $('#rnkAbas'), corpo = $('#rnkCorpo'); if (!box || !corpo) return;
+  box.addEventListener('click', e => {
+    const b = e.target.closest('[data-seg]'); if (!b) return;
+    RNK.seg = b.dataset.seg; RNK.auto = false; track('ranking-aba-' + RNK.seg);
+    if (RNK.seg === 'semana' || RNK.seg === 'mes') RK.aba = RNK.seg;
+    rnkAbasPintar(); try { rkDesenhar(); } catch (e) {}
+  });
+  // cada ranking aparece (ou some) quando os dados chegam: as abas de cima acompanham
+  try { new MutationObserver(() => { try { rnkAbasPintar(); } catch (e) {} }).observe(corpo, { attributes: true, attributeFilter: ['hidden'], childList: true, subtree: true }); } catch (e) {}
+})();
+const showRnk = show;
+show = function (name) {
+  const r = showRnk.apply(this, arguments);
+  try {
+    if (name === 'ranking') { if (!RNK.pedido) RNK.auto = true; RNK.pedido = false; rnkAtualizar(true); }
+    if (name === 'calcada') calcRankResumo();
+  } catch (e) {}
+  return r;
+};
+setInterval(() => { if (screen === 'ranking' && document.visibilityState === 'visible') { try { rkBuscar(); rnkPlacares(); } catch (e) {} } }, 15000);
+// ---- na Calçada: o resumo (os 3 primeiros da semana; na noite de evento, os do placar ao vivo) ----
+function calcRankResumo() {
+  const ref = $('#calcNota'); if (!ref) return;
+  let box = $('#calcRank');
+  if (!box) {
+    ref.insertAdjacentHTML('afterend', '<section class="rk rk-resumo" id="calcRank" aria-label="Ranking"></section>'); box = $('#calcRank');
+    box.addEventListener('click', e => { if (e.target.closest('#calcRankVer')) { track('ranking-resumo-calcada'); rankingAbrir(box.dataset.seg || 'semana'); } });
+  }
+  const med = ['🥇', '🥈', '🥉'], vit = n => `${n} ${n === 1 ? 'vitória' : 'vitórias'}`;
+  const ev = [['Placar da Segunda', SGP.j, sgAgora() === 'agora'], ['Placar da Sexta', SXP.j, sxAgora() === 'agora'], ['Duplas da Quarta', QAP.j, quaAgora() === 'agora']].find(x => x[2] && x[1] && x[1].aoVivo);
+  let tit, linhas, vazio, seg;
+  if (ev) {
+    tit = ev[0]; seg = 'hoje'; vazio = 'Ninguém venceu ainda: a primeira vitória aparece aqui.';
+    linhas = (ev[1].top || []).slice(0, 3).map((q, i) => [med[i], q.nomes ? `${q.nomes[0]} e ${q.nomes[1]}` : q.nome, vit(q.vitorias)]);
+  } else {
+    const p = RK.dados && RK.dados.semana; tit = 'Ranking da semana'; seg = 'semana'; vazio = 'Ninguém pontuou esta semana ainda. Ganhe de pessoas na mesa online e apareça aqui.';
+    linhas = p ? (p.top || []).slice(0, 3).map((x, i) => [med[i], x.nome, p.pontos ? rkPts(x.pontos) : rkVit(x.ganhas)]) : null;
+  }
+  box.dataset.seg = seg;
+  box.innerHTML = `<div class="rk-cab"><h3>🏆 ${tit}</h3>${ev ? '<small class="rr-vivo"><span class="vivo-ponto vivo-ponto-p" aria-hidden="true"></span>ao vivo</small>' : ''}</div>`
+    + (linhas === null ? '<p class="rr-vazio">Carregando…</p>' : linhas.length ? `<ol class="rr-ol">${linhas.map(l => `<li><span class="rr-pos">${l[0]}</span><span class="rr-nome">${esc(l[1])}</span><span class="rr-n">${l[2]}</span></li>`).join('')}</ol>` : `<p class="rr-vazio">${vazio}</p>`)
+    + '<button type="button" class="secondary rr-ver" id="calcRankVer">Ver o ranking completo <span aria-hidden="true">›</span></button>';
+}
+const rkDesenharRnk = rkDesenhar;
+rkDesenhar = function () { const r = rkDesenharRnk.apply(this, arguments); try { if (screen === 'calcada') calcRankResumo(); } catch (e) {} return r; };
+for (const [nome, f] of [['sx', sextaPlacarBuscar], ['qa', quartaPlacarBuscar], ['sg', segundaPlacarBuscar]]) {
+  const g = async function () { const j = await f.apply(this, arguments); try { if (screen === 'calcada') calcRankResumo(); } catch (e) {} return j; };
+  if (nome === 'sx') sextaPlacarBuscar = g; else if (nome === 'qa') quartaPlacarBuscar = g; else segundaPlacarBuscar = g;
+}
 
 // Montar avatar: a partir de 5/11, só para sócio. O avatar montado que a pessoa estiver usando quando os limites
 // começarem continua dela (fica guardado aqui); para trocar por outro montado, só sendo sócio.
