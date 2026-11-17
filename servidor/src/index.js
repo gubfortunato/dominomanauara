@@ -13,12 +13,13 @@ import { donoNumeros, limparNumeros } from './numeros.js';
 import * as rk from './ranking.js';
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos, pegaPeloApelido, donoApelidos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
-import { limitesValem, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
+import { limitesValem, limitesAgora, happyHour, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
 import { limitePessoa, donoVigiaTirar, donoVigiaVoltar, vigiados } from './pessoa.js';
 import { donoQuarta, quartaPlacar } from './quarta.js';   // 12/11: Quarta dos Amigos (13/11: e as Duplas da Quarta)
 import { anotarSuporte, suporteDoAparelho, suporteLido, donoResponder, juntarSuporte } from './suporte.js';   // 12/11: conversa com o suporte
 import { relatorioDiario, donoRelatorio, alertas, sugerirResposta } from './gestor.js';
 import { donoRobo, donoRoboVoltar } from './robo.js';   // 13/11: robô que treina toda noite
+import { segundaPlacar } from './segunda.js';   // 17/11: Placar da Segunda (Segunda é de Lei)
 import { sextaPlacar } from './sexta.js';   // 13/11: Placar da Sexta   // 13/11: relatório do dia, alertas e rascunho de resposta
 import { travaCodigo, anotarCodigoErrado, limparCodigos } from './codigos.js';
 import { saudeVoz, donoPapoVoz, limparVozesDenunciadas } from './voz.js';
@@ -142,10 +143,11 @@ async function novaMesa(req, env, origin) {
   if (b && b.desafio && turmas.edicao(env).aberto) { try { vs = await turmas.nomeDaTurma(env, b.id); } catch (e) {} }
   if (limitesValem(env)) {
     apoia = await temPlano(env, b && b.id);
-    if (!apoia && vs) {
+    const hh = happyHour(env);   // 17/11: no Happy Hour, quem não é sócio cria mesa e joga sem limite (nada conta)
+    if (!apoia && vs && !hh) {
       uso = await usoDoDia(env, b && b.id);
       if ((uso.desafios || 0) >= LIMITE.desafios) return json({ erro: 'limite-desafio' }, 403, origin);
-    } else if (!apoia) {
+    } else if (!apoia && !hh) {
       uso = await usoDoDia(env, b && b.id);
       if (uso.mesas >= LIMITE.mesas) return json({ erro: 'limite-mesa' }, 403, origin);
       if (uso.partidas >= LIMITE.partidas) return json({ erro: 'limite-partida' }, 403, origin);
@@ -188,7 +190,7 @@ async function mesaRapida(req, env, origin) {
   // planos (28/10; 03/11: 1 em vez de 5): sem plano, 1 partida completa por dia na mesa rápida (o limite é do aparelho: trocar de apelido
   // não muda nada; aparelho novo na mesma rede de quem acabou de bater o limite fica com o limite também)
   const rede = await marcaRede(req.headers.get('cf-connecting-ip'), env);
-  if (limitesValem(env) && !(await temPlano(env, b && b.id))) {
+  if (limitesAgora(env) && !(await temPlano(env, b && b.id))) {   // 17/11: fora do Happy Hour
     const uso = await usoDoDia(env, b && b.id);
     if (uso.publicas >= LIMITE.publicas) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);
     { const lp = await limitePessoa(env, { rede, tipo: 'publicas', aparelho: b && b.id, nome: b && b.nome, proprio: uso.publicas || 0, limite: LIMITE.publicas });   // 12/11: por pessoa
@@ -584,6 +586,7 @@ export default {
       const H = { json, marcaDoDia, ehDono, SITE };
       if (url.pathname === '/saude/ia' && req.method === 'GET') return await fotos.saudeIA(env, origin, H);
       if (url.pathname === '/sexta/placar' && req.method === 'GET') return await sextaPlacar(env, url, H, origin);   // 13/11
+      if (url.pathname === '/segunda/placar' && req.method === 'GET') return await segundaPlacar(env, url, H, origin);   // 17/11
       if (url.pathname === '/quarta/placar' && req.method === 'GET') return await quartaPlacar(env, url, H, origin);   // 13/11: Duplas da Quarta
       if (url.pathname === '/suporte' && req.method === 'GET') return await suporteDoAparelho(req, env, origin, H, url);   // 12/11: conversa com o suporte
       if (url.pathname === '/suporte/lido' && req.method === 'POST') return await suporteLido(req, env, origin, H);
@@ -696,7 +699,8 @@ export default {
     // só fazem a rotina dos eventos (as rodadas de todo dia são às 13-15h e 21-23h UTC, nunca nessas horas)
     const dow = new Date((evento && evento.scheduledTime) || Date.now()).getUTCDay();
     // 13/11: quinta 0h UTC (quarta 20h em Manaus) e quarta 16h-19h UTC (12h-15h em Manaus): avisos da Quarta dos Amigos
-    if ((dow === 6 && hora === 0) || (dow === 5 && hora >= 16 && hora <= 19) || (dow === 4 && hora === 0) || (dow === 3 && hora >= 16 && hora <= 19)) { ctx.waitUntil(rotinaEventos(env)); return; }
+    // 17/11: segunda 16h-19h UTC (12h-15h em Manaus): aviso da Segunda é de Lei
+    if ((dow === 6 && hora === 0) || (dow === 5 && hora >= 16 && hora <= 19) || (dow === 4 && hora === 0) || (dow === 3 && hora >= 16 && hora <= 19) || (dow === 1 && hora >= 16 && hora <= 19)) { ctx.waitUntil(rotinaEventos(env)); return; }
     ctx.waitUntil(rotinaEventos(env));   // 10/11: Copa (apuração e avisos), Sexta da Calçada e tempo de casa
     ctx.waitUntil(limparNumeros(env));   // 03/11: acessos por hora guardados por 60 dias
     if (hora === 13) ctx.waitUntil(relatorioDiario(env).catch(() => {}));   // 13/11: 9h em Manaus: o relatório de ontem no celular do dono

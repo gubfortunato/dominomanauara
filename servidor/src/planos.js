@@ -31,6 +31,13 @@ export function planosDesde(env) {
   return v != null && v !== '' && !isNaN(Number(v)) ? Number(v) : PLANOS_DESDE;
 }
 export const limitesValem = (env, agora) => (agora || Date.now()) >= planosDesde(env);
+// 17/11 (pedido do dono): Happy Hour da sexta, das 17h às 20h (Manaus). Quem não é sócio joga sem limite: os limites do
+// dia não barram nem contam (as partidas grátis do dia ficam inteiras para depois). As mesas de sócio continuam dos sócios.
+// HH_TESTE = '1' liga o Happy Hour agora (só no teste local).
+export function happyHourAgora(t) { const d = new Date((t || Date.now()) - 4 * 3600000), h = d.getUTCHours(); return d.getUTCDay() === 5 && h >= 17 && h < 20; }
+export const happyHour = env => (env && env.HH_TESTE === '1') || happyHourAgora(Number(env && env.COPA_AGORA) || Date.now());
+// os limites do grátis valendo agora: depois do começo dos planos e fora do Happy Hour
+export const limitesAgora = (env, agora) => limitesValem(env, agora) && !happyHour(env);
 // Promoção de lançamento (decisão do dono): quem assina até o fim dela paga o preço promocional nos primeiros ciclos;
 // depois, o normal. 03/11 (dono): vai até 30/11 (antes acabava junto do começo dos limites, 05/11), para pegar o
 // primeiro mês de limites. PROMO_ATE no ambiente muda a data.
@@ -76,7 +83,7 @@ export async function somarUso(env, aparelho, campo, dia) {
 // (publica = false) ou na mesa rápida (publica = true). 03/11: na mesa de um sócio (daSocio), até LIMITE.partidasSocio.
 // 04/11: na mesa de desafio (criada pelo botão Desafiar), também pode quem ainda tem desafio do dia
 // 12/11: daSocio = 'livre' na Quarta dos Amigos (quarta.js): na mesa com os amigos de um sócio, joga sem limite
-export const podeJogar = (c, env, publica, daSocio, desafio) => !c || c.bot || c.apoiador || !limitesValem(env) || (!publica && daSocio === 'livre') || !c.uso || c.uso.dia !== diaBR()
+export const podeJogar = (c, env, publica, daSocio, desafio) => !c || c.bot || c.apoiador || !limitesAgora(env) || (!publica && daSocio === 'livre') || !c.uso || c.uso.dia !== diaBR()
   || (publica ? (c.uso.publicas || 0) < LIMITE.publicas : (c.uso.partidas || 0) < (daSocio ? LIMITE.partidasSocio : LIMITE.partidas))
   || (!publica && !!desafio && (c.uso.desafios || 0) < LIMITE.desafios);
 

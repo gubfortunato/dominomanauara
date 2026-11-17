@@ -187,6 +187,11 @@ const ddmm = ms => { const d = new Date(ms - MANAUS); return String(d.getUTCDate
 export const TEXTOS = {
   vemAi: e => ({ titulo: `Vem aí a ${e.nome}! 🏆`, texto: `De ${ddmm(e.inicio)} (sexta, 20h) a ${ddmm(e.fim)} (domingo, 22h). Só sócios pontuam: o campeão leva o troféu na carteira e a mesa do campeão.`, url: '/?abrir=copa' }),
   sexta12: { titulo: 'Hoje tem Sexta da Calçada! 🌙', texto: 'Das 20h às 23h, sócio ganha moral em dobro: o nível sobe duas vezes mais rápido. Chama a turma e bora pra mesa!', url: '/' },
+  // 17/11 (pedido do dono): Happy Hour da sexta (só para quem não é sócio) e Segunda é de Lei (para todos)
+  hh12: { titulo: 'Hoje tem Happy Hour na Calçada! 🎉', texto: 'Das 17h às 20h, você joga sem limite: mesa rápida, mesa com os amigos e offline. E às 20h começa a Sexta da Calçada. Bora?', url: '/' },
+  hh17: { titulo: 'Começou o Happy Hour! 🎉', texto: 'Até as 20h, você joga sem limite: mesa rápida, mesa com os amigos e offline. Chama a turma e bora pra mesa!', url: '/' },
+  segunda12: { titulo: 'Hoje é Segunda é de Lei! 🏆', texto: 'Das 19h às 22h, cada vitória online entra no Placar da Segunda, ao vivo na Calçada. Chama a turma e bora pra mesa!', url: '/' },
+  segunda19: { titulo: 'Começou a Segunda é de Lei! 🏆', texto: 'Até as 22h, cada vitória online conta no Placar da Segunda. Bora pra mesa?', url: '/' },
   sexta20: { titulo: 'Começou a Sexta da Calçada!', texto: 'Até as 23h, sócio ganha moral em dobro: o nível sobe duas vezes mais rápido. Bora pra mesa?', url: '/' },
   // 14/11 (pedido do dono): Domingão da Calçada, às 10h (um texto para o sócio e outro para quem não é)
   domingoSocio: { titulo: '☀️ Hoje é Domingão da Calçada!', texto: 'Das 10h às 22h tem sol, churrasco e pagode na mesa. Chama a turma e bora jogar!', url: '/' },
@@ -211,9 +216,15 @@ export async function avisosAgendados(env, agora) {
   // sexta: 12h (o que não sair nessa rodada sai até as 15h; cada um recebe uma vez) e 20h, quando começa (no dia da Copa, o texto junta as duas)
   if (t.sem === 5 && ((t.h >= 12 && t.h <= 15) || t.h === 20)) {
     const copaHoje = diaDe(c.atual.inicio) === t.dia;
-    if (t.h !== 20) out.push({ chave: `sx:${t.dia}:12`, msg: copaHoje ? TEXTOS.copa12(c.atual) : TEXTOS.sexta12, para: 'todos', caixa: copaHoje });
+    // 17/11 (dono): quem não é sócio recebe o do Happy Hour (17h às 20h, sem limite), que já fala da Sexta às 20h
+    if (t.h !== 20 && copaHoje) out.push({ chave: `sx:${t.dia}:12`, msg: TEXTOS.copa12(c.atual), para: 'todos', caixa: true });
+    else if (t.h !== 20) { out.push({ chave: `sx:${t.dia}:12`, msg: TEXTOS.sexta12, para: 'socios', caixa: false }); out.push({ chave: `hh:${t.dia}:12`, msg: TEXTOS.hh12, para: 'naoSocios', caixa: false }); }
     else out.push({ chave: `sx:${t.dia}:20`, msg: copaHoje ? TEXTOS.copa20(c.atual) : TEXTOS.sexta20, para: 'todos', caixa: copaHoje });
   }
+  // 17/11 (pedido do dono): Happy Hour da sexta, às 17h (o que não sair nessa rodada sai às 18h), só para quem não é sócio
+  if (t.sem === 5 && (t.h === 17 || t.h === 18)) out.push({ chave: `hh:${t.dia}:17`, msg: TEXTOS.hh17, para: 'naoSocios', caixa: false });
+  // 17/11 (pedido do dono): Segunda é de Lei, às 12h (o que não sair nessa rodada sai até as 15h) e às 19h, quando começa
+  if (t.sem === 1 && ((t.h >= 12 && t.h <= 15) || t.h === 19)) out.push({ chave: `sg:${t.dia}:${t.h === 19 ? '19' : '12'}`, msg: t.h === 19 ? TEXTOS.segunda19 : TEXTOS.segunda12, para: 'todos', caixa: false });
   // 12/11: quarta. 13/11 (pedido do dono, como a Sexta): às 12h (o que não sair nessa rodada sai até as 15h) e às 20h, quando começa
   if (t.sem === 3 && ((t.h >= 12 && t.h <= 15) || t.h === 20)) {
     const k = t.h === 20 ? '20' : '12';

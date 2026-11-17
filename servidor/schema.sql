@@ -347,3 +347,7 @@ CREATE INDEX IF NOT EXISTS sexta_placar_dia ON sexta_placar (dia, vitorias);
 -- 13/11 (pedido do dono): Duplas da Quarta (quarta.js). Cada dupla de parceiros (duas pessoas, na mesa com os amigos) na Quarta
 CREATE TABLE IF NOT EXISTS quarta_duplas (dia TEXT NOT NULL, chave TEXT NOT NULL, a TEXT, b TEXT, nome_a TEXT, nome_b TEXT, partidas INTEGER NOT NULL DEFAULT 0, vitorias INTEGER NOT NULL DEFAULT 0, galos INTEGER NOT NULL DEFAULT 0, em INTEGER, PRIMARY KEY (dia, chave));
 CREATE INDEX IF NOT EXISTS quarta_duplas_dia ON quarta_duplas (dia, vitorias);
+-- 17/11 (pedido do dono): Placar da Segunda (segunda.js). Segunda é de Lei, das 19h às 22h: partidas, vitórias e galos de
+-- cada um nas mesas online, como o Placar da Sexta.
+CREATE TABLE IF NOT EXISTS segunda_placar (dia TEXT NOT NULL, aparelho TEXT NOT NULL, nome TEXT, partidas INTEGER NOT NULL DEFAULT 0, vitorias INTEGER NOT NULL DEFAULT 0, galos INTEGER NOT NULL DEFAULT 0, em INTEGER, PRIMARY KEY (dia, aparelho));
+CREATE INDEX IF NOT EXISTS segunda_placar_dia ON segunda_placar (dia, vitorias);

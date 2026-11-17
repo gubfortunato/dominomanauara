@@ -2,7 +2,7 @@
 // uma vez a cada 48 h (o "passe"): o servidor guarda quantas partidas offline o aparelho jogou hoje (dia de Brasília),
 // devolve a hora certa (contra quem mexe no relógio do celular) e, para quem apagou os dados do app e voltou com outro
 // código na mesma rede logo depois de bater o limite, mantém o limite (a mesma regra das mesas online).
-import { limitesValem, diaBR, temPlano, marcaRede, aparelhoDesde, anotarLimite, limiteHerdado, limiteDoIrmao } from './planos.js';
+import { limitesAgora, diaBR, temPlano, marcaRede, aparelhoDesde, anotarLimite, limiteHerdado, limiteDoIrmao } from './planos.js';
 import { bloqueado, pegaPeloApelido } from './bloqueio.js';
 import { limitePessoa } from './pessoa.js';
 
@@ -26,7 +26,7 @@ export async function conferir(req, env, origin, h) {
     if (Math.random() < .03) await env.DB.prepare('DELETE FROM offline_uso WHERE dia < ?').bind(diaBR(agora - 7 * 86400000)).run();
   } catch (e) {}
   let herdou = false, pessoa = false;
-  if (limitesValem(env) && !(await temPlano(env, ap))) {
+  if (limitesAgora(env) && !(await temPlano(env, ap))) {   // 17/11: fora do Happy Hour
     const rede = await marcaRede(req.headers.get('cf-connecting-ip'), env);
     await aparelhoDesde(env, ap);
     if (n >= OFFLINE_POR_DIA) await anotarLimite(env, rede, 'offline', ap, b.nome);

@@ -15,10 +15,11 @@ import { PAPO, limparPapo, tamanho, papoRuim } from './papo.js';
 import { anotarCodigoErrado } from './codigos.js';
 import { campeaoAte } from './copa.js';   // 10/11: o campeão da Copa dos Sócios (troféu na mesa e a mesa do campeão)
 import { VOZ, transcrever } from './voz.js';
-import { limitesValem, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteHerdado, limiteDoIrmao, anotarLimite, mesasDoDia, bonusConfig } from './planos.js';
+import { limitesValem, limitesAgora, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteHerdado, limiteDoIrmao, anotarLimite, mesasDoDia, bonusConfig } from './planos.js';
 import { limitePessoa } from './pessoa.js';
 import { quartaValendo, contarQuarta, anotarConvite, anotarQuarta } from './quarta.js';
 import { pesosRobo } from './robo.js';   // 13/11: robô treinado toda noite
+import { segundaValendo, anotarSegunda } from './segunda.js';   // 17/11: Segunda é de Lei
 import { sextaValendo, anotarSexta } from './sexta.js';   // 13/11: Placar da Sexta   // 12/11: Quarta dos Amigos
 // 3.38.2: na Calçada, apelido que o filtro passou a barrar (de quem entrou antes) aparece como "Jogador"
 const nomeVisivel = c => !c.bot && nomeOfensivo(c.nome) ? 'Jogador' : c.nome;
@@ -511,7 +512,7 @@ export class Mesa {
     if (!jaEstava && exigeApp(this.env) && !(await appAberto(this.env, quem.id))) { await anotarRitmo(this.env, quem.id, { semApp: 1 }); return this.recusar(ws, 'app'); }
     Object.assign(quem, await this.apoiador(quem.id));
     // planos (28/10; 03/11): sem plano, 1 partida por dia nas mesas com os amigos (mesmo convidado; até 3 na mesa de um sócio) e 3 na mesa rápida
-    if (limitesValem(this.env) && !quem.apoiador && !quem.planoIncerto) {
+    if (limitesAgora(this.env) && !quem.apoiador && !quem.planoIncerto) {   // 17/11: fora do Happy Hour
       quem.uso = await usoDoDia(this.env, quem.id);
       const antes = m.cad.concat(m.fila || []).find(c => c && c.id === quem.id);
       if (antes && antes.uso && antes.uso.dia === quem.uso.dia)
@@ -664,7 +665,7 @@ export class Mesa {
   // 03/11: mesa com os amigos criada por um sócio (ou que tem um sócio como dono agora): quem não tem plano joga até 3 por dia nela
   // 03/11: quantas partidas a pessoa (sem plano) já jogou hoje neste tipo de mesa e o limite dela aqui (o app mostra no fim da partida)
   meuUso(id) {
-    const m = this.m; if (!id || !limitesValem(this.env)) return null;
+    const m = this.m; if (!id || !limitesAgora(this.env)) return null;
     const c = m.cad.concat(m.fila || []).find(x => x && !x.bot && x.id === id);
     if (!c || c.apoiador || !c.uso || c.uso.dia !== diaBR()) return null;
     if (c.conta === 'desafios') return { n: c.uso.desafios || 0, de: LIMITE.desafios, desafio: true };   // 04/11
@@ -684,7 +685,7 @@ export class Mesa {
   socioArg() { return this.mesaDeSocio() ? (quartaValendo(this.env) && !this.mesaDesafio() ? 'livre' : true) : false; }
   // Conta 1 partida (mesa com os amigos) para quem não é Apoiador: na cadeira (na hora) e no banco (sem esperar)
   contarPartida(c) {
-    if (!c || c.bot || !c.id || c.apoiador || !limitesValem(this.env)) return;
+    if (!c || c.bot || !c.id || c.apoiador || !limitesAgora(this.env)) return;   // 17/11: no Happy Hour não conta
     const dia = diaBR();
     // 04/11 (dono): na mesa de desafio, a partida contra outra Turma sai dos desafios do dia (até 2), não da partida grátis.
     // Se não for confronto de verdade (só uma Turma na mesa), conta como partida normal; quem já não tinha a partida
@@ -710,7 +711,7 @@ export class Mesa {
   // lugar de alguém não conta para ninguém). Na hora, para ninguém escapar fechando o app na tela do resultado.
   async contarPublicas() {
     const m = this.m, G = m.G, r = G && G.result;
-    if (!m.publica || !G || G.phase !== 'handEnd' || !r || r.matchWinner == null || r.limite || !limitesValem(this.env)) return;
+    if (!m.publica || !G || G.phase !== 'handEnd' || !r || r.matchWinner == null || r.limite || !limitesAgora(this.env)) return;
     r.limite = true;
     if (!(await this.conferirSocios())) return;   // 10/11: banco fora do ar: não conta (ninguém sai por engano)
     const dia = diaBR();
@@ -723,7 +724,7 @@ export class Mesa {
   // Tira da mesa (e da fila, no fim da partida) quem já jogou a partida de hoje (mesa rápida: a de hoje): recebe o
   // aviso e o convite para o plano
   tirarSemPartida(comFila) {
-    const m = this.m, pub = !!m.publica; if (!limitesValem(this.env)) return false;
+    const m = this.m, pub = !!m.publica; if (!limitesAgora(this.env)) return false;
     const fora = [], pessoa = new Set();   // 12/11: quem somou partidas de outro aparelho recebe o aviso do limite por pessoa
     const socio = this.socioArg(), des = this.mesaDesafio();
     m.cad.forEach((c, p) => { if (c && !c.bot && !podeJogar(c, this.env, pub, socio, des)) { fora.push(c.id); if (c.outros) pessoa.add(c.id); m.cad[p] = null; } });
@@ -1428,6 +1429,7 @@ export class Mesa {
     const quem = quemContaNoRanking(m, r.matchWinner);
     if (quem.length) { try { await somarRanking(this.env, quem); } catch (e) {} }
     if (quem.length && sextaValendo(this.env)) { try { await anotarSexta(this.env, m, quem); } catch (e) {} }   // 13/11: Placar da Sexta
+    if (quem.length && segundaValendo(this.env)) { try { await anotarSegunda(this.env, m, quem); } catch (e) {} }   // 17/11: Placar da Segunda
     if (quem.length && !m.publica && quartaValendo(this.env)) { try { await anotarQuarta(this.env, m, quem); } catch (e) {} }   // 13/11: Duplas da Quarta
     // 10/11: quem abandonou a partida perde como se tivesse perdido para pessoas; na mesa rápida, conta para a trava do dia
     const sairam = quemAbandonou(m);
