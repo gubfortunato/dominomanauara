@@ -1851,7 +1851,7 @@ img.foto-online{-webkit-touch-callout:none;-webkit-user-select:none;user-select:
 .hm-topo-link{margin:0 0 12px}
 .hm-livro{width:19px;height:19px;vertical-align:-4px;margin-right:8px;color:var(--nos)}
 .mesa-titulo.com-historia{pointer-events:auto;cursor:pointer;animation-duration:4.2s}
-.mesa-titulo .mt-hist{margin-top:6px;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,.16);font-style:normal;font-size:12.5px;font-weight:700}
+.mesa-titulo .mt-hist{margin-top:8px;padding:5px 13px;border-radius:999px;background:rgba(255,236,200,.18);text-shadow:none;font-style:normal;font-size:12.5px;font-weight:700}
 .mesa-titulo .mt-hist .hm-livro{width:15px;height:15px;vertical-align:-3px;margin-right:6px;color:inherit}
 #sheet > .hm-link{margin:14px 0 0}
 .hm-topo{display:flex;gap:14px;align-items:center;margin:2px 0 14px}
@@ -1898,15 +1898,15 @@ img.foto-online{-webkit-touch-callout:none;-webkit-user-select:none;user-select:
 .festa-cq{margin:2px 0 4px;font-size:16px;line-height:1.4;color:var(--wood-ink)}
 .festa-cq b{color:var(--glow)}
 .sala-centro.com-nome{display:grid;place-items:center;padding:10%;text-align:center}
-.sc-mesa{display:grid;gap:1px;color:#efe2cc;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.sc-mesa{display:grid;gap:1px;padding:6px 10px;border-radius:10px;background:rgba(24,15,8,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#fff4e2;text-shadow:0 1px 2px rgba(0,0,0,.5)}
 .sc-mesa small{font-size:9.5px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;opacity:.85}
 .sc-mesa b{font-size:14px;font-weight:800;line-height:1.15}
 #goEstilo{margin:2px 0 8px}
 /* Nome da mesa: aparece no meio do pano ao chegar na mesa e some sozinho */
-.mesa-titulo{position:fixed;z-index:16;width:max-content;max-width:88vw;box-sizing:border-box;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:2px;padding:12px 22px 14px;border-radius:16px;background:rgba(0,0,0,.38);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);color:#efe2cc;pointer-events:none;white-space:nowrap;text-align:center;animation:mesaTitulo 2.8s ease both}
+.mesa-titulo{position:fixed;z-index:16;width:max-content;max-width:88vw;box-sizing:border-box;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:2px;padding:12px 22px 14px;border-radius:16px;background:rgba(24,15,8,.80);-webkit-backdrop-filter:blur(12px) saturate(.7);backdrop-filter:blur(12px) saturate(.7);box-shadow:0 10px 28px rgba(0,0,0,.42),inset 0 0 0 1px rgba(255,236,200,.16);color:#fff4e2;text-shadow:0 1px 2px rgba(0,0,0,.55);pointer-events:none;white-space:nowrap;text-align:center;animation:mesaTitulo 2.8s ease both}
 .mesa-titulo .mt-socio{margin-top:4px;padding:3px 10px;border-radius:999px;background:rgba(240,180,94,.92);color:#2a1a08;font-style:normal;font-size:12.5px;font-weight:800;letter-spacing:.04em}   /* 10/11: vitrine */
 .res-vitrine{margin:8px 0 0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--nos) 12%,transparent);font-size:15.5px;line-height:1.4;text-align:left}
-.mesa-titulo small{font-size:10.5px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;padding-left:.3em;opacity:.8}
+.mesa-titulo small{font-size:10.5px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;padding-left:.3em;color:#f0c98a}
 .mesa-titulo b{font-family:var(--font-display);font-weight:400;font-size:clamp(22px,6.5vw,30px);line-height:1.05;white-space:normal}
 @keyframes mesaTitulo{0%{opacity:0;transform:translate(-50%,-44%)}14%{opacity:1;transform:translate(-50%,-50%)}78%{opacity:1}100%{opacity:0}}
 @media (prefers-reduced-motion: reduce){.mesa-titulo{animation:none}}
@@ -1947,7 +1947,7 @@ html[data-mesa="relogio"] .table.wood{--wood-1:#26323e;--wood-2:#26323e;--wood-e
 .pn-pedras{display:flex;justify-content:center;align-items:center;gap:4px;margin:6px 0 14px}.pn-pedras svg{width:30%;max-width:104px;height:auto;display:block}
 .pn-pedras svg:nth-child(1){transform:rotate(-10deg) translateY(8px)}.pn-pedras svg:nth-child(2){width:36%;max-width:126px;position:relative;z-index:1}.pn-pedras svg:nth-child(3){transform:rotate(10deg) translateY(8px)}
 .mesa-promo{margin:4px 0 10px;font-weight:600}
-.mesa-titulo i{font-style:normal;font-size:12.5px;font-weight:600;opacity:.9;margin-top:2px;text-align:center}
+.mesa-titulo i{font-style:normal;font-size:13.5px;font-weight:600;color:#f6e8cf;margin-top:3px;text-align:center}
 .copa-card{box-shadow:inset 0 0 0 2px #c9a24a, inset 0 0 40px rgba(0,0,0,.35), 0 10px 30px -14px var(--shadow)}
 .copa-card .ck{color:#f3c25a}
 /* 14/11 (pedido do dono): Centro Histórico com a ilustração nova (os casarões coloridos) */
@@ -4364,6 +4364,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.56.3', data: '17/11/2026', itens: ['O nome da mesa no começo da partida ficou mais fácil de ler: a placa é mais escura e o texto de baixo, mais forte, sem o desenho da mesa atravessando. Na sala de espera, o nome da mesa também ganhou fundo.'] },
   { v: '3.56.2', data: '17/11/2026', itens: ['Mesas Peixe-boi e Boto-rosa com desenho novo: o peixe-boi subindo para respirar e o boto saindo do rio, com a mata no fundo.', 'Mesa nova: Guaraná, o cacho com os frutos abertos de olho preto, com a história do guaraná de Maués.'] },
   { v: '3.56.1', data: '17/11/2026', itens: ['Domingão da Calçada acompanha a hora do dia: sol de manhã e de tarde, pôr do sol das 17h às 18h30 e, de noite até as 22h, lua com estrelas. Na Calçada, no cartão do início e na mesa de jogo.'] },
   { v: '3.56.0', data: '17/11/2026', itens: ['Quarta dos Amigos com cara própria: toda quarta, das 20h às 23h, a Calçada e a mesa de jogo viram um quadro de giz de taberna, com as pedras e os risquinhos de contar ponto desenhados a giz. O cartão da tela inicial também.', 'Duplas da Quarta: na Calçada, as duplas de parceiros que mais venceram juntas nas mesas com os amigos, ao vivo na quarta, e o resultado na quinta.', 'Aviso da Quarta no celular às 12h e às 20h, quando começa.'] },
@@ -16486,7 +16487,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.56.2-f43f20d5';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.56.3-f0b6f46b';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
