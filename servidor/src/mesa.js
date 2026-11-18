@@ -207,12 +207,26 @@ export class Mesa {
       if (!j || agora - e.t >= QUADRO.validade || (Array.isArray(j.ids) && j.ids.includes(String(b.id || '')))) return false;
       return j.fase !== so || !j.publica || !(so === 'espera' ? j.vagaEspera : j.vagaJogo);
     };
+    // 17/11 (pedido do dono: "o Desafio está meio devagar"): com o Desafio valendo, quem é de Turma vai primeiro para uma
+    // mesa com gente de outra Turma, do lado de lá dela (o confronto vale ponto). Não achou: segue como sempre.
+    let minha = null;
+    if (edicao(this.env).aberto) { try { minha = await nomeDaTurma(this.env, quem.id); } catch (e) {} }
+    const ladoContra = x => {
+      if (!minha) return null;
+      const e = q.get(x.codigo), j = e && e.resumo; if (!j || !Array.isArray(j.tl) || !Array.isArray(j.vl)) return null;
+      const w = [0, 1].find(w => j.vl[w] && (j.tl[1 - w] || []).some(t => t !== minha));
+      return w == null ? null : w;
+    };
     for (const so of ['espera', 'jogo']) {
-      for (const x of l.slice()) {
-        if (naoServe(x, so)) continue;
-        const r = await mesa(x.codigo).fetch('https://mesa/reservar', { method: 'POST', body: JSON.stringify(Object.assign({}, b, { so })) });
-        if (r.status === 200) return fim(x.codigo, false);
-        if (r.status === 410) l = l.filter(y => y.codigo !== x.codigo);   // acabou ou não serve mais
+      for (const turma of minha ? [true, false] : [false]) {
+        for (const x of l.slice()) {
+          if (naoServe(x, so)) continue;
+          const lado = turma ? ladoContra(x) : null;
+          if (turma && lado == null) continue;
+          const r = await mesa(x.codigo).fetch('https://mesa/reservar', { method: 'POST', body: JSON.stringify(Object.assign({}, b, { so }, lado != null ? { lado } : {})) });
+          if (r.status === 200) return fim(x.codigo, false);
+          if (r.status === 410) l = l.filter(y => y.codigo !== x.codigo);   // acabou ou não serve mais
+        }
       }
     }
     for (let k = 0; k < 8; k++) {
@@ -308,7 +322,10 @@ export class Mesa {
     return { fase: m.fase, publica: !!m.publica, humanos: m.cad.filter(c => c && !c.bot).length,
       livres: m.cad.filter(c => !c || (c.bot && !c.saiu)).length,
       vagaEspera: m.cad.some(c => !c || c.bot), vagaJogo: m.cad.some(c => c && c.bot),
-      ids: m.cad.filter(c => c && (c.id || c.lugarDe)).map(c => c.id || c.lugarDe) };   // só para a fila saber quem volta para a própria mesa
+      ids: m.cad.filter(c => c && (c.id || c.lugarDe)).map(c => c.id || c.lugarDe),   // só para a fila saber quem volta para a própria mesa
+      // 17/11: as Turmas de quem está em cada lado e se cada lado tem cadeira (vazia ou de robô), para a fila juntar Turmas diferentes
+      tl: [0, 1].map(w => [...new Set(m.cad.filter((c, p) => c && !c.bot && c.turma && p % 2 === w).map(c => c.turma))]),
+      vl: [0, 1].map(w => m.cad.some((c, p) => p % 2 === w && (!c || (c.bot && (m.fase === 'espera' || !c.lugarDe))))) };
   }
   async contarAFila(fim) {
     const m = this.m, codigo = m && m.codigo;
@@ -337,7 +354,8 @@ export class Mesa {
   // 10/11 (pedido do dono): partida do Desafio das Confrarias (Turma contra Turma) pode ser assistida por todos pela
   // Calçada, sem o número da mesa: a mesa ganha um código de assistir (só serve para assistir; não dá para sentar)
   confrontoVivo(m) {
-    if (!this.mesaDesafio() || !m.G || !this.confronto()) return null;
+    // 17/11 (dono: "não consegui ver os jogos das confrarias na Calçada"): vale também na mesa rápida (é pública), onde saem quase todos os pontos
+    if (!(this.mesaDesafio() || (m.publica && edicao(this.env).aberto)) || !m.G || !this.confronto()) return null;
     if (m.cad.some(c => c && !c.bot && c.menor)) return null;   // com menor na mesa, só pelo número (como antes)
     if (!m.verId) m.verId = [...crypto.getRandomValues(new Uint8Array(8))].map(b => b.toString(16).padStart(2, '0')).join('');
     const lado = w => { for (let p = w; p < 4; p += 2) { const c = m.cad[p]; if (c && !c.bot && c.turma) return c.turma; } return null; };
@@ -380,7 +398,7 @@ export class Mesa {
     } else if (m.fase === 'espera') {
       if (b.so !== 'espera') return Response.json({ erro: 'cheia' }, { status: 409 });
       // o segundo senta de adversário, o terceiro de parceiro do primeiro, o quarto completa
-      p = this.cadeiraNaEspera();
+      p = this.cadeiraNaEspera(b.lado === 0 || b.lado === 1 ? b.lado : null);   // 17/11: a fila pode pedir o lado (Desafio)
       if (p == null) return Response.json({ erro: 'cheia' }, { status: 409 });
       quem.nome = this.nomeUnico(quem.nome, p);
       m.cad[p] = quem;
@@ -389,7 +407,9 @@ export class Mesa {
       if ((p = this.voltarAoLugar(quem)) < 0) {   // 28/10: quem volta retoma a cadeira que o robô guardava
         if (b.so !== 'jogo') return Response.json({ erro: 'cheia' }, { status: 409 });
         // na mesa rápida, quem saiu de vez libera a cadeira (o robô que estava no lugar dá a vez)
-        p = m.cad.findIndex(c => c && c.bot && !c.lugarDe);
+        p = -1;
+        if (b.lado === 0 || b.lado === 1) p = m.cad.findIndex((c, i) => c && c.bot && !c.lugarDe && i % 2 === b.lado);   // 17/11: o lado pedido pela fila (Desafio)
+        if (p < 0) p = m.cad.findIndex(c => c && c.bot && !c.lugarDe);
         if (p < 0) p = m.cad.findIndex(c => c && c.bot);
         if (p < 0) return Response.json({ erro: 'cheia' }, { status: 409 });
         quem.nome = this.nomeUnico(quem.nome, p);
@@ -788,9 +808,10 @@ export class Mesa {
   }
   // Na espera: o segundo senta de adversário, o terceiro de parceiro do primeiro, o quarto completa.
   // Se um robô da turma já sentou nessa cadeira (mesa rápida), a pessoa fica com ela.
-  cadeiraNaEspera() {
-    const m = this.m;
-    return [1, 2, 3, 0].find(i => !m.cad[i] || m.cad[i].bot);
+  cadeiraNaEspera(lado) {
+    const m = this.m, livre = i => !m.cad[i] || m.cad[i].bot;
+    if (lado != null) { const i = [1, 2, 3, 0].find(i => i % 2 === lado && livre(i)); if (i != null) return i; }   // 17/11
+    return [1, 2, 3, 0].find(livre);
   }
   // Mesa rápida: a turma do bairro vai chegando em momentos sorteados da espera (ex.: faltando 15, 12 e 7 s),
   // um de cada vez, entre ~18 s e 3 s antes de começar, com pelo menos 1,5 s entre um e outro

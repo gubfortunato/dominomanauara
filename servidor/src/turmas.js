@@ -34,12 +34,16 @@ function codigoNovo() { const b = crypto.getRandomValues(new Uint8Array(6)); ret
 // Turma vale 2 pontos quando tem sócio na dupla que ganhou (sem sócio, continua 1). O limite de 5 vitórias por dia contra
 // a mesma Turma continua contando partidas.
 export const RETA = { mes: 11, dia: 14, mult: 2 };
+// 17/11 (pedido do dono: "o Desafio está meio devagar"): Hora do Desafio. Todo dia, das 21h às 22h (Manaus), cada vitória
+// contra outra Turma vale 1 ponto a mais (2; na reta final, com sócio na dupla, 3). Junta todo mundo no mesmo horário.
+export const HORA = { ini: 21, fim: 22, extra: 1 };
+export const horaDesafio = agora => { const h = new Date(agora - MANAUS).getUTCHours(); return h >= HORA.ini && h < HORA.fim; };
 export function edicao(env, agora) {
   agora = agora ?? (Number(env.DESAFIO_AGORA) || Date.now());
   const ano = +diaManaus(agora).slice(0, 4);
   const inicio = Date.UTC(ano, 10, 1) + MANAUS, fim = Date.UTC(ano, 11, 21) + MANAUS, dobroDesde = Date.UTC(ano, RETA.mes, RETA.dia) + MANAUS;
   const aberto = agora >= inicio && agora < fim;
-  return { ano, inicio, fim, dobroDesde, dobro: aberto && agora >= dobroDesde, aberto, antes: agora < inicio, depois: agora >= fim, agora };
+  return { ano, inicio, fim, dobroDesde, dobro: aberto && agora >= dobroDesde, aberto, antes: agora < inicio, depois: agora >= fim, agora, hora: aberto && horaDesafio(agora) };
 }
 const multDe = (ano, dia) => dia >= `${ano}-12-${String(RETA.dia).padStart(2, '0')}` ? RETA.mult : 1;
 async function turmaDoAparelho(env, ap) {
@@ -99,7 +103,7 @@ export async function pontuar(env, vencedores, perdedores) {
     const t = de.get(id); if (!t || feitas.has(t.codigo)) continue;
     const outra = [...contra].find(c => c !== t.codigo); if (!outra) continue;
     if ((tam.get(t.codigo) || 0) < MIN_PONTUAR) continue;
-    const delta = mult > 1 && vencedores.some(w => de.get(w) && de.get(w).codigo === t.codigo && socios.has(w)) ? mult : 1;
+    const delta = (mult > 1 && vencedores.some(w => de.get(w) && de.get(w).codigo === t.codigo && socios.has(w)) ? mult : 1) + (e.hora ? HORA.extra : 0);   // 17/11: Hora do Desafio
     const j = await env.DB.prepare('SELECT n FROM desafio_jogos WHERE edicao = ? AND dia = ? AND vencedora = ? AND perdedora = ?').bind(e.ano, dia, t.codigo, outra).first();
     if (j && j.n >= MAX_POR_PAR_DIA) continue;
     await env.DB.prepare('INSERT INTO desafio_jogos (edicao, dia, vencedora, perdedora, n) VALUES (?, ?, ?, ?, 1) ON CONFLICT(edicao, dia, vencedora, perdedora) DO UPDATE SET n = n + 1').bind(e.ano, dia, t.codigo, outra).run();
@@ -124,9 +128,8 @@ async function ranking(env, ano, n) {
 async function hojeEOntem(env, e, rk) {
   const dia = diaManaus(e.agora), mult = multDe(e.ano, dia);
   // antes da reta final, cada vitória do dia é 1 ponto; na reta final, vale o que ficou anotado no dia (1 ou 2 por vitória)
-  const { results } = mult > 1
-    ? await env.DB.prepare('SELECT turma AS vencedora, pontos AS n FROM desafio_dia WHERE edicao = ? AND dia = ?').bind(e.ano, dia).all()
-    : await env.DB.prepare('SELECT vencedora, SUM(n) AS n FROM desafio_jogos WHERE edicao = ? AND dia = ? GROUP BY vencedora').bind(e.ano, dia).all();
+  // 17/11: sempre o que ficou anotado no dia (com a Hora do Desafio, a vitória pode valer 2 antes da reta final)
+  const { results } = await env.DB.prepare('SELECT turma AS vencedora, pontos AS n FROM desafio_dia WHERE edicao = ? AND dia = ?').bind(e.ano, dia).all();
   const hoje = new Map((results || []).map(r => [r.vencedora, r.n]));
   const ontem = rk.map(r => ({ codigo: r.codigo, p: r.pontos - (hoje.get(r.codigo) || 0), u: r.ultimo || 0 })).filter(x => x.p > 0)
     .sort((a, b) => b.p - a.p || a.u - b.u);
@@ -153,7 +156,7 @@ async function resumo(env, ap) {
   const linha = (r, i) => ({ pos: i + 1, nome: nomeSeguro(r.nome), pontos: r.pontos, titulos: r.titulos, membros: r.membros, hoje: ho.hoje.get(r.codigo) || 0, campea: !!campea && campea.codigo === r.codigo,
     mov: ho.posOntem.has(r.codigo) ? ho.posOntem.get(r.codigo) - (i + 1) : (ho.hoje.get(r.codigo) ? 'novo' : 0) });
   const campeas = (await env.DB.prepare('SELECT c.edicao, c.pontos, t.nome FROM desafio_campeas c LEFT JOIN turmas t ON t.codigo = c.turma ORDER BY c.edicao DESC LIMIT 10').all()).results || [];
-  const desafio = { ano: e.ano, inicio: e.inicio, fim: e.fim, aberto: e.aberto, antes: e.antes, depois: e.depois, dobroDesde: e.dobroDesde, dobro: e.dobro, mult: RETA.mult, minimo: MIN_PONTUAR,
+  const desafio = { ano: e.ano, inicio: e.inicio, fim: e.fim, aberto: e.aberto, antes: e.antes, depois: e.depois, dobroDesde: e.dobroDesde, dobro: e.dobro, mult: RETA.mult, minimo: MIN_PONTUAR, hora: e.hora, horaIni: HORA.ini, horaFim: HORA.fim, horaExtra: HORA.extra,
     campea: campea ? { nome: campea.nome, ano: campea.ano, ate: campea.ate } : null,
     total: rk.length, ranking: rk.slice(0, 10).map(linha),
     campeas: campeas.filter(c => c.nome).map(c => ({ ano: c.edicao, nome: nomeSeguro(c.nome), pontos: c.pontos })) };
@@ -312,6 +315,9 @@ export async function avisosDesafio(env, agora) {
   const dd = n => `${e.ano}-12-${String(n).padStart(2, '0')}`;
   // 10/11 (pedido do dono: "vamos divulgar mais o Desafio"): chamada para todo mundo, com guarda na caixa de mensagens
   if (h === 19 && DIVULGA[dia]) return [{ chave: `ds:${dia}:divulga`, para: 'todos', caixa: true, msg: DIVULGA[dia] }];
+  // 17/11: começou a Hora do Desafio (às 21h), para quem é de Turma, uma vez por dia
+  if (h === HORA.ini) return [{ chave: `ds:${dia}:hora`, para: 'turmas',
+    msg: { titulo: '⏰ Começou a Hora do Desafio!', texto: `Até as ${HORA.fim}h, cada vitória online contra outra Turma vale 1 ponto a mais. Bora pra mesa rápida!`, url: '/?abrir=turma' } }];
   if (h !== 18) return [];
   if (dia === dd(RETA.dia - 1)) return [{ chave: `ds:${e.ano}:vespera`, para: 'todos', caixa: true,
     msg: { titulo: 'Amanhã começa a reta final do Desafio! 🔥', texto: `De ${RETA.dia}/12 a 20/12, a vitória contra outra Turma com sócio na dupla vale ${RETA.mult} pontos. Ainda não tem Turma? Monte a sua e chame os amigos.`, url: '/?abrir=turma' } }];

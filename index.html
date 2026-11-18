@@ -2706,6 +2706,28 @@ body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1
 .ev-convite span{display:grid;gap:2px}.ev-convite b{font-size:16.5px;line-height:1.2}.ev-convite small{font-size:13.5px;line-height:1.3;opacity:.85}
 .ev-convite:active{transform:scale(.99)}
 #rnkConvite{margin-top:0}
+/* 17/11 (pedido do dono): confrontos do Desafio no alto da Calçada, etiqueta ⚔️ na mesa e a Hora do Desafio */
+#calcCorpo .calc-dcvivo[hidden]{display:none}
+#calcCorpo .calc-dcvivo .dc-vivo{margin:0;padding:12px;border-radius:16px;background:var(--bg-2);border:1px solid color-mix(in srgb,#c0392b 45%,var(--line))}
+.vivo-dc-l{display:block;margin:1px 0 2px;color:#c0392b;font-weight:800;font-size:13px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dc-faixa.hora{background:color-mix(in srgb,var(--nos) 10%,transparent);border-color:color-mix(in srgb,var(--nos) 35%,var(--line))}
+.dc-faixa.hora.agora{background:linear-gradient(90deg,#1f5fa8,#2a7fd0);border-color:#7fb6ee;color:#fff}
+.dc-faixa.hora.agora b{color:#fff}
+.tc-faixa.hora{margin-bottom:6px}
+.tc-faixa.hora.agora{background:linear-gradient(90deg,rgba(31,95,168,.95),rgba(42,127,208,.95));border-color:#7fb6ee;color:#fff;font-weight:700}
+/* 17/11 (o dono: "melhore esse card"): Acontecendo agora, bolinha verde, brasão e nomes maiores */
+.dc-vivo-k{color:var(--ok);gap:8px}
+.dc-vivo-k i{background:#2ecc71;box-shadow:0 0 0 0 rgba(46,204,113,.6);animation:dcPulsoV 1.6s ease-out infinite}
+@keyframes dcPulsoV{0%{box-shadow:0 0 0 0 rgba(46,204,113,.6)}100%{box-shadow:0 0 0 10px rgba(46,204,113,0)}}
+@media (prefers-reduced-motion:reduce){.dc-vivo-k i{animation:none}}
+.dc-vivo-sub{margin-left:auto;letter-spacing:0;text-transform:none;font-size:12.5px;font-weight:700;color:var(--muted);white-space:nowrap}
+.dc-vv{gap:10px 10px;padding:16px 12px 14px;border-color:color-mix(in srgb,#2ecc71 35%,var(--line))}
+.dc-vv-t{gap:7px;align-self:start}.dc-vv-pl{align-self:start;margin-top:10px}
+.dc-vv-t b{font-size:17px;line-height:1.2;font-weight:800}
+.dc-vv-pl b{font-size:32px;line-height:1}.dc-vv-pl i{font-size:18px}.dc-vv-pl small{font-size:12.5px;margin-top:4px}
+.dc-vv-go{padding:9px 22px;font-size:15.5px}
+#calcCorpo .calc-dcvivo .dc-vivo{padding:0;background:none;border:0;border-radius:0}
+#calcCorpo .calc-dcvivo .dc-vv{background:var(--bg-2)}
 /* 17/11 (pedido do dono): crescimento e conversão no painel */
 .dn-cr{display:grid;gap:12px}
 .dn-cr[hidden]{display:none}
@@ -4553,6 +4575,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.0', data: '17/11/2026', itens: ['Desafio das Confrarias: os confrontos entre Turmas aparecem ao vivo no alto da Calçada, agora também na mesa rápida (é lá que sai a maioria dos pontos). A mesa ganha a etiqueta ⚔️ com o nome das Turmas, e quem é das Turmas recebe o aviso para assistir.', 'Hora do Desafio: todo dia, das 21h às 22h, cada vitória contra outra Turma vale 1 ponto a mais. Aviso no celular às 21h para quem é de Turma.', 'Na mesa rápida, quem é de Turma senta, quando dá, contra gente de outra Turma: mais confrontos valendo ponto.'] },
   { v: '3.60.2', data: '17/11/2026', itens: ['Administrador: no Crescimento e conversão, o botão Atualizar ficou do tamanho do 30/60 dias, com o ícone que gira enquanto busca, e embaixo aparece a hora dos números.'] },
   { v: '3.60.1', data: '17/11/2026', itens: ['Administrador: grupo novo "Crescimento e conversão" no painel. Mostra a semana contra a anterior (novos, ativos por dia, sócios pagantes, vendas, conversão dos novos e retenção), as curvas de 30 ou 60 dias (pessoas ativas e novas, sócios pagantes, quem entrou e quem saiu do plano), o funil dos novos, os novos de cada semana (quantos voltaram, ficaram e viraram sócios) e a retenção semanal. Sócio ali é só quem pagou.', 'Mesa Porto de Manaus com desenho novo: o cais cheio de caminhões, carros e gente carregando os barcos.'] },
   { v: '3.60.0', data: '17/11/2026', itens: ['Mesa nova: Flutuantes no rio, as casas flutuantes no Rio Negro no fim da tarde, com a história da Cidade Flutuante de Manaus.', 'Mesa mais bem aproveitada: quando um lado da mesa cresce e o bucho daquele lado está vazio, as pedras seguem em fileiras pela largura toda, em vez de subir numa escadinha estreita num canto. No fim da mão, as pedras ficam até 20% maiores. Se depois alguém jogar no bucho, as pedras daquele lado deslizam para o canto delas.', 'Mesa Guaraná: a imagem ficou mais aberta, com o cacho inteiro na mesa e folga em volta.', 'Tela do Sócio da Calçada atualizada: a tabela "Grátis ou sócio", a oferta e a carta de boas-vindas agora mostram o Sábado dos Torneios (só o sócio vira Campeão do Sábado, com o selo 🏅) e a Copa dos Sócios.'] },
@@ -11565,6 +11588,12 @@ function brasao(nome, tam) {
   const [c1, c2] = cp ? ['url(#brOuro)', '#5a3608'] : BRASAO_CORES[h % BRASAO_CORES.length], w = tam || 34, hh = Math.round(w * 46 / 40);
   return `<svg class="brasao${cp ? ' campea' : ''}" viewBox="0 0 40 46" width="${w}" height="${hh}" aria-hidden="true">${cp ? '<defs><linearGradient id="brOuro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0b8"/><stop offset=".5" stop-color="#f3c063"/><stop offset="1" stop-color="#b47519"/></linearGradient></defs>' : ''}<path d="M20 2.2 36.8 8.2v13.6c0 11-7.4 18.4-16.8 21.9C10.6 40.2 3.2 32.8 3.2 21.8V8.2z" fill="${c1}" stroke="${c2}" stroke-width="2.6" stroke-linejoin="round"/><path d="M20 6.6 32.8 11.2v10.6c0 8.4-5.4 14.4-12.8 17.4z" fill="rgba(255,255,255,.13)"/><text x="20" y="27.6" text-anchor="middle" font-size="${ini.length > 1 ? 14.5 : 18}" font-weight="800" fill="${c2}" font-family="Figtree, system-ui, sans-serif">${esc(ini)}</text></svg>`;
 }
+// 17/11 (pedido do dono): Hora do Desafio, todo dia das 21h às 22h: vitória contra outra Turma vale 1 ponto a mais
+function dcHora(d) {
+  const ini = (d && d.horaIni) || 21, fim = (d && d.horaFim) || 22, h = new Date(Date.now() - 4 * 3600000).getUTCHours();
+  const agora = !!(d && d.aberto) && (h >= ini && h < fim);
+  return { ini, fim, agora, antes: !!(d && d.aberto) && h < ini, depois: h >= fim, extra: (d && d.horaExtra) || 1 };
+}
 function dcDatas(d) {
   const ano = d.ano || +diaManaus().slice(0, 4);
   return { fim: d.fim || Date.UTC(ano, 11, 21) + 4 * 3600000, dobroDesde: d.dobroDesde || Date.UTC(ano, 11, 14) + 4 * 3600000, mult: d.mult || 2 };
@@ -11581,8 +11610,10 @@ function dcFaixa(d) {
   const ddmm = ms => { const z = new Date(ms - 4 * 3600000); return String(z.getUTCDate()).padStart(2, '0') + '/' + String(z.getUTCMonth() + 1).padStart(2, '0'); };
   // 10/11 (pedido do dono): o dobro da reta final é de quem tem sócio na dupla; quem não é sócio vê o convite
   const vira = !temPlano() && typeof pagamentosAtivos === 'function' && pagamentosAtivos() ? ' <button type="button" class="linkbtn dc-socio" data-socio>Seja sócio</button>' : '';
-  if (dobro) return `<p class="dc-faixa quente"><b>🔥 Reta final:</b> vitória com sócio na dupla vale ${x.mult} pontos · ${dias <= 1 ? 'termina hoje, à meia-noite' : `faltam ${dias} dias`}${vira}</p>`;
-  return `<p class="dc-faixa"><b>${dias === 1 ? 'Falta 1 dia' : `Faltam ${dias} dias`}</b> · 🔥 de ${ddmm(x.dobroDesde)} a 20/12, vitória com sócio na dupla vale ${x.mult} pontos${vira}</p>`;
+  const hr = dcHora(d), hora = !d.aberto ? '' : hr.agora ? `<p class="dc-faixa hora agora"><b>⏰ Hora do Desafio:</b> até as ${hr.fim}h, cada vitória contra outra Turma vale 1 ponto a mais</p>`
+    : `<p class="dc-faixa hora">⏰ ${hr.antes ? 'Hoje' : 'Amanhã'}, das ${hr.ini}h às ${hr.fim}h: <b>Hora do Desafio</b>, vitória vale 1 ponto a mais</p>`;   // 17/11
+  if (dobro) return hora + `<p class="dc-faixa quente"><b>🔥 Reta final:</b> vitória com sócio na dupla vale ${x.mult} pontos · ${dias <= 1 ? 'termina hoje, à meia-noite' : `faltam ${dias} dias`}${vira}</p>`;
+  return hora + `<p class="dc-faixa"><b>${dias === 1 ? 'Falta 1 dia' : `Faltam ${dias} dias`}</b> · 🔥 de ${ddmm(x.dobroDesde)} a 20/12, vitória com sócio na dupla vale ${x.mult} pontos${vira}</p>`;
 }
 const dcMov = m => m === 'novo' ? '<i class="dc-mov novo">novo</i>' : m > 0 ? `<i class="dc-mov up" aria-label="subiu ${m}">▲${m}</i>` : m < 0 ? `<i class="dc-mov down" aria-label="caiu ${-m}">▼${-m}</i>` : '';
 // a lista das Turmas (Calçada e folha da Turma): as primeiras e, se a sua ficou de fora, ela no fim
@@ -11605,12 +11636,12 @@ function dcLista(d, t, n) {
 function dcAoVivo() {
   const l = (typeof VIVO !== 'undefined' && VIVO.mesas || []).filter(v => v.desafio && v.desafio.ver && v.fase === 'jogo').slice(0, 4);
   if (!l.length) return '';
-  return `<div class="dc-vivo"><p class="dc-vivo-k"><i aria-hidden="true"></i>Ao vivo no Desafio</p>${l.map(v => {
+  return `<div class="dc-vivo"><p class="dc-vivo-k"><i aria-hidden="true"></i>Acontecendo agora<span class="dc-vivo-sub">⚔️ Desafio das Confrarias</span></p>${l.map(v => {
     const pl = v.placar || [0, 0];
     return `<button type="button" class="dc-vv" data-ver="${esc(v.desafio.ver)}" aria-label="Assistir ${esc(nomeTurma(v.desafio.a))} contra ${esc(nomeTurma(v.desafio.b))}">
-      <span class="dc-vv-t">${brasao(v.desafio.a, 26)}<b>${esc(v.desafio.a)}</b></span>
+      <span class="dc-vv-t">${brasao(v.desafio.a, 46)}<b>${esc(v.desafio.a)}</b></span>
       <span class="dc-vv-pl"><b>${pl[0]}</b><i>×</i><b>${pl[1]}</b><small>partida ${v.partida || 1}</small></span>
-      <span class="dc-vv-t">${brasao(v.desafio.b, 26)}<b>${esc(v.desafio.b)}</b></span>
+      <span class="dc-vv-t">${brasao(v.desafio.b, 46)}<b>${esc(v.desafio.b)}</b></span>
       <span class="dc-vv-go"><span aria-hidden="true">👀</span> Assistir</span></button>`;
   }).join('')}</div>`;
 }
@@ -11629,7 +11660,7 @@ function dcFalta(t, d) {
   alvo.insertAdjacentHTML('afterend', `<button type="button" class="card wood turma-card" id="turmaCard" hidden>
     <span class="ck">Desafio das Confrarias · 1º/11 a 20/12</span><span class="ct" id="turmaCardT">Monte a sua Turma</span><span class="cd" id="turmaCardD"></span></button>`);
   $('#turmaCard').addEventListener('click', e => {
-    if (e.target.closest('.tc-vivo')) { track('desafio-vivo-inicio'); show('calcada'); setTimeout(() => { const c = $('#dcCard'); if (c) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 350); return; }   // 10/11
+    if (e.target.closest('.tc-vivo')) { track('desafio-vivo-inicio'); irAba('calcada'); setTimeout(() => { const c = $('#calcDcVivo'); if (c && !c.hidden) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 450); return; }   // 17/11: os confrontos voltaram para a Calçada   // 10/11
     abrirTurma();
   });
 })();
@@ -11648,6 +11679,8 @@ function desenharCartaoTurma() {
     card.innerHTML = `<span class="tc-cab"><span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 48 48"><defs><linearGradient id="tcOuro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3c4"/><stop offset=".45" stop-color="#f3c063"/><stop offset="1" stop-color="#b47519"/></linearGradient><linearGradient id="tcOuro2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eab552"/><stop offset="1" stop-color="#8a5612"/></linearGradient></defs><path d="M14 11.5H8v3.2c0 5 3.6 8.6 8.4 9" fill="none" stroke="url(#tcOuro2)" stroke-width="3.2" stroke-linecap="round"/><path d="M34 11.5h6v3.2c0 5-3.6 8.6-8.4 9" fill="none" stroke="url(#tcOuro2)" stroke-width="3.2" stroke-linecap="round"/><path d="M12.8 6.5h22.4v10c0 7.4-5 12.8-11.2 12.8S12.8 23.9 12.8 16.5z" fill="url(#tcOuro)" stroke="#8a5612" stroke-width="1"/><path d="M16.8 9.8v6.6c0 3.3 1.3 6.1 3.4 7.6" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="2" stroke-linecap="round"/><path d="M24 11.6l1.6 3.2 3.5.5-2.5 2.5.6 3.5-3.2-1.7-3.2 1.7.6-3.5-2.5-2.5 3.5-.5z" fill="#fff8de"/><path d="M21.4 29h5.2l-.9 5.6h-3.4z" fill="url(#tcOuro2)"/><rect x="16" y="34.4" width="16" height="4.2" rx="1.2" fill="url(#tcOuro)" stroke="#8a5612" stroke-width=".8"/><rect x="12.5" y="38.4" width="23" height="5.6" rx="1.6" fill="#4e2c0e" stroke="#d29a35" stroke-width="1.1"/></svg></span><span class="tc-tit"><span class="ct">Desafio das Confrarias</span><span class="tc-sub">${t ? esc(nomeTurma(t.nome)) + esc(estrelas(t.titulos)) : 'Monte a sua Turma'}</span></span><span class="tc-ate">até 20/12</span></span>
       ${t ? `<span class="tc-pts"><b>${t.pontos}</b> ${t.pontos === 1 ? 'ponto' : 'pontos'}${t.pos ? ` · ${t.pos}º lugar` : ''}</span>${turmaSozinha(t, d) ? '<span class="tc-solo">👥 Só você na Turma: chame mais 1 para pontuar</span>' : ''}`
           : `<span class="tc-passos"><span><b>1</b>Junte os amigos numa Turma</span><span><b>2</b>Desafie outra Turma</span><span><b>3</b>Ganhou: +1 ponto</span></span>`}
+      ${(() => { const hr = dcHora(d); return hr.agora ? `<span class="tc-faixa hora agora">⏰ Hora do Desafio: até as ${hr.fim}h, vitória vale 1 ponto a mais</span>`
+          : `<span class="tc-faixa hora">⏰ ${hr.antes ? 'Hoje' : 'Amanhã'}, ${hr.ini}h às ${hr.fim}h: Hora do Desafio, vitória vale +1</span>`; })()}
       ${(() => { const x = dcDatas(d), ag = Date.now(), dias = Math.ceil((x.fim - ag) / 86400000), dobro = d.dobro || (ag >= x.dobroDesde && ag < x.fim);
         return `<span class="tc-faixa${dobro ? ' quente' : ''}">${dobro ? `🔥 Reta final: vitória com sócio vale ${x.mult} pontos · ${dias <= 1 ? 'último dia' : `faltam ${dias} dias`}` : `${dias === 1 ? 'Falta 1 dia' : `Faltam ${dias} dias`} · 🔥 de 14/12, vitória com sócio vale ${x.mult}`}</span>`; })()}
       ${top.length ? `<span class="tc-rank">${top.map(r => `<span class="tc-lin${t && r.nome === t.nome ? ' eu' : ''}"><i class="m${r.pos}">${r.pos}º</i>${brasao(r.nome, 24)}<span>${esc(nomeTurma(r.nome))}</span><em class="tc-hoje">${r.hoje ? `+${r.hoje} hoje` : ''}</em><b>${r.pontos}</b></span>`).join('')}</span>`
@@ -11848,7 +11881,8 @@ receberOnline = function (m) {
     const minha = m.cad[m.minha] && m.cad[m.minha].turma, nome = d.turmas.includes(minha) ? minha : d.turmas[0];
     TM.em = 0;
     const n = d.pontos || 1;
-    setTimeout(() => toast(`+${n} ${n === 1 ? 'ponto' : 'pontos'} para a ${nomeTurma(nome)} no Desafio das Confrarias!${n > 1 ? ' 🔥 Reta final: sócio vale o dobro.' : ''}`), 1800);
+    const porque = n > 1 ? (dcHora(desafioAgora()).agora ? ' ⏰ Hora do Desafio: 1 ponto a mais.' : ' 🔥 Reta final: sócio vale o dobro.') : '';   // 17/11
+    setTimeout(() => toast(`+${n} ${n === 1 ? 'ponto' : 'pontos'} para a ${nomeTurma(nome)} no Desafio das Confrarias!${porque}`), 1800);
   } catch (e) {}
 };
 
@@ -12834,6 +12868,7 @@ function vivoFila(v) {
 function vivoDesenha() {
   try { calcCabSexta(); } catch (e) {}   // 11/11: a Sexta da Calçada começa (ou acaba) com a aba aberta
   const box = $('#vivoLista'); if (!box) return;
+  try { const dv = $('#calcDcVivo'), h = desafioAgora().aberto ? dcAoVivo() : ''; if (dv) { dv.hidden = !h; if (dv.dataset.h !== h) { dv.dataset.h = h; dv.innerHTML = h; } } } catch (e) {}   // 17/11
   const pe = $('#vivoPe');
   if (!VIVO.mesas.length) {
     box.innerHTML = `<div class="vivo-vazio"><b>${vivoDetalhes() ? 'Nenhuma mesa online em jogo agora.' : 'Ninguém na mesa rápida agora.'}</b><span>Abra uma: a turma do bairro completa a mesa enquanto o pessoal chega.</span></div>`;
@@ -12871,7 +12906,7 @@ function vivoDesenha() {
     if (adm) {
       // 3.26: enxuto — as pessoas numa linha (bolinha verde: conectada; vazia: sem conexão) e os robôs só na conta
       const gente = [0, 1, 2, 3].filter(ehGente).map(p => `<span class="vivo-g${tipo(p) === 'pessoa' ? ' on' : ''}">${esc(c[p].nome)}</span>`).join('');
-      return `${abre}<span class="vivo-tx"><b>${esc(m.nome)}${convite ? ' <small class="vivo-tag">com os amigos</small>' : ''}</b>
+      return `${abre}<span class="vivo-tx"><b>${esc(m.nome)}${convite ? ' <small class="vivo-tag">com os amigos</small>' : ''}</b>${v.desafio ? `<small class="vivo-dc-l">⚔️ ${esc(v.desafio.a)} × ${esc(v.desafio.b)}</small>` : ''}
           <span class="vivo-gl">${gente}${nRobos ? `<span class="vivo-rb">+${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}</span>` : ''}</span>${vivoFila(v)}
           <small class="vivo-info">Mesa ${esc(v.codigo)} · partida ${v.partida || 1}</small></span>${placar}${estado}</div>`;
     }
@@ -12887,7 +12922,7 @@ function vivoDesenha() {
     }
     // 3.32 (pedido do dono): cada nome com uma bolinha verde e sem negrito (o nome da mesa fica em destaque)
     const nomes = [0, 1, 2, 3].filter(ehGente).map(p => `<span class="vivo-gp">${esc(c[p].nome)}</span>`).join('');
-    return `${abre}<span class="vivo-tx"><b>${esc(m.nome)}</b>
+    return `${abre}<span class="vivo-tx"><b>${esc(m.nome)}</b>${v.desafio ? `<small class="vivo-dc-l">⚔️ ${esc(v.desafio.a)} × ${esc(v.desafio.b)}</small>` : ''}
         <span class="vivo-gl">${nomes}${nRobos ? `<span class="vivo-rb">+${nRobos}</span>` : ''}</span>
         <em class="${quente ? 'quente' : ''}">${esc(v.txt)}</em></span>${placar}${estado}</div>`;
   }).join('');
@@ -12962,6 +12997,7 @@ function entrarAoVivo(codigo) {
   const ref = $('#calcCorpo');
   if (!ref) return;
   ref.insertAdjacentHTML('beforeend', `<section class="vivo" id="vivoCard" hidden aria-label="Mesas rápidas jogando agora">
+    <div class="calc-dcvivo" id="calcDcVivo" hidden></div>
     <button type="button" class="vivo-ver" id="vivoVer" hidden>Ver como os jogadores veem</button>
     <div class="vivo-hoje" id="vivoHoje" hidden></div>
     <div class="vivo-lista" id="vivoLista" aria-live="polite"></div>
@@ -12972,6 +13008,8 @@ function entrarAoVivo(codigo) {
   if (vivoMostra()) { vivoHoje(); vivoMesas(true); setTimeout(() => vivoPresenca(true), 1500); }
   const renderHomeVivo = renderHome;
   renderHome = function () { const r = renderHomeVivo.apply(this, arguments); try { vivoVisivel(); if (vivoMostra()) vivoMesas(); } catch (e) {} return r; };
+  // 17/11: os confrontos do Desafio ao vivo, no alto da Calçada (tocar assiste, sem o número da mesa)
+  $('#calcDcVivo').addEventListener('click', e => { const vv = e.target.closest('[data-ver]'); if (vv) { track('desafio-vivo-calcada'); assistirDesafio(vv.dataset.ver); } });
   $('#vivoVer').addEventListener('click', () => { VIVO.comoJogador = !VIVO.comoJogador; vivoVisivel(); VIVO.mesas = []; vivoDesenha(); vivoMesas(true); vivoPresenca(true); });
   $('#vivoLista').addEventListener('click', e => {
     if (e.target.closest('#vivoAbrir')) { track('vivo-abrir'); mesaRapida(); return; }
@@ -16696,7 +16734,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.60.2-11bbd3b7';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.0-989306c6';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
