@@ -4592,6 +4592,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.2', data: '18/11/2026', itens: ['Lembretes no celular para quem sumiu: enquanto você está sem jogar, o lembrete de sempre a cada 3 dias; com 7 dias sem aparecer, um "sentimos sua falta" com o evento do dia; com 30 dias, um último. Depois disso o jogo para de chamar, até você voltar.'] },
   { v: '3.61.1', data: '18/11/2026', itens: ['Administrador: cartão "Quem joga e quem sumiu" em Jogadores. Mostra quantos estão ativos (até 2 dias sem entrar no app), esfriando (3 a 6), sumidos (7 a 29) e quantos abandonaram (30 ou mais), e as listas de quem mais joga, quem menos joga e os sumidos que jogavam bastante, com os dias sem entrar.'] },
   { v: '3.61.0', data: '17/11/2026', itens: ['Desafio das Confrarias: os confrontos entre Turmas aparecem ao vivo no alto da Calçada, agora também na mesa rápida (é lá que sai a maioria dos pontos). A mesa ganha a etiqueta ⚔️ com o nome das Turmas, e quem é das Turmas recebe o aviso para assistir.', 'Hora do Desafio: todo dia, das 21h às 22h, cada vitória contra outra Turma vale 1 ponto a mais. Aviso no celular às 21h para quem é de Turma.', 'Na mesa rápida, quem é de Turma senta, quando dá, contra gente de outra Turma: mais confrontos valendo ponto.'] },
   { v: '3.60.2', data: '17/11/2026', itens: ['Administrador: no Crescimento e conversão, o botão Atualizar ficou do tamanho do 30/60 dias, com o ícone que gira enquanto busca, e embaixo aparece a hora dos números.'] },
@@ -16752,7 +16753,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.1-a2f1aded';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.2-c0e5ab20';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -18458,7 +18459,7 @@ const RT_FX = { ativo: ['Ativos', '#86c98f'], esfriando: ['Esfriando', '#f3c063'
   const ref = $('#dnJog'); if (!ref) return;
   ref.insertAdjacentHTML('beforebegin', `<div class="dn-list wood dn-jog dn-rt" id="dnRitmo" hidden>
     <span class="ck">Quem joga e quem sumiu</span>
-    <p class="dn-avn">Pelos dias sem abrir o app: ativo até 2 dias, esfriando de 3 a 6, sumido de 7 a 29 e abandonou com 30 ou mais. Conta quem já jogou pelo menos uma partida.</p>
+    <p class="dn-avn">Pelos dias sem abrir o app: ativo até 2 dias, esfriando de 3 a 6, sumido de 7 a 29 e abandonou com 30 ou mais. Conta quem já jogou pelo menos uma partida. Lembretes no celular (para quem ligou): a cada 3 dias enquanto esfria, um "sentimos sua falta" aos 7 dias e um último aos 30; depois o jogo para de chamar.</p>
     <div class="dn-rt-fx" id="dnRtFx"></div>
     <div class="dn-seg" id="dnRtAbas" role="group" aria-label="Lista"><button type="button" data-a="mais" aria-pressed="true">Mais jogam</button><button type="button" data-a="menos" aria-pressed="false">Menos jogam</button><button type="button" data-a="sumidos" aria-pressed="false">Sumidos</button></div>
     <p class="dn-avn" id="dnRtNota"></p>
