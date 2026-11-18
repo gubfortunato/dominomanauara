@@ -1441,6 +1441,7 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .on-st{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);transform:translateX(-50%);z-index:35;max-width:92vw;padding:9px 16px;border-radius:999px;background:#e58a6c;color:#2a120a;font-size:16px;font-weight:800;line-height:1.25;text-align:center;box-shadow:0 8px 22px -8px rgba(0,0,0,.6);pointer-events:none}
 .seat.semnet .av{filter:grayscale(.85);opacity:.65}
 .nota-todos{text-align:center;margin:10px 0 0;font-size:15.5px}
+.nota-todos:empty{display:none}
 @media (max-width:360px){ .sala-num b{font-size:40px} .sala-cad b{font-size:16px} .sc-face{width:46px;height:46px} }
 /* Reações rápidas */
 .me-head{position:relative}
@@ -4605,6 +4606,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.6', data: '18/11/2026', itens: ['Mesa online, fim da mão: cada um toca em Próxima mão quando terminar de ver as pedras. A próxima começa quando todos tocarem, ou sozinha em 20 s (30 s no fim da partida). Ninguém corta mais a leitura dos outros, e a mesa não fica parada esperando. Sugestão de um jogador.'] },
   { v: '3.61.5', data: '18/11/2026', itens: ['Mesa nova: Palácio da Justiça, a fachada do palácio da Avenida Eduardo Ribeiro no pôr do sol, com a história dele.', 'Resultado da mão mais fácil de entender: as pedras que sobraram aparecem agrupadas por dupla, com o total de cada uma, na cor do placar. Quem bateu aparece no bloco da dupla. Sugestão de um jogador.', 'Mesa online: quem ficou sem conexão tem 10 s na vez (o robô joga por ele), em vez dos 20 s de quem está jogando. A mesa não fica mais parada esperando quem caiu. Sugestão de um jogador.'] },
   { v: '3.61.4', data: '18/11/2026', itens: ['Arrumar a mão ficou mais leve: as outras pedras deslizam sem travar, a pedra entra no lugar em que está o seu dedo, sem ficar indo e voltando, e pousa no lugar novo quando você solta.'] },
   { v: '3.61.3', data: '18/11/2026', itens: ['Quarta dos Amigos: o desenho de giz (os risquinhos e as pedras) agora fica bem no meio do cartão do início, da Calçada e do placar.'] },
@@ -7872,22 +7874,24 @@ function resultadoOnline() {
   $$('#sheet .share-wa').forEach(a => a.remove());
   const nb = $('#nextBtn');
   const rotulo = nb ? nb.textContent : 'Próxima mão';
+  // 18/11 (sugestão de jogador): cada um toca em Pronto; a próxima começa quando todos tocarem, ou sozinha quando o tempo
+  // acabar (20 s; 30 s no fim da partida). O servidor diz quantos já estão prontos e quanto falta.
+  let toquei = false;
   const btn = trocarBotao('nextBtn', rotulo, () => {
-    if (mandar({ t: 'proxima', seq: ON.seq })) { btn.disabled = true; btn.textContent = 'Começando…'; }
+    if (mandar({ t: 'proxima', seq: ON.seq })) { toquei = true; btn.disabled = true; atualizar(); }
   });
-  // 28/10 (pedido do dono): 10 s para todo mundo ler a garagem; o botão fica travado com a contagem (o servidor diz quanto falta)
-  const v = ON.vista, falta = v && v.leituraMs != null ? v.leituraMs - (Date.now() - (ON.recebido || Date.now())) : 10000;
-  if (btn && falta > 300) {
-    const fim = Date.now() + falta; btn.disabled = true; btn.classList.add('lendo');
-    const tique = () => {
-      if (!btn.isConnected || btn.textContent === 'Começando…') return;
-      const s = Math.ceil((fim - Date.now()) / 1000);
-      if (s <= 0) { btn.disabled = false; btn.classList.remove('lendo'); btn.textContent = rotulo; return; }
-      btn.textContent = `${rotulo} (${s})`; setTimeout(tique, 250);
-    };
-    tique();
-  }
-  if (btn && !$('#sheet .nota-todos')) btn.insertAdjacentHTML('afterend', '<p class="note nota-todos">Qualquer um dos quatro pode tocar para seguir.</p>');
+  if (btn && !$('#sheet .nota-todos')) btn.insertAdjacentHTML('afterend', '<p class="note nota-todos" aria-live="polite"></p>');
+  const atualizar = () => {
+    const v = ON.vista, nota = $('#sheet .nota-todos'); if (!btn || !btn.isConnected || !v || !G || G.phase !== 'handEnd') return false;
+    const falta = Math.max(0, Math.ceil(((v.leituraMs || 0) - (Date.now() - (ON.recebido || Date.now()))) / 1000));
+    const pronto = toquei || v.euPronto, precisam = v.precisam || 0, prontos = Math.max(v.prontos || 0, pronto && precisam ? 1 : 0);
+    const prox = rotulo.toLowerCase().includes('partida') ? 'A próxima partida' : rotulo.toLowerCase().includes('jogo') ? 'O próximo jogo' : 'A próxima mão';
+    if (pronto) { btn.disabled = true; btn.classList.add('lendo'); btn.textContent = precisam > 1 ? `Esperando a turma (${prontos} de ${precisam})` : 'Começando…'; }
+    if (nota) nota.textContent = precisam > 1 ? `${prox} começa quando todos tocarem${falta > 0 ? `, ou em ${falta} s` : ''}.` : (falta > 0 ? `${prox} começa sozinha em ${falta} s.` : '');
+    return true;
+  };
+  const tique = () => { if (atualizar()) setTimeout(tique, 250); };
+  tique();
   trocarBotao('resHome', 'Voltar ao início', () => {
     closeSheet(); leaveGame(); show('home');
     toast('Seu lugar na mesa está guardado. Para voltar, toque em "Voltar para a mesa".');
@@ -16801,7 +16805,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.5-4b28b2ef';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.6-3ae7e0e7';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
