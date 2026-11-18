@@ -14,7 +14,10 @@ export const PLANOS_DESDE = Date.UTC(2026, 10, 5, 3, 0, 0);   // 05/11/2026, 00:
 const BONUS_INI = Date.UTC(2026, 10, 5, 3, 0, 0), BONUS_FIM = Date.UTC(2026, 10, 20, 3, 0, 0);   // 05/11 00:00 a 20/11 00:00 de Brasília
 let bonusFim = BONUS_FIM;
 export const bonusValendo = (agora) => { const t = agora || Date.now(); return t >= BONUS_INI && t < bonusFim; };
-export function bonusConfig(env) { const v = Number(env && env.BONUS_ATE); if (Number.isFinite(v) && v > 0) bonusFim = v; }
+export function bonusConfig(env) { const v = Number(env && env.BONUS_ATE); if (Number.isFinite(v) && v > 0) bonusFim = v; natalTeste = !!(env && env.NATAL_TESTE === '1'); }
+// 18/11 (Natal): de 1º a 25/12 (dia de Manaus), a mesa de Natal fica livre para todo mundo e entra no sorteio. NATAL_TESTE=1 liga fora da época (só no teste local).
+let natalTeste = false;
+export const natalNoAr = (agora) => { if (natalTeste) return true; const d = new Date((agora || Date.now()) - 4 * 3600000).toISOString().slice(5, 10); return d >= '12-01' && d <= '12-25'; };
 export const LIMITE = { mesas: 1, get partidas() { return bonusValendo() ? 2 : 1; }, partidasSocio: 3, get publicas() { return bonusValendo() ? 5 : 3; }, desafios: 2 };
 // as 2 mesas a mais de cada dia (a ordem é a mesma no app: index.html, MESAS_RODIZIO)
 export const MESAS_RODIZIO = ['teatro', 'tucano', 'encontro', 'boto', 'peixeboi', 'mercado', 'araraazul', 'pontanegra', 'arena', 'vitoria', 'arara', 'centro', 'floresta', 'ponte',
