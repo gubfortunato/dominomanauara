@@ -2711,7 +2711,15 @@ body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1
 .dn-cr[hidden]{display:none}
 .dn-cr-cab{display:flex;align-items:center;gap:10px}
 .dn-cr-per{grid-template-columns:repeat(2,1fr);flex:1}
-.dn-cr-at{flex:none;padding:8px 4px}
+.dn-cr-at{flex:none;align-self:stretch;display:inline-flex;align-items:center;gap:7px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;font-weight:700;font-size:15px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.dn-cr-at svg{width:19px;height:19px;flex:none;color:var(--nos)}
+.dn-cr-at:active{transform:scale(.97)}
+.dn-cr-at:disabled{cursor:default;color:var(--muted)}
+.dn-cr-at.girando svg{animation:dnCrGira .8s linear infinite}
+@keyframes dnCrGira{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.dn-cr-at.girando svg{animation:none;opacity:.5}}
+.dn-cr-quando{margin:-4px 2px 0;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.dn-cr-quando:empty{display:none}
 .dn-cr-sub{margin:-2px 0 2px}
 .dn-cr-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .dn-cr-kpi{padding:10px 10px 9px;border-radius:12px;background:rgba(0,0,0,.18);border:1px solid rgba(239,226,204,.1);display:grid;gap:2px;min-width:0}
@@ -3766,8 +3774,9 @@ body.papo-aberto{overflow:hidden}
     <div class="dn-cr" id="dnCresc" hidden>
       <div class="dn-cr-cab">
         <div class="dn-seg dn-cr-per" id="dnCrPer" role="group" aria-label="Período das curvas"><button type="button" data-d="30" aria-pressed="true">30 dias</button><button type="button" data-d="60" aria-pressed="false">60 dias</button></div>
-        <button type="button" class="linkbtn dn-cr-at" id="dnCrAt">Atualizar</button>
+        <button type="button" class="dn-cr-at" id="dnCrAt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5h-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Atualizar</span></button>
       </div>
+      <p class="dn-cr-quando" id="dnCrQuando" aria-live="polite"></p>
       <p class="dn-err" id="dnCrErr" hidden></p>
       <div class="mytreino wood">
         <span class="ck">Esta semana</span>
@@ -4544,6 +4553,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.60.2', data: '17/11/2026', itens: ['Administrador: no Crescimento e conversão, o botão Atualizar ficou do tamanho do 30/60 dias, com o ícone que gira enquanto busca, e embaixo aparece a hora dos números.'] },
   { v: '3.60.1', data: '17/11/2026', itens: ['Administrador: grupo novo "Crescimento e conversão" no painel. Mostra a semana contra a anterior (novos, ativos por dia, sócios pagantes, vendas, conversão dos novos e retenção), as curvas de 30 ou 60 dias (pessoas ativas e novas, sócios pagantes, quem entrou e quem saiu do plano), o funil dos novos, os novos de cada semana (quantos voltaram, ficaram e viraram sócios) e a retenção semanal. Sócio ali é só quem pagou.', 'Mesa Porto de Manaus com desenho novo: o cais cheio de caminhões, carros e gente carregando os barcos.'] },
   { v: '3.60.0', data: '17/11/2026', itens: ['Mesa nova: Flutuantes no rio, as casas flutuantes no Rio Negro no fim da tarde, com a história da Cidade Flutuante de Manaus.', 'Mesa mais bem aproveitada: quando um lado da mesa cresce e o bucho daquele lado está vazio, as pedras seguem em fileiras pela largura toda, em vez de subir numa escadinha estreita num canto. No fim da mão, as pedras ficam até 20% maiores. Se depois alguém jogar no bucho, as pedras daquele lado deslizam para o canto delas.', 'Mesa Guaraná: a imagem ficou mais aberta, com o cacho inteiro na mesa e folga em volta.', 'Tela do Sócio da Calçada atualizada: a tabela "Grátis ou sócio", a oferta e a carta de boas-vindas agora mostram o Sábado dos Torneios (só o sócio vira Campeão do Sábado, com o selo 🏅) e a Copa dos Sócios.'] },
   { v: '3.59.1', data: '17/11/2026', itens: ['O botão verde de convite saiu do início. O convite pelo WhatsApp continua na aba Ranking e nas faixas dos eventos na Calçada.', 'Na Calçada do Sábado dos Torneios, a ilustração da mesa do torneio fica no alto do cartão azul, logo abaixo do título.'] },
@@ -16686,7 +16696,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.60.1-8c6b3ab1';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.60.2-11bbd3b7';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -18240,8 +18250,15 @@ async function dnCrescimento(novo) {
   if (!dono || !dono.admin || !CONFIG.api || DN_CR.buscando) return;
   const err = $('#dnCrErr'); if (!err) return;
   DN_CR.buscando = true;
-  try { DN_CR.j = await dnMsgPedir(`/dono/crescimento?dias=${DN_CR.dias}${novo ? '&novo=1' : ''}`); err.hidden = true; }
+  // 17/11: o botão mostra que está buscando (gira por pelo menos meio segundo, para dar para ver)
+  const bt = $('#dnCrAt'), t0 = DN_CR.t0 = Date.now();
+  const qd = $('#dnCrQuando'), qdAntes = qd ? qd.textContent : '';
+  if (bt) { bt.disabled = true; bt.classList.add('girando'); }
+  if (qd && novo) qd.textContent = 'Atualizando os números…';
+  const pronto = ok => setTimeout(() => { if (bt) { bt.disabled = false; bt.classList.remove('girando'); } if (!ok && qd && qd.textContent === 'Atualizando os números…') qd.textContent = qdAntes; }, Math.max(0, 600 - (Date.now() - t0)));
+  try { DN_CR.j = await dnMsgPedir(`/dono/crescimento?dias=${DN_CR.dias}${novo ? '&novo=1' : ''}`); err.hidden = true; pronto(true); }
   catch (e) {
+    pronto(false);
     DN_CR.buscando = false;
     if (e.message !== 'sem-chave') { err.textContent = navigator.onLine === false ? 'Sem internet agora. As curvas aparecem quando a conexão voltar.' : 'Não deu para carregar as curvas agora. Tente de novo daqui a pouco.'; err.hidden = false; }
     return;
@@ -18302,7 +18319,10 @@ function dnCrDesenhar() {
   dnGrafico($('#dnCrG4'), $('#dnCrTip4'), rs.map(x => ({ rot: dnDM(x.ini), curto: dnDM(x.ini), v: Math.round(100 * x.voltaramSemana / x.ativos),
     dica: `Semana de ${dnDM(x.ini)}: ${fmtN(x.voltaramSemana)} de ${fmtN(x.ativos)} voltaram na semana seguinte (${crPct(x.voltaramSemana, x.ativos)})` })),
     { nome: 'Retenção semanal, em porcentagem', col1: 'Semana', col2: '% que voltou', rotulo: () => true, padrao: rs.length ? 'Toque numa coluna para ver a semana.' : 'Aparece quando houver 2 semanas inteiras de contagem.' });
-  $('#dnCrNota').textContent = `Sócio aqui é só quem pagou: presentes, cortesias e os aparelhos do administrador ficam de fora. Ativos e novos contam pelo código de cada aparelho${j.contagemDesde ? `, desde ${dnDM(j.contagemDesde)}` : ''}. ${j.cache ? 'Números de até 5 minutos atrás.' : 'Números de agora.'}`;
+  $('#dnCrNota').textContent = `Sócio aqui é só quem pagou: presentes, cortesias e os aparelhos do administrador ficam de fora. Ativos e novos contam pelo código de cada aparelho${j.contagemDesde ? `, desde ${dnDM(j.contagemDesde)}` : ''}.`;
+  { const d = new Date(j.agora || Date.now()), hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    const min = Math.floor((Date.now() - (j.agora || Date.now())) / 60000);
+    setTimeout(() => { $('#dnCrQuando').textContent = `Números das ${hm}` + (j.cache && min >= 1 ? ` · de ${min} min atrás` : ''); }, Math.max(0, 600 - (Date.now() - (DN_CR.t0 || 0)))); }
 }
 // linhas com um eixo só, cruz ao tocar e o último valor escrito na ponta de cada linha
 function dnLinhas(box, tip, rots, series, o) {
