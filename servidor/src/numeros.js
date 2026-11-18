@@ -2,6 +2,7 @@
 // partidas por jogador, horários de acesso e picos, novos por dia, quem voltou e outros números de acompanhamento.
 // Tudo sai do aviso de "app aberto" (presença), que o app já manda a cada minuto. Só o código aleatório do aparelho e
 // contagens: sem apelido, sem foto, sem endereço. O horário é o de Manaus.
+import { produtoDoPedido } from './pagamentos.js';   // 17/11: o tempo de sócio de cada pagamento (curvas do painel)
 const MANAUS = -4 * 3600000, DIA = 86400000;
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || '')) && !/^teste-/.test(String(v));
 const inteiro = v => { const n = Math.floor(Number(v)); return Number.isFinite(n) && n >= 0 && n < 1e6 ? n : null; };
@@ -119,4 +120,120 @@ export async function limparNumeros(env) {
   try { await env.DB.prepare('DELETE FROM acessos_hora WHERE dia < ?').bind(corte).run(); } catch (e) {}
   try { await env.DB.prepare('DELETE FROM pico_hora WHERE dia < ?').bind(corte).run(); } catch (e) {}
   try { await env.DB.prepare('DELETE FROM partidas_dia WHERE dia < ?').bind(corte).run(); } catch (e) {}
+}
+
+// ===== 17/11 (pedido do dono: "análise de conversão x novos usuários, curvas de subida e queda") =====
+// GET /dono/crescimento?dias=30|60 -> as curvas por dia (jogadores, novos, sócios pagantes, entradas e saídas de sócios,
+// vendas), a turma de novos de cada semana (quantos voltaram, ficaram e viraram sócios), o funil dos novos e o resumo da
+// semana contra a anterior. Sócio aqui é só quem pagou (sem presentes do dono, cortesias e aparelhos de teste); o tempo de
+// sócio sai dos próprios pagamentos (cada um soma os dias do produto, como o plano faz), então a curva mostra quem entrou
+// e quem saiu de verdade. Só contagens e códigos aleatórios de aparelho: nenhum nome sai daqui.
+const CRESC = { t: 0, chave: '', dados: null };
+export async function donoCrescimento(req, env, origin, h, url) {
+  if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
+  const N = String(url && url.searchParams.get('dias')) === '60' ? 60 : 30;
+  const agora = Date.now();
+  const novo = !!(url && url.searchParams.get('novo') === '1');   // o botão Atualizar do painel
+  if (!novo && CRESC.dados && CRESC.chave === String(N) && agora - CRESC.t < 5 * 60000) return h.json(Object.assign({}, CRESC.dados, { cache: true }), 200, origin);
+  const hoje = diaDe(agora), inicio = d => Date.parse(d + 'T00:00:00Z') - MANAUS;
+  const lista = []; for (let k = N - 1; k >= 0; k--) lista.push(diaDe(agora - k * DIA));
+  const todos = async (sql, ...a) => { try { return (await env.DB.prepare(sql).bind(...a).all()).results || []; } catch (e) { return []; } };
+  // semanas de segunda a domingo (horário de Manaus): as 8 últimas, a de agora incluída
+  const seg = d => { const t = Date.parse(d + 'T00:00:00Z'), w = (new Date(t).getUTCDay() + 6) % 7; return new Date(t - w * DIA).toISOString().slice(0, 10); };
+  const seg0 = new Date(Date.parse(seg(hoje) + 'T00:00:00Z') - 7 * 7 * DIA).toISOString().slice(0, 10);
+  const desde = Math.min(inicio(lista[0]), inicio(seg0));
+  const fora = new Set();
+  for (const r of await todos('SELECT aparelho FROM cortesias')) fora.add(r.aparelho);
+  for (const r of await todos('SELECT aparelho FROM dono_aparelhos')) fora.add(r.aparelho);
+  const ok = a => !!a && !/^teste-/.test(a) && !fora.has(a);
+
+  // jogadores novos (desde 03/11 a contagem é por aparelho; "semente" = já existia antes da contagem)
+  const novosL = (await todos('SELECT aparelho, primeiro, ultimo, jogou FROM jogadores WHERE semente = 0 AND primeiro >= ?', desde)).filter(x => ok(x.aparelho));
+  const ativosDia = await todos("SELECT dia, COUNT(DISTINCT aparelho) AS n FROM acessos_hora WHERE dia >= ? AND aparelho NOT LIKE 'teste-%' GROUP BY dia", lista[0]);
+  // quem jogou em cada semana e, dele, quem voltou na semana seguinte
+  const semanasAt = await todos(`WITH p AS (SELECT DISTINCT aparelho, CAST((julianday(dia) - julianday(?1)) / 7 AS INTEGER) AS w FROM acessos_hora WHERE dia >= ?1 AND aparelho NOT LIKE 'teste-%')
+    SELECT a.w AS w, COUNT(*) AS ativos, COUNT(b.aparelho) AS voltaram FROM p a LEFT JOIN p b ON b.aparelho = a.aparelho AND b.w = a.w + 1 GROUP BY a.w`, seg0);
+  // pagamentos (todos: são poucos) e pedidos de pagamento abertos pelos novos
+  const pagos = (await todos("SELECT aparelho, produto, valor, pago_em FROM pedidos WHERE status = 'pago' AND pago_em IS NOT NULL AND aparelho IS NOT NULL ORDER BY pago_em")).filter(x => ok(x.aparelho));
+  const pediram = new Set((await todos('SELECT DISTINCT aparelho FROM pedidos WHERE criado_em >= ? AND aparelho IS NOT NULL', desde)).map(x => x.aparelho));
+
+  // tempo de sócio de cada aparelho, a partir dos pagamentos: pagou antes de acabar, soma no fim; depois, começa de novo
+  const durDe = (produto, valor) => { const x = produtoDoPedido(produto, valor); return (x && x.dias) || 31; };
+  const faixas = [], primeiroPago = new Map();
+  const porAp = new Map(); for (const p of pagos) { if (!porAp.has(p.aparelho)) porAp.set(p.aparelho, []); porAp.get(p.aparelho).push(p); }
+  for (const [ap, l] of porAp) {
+    primeiroPago.set(ap, l[0].pago_em);
+    let ini = null, fim = 0;
+    for (const p of l) {
+      if (ini != null && p.pago_em <= fim) fim += durDe(p.produto, p.valor) * DIA;
+      else { if (ini != null) faixas.push([ini, fim]); ini = p.pago_em; fim = p.pago_em + durDe(p.produto, p.valor) * DIA; }
+    }
+    if (ini != null) faixas.push([ini, fim]);
+  }
+  const sociosEm = t => faixas.reduce((n, f) => n + (f[0] <= t && f[1] > t ? 1 : 0), 0);
+
+  // por dia
+  const contaPor = (l, f) => { const m = {}; for (const x of l) { const d = f(x); if (d) m[d] = (m[d] || 0) + 1; } return m; };
+  const novosM = contaPor(novosL, x => diaDe(x.primeiro));
+  const ativosM = Object.fromEntries(ativosDia.map(x => [x.dia, x.n]));
+  const entraramM = {}; for (const t of primeiroPago.values()) { const d = diaDe(t); entraramM[d] = (entraramM[d] || 0) + 1; }
+  const voltouM = {};   // voltou a pagar depois de um tempo sem plano (não é a primeira vez)
+  for (const [ap, l] of porAp) { let fim = 0, prim = true; for (const p of l) { if (!prim && p.pago_em > fim) { const d = diaDe(p.pago_em); voltouM[d] = (voltouM[d] || 0) + 1; } fim = Math.max(fim, p.pago_em) + durDe(p.produto, p.valor) * DIA; prim = false; } }
+  const sairamM = {}; for (const f of faixas) if (f[1] < agora) { const d = diaDe(f[1]); sairamM[d] = (sairamM[d] || 0) + 1; }
+  const receitaM = {}; for (const p of pagos) { const d = diaDe(p.pago_em); receitaM[d] = Math.round(100 * ((receitaM[d] || 0) + (Number(p.valor) || 0))) / 100; }
+  const dias = lista.map(d => {
+    const fimDia = Math.min(inicio(d) + DIA - 1, agora);
+    return { d, novos: novosM[d] || 0, ativos: ativosM[d] || 0, socios: sociosEm(fimDia), entraram: (entraramM[d] || 0) + (voltouM[d] || 0), sairam: sairamM[d] || 0, receita: receitaM[d] || 0 };
+  });
+
+  // turma de novos de cada semana
+  const atM = Object.fromEntries(semanasAt.map(x => [x.w, x]));
+  const semanas = [];
+  for (let w = 0; w < 8; w++) {
+    const ini = inicio(new Date(Date.parse(seg0 + 'T00:00:00Z') + w * 7 * DIA).toISOString().slice(0, 10)), fim = ini + 7 * DIA;
+    const l = novosL.filter(x => x.primeiro >= ini && x.primeiro < fim);
+    const velhos = l.filter(x => x.primeiro <= agora - 7 * DIA);   // só quem chegou há 7 dias ou mais pode ter "ficado"
+    const at = atM[w] || {};
+    semanas.push({
+      ini: diaDe(ini), atual: fim > agora, novos: l.length, jogaram: l.filter(x => x.jogou).length,
+      voltaram: l.filter(x => diaDe(x.ultimo) > diaDe(x.primeiro)).length,
+      ficaram: velhos.filter(x => x.ultimo - x.primeiro >= 7 * DIA).length, podiamFicar: velhos.length,
+      pediram: l.filter(x => pediram.has(x.aparelho)).length, pagaram: l.filter(x => primeiroPago.has(x.aparelho)).length,
+      ativos: at.ativos || 0, voltaramSemana: fim + 7 * DIA > agora ? null : (at.voltaram || 0)   // só com a semana seguinte inteira
+    });
+  }
+
+  // funil dos novos dos últimos 30 dias
+  const n30 = novosL.filter(x => x.primeiro >= agora - 30 * DIA), v30 = n30.filter(x => x.primeiro <= agora - 7 * DIA);
+  const conv = n30.filter(x => primeiroPago.has(x.aparelho));
+  const tempos = conv.map(x => Math.max(0, primeiroPago.get(x.aparelho) - x.primeiro)).sort((a, b) => a - b);
+  const funil = {
+    novos: n30.length, jogaram: n30.filter(x => x.jogou).length, voltaram: n30.filter(x => diaDe(x.ultimo) > diaDe(x.primeiro)).length,
+    ficaram: v30.filter(x => x.ultimo - x.primeiro >= 7 * DIA).length, podiamFicar: v30.length,
+    pediram: n30.filter(x => pediram.has(x.aparelho)).length, pagaram: conv.length,
+    diasAteSocio: tempos.length ? Math.round(10 * tempos[Math.floor((tempos.length - 1) / 2)] / DIA) / 10 : null,
+    mesmoDia: conv.filter(x => diaDe(primeiroPago.get(x.aparelho)) === diaDe(x.primeiro)).length
+  };
+
+  // resumo: últimos 7 dias contra os 7 anteriores (dias completos para médias; hoje entra nas somas)
+  const ult = n => { const l = []; for (let k = n - 1; k >= 0; k--) l.push(diaDe(agora - k * DIA)); return l; };
+  const d14 = ult(14), ant = d14.slice(0, 7), cur = d14.slice(7);
+  const soma = (ds, m) => Math.round(100 * ds.reduce((s, d) => s + (m[d] || 0), 0)) / 100;
+  const media = (ds, m) => { const v = ds.map(d => m[d] || 0); return v.length ? Math.round(10 * v.reduce((s, x) => s + x, 0) / v.length) / 10 : 0; };
+  const curC = ult(8).slice(0, 7), antC = ult(15).slice(0, 7);   // 7 dias completos (sem hoje) e os 7 de antes
+  const ret = semanas.filter(s => s.voltaramSemana != null && s.ativos > 0);
+  const ultRet = ret.length ? ret[ret.length - 1] : null;
+  const resumo = {
+    novos: soma(cur, novosM), novosAnt: soma(ant, novosM),
+    ativosMedia: media(curC, ativosM), ativosMediaAnt: media(antC, ativosM),
+    socios: sociosEm(agora), socios7: sociosEm(agora - 7 * DIA),
+    entraram: soma(cur, entraramM) + soma(cur, voltouM), sairam: soma(cur, sairamM),
+    receita: soma(cur, receitaM), receitaAnt: soma(ant, receitaM),
+    retencao: ultRet ? { semana: ultRet.ini, ativos: ultRet.ativos, voltaram: ultRet.voltaramSemana } : null,
+    sociosTotal: primeiroPago.size
+  };
+  const comeco = await todos('SELECT MIN(dia) AS d FROM acessos_hora');
+  const dados = { agora, hoje, n: N, dias, semanas, funil, resumo, contagemDesde: (comeco[0] && comeco[0].d) || null };
+  CRESC.t = agora; CRESC.chave = String(N); CRESC.dados = dados;
+  return h.json(dados, 200, origin);
 }

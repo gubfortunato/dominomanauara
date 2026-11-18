@@ -9,7 +9,7 @@ import * as turmas from './turmas.js';
 import * as offline from './offline.js';
 import * as vivo from './vivo.js';
 import * as presenca from './presenca.js';
-import { donoNumeros, limparNumeros } from './numeros.js';
+import { donoNumeros, limparNumeros, donoCrescimento } from './numeros.js';
 import * as rk from './ranking.js';
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos, pegaPeloApelido, donoApelidos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
@@ -657,6 +657,7 @@ export default {
       if (url.pathname === '/copa' && req.method === 'GET') return await copaInfo(req, env, origin, H, url);   // 10/11: Copa dos Sócios
       if (url.pathname === '/dono/presenca' && req.method === 'GET') return await presenca.donoPresenca(req, env, origin, H);
       if (url.pathname === '/dono/numeros' && req.method === 'GET') return await donoNumeros(req, env, origin, H);   // 03/11
+      if (url.pathname === '/dono/crescimento' && req.method === 'GET') return await donoCrescimento(req, env, origin, H, url);   // 17/11: conversão e curvas
       if (url.pathname === '/dono/burlas' && req.method === 'GET') return await donoBurlas(req, env, origin, H, vigiados);   // 10/11: possíveis burlas dos limites (12/11: e os apelidos em vigia)
       if (url.pathname === '/dono/quarta' && req.method === 'GET') return await donoQuarta(req, env, origin, H);   // 12/11: Quarta dos Amigos e convites
       if (url.pathname === '/dono/vigia/tirar' && req.method === 'POST') return await donoVigiaTirar(req, env, origin, H);   // 12/11: o dono tira da vigia (e desfaz o bloqueio automático)
