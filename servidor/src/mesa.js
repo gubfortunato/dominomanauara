@@ -444,7 +444,8 @@ export class Mesa {
     const av = /^[a-z0-9_-]{1,16}$/i.test(String(b.av || '')) ? String(b.av) : null;
     let bairro = limpa(b.bairro, 28);
     if (bairro.length < 2 || nomeOfensivo(bairro)) bairro = null;
-    return { id, nome, av, bairro, nv: nivelOk(b.nv), bot: false, saiu: false, menor: !!b.menor, apelidoRuim: ruim };
+    const est = /^[0-3]{4}[01]{3}(\.\d{1,3})?$/.test(String(b.est || '')) ? String(b.est) : null;   // 18/11: estante (medalhas e raras), só o formato
+    return { id, nome, av, bairro, nv: nivelOk(b.nv), est, bot: false, saiu: false, menor: !!b.menor, apelidoRuim: ruim };
   }
 
   // ---------- Mensagens dos celulares ----------
@@ -565,7 +566,7 @@ export class Mesa {
     const f = (m.fila || []).findIndex(c => c.id === quem.id);
     if (p < 0 && f >= 0) {
       // já estava na fila (voltou): continua esperando a vez
-      Object.assign(m.fila[f], { apoiador: quem.planoIncerto ? m.fila[f].apoiador : quem.apoiador, doador: quem.doador, foto: quem.foto, turma: quem.turma, nv: quem.nv, rei: quem.rei, campeao: quem.campeao, campea: quem.campea, dourada: quem.dourada, sabado: quem.sabado, uso: quem.uso || m.fila[f].uso, rede: quem.rede || m.fila[f].rede });
+      Object.assign(m.fila[f], { apoiador: quem.planoIncerto ? m.fila[f].apoiador : quem.apoiador, doador: quem.doador, foto: quem.foto, turma: quem.turma, nv: quem.nv, est: quem.est, rei: quem.rei, campeao: quem.campeao, campea: quem.campea, dourada: quem.dourada, sabado: quem.sabado, uso: quem.uso || m.fila[f].uso, rede: quem.rede || m.fila[f].rede });
       att.id = quem.id; ws.serializeAttachment(att);
       m.ultimo = Date.now(); await this.salvar(); this.espalhar(); this.mandarPapo(ws, att);
       return;
@@ -574,7 +575,7 @@ export class Mesa {
       // voltou (ou abriu em outro aparelho): retoma a cadeira; se tinha saído, volta a jogar
       const c = m.cad[p];
       if (m.fase === 'espera') { c.nome = quem.nome; c.av = quem.av; c.bairro = quem.bairro; }
-      c.apoiador = quem.planoIncerto ? c.apoiador : quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv; c.menor = quem.menor; c.rei = quem.rei; c.campeao = quem.campeao; c.campea = quem.campea; c.dourada = quem.dourada; c.sabado = quem.sabado; c.apelidoRuim = quem.apelidoRuim;   // 10/11: falha do banco não tira o selo
+      c.apoiador = quem.planoIncerto ? c.apoiador : quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv; c.est = quem.est; c.menor = quem.menor; c.rei = quem.rei; c.campeao = quem.campeao; c.campea = quem.campea; c.dourada = quem.dourada; c.sabado = quem.sabado; c.apelidoRuim = quem.apelidoRuim;   // 10/11: falha do banco não tira o selo
       if (quem.uso) c.uso = quem.uso;
       if (quem.rede) c.rede = quem.rede;
       if (c.saiu) { c.saiu = false; c.bot = false; }
@@ -1556,7 +1557,7 @@ export class Mesa {
       vezMs: G && G.phase === 'play' && m.cad[G.turn] && !m.cad[G.turn].bot ? this.limiteVez(G.turn) : null,   // 18/11: limite da vez de quem joga
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, foto: c.menor ? null : c.foto || null, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), quarta: !m.publica && this.socioArg() === 'livre', meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, alvo: m.alvo || 200, vence: m.vence || 2, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
-      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, campea: !!c.campea && !c.saiu && !c.bot, dourada: !!c.dourada && !c.saiu && !c.bot, sabado: !!c.sabado && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || c.menor ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
+      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, campea: !!c.campea && !c.saiu && !c.bot, dourada: !!c.dourada && !c.saiu && !c.bot, sabado: !!c.sabado && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || c.menor ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, est: c.bot ? null : (c.est || null), on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
       tempos: minha >= 0 && m.tempos ? m.tempos[minha] || 0 : 0, tolerado: TEMPO_TOLERADO,   // 03/11
       jogo, agora: Date.now(), assistindo: this.quantosAssistem(),
