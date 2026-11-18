@@ -32,7 +32,7 @@ const TEMPO = {
   passe: 3000,       // robô: espera antes de passar
   semPedra: 2600,    // pessoa sem pedra que encaixe: passa sozinha
   distribuir: 4300,  // tempo da animação de embaralhar e distribuir no celular
-  ausente: 25000,    // pessoa sem conexão: o robô joga por ela depois disso
+  ausente: 10000,    // 18/11 (sugestão de jogador): pessoa sem conexão: o robô joga por ela em 10 s (antes, os 20 s de todo mundo)
   leitura: 12000,   // 28/10 (pedido do dono): fim da mão: 10 s para todo mundo ler a garagem (a janela abre uns 2 s depois da última pedra)
   largou: 90000,     // 28/10: sem conexão por 1 min e meio no meio do jogo: um robô da turma entra no lugar (com aviso)
   conferir: 60000,   // vez de uma pessoa conectada: confere de novo se ela continua lá
@@ -71,7 +71,8 @@ const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pont
   'pirarucu', 'tucunare', 'tambaqui',   // 14/11: Pirarucu, Tucunaré e Tambaqui
   'igreja',   // 14/11: Igreja de São Sebastião, agora o ano todo
   'guarana',   // 17/11: Guaraná
-  'flutuantes'];   // 17/11: Flutuantes no rio
+  'flutuantes',   // 17/11: Flutuantes no rio
+  'justica'];   // 18/11: Palácio da Justiça
 // 28/10 (regras do dono): a partir de 5/11, a mesa com os amigos de quem não é sócio só usa as mesas grátis (Madeira,
 // Vermelha e Azul): no sorteio e na troca. Na mesa rápida o sorteio continua entre todas.
 export const TEMAS_GRATIS = ['madeira', 'garantido', 'caprichoso'];
@@ -1303,7 +1304,7 @@ export class Mesa {
       let espera;
       if (c.bot) espera = tem ? this.T.jogada : this.T.passe;
       else if (!tem) espera = this.T.semPedra;
-      else espera = Math.max(0, m.turnoDesde + Math.min(this.T.ausente, this.T.vez) - agora);   // 3.41: 20 s para todo mundo
+      else espera = Math.max(0, m.turnoDesde + this.limiteVez(p) - agora);   // 3.41: 20 s; 18/11: 10 s para quem está sem conexão
       m.proximo = m.turnoEm = agora + espera + (extra || 0);
       // 28/10: quem ficou sem conexão: confere quando passar o tempo (o robô da turma entra no lugar). Só agenda se
       // ainda vai passar, ou se tem mais alguém conectado (senão não há troca e o alarme ficaria batendo à toa)
@@ -1356,7 +1357,7 @@ export class Mesa {
     }
     if (!moves.length) { applyPass(G, p); await this.depoisDaAcao(null); return this.reacaoDosRobos(); }
     // 3.41: passou dos 20 s (em qualquer mesa online, não só no modo torneio), o robô joga pela pessoa (e pede o ponto)
-    const limite = Math.min(this.T.ausente, this.T.vez);
+    const limite = this.limiteVez(p);   // 18/11: 10 s se a pessoa está sem conexão
     if (agora - m.turnoDesde >= limite - 50) {
       // 03/11 (pedido do dono): quem está conectado e só passou do tempo perde a experiência daquela mão, mas a partida
       // continua valendo (ranking e bônus), até TEMPO_TOLERADO vezes na partida. Quem caiu ou saiu: como antes.
@@ -1488,6 +1489,8 @@ export class Mesa {
   }
 
   // ---------- Conexões e envio ----------
+  // 18/11: limite da vez de uma pessoa: 20 s conectada; 10 s sem conexão (o robô joga por ela)
+  limiteVez(p) { return this.conectado(p) ? this.T.vez : Math.min(this.T.ausente, this.T.vez); }
   conectado(p) {
     const c = this.m.cad[p];
     if (!c || c.bot || !c.id) return false;
@@ -1516,7 +1519,8 @@ export class Mesa {
     }
     // 10/11: quem assiste pelo Desafio ao vivo (so) não recebe o número da mesa; quem assiste pelo número recebe, como antes
     return { t: 'mesa', codigo: so ? null : m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
-      leituraMs: G && G.phase === 'handEnd' ? Math.max(0, Math.round(m.turnoDesde + this.T.leitura - Date.now())) : 0, proximaPedida: !!(G && G.phase === 'handEnd' && m.proximaPedida === m.seq),   // 28/10
+      leituraMs: G && G.phase === 'handEnd' ? Math.max(0, Math.round(m.turnoDesde + this.T.leitura - Date.now())) : 0,
+      vezMs: G && G.phase === 'play' && m.cad[G.turn] && !m.cad[G.turn].bot ? this.limiteVez(G.turn) : null,   // 18/11: limite da vez de quem joga proximaPedida: !!(G && G.phase === 'handEnd' && m.proximaPedida === m.seq),   // 28/10
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, foto: c.menor ? null : c.foto || null, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), quarta: !m.publica && this.socioArg() === 'livre', meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
       cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, campea: !!c.campea && !c.saiu && !c.bot, dourada: !!c.dourada && !c.saiu && !c.bot, sabado: !!c.sabado && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || c.menor ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
