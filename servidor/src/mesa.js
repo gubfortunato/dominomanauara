@@ -444,7 +444,7 @@ export class Mesa {
     const av = /^[a-z0-9_-]{1,16}$/i.test(String(b.av || '')) ? String(b.av) : null;
     let bairro = limpa(b.bairro, 28);
     if (bairro.length < 2 || nomeOfensivo(bairro)) bairro = null;
-    const est = /^[0-3]{4}[01]{3}(\.\d{1,3})?$/.test(String(b.est || '')) ? String(b.est) : null;   // 18/11: estante (medalhas e raras), só o formato
+    const est = /^[0-3]{4}[01]{3,5}(\.\d{1,3})?$/.test(String(b.est || '')) ? String(b.est) : null;   // 18/11: estante (medalhas e raras), só o formato
     return { id, nome, av, bairro, nv: nivelOk(b.nv), est, bot: false, saiu: false, menor: !!b.menor, apelidoRuim: ruim };
   }
 
