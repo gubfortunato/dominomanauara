@@ -238,3 +238,16 @@ export async function limparRanking(env) {
   await env.DB.prepare('DELETE FROM calcada_robo WHERE dia < ?').bind(velho).run();
   await env.DB.prepare('DELETE FROM calcada_par WHERE dia < ?').bind(velho).run();
 }
+// 17/11 (pedido do dono): avatar (ou foto aprovada) e a ★ de sócio nos placares das noites de evento (Sexta e Segunda).
+// O avatar é o da última partida contada no ranking; quem não tem fica com a inicial do apelido (no app).
+export async function perfis(env, aparelhos) {
+  const ids = [...new Set((aparelhos || []).filter(Boolean))].slice(0, 30), out = new Map(); if (!ids.length) return out;
+  const soc = await socios(env, ids); let fts = new Map(); try { fts = await fotosDe(env, ids); } catch (e) {}
+  const avs = new Map();
+  try {
+    const { results } = await env.DB.prepare(`SELECT aparelho, av FROM calcada WHERE av IS NOT NULL AND aparelho IN (${ids.map(() => '?').join(',')}) ORDER BY atualizado`).bind(...ids).all();
+    (results || []).forEach(r => avs.set(r.aparelho, r.av));
+  } catch (e) {}
+  for (const a of ids) out.set(a, { av: avs.get(a) || null, socio: soc.has(a), foto: fts.get(a) || null });
+  return out;
+}

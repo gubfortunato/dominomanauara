@@ -1,6 +1,7 @@
 // 17/11 (pedido do dono): Segunda é de Lei. Das 19h às 22h de segunda (Manaus), cada partida online inteira conta para quem
 // jogou: partidas, vitórias e galos, como no Placar da Sexta. Quem conta é o servidor (não dá para inventar do celular).
 // Menor de 18 não aparece. O Placar da Segunda fica na Calçada durante a Segunda e, com o resultado, na terça.
+import { perfis } from './ranking.js';   // 17/11
 const MANAUS = 4 * 3600000, DIA = 86400000;
 const manaus = t => new Date(t - MANAUS);
 const diaM = t => manaus(t).toISOString().slice(0, 10);
@@ -43,5 +44,6 @@ export async function segundaPlacar(env, url, h, origin) {
       }
     }
   } catch (e) {}
-  return h.json({ dia, aoVivo, top: top.map(x => ({ nome: x.nome, vitorias: x.vitorias, galos: x.galos, partidas: x.partidas })), eu }, 200, origin);
+  let pf = new Map(); try { pf = await perfis(env, top.map(x => x.aparelho)); } catch (e) {}   // 17/11: avatar (ou foto) e a ★ de sócio
+  return h.json({ dia, aoVivo, top: top.map(x => Object.assign({ nome: x.nome, vitorias: x.vitorias, galos: x.galos, partidas: x.partidas }, pf.get(x.aparelho) || {})), eu }, 200, origin);
 }
