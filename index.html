@@ -2081,6 +2081,14 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 /* 3.25: administrador — jogadores da mesa online e bloqueio */
 .dn-joglista{list-style:none;margin:6px 0 10px;padding:0;display:grid;gap:6px}
 .dn-apl-add{display:flex;gap:8px;margin:6px 0 4px}   /* 11/11: apelidos bloqueados */
+.qc-tx{font-size:17px;line-height:1.45;margin:4px 0 12px}
+.qc-passos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 14px}
+.qc-passos span{display:grid;justify-items:center;gap:5px;padding:10px 6px;border-radius:12px;background:var(--bg-2);font-size:14px;font-weight:700;line-height:1.25;text-align:center}
+.qc-passos i{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#2f5142;color:#f3ead2;font-size:14px;font-style:normal}
+#qcZap{display:flex;align-items:center;justify-content:center;gap:8px}#qcZap svg{width:22px;height:22px;flex:none}
+.qc-socio{display:grid;gap:10px;margin:14px 0 0;padding:14px;border-radius:16px;background:linear-gradient(135deg,#fbe7ad,#e0b25a);color:#3b220c;box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+.qc-socio span{font-size:15.5px;font-weight:700;line-height:1.35}
+.qc-socio button{min-height:46px;border:0;border-radius:12px;background:#3b220c;color:#fbe7ad;font:inherit;font-size:16.5px;font-weight:800;cursor:pointer}
 .sala-quarta{margin:4px 0 10px;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,#1d5d78,#08222e);color:#eaf6fb;font-size:15px;line-height:1.4;text-align:center}   /* 12/11: Quarta dos Amigos */
 .sala-quarta b{display:block;font-size:16.5px;margin-bottom:2px;color:#fff}
 .ca-passos{margin:14px 0 16px;padding:0 0 0 18px;display:grid;gap:8px;font-size:15px;line-height:1.4}   /* 12/11: guarde o código */
@@ -4695,6 +4703,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.12', data: '18/11/2026', itens: ['Quarta dos Amigos: quando começa, às 20h, aparece o convite para chamar pelo menos 5 amigos e montar a mesa dos amigos.'] },
   { v: '3.61.11', data: '18/11/2026', itens: ['Estante nova: taças de bronze, prata e ouro com a pedra de dominó, a cúpula do Teatro Amazonas, a batida e o galo, e as estatuetas das raras (vitória-régia, boto-cor-de-rosa, onça-pintada e mais duas: o tucano, de quem ganha o jogo sem perder nenhuma partida, e o tambaqui, de quem bate em três mãos seguidas).'] },
   { v: '3.61.10', data: '18/11/2026', itens: ['Estante com a cara de Manaus: a taça de vitórias tem a cúpula do Teatro Amazonas, e as raras viraram estatuetas da Amazônia (vitória-régia, boto-cor-de-rosa e onça-pintada), num fundo verde-floresta.'] },
   { v: '3.61.9', data: '18/11/2026', itens: ['Estante no Perfil: uma vitrine com troféus de bronze, prata e ouro (100, 500 e 1.000) em partidas jogadas, partidas ganhas, batidas e galos, e as joias raras: batida de carroça, zerou a dupla e virada de 100 pontos.', 'Na mesa online, toque no avatar de quem está jogando (ou na cadeira, na sala) para ver a estante e os títulos da pessoa. No seu, embaixo, abre a sua.'] },
@@ -16034,6 +16043,36 @@ function domingoCartao(dm) {
 }
 // --- 12/11 (pedido do dono): Quarta dos Amigos, toda quarta das 20h às 23h. Na mesa com os amigos de um sócio, quem senta
 // joga sem limite (o servidor libera); o sócio ganha moral em dobro nas mesas com os amigos. Aviso no celular às 18h.
+// 18/11 (o dono): começou a Quarta dos Amigos -> na tela de todo mundo, uma vez por Quarta: chame pelo menos 5 amigos
+const QUA_CONV_KEY = 'dmz-quarta-convite';
+function quartaConvite() {
+  try {
+    if (quaAgora() !== 'agora' || !profile || screen !== 'home' || sheetKind || document.visibilityState !== 'visible') return;
+    if (typeof avisoNaTela === 'function' && avisoNaTela()) return;
+    const dia = new Date(Date.now() - 4 * 3600000).toISOString().slice(0, 10);
+    if (store.get(QUA_CONV_KEY) === dia) return;
+    store.set(QUA_CONV_KEY, dia);
+    const socio = temPlano();
+    const zap = `🤝 Hoje é Quarta dos Amigos no Dominó Manauara! Dominó em duplas do jeito de Manaus, com bucho, garagem, passe e galo. Bora montar a mesa da nossa turma? Entra aí: ${SITE_URL}`;
+    openSheet('info', `<p class="eyebrow">🤝 Quarta dos Amigos · até as 23h</p><h2 id="sheetTitle">Começou! Chame pelo menos 5 amigos</h2>
+      <p class="qc-tx">${socio
+        ? 'Convide pelo menos 5 amigos para conhecer o Dominó Manauara e monte a mesa dos amigos. Hoje, até as 23h, quem você chamar joga <b>sem limite</b> na sua mesa, mesmo sem ser sócio.'
+        : 'Convide pelo menos 5 amigos para conhecer o Dominó Manauara e montem a mesa dos amigos. Hoje, até as 23h, na mesa de um sócio todo mundo joga <b>sem limite</b>.'}</p>
+      <p class="qc-passos"><span><i>1</i>Monte a mesa</span><span><i>2</i>Chame a turma no WhatsApp</span><span><i>3</i>Bora jogar</span></p>
+      <button type="button" class="primary" id="qcMesa" style="width:100%">Montar a mesa dos amigos</button>
+      <a class="share-wa" id="qcZap" href="https://wa.me/?text=${encodeURIComponent(zap)}" target="_blank" rel="noopener">${typeof WA_IC === 'string' ? WA_IC : ''}Convidar os amigos no WhatsApp</a>
+      ${socio || !pagamentosAtivos() ? '' : '<div class="qc-socio"><span>★ Sendo sócio, a mesa é sua e a turma toda joga a noite inteira sem limite.</span><button type="button" id="qcSocio">Quero ser sócio</button></div>'}
+      <button type="button" class="secondary" id="qcDepois" style="width:100%;margin-top:10px">Agora não</button>`);
+    track('quarta-convite-ver');
+    $('#qcMesa').addEventListener('click', () => { track('quarta-convite-mesa'); closeSheet(); setTimeout(() => { try { show('sala'); criarMesa(); } catch (e) {} }, 200); });
+    $('#qcZap').addEventListener('click', () => track('quarta-convite-zap'));
+    const sc = $('#qcSocio'); if (sc) sc.addEventListener('click', () => { track('quarta-convite-socio'); closeSheet(); setTimeout(() => abrirApoio('home'), 200); });
+    $('#qcDepois').addEventListener('click', closeSheet);
+  } catch (e) {}
+}
+setInterval(quartaConvite, 30000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(quartaConvite, 2500); });
+setTimeout(quartaConvite, 4000);
 function quaAgora(t) { const d = manausDe(t || Date.now()); if (d.getUTCDay() !== 3) return null; const h = d.getUTCHours(); return h >= 20 && h < 23 ? 'agora' : h < 20 ? 'hoje' : null; }
 // --- Tempo de casa ---
 function somaMesesM(ms, n) {
@@ -17166,7 +17205,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.11-0ee6a412';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.12-27ddaf32';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
