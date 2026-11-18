@@ -33,7 +33,8 @@ const TEMPO = {
   semPedra: 2600,    // pessoa sem pedra que encaixe: passa sozinha
   distribuir: 4300,  // tempo da animação de embaralhar e distribuir no celular
   ausente: 10000,    // 18/11 (sugestão de jogador): pessoa sem conexão: o robô joga por ela em 10 s (antes, os 20 s de todo mundo)
-  leitura: 12000,   // 28/10 (pedido do dono): fim da mão: 10 s para todo mundo ler a garagem (a janela abre uns 2 s depois da última pedra)
+  leitura: 22000,   // 18/11 (sugestão de jogador): fim da mão: a próxima começa quando todos tocarem em Pronto, ou em 20 s (a janela abre uns 2 s depois da última pedra)
+  leituraPartida: 32000,   // 18/11: no fim da partida, 30 s
   largou: 90000,     // 28/10: sem conexão por 1 min e meio no meio do jogo: um robô da turma entra no lugar (com aviso)
   conferir: 60000,   // vez de uma pessoa conectada: confere de novo se ela continua lá
   espera: 20000,     // mesa rápida: espera por mais gente antes de começar com robôs
@@ -464,7 +465,7 @@ export class Mesa {
       case 'sentar': if (p >= 0) return this.sentar(p, msg.cadeira); return;
       case 'comecar': if (p >= 0) return m.publica ? this.comecarPublica() : this.comecarAmigos(ws); return;
       case 'jogar': if (p >= 0) return this.jogar(ws, p, msg); return;
-      case 'proxima': if (p >= 0) return this.proxima(msg); return;
+      case 'proxima': if (p >= 0) return this.proxima(msg, p); return;   // 18/11: o toque é o Pronto dessa pessoa
       case 'sair': if (p >= 0) return this.sair(ws, p); return this.sairDaFila(ws, att.id);
       case 'reacao': if (p >= 0) return this.reagir(p, msg.k); return;
       case 'mesa': if (p >= 0 && m.cad[p].id === m.dono) return this.trocarTema(msg.id); return;
@@ -911,16 +912,26 @@ export class Mesa {
     this.reacaoDosRobos();
   }
 
-  async proxima(msg) {
+  // 18/11 (sugestão de jogador): fim da mão. Cada pessoa conectada toca em Pronto; a próxima começa quando todas tocarem
+  // ou quando o tempo acabar (20 s na mão, 30 s no fim da partida). Ninguém corta mais a leitura dos outros.
+  limiteLeitura() { const r = this.m.G && this.m.G.result; return r && r.matchWinner != null ? this.T.leituraPartida : this.T.leitura; }
+  precisamPronto() { const m = this.m; return [0, 1, 2, 3].filter(p => m.cad[p] && !m.cad[p].bot && m.cad[p].id && this.conectado(p)); }
+  prontosAgora() { const m = this.m; return m.prontosSeq === m.seq ? this.precisamPronto().filter(p => (m.prontos || []).includes(p)) : []; }
+  todosProntos() { const q = this.precisamPronto(); return q.length > 0 && this.prontosAgora().length === q.length; }
+  async proxima(msg, p) {
     const m = this.m, G = m.G;
     if (m.fase !== 'jogo' || !G || G.phase !== 'handEnd' || msg.seq !== m.seq) return;
-    // 28/10 (pedido do dono): antes dos 10 s de leitura da garagem, o pedido fica guardado e a mesa segue sozinha na hora
-    // (o app novo trava o botão; o app antigo, que deixa tocar antes, não corta a leitura de ninguém)
-    if (Date.now() < m.turnoDesde + this.T.leitura - 50) {
-      if (m.proximaPedida !== m.seq) { m.proximaPedida = m.seq; this.agendar(); await this.salvar(); }
-      return;
+    if (p != null && p >= 0) {
+      if (m.prontosSeq !== m.seq) { m.prontosSeq = m.seq; m.prontos = []; }
+      if (!m.prontos.includes(p)) m.prontos.push(p);
     }
-    delete m.proximaPedida;
+    if (!this.todosProntos() && Date.now() < m.turnoDesde + this.limiteLeitura() - 50) { this.agendar(); await this.salvar(); this.espalhar(); return; }
+    return this.avancar();
+  }
+  async avancar() {
+    const m = this.m, G = m.G;
+    if (m.fase !== 'jogo' || !G || G.phase !== 'handEnd') return;
+    delete m.proximaPedida; delete m.prontos; delete m.prontosSeq;
     this.ctx.waitUntil(this.tirarBloqueados().catch(() => {}));   // 11/11: quem foi bloqueado com a partida rolando sai agora
     const r = G.result;
     // 3.38.2: sem esperar nada aqui (dois 'proxima' ao mesmo tempo não podem passar juntos); só apaga se não sobrou ninguém
@@ -1298,7 +1309,7 @@ export class Mesa {
     }
     if (m.fase === 'jogo' && G && G.phase === 'handEnd' && !this.alguemOnline()) m.proximo = Date.now() + this.T.vazia;
     // 28/10: alguém pediu a próxima durante os 10 s de leitura: a mesa segue sozinha quando passarem
-    else if (m.fase === 'jogo' && G && G.phase === 'handEnd' && m.proximaPedida === m.seq) m.proximo = Math.max(Date.now() + 200, m.turnoDesde + this.T.leitura);
+    else if (m.fase === 'jogo' && G && G.phase === 'handEnd') m.proximo = Math.max(Date.now() + 200, m.turnoDesde + this.limiteLeitura());   // 18/11: segue sozinha quando o tempo acabar
     if (m.fase === 'jogo' && G && G.phase === 'play') {
       const p = G.turn, c = m.cad[p], tem = legalMoves(G, p).length > 0, agora = Date.now();
       let espera;
@@ -1326,7 +1337,7 @@ export class Mesa {
     const agora = Date.now();
     if (m.ultimo + VIDA <= agora) { await this.apagar(); return; }
     if (m.fase === 'jogo' && m.G && m.G.phase === 'handEnd') {
-      if (m.proximaPedida === m.seq && this.alguemOnline() && agora >= m.turnoDesde + this.T.leitura - 50) return this.proxima({ seq: m.seq });   // 28/10
+      if (this.alguemOnline() && (this.todosProntos() || agora >= m.turnoDesde + this.limiteLeitura() - 50)) return this.avancar();   // 18/11
       if (!this.alguemOnline() && m.proximo && agora >= m.proximo - 50) { await this.apagar(); return; }
       this.agendar(); await this.salvar(); return;
     }
@@ -1519,8 +1530,10 @@ export class Mesa {
     }
     // 10/11: quem assiste pelo Desafio ao vivo (so) não recebe o número da mesa; quem assiste pelo número recebe, como antes
     return { t: 'mesa', codigo: so ? null : m.codigo, fase: m.fase, seq: m.seq, minha, dono: !!id && m.dono === id, porRobo: m.porRobo,
-      leituraMs: G && G.phase === 'handEnd' ? Math.max(0, Math.round(m.turnoDesde + this.T.leitura - Date.now())) : 0,
-      vezMs: G && G.phase === 'play' && m.cad[G.turn] && !m.cad[G.turn].bot ? this.limiteVez(G.turn) : null,   // 18/11: limite da vez de quem joga proximaPedida: !!(G && G.phase === 'handEnd' && m.proximaPedida === m.seq),   // 28/10
+      leituraMs: G && G.phase === 'handEnd' ? Math.max(0, Math.round(m.turnoDesde + this.limiteLeitura() - Date.now())) : 0,   // 18/11: quanto falta para seguir sozinha
+      prontos: G && G.phase === 'handEnd' ? this.prontosAgora().length : 0, precisam: G && G.phase === 'handEnd' ? this.precisamPronto().length : 0,   // 18/11
+      euPronto: minha >= 0 && G && G.phase === 'handEnd' && m.prontosSeq === m.seq && (m.prontos || []).includes(minha),
+      vezMs: G && G.phase === 'play' && m.cad[G.turn] && !m.cad[G.turn].bot ? this.limiteVez(G.turn) : null,   // 18/11: limite da vez de quem joga
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, foto: c.menor ? null : c.foto || null, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), quarta: !m.publica && this.socioArg() === 'livre', meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
       cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, campea: !!c.campea && !c.saiu && !c.bot, dourada: !!c.dourada && !c.saiu && !c.bot, sabado: !!c.sabado && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || c.menor ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
