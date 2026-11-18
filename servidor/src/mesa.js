@@ -70,7 +70,8 @@ const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pont
   'palacete', 'onca',   // 13/11: Palacete Provincial e Onça-pintada (a Curumins saiu no mesmo dia, pedido do dono)
   'pirarucu', 'tucunare', 'tambaqui',   // 14/11: Pirarucu, Tucunaré e Tambaqui
   'igreja',   // 14/11: Igreja de São Sebastião, agora o ano todo
-  'guarana'];   // 17/11: Guaraná
+  'guarana',   // 17/11: Guaraná
+  'flutuantes'];   // 17/11: Flutuantes no rio
 // 28/10 (regras do dono): a partir de 5/11, a mesa com os amigos de quem não é sócio só usa as mesas grátis (Madeira,
 // Vermelha e Azul): no sorteio e na troca. Na mesa rápida o sorteio continua entre todas.
 export const TEMAS_GRATIS = ['madeira', 'garantido', 'caprichoso'];
