@@ -242,10 +242,10 @@ function endHand(st, info) {
   const r = Object.assign({}, info, { hands: st.hands.map(h => h.map(t => t.slice())), score: st.score.slice(),
     handNo: st.handNo, partida: st.partida });
   const [a, b] = st.score;
-  if (Math.max(a, b) >= TARGET && a !== b) {
+  if (Math.max(a, b) >= (st.alvo || TARGET) && a !== b) {   // 18/11: o sócio pode jogar até 100 ou 150
     const w = a > b ? 0 : 1;
     st.series[w]++; r.matchWinner = w; r.series = st.series.slice();
-    if (st.series[w] >= 2) r.gameWinner = w;
+    if (st.series[w] >= (st.vence || 2)) r.gameWinner = w;   // 18/11: 1, 2 (melhor de 3) ou 3 (melhor de 5)
   }
   st.result = r;
 }
@@ -254,7 +254,7 @@ function nextHand(st) {
   const r = st.result;
   if (r && r.matchWinner != null) {
     // Jogo novo e partida nova (depois dos 200) começam com a carroça de sena.
-    if (r.gameWinner != null) { const fresh = newGame(st.names); fresh.torneio = st.torneio; Object.keys(st).forEach(k => delete st[k]); Object.assign(st, fresh); }
+    if (r.gameWinner != null) { const fresh = newGame(st.names); fresh.torneio = st.torneio; if (st.alvo) fresh.alvo = st.alvo; if (st.vence) fresh.vence = st.vence; Object.keys(st).forEach(k => delete st[k]); Object.assign(st, fresh); }
     else { st.partida++; st.score = [0, 0]; st.handNo = 0; st.nextStart = { mode: 'sena' }; }
   }
   startHand(st);
