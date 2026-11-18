@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS avisos (
   envios INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS avisos_envio ON avisos (ultimo_envio);
+-- 18/11: lembretes por faixa (fase 7 = sentimos sua falta, 30 = o último), por ausência (base = quando a pessoa sumiu)
+CREATE TABLE IF NOT EXISTS avisos_volta (id INTEGER PRIMARY KEY, fase INTEGER NOT NULL, base INTEGER NOT NULL, em INTEGER NOT NULL);
 
 -- Mesa online: limite de mesas criadas por hora (resumo do endereço que muda todo dia)
 CREATE TABLE IF NOT EXISTS mesas_criadas (marca TEXT NOT NULL, criado_em INTEGER NOT NULL);

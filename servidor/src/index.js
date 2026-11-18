@@ -20,11 +20,11 @@ import { anotarSuporte, suporteDoAparelho, suporteLido, donoResponder, juntarSup
 import { relatorioDiario, donoRelatorio, alertas, sugerirResposta } from './gestor.js';
 import { donoRobo, donoRoboVoltar } from './robo.js';   // 13/11: robô que treina toda noite
 import { segundaPlacar } from './segunda.js';
-import { sabadoPlacar, avisosSabado } from './sabado.js';   // 17/11: Sábado dos Torneios   // 17/11: Placar da Segunda (Segunda é de Lei)
+import { sabadoPlacar, avisosSabado, temaDoSabado } from './sabado.js';   // 17/11: Sábado dos Torneios   // 17/11: Placar da Segunda (Segunda é de Lei)
 import { sextaPlacar } from './sexta.js';   // 13/11: Placar da Sexta   // 13/11: relatório do dia, alertas e rascunho de resposta
 import { travaCodigo, anotarCodigoErrado, limparCodigos } from './codigos.js';
 import { saudeVoz, donoPapoVoz, limparVozesDenunciadas } from './voz.js';
-import { copaInfo, apurarCopa, avisosAgendados } from './copa.js';   // 10/11: Copa dos Sócios, Sexta da Calçada e tempo de casa
+import { copaInfo, apurarCopa, avisosAgendados, copaAgora } from './copa.js';   // 10/11: Copa dos Sócios, Sexta da Calçada e tempo de casa
 export { Mesa };
 
 const SITE = 'https://dominomanauara.com.br';
@@ -365,7 +365,22 @@ async function mandarPara(lista, msgDe, env) {
   }
   return { ok, falhas };
 }
-// Lembrete automático: só para quem não joga há 2 dias, no máximo um a cada 3 dias.
+// 18/11 (pedido do dono): lembretes por faixa, pelo tempo sem abrir o app (ou sem jogar, o que for mais recente).
+// Esfriando (2 a 6 dias sem jogar): o lembrete de sempre, no máximo a cada 3 dias. Sumido (7 a 29 dias): um "sentimos sua
+// falta" com o evento do dia, uma vez. Abandonou (30 a 90 dias): um último lembrete, uma vez. Depois disso, nada até a
+// pessoa voltar; quando volta, as fases recomeçam. Nunca fala do Happy Hour (o aviso pode chegar num sócio).
+const VOLTA = { esfriando: 2, sumido: 7, abandonou: 30, desiste: 90 };
+function msgSumido(env, agora) {
+  const d = new Date(agora - 4 * 3600000), dow = d.getUTCDay(), dia = d.toISOString().slice(0, 10);
+  let desafio = false; try { desafio = turmas.edicao(env).aberto; } catch (e) {}
+  let sab = 'Fim de semana na calçada: a turma tá toda lá.';
+  try { if (!copaAgora(agora).ativa) sab = `Hoje tem o ${temaDoSabado(dia).nome}, até as 22h.`; } catch (e) {}
+  const semEvento = desafio ? 'Hoje às 21h tem a Hora do Desafio das Turmas.' : 'A turma do bairro tá te esperando.';
+  const ev = ['Hoje tem Domingão da Calçada, até as 22h.', 'Hoje é Segunda é de Lei, das 19h às 22h.', semEvento, 'Hoje é Quarta dos Amigos, das 20h às 23h.',
+    semEvento, 'Hoje tem Sexta da Calçada, das 20h às 23h.', sab][dow];
+  return { titulo: 'Sentimos sua falta na calçada!', texto: `${ev} Bora uma partida?`, url: '/' };
+}
+const MSG_ABANDONOU = { titulo: 'A calçada tá com saudade', texto: 'Faz um mês que a turma não te vê por aqui. Tem mesa nova, torneio no sábado e muita partida rolando. Sua cadeira tá guardada!', url: '/' };
 async function lembretesDoDia(env) {
   // faxina: registros do limite de mesas com mais de 2 dias
   try { await env.DB.prepare('DELETE FROM mesas_criadas WHERE criado_em < ?').bind(Date.now() - 2 * 86400000).run(); } catch (e) {}
@@ -374,12 +389,35 @@ async function lembretesDoDia(env) {
   await limparCodigos(env);   // 10/11: números de mesa errados (mais de 2 horas)
   await limparVozesDenunciadas(env);   // 10/11: áudios denunciados (mais de 30 dias)
   if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return { ok: 0, falhas: 0, motivo: 'sem-chaves' };
-  const agora = Date.now();
-  const { results } = await env.DB.prepare(`SELECT id, endpoint, p256dh, auth FROM avisos
-    WHERE COALESCE(ultimo_jogo, criado_em) < ? AND COALESCE(ultimo_envio, 0) < ? ORDER BY COALESCE(ultimo_envio, 0) LIMIT 15`)
-    .bind(agora - 2 * DIA, agora - 3 * DIA).all();
-  const dia = Math.floor(agora / DIA);
-  return mandarPara(results || [], s => Object.assign({ url: '/' }, LEMBRETES[(dia + s.id) % LEMBRETES.length]), env);
+  const agora = Date.now(), LIM = 15;
+  try { await env.DB.prepare('DELETE FROM avisos_volta WHERE id NOT IN (SELECT id FROM avisos)').run(); } catch (e) {}
+  // quando a pessoa sumiu: o mais recente entre a última partida (avisada pelo app) e a última vez que abriu o app
+  const sumiu = 'MAX(COALESCE(a.ultimo_jogo, a.criado_em), COALESCE((SELECT j.ultimo FROM jogadores j WHERE j.aparelho = a.aparelho), 0))';
+  const fase = async (min, max, f, n) => {
+    if (n <= 0) return [];
+    try {
+      return (await env.DB.prepare(`SELECT a.id, a.endpoint, a.p256dh, a.auth, ${sumiu} AS base FROM avisos a
+        WHERE ${sumiu} < ? AND ${sumiu} >= ? AND COALESCE(a.ultimo_envio, 0) < ?
+          AND NOT EXISTS (SELECT 1 FROM avisos_volta v WHERE v.id = a.id AND v.fase >= ? AND v.base >= ${sumiu} - 60000)
+        ORDER BY ${sumiu} DESC LIMIT ?`).bind(agora - min * DIA, agora - max * DIA, agora - DIA, f, n).all()).results || [];
+    } catch (e) { return []; }
+  };
+  const anota = async (l, f) => { for (const s of l) { try { await env.DB.prepare('INSERT OR REPLACE INTO avisos_volta (id, fase, base, em) VALUES (?, ?, ?, ?)').bind(s.id, f, s.base, agora).run(); } catch (e) {} } };
+  const tot = { ok: 0, falhas: 0 }, soma = r => { tot.ok += r.ok; tot.falhas += r.falhas; };
+  const l30 = await fase(VOLTA.abandonou, VOLTA.desiste, 30, LIM);
+  if (l30.length) { soma(await mandarPara(l30, () => MSG_ABANDONOU, env)); await anota(l30, 30); }
+  const l7 = await fase(VOLTA.sumido, VOLTA.abandonou, 7, LIM - l30.length);
+  if (l7.length) { const m = msgSumido(env, agora); soma(await mandarPara(l7, () => m, env)); await anota(l7, 7); }
+  // esfriando: o lembrete de sempre (sem jogar há 2 dias, no máximo a cada 3 dias), só enquanto não passou de 7 dias sumido
+  const resto = LIM - l30.length - l7.length;
+  if (resto > 0) {
+    const { results } = await env.DB.prepare(`SELECT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a
+      WHERE COALESCE(a.ultimo_jogo, a.criado_em) < ? AND COALESCE(a.ultimo_envio, 0) < ? AND ${sumiu} >= ?
+      ORDER BY COALESCE(a.ultimo_envio, 0) LIMIT ?`).bind(agora - VOLTA.esfriando * DIA, agora - 3 * DIA, agora - VOLTA.sumido * DIA, resto).all();
+    const dia = Math.floor(agora / DIA);
+    soma(await mandarPara(results || [], s => Object.assign({ url: '/' }, LEMBRETES[(dia + s.id) % LEMBRETES.length]), env));
+  }
+  return tot;
 }
 // Avisos de evento: um aviso para todo mundo que ligou os lembretes (no máximo um por aparelho no dia), mesmo quem jogou
 // ontem. 3.37.2: saem de manhã (9h, 10h e 11h em Manaus) e o que faltar sai no fim da tarde, junto com os lembretes.
