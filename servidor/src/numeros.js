@@ -24,6 +24,15 @@ export async function anotarAcesso(env, b, agora, janelaPresenca) {
   if (VISTO.size > 5000) VISTO.clear();
   try {
     if (u.dh !== dh) await env.DB.prepare('INSERT OR IGNORE INTO acessos_hora (dia, hora, aparelho) VALUES (?, ?, ?)').bind(dia, hora, id).run();
+    // 18/11: o último apelido de cada aparelho, para o painel "quem joga e quem sumiu" (a presença só guarda 1 dia).
+    // Menor de 18: guarda só que é menor, sem apelido nem avatar. Escreve no máximo uma vez por dia, ou quando o apelido muda.
+    const menor = !!b.menor, nome = menor ? null : String(b.nome || '').replace(/[\u0000-\u001F\u007F]/g, '').trim().slice(0, 16) || null;
+    const av = menor ? null : (/^[a-z0-9_-]{1,16}$/i.test(String(b.av || '')) ? String(b.av) : null), chaveNome = (menor ? 'm' : '') + '|' + nome + '|' + av;
+    if (u.dia !== dia || u.nome !== chaveNome) {
+      try { await env.DB.prepare('INSERT INTO jogadores_nome (aparelho, nome, av, menor, em) VALUES (?, ?, ?, ?, ?) ON CONFLICT (aparelho) DO UPDATE SET nome = excluded.nome, av = excluded.av, menor = excluded.menor, em = excluded.em')
+        .bind(id, nome, av, menor ? 1 : 0, agora).run(); } catch (e) {}
+      u.nome = chaveNome;
+    }
     if (u.dia !== dia || (partidas != null && partidas !== u.partidas) || (maos != null && maos !== u.maos)) {
       const r = await env.DB.prepare('SELECT partidas, informou FROM jogadores WHERE aparelho = ?').bind(id).first();
       const jogou = (maos || 0) > 0 || (partidas || 0) > 0 ? 1 : 0, informou = partidas != null ? 1 : 0;
@@ -39,7 +48,7 @@ export async function anotarAcesso(env, b, agora, janelaPresenca) {
         if (novas > 0 && novas <= 30) await env.DB.prepare('INSERT INTO partidas_dia (dia, aparelho, n) VALUES (?, ?, ?) ON CONFLICT (dia, aparelho) DO UPDATE SET n = n + excluded.n').bind(dia, id, novas).run();
       }
     }
-    VISTO.set(id, { dh, dia, partidas: partidas != null ? partidas : u.partidas, maos: maos != null ? maos : u.maos });
+    VISTO.set(id, { dh, dia, partidas: partidas != null ? partidas : u.partidas, maos: maos != null ? maos : u.maos, nome: u.nome });
     if (agora - ultPico > 60000) {
       ultPico = agora;
       const c = await env.DB.prepare("SELECT COUNT(*) AS n FROM presenca WHERE visto_em > ? AND aparelho NOT LIKE 'teste-%'").bind(agora - janelaPresenca).first();
@@ -236,4 +245,44 @@ export async function donoCrescimento(req, env, origin, h, url) {
   const dados = { agora, hoje, n: N, dias, semanas, funil, resumo, contagemDesde: (comeco[0] && comeco[0].d) || null };
   CRESC.t = agora; CRESC.chave = String(N); CRESC.dados = dados;
   return h.json(dados, 200, origin);
+}
+
+// ===== 18/11 (pedido do dono): quem mais joga, quem menos joga e quem sumiu, com os dias sem entrar no app =====
+// GET /dono/ritmo. Faixas pelos dias sem abrir o app: ativo (até 2), esfriando (3 a 6), sumido (7 a 29), abandonou (30+).
+// Mais jogam: partidas terminadas nos últimos 30 dias. Menos jogam: quem abriu o app nos últimos 30 dias e chegou há 7
+// dias ou mais, com menos partidas. Sumidos: quem tinha 5 partidas ou mais e não abre o app há 7 dias ou mais.
+// Só o administrador; menor de 18 aparece sem apelido; os aparelhos do dono e os de teste ficam de fora.
+export const FAIXAS = { ativo: 2, esfriando: 6, sumido: 29 };
+const faixaDe = d => d <= FAIXAS.ativo ? 'ativo' : d <= FAIXAS.esfriando ? 'esfriando' : d <= FAIXAS.sumido ? 'sumido' : 'abandonou';
+export async function donoRitmo(req, env, origin, h) {
+  if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
+  const agora = Date.now(), d30 = diaDe(agora - 29 * DIA);
+  const todos = async (sql, ...a) => { try { return (await env.DB.prepare(sql).bind(...a).all()).results || []; } catch (e) { return []; } };
+  const fora = new Set((await todos('SELECT aparelho FROM dono_aparelhos')).map(r => r.aparelho));
+  const base = (await todos(`SELECT j.aparelho, j.primeiro, j.ultimo, j.partidas, j.jogou, COALESCE(p.n, 0) AS p30 FROM jogadores j
+      LEFT JOIN (SELECT aparelho, SUM(n) AS n FROM partidas_dia WHERE dia >= ? GROUP BY aparelho) p ON p.aparelho = j.aparelho
+      WHERE j.aparelho NOT LIKE 'teste-%'`, d30)).filter(x => !fora.has(x.aparelho));
+  const dias = x => Math.max(0, Math.floor((agora - x.ultimo) / DIA));
+  const jog = base.filter(x => x.jogou);
+  const faixas = { ativo: 0, esfriando: 0, sumido: 0, abandonou: 0 };
+  for (const x of jog) faixas[faixaDe(dias(x))]++;
+  const mais = jog.filter(x => x.p30 > 0).sort((a, b) => b.p30 - a.p30 || b.partidas - a.partidas).slice(0, 20);
+  const menos = base.filter(x => agora - x.primeiro >= 7 * DIA && dias(x) <= FAIXAS.sumido)
+    .sort((a, b) => a.p30 - b.p30 || a.partidas - b.partidas || b.ultimo - a.ultimo).slice(0, 20);
+  const sumidos = jog.filter(x => dias(x) > FAIXAS.esfriando && (x.partidas || 0) >= 5).sort((a, b) => b.partidas - a.partidas || b.ultimo - a.ultimo).slice(0, 20);
+  // apelidos só de quem aparece nas listas: o último que o app mandou; senão o da mesa online, o da Turma ou o do ranking
+  const ids = [...new Set([...mais, ...menos, ...sumidos].map(x => x.aparelho))];
+  const nomes = new Map(), avs = new Map(), menores = new Set(), socios = new Set();
+  const poe = (ap, nome, av) => { if (!nome || menores.has(ap) || nomes.has(ap)) return; nomes.set(ap, nome); if (av) avs.set(ap, av); };
+  for (let i = 0; i < ids.length; i += 40) {
+    const l = ids.slice(i, i + 40), q = l.map(() => '?').join(',');
+    for (const r of await todos(`SELECT aparelho, nome, av, menor FROM jogadores_nome WHERE aparelho IN (${q})`, ...l)) { if (r.menor) menores.add(r.aparelho); else poe(r.aparelho, r.nome, r.av); }
+    for (const r of await todos(`SELECT aparelho, nome, av FROM jogadores_vistos WHERE aparelho IN (${q})`, ...l)) poe(r.aparelho, r.nome, r.av);
+    for (const r of await todos(`SELECT aparelho, nome FROM turma_membros WHERE aparelho IN (${q})`, ...l)) poe(r.aparelho, r.nome, null);
+    for (const r of await todos(`SELECT aparelho, nome, av FROM calcada WHERE aparelho IN (${q}) ORDER BY atualizado DESC`, ...l)) poe(r.aparelho, r.nome, r.av);
+    for (const r of await todos(`SELECT aparelho FROM planos WHERE ate > ? AND aparelho IN (${q})`, agora, ...l)) socios.add(r.aparelho);
+  }
+  const item = x => ({ nome: nomes.get(x.aparelho) || null, av: avs.get(x.aparelho) || null, menor: menores.has(x.aparelho), socio: socios.has(x.aparelho),
+    p30: x.p30 || 0, total: x.partidas || 0, dias: dias(x), faixa: faixaDe(dias(x)), desde: diaDe(x.primeiro) });
+  return h.json({ agora, faixas, limites: FAIXAS, jogaram: jog.length, mais: mais.map(item), menos: menos.map(item), sumidos: sumidos.map(item) }, 200, origin);
 }

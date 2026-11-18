@@ -233,6 +233,8 @@ CREATE TABLE IF NOT EXISTS jogadores (aparelho TEXT PRIMARY KEY, primeiro INTEGE
   informou INTEGER NOT NULL DEFAULT 0, semente INTEGER NOT NULL DEFAULT 0);
 CREATE INDEX IF NOT EXISTS jogadores_primeiro ON jogadores (primeiro);
 CREATE INDEX IF NOT EXISTS jogadores_ultimo ON jogadores (ultimo);
+-- 18/11 (painel do dono: quem joga e quem sumiu): o último apelido que o app mandou de cada aparelho (menor de 18: sem apelido)
+CREATE TABLE IF NOT EXISTS jogadores_nome (aparelho TEXT PRIMARY KEY, nome TEXT, av TEXT, menor INTEGER NOT NULL DEFAULT 0, em INTEGER NOT NULL);
 -- quem abriu o app em cada hora (horário de Manaus); fica 60 dias
 CREATE TABLE IF NOT EXISTS acessos_hora (dia TEXT NOT NULL, hora INTEGER NOT NULL, aparelho TEXT NOT NULL, PRIMARY KEY (dia, hora, aparelho));
 -- o maior número de pessoas com o app aberto ao mesmo tempo em cada hora

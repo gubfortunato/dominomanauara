@@ -2728,6 +2728,23 @@ body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1
 .dc-vv-go{padding:9px 22px;font-size:15.5px}
 #calcCorpo .calc-dcvivo .dc-vivo{padding:0;background:none;border:0;border-radius:0}
 #calcCorpo .calc-dcvivo .dc-vv{background:var(--bg-2)}
+/* 18/11 (pedido do dono): quem joga e quem sumiu, com os dias sem entrar */
+.dn-rt-fx{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:6px 0 10px}
+.dn-rt-f{padding:9px 10px;border-radius:12px;background:rgba(0,0,0,.18);border-left:4px solid var(--c);display:grid;gap:1px}
+.dn-rt-f b{font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--wood-ink)}
+.dn-rt-f span{font-size:13.5px;font-weight:700;color:var(--wood-ink)}.dn-rt-f small{font-size:12px;color:var(--wood-muted)}
+.dn-rt .dn-seg{grid-template-columns:repeat(3,1fr);background:rgba(0,0,0,.2);border-color:rgba(239,226,204,.18);margin:4px 0 6px}
+.dn-rt .dn-seg button{color:var(--wood-muted);font-size:14px;padding:9px 4px}
+.dn-rt .dn-seg button[aria-pressed="true"]{color:var(--bg-2)}
+.dn-rt-dias{flex:none;display:grid;justify-items:end;gap:2px;text-align:right}
+.dn-rt-dias b{font-size:13px;font-weight:800;padding:3px 8px;border-radius:999px;color:#1b1209;background:var(--c);white-space:nowrap}
+.dn-rt-dias small{font-size:11.5px;color:var(--wood-muted);white-space:nowrap}
+.dn-rt-n{flex:none;width:22px;text-align:right;font-weight:800;color:var(--wood-muted);font-variant-numeric:tabular-nums}
+.dn-rt-socio{color:#f3c063;margin-left:4px}
+.dn-rt .dn-joglista li{align-items:center;padding:9px 10px;border-top:0}
+.dn-rt .dn-jog-t b{font-family:inherit;font-weight:800;font-size:15.5px;line-height:1.25}
+.dn-rt .dn-jog-t small{font-size:13px;line-height:1.3}
+.dn-rt .dn-rt-dias b{font-family:inherit;font-size:12.5px;font-weight:800;line-height:1.2}
 /* 17/11 (pedido do dono): crescimento e conversão no painel */
 .dn-cr{display:grid;gap:12px}
 .dn-cr[hidden]{display:none}
@@ -4575,6 +4592,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.1', data: '18/11/2026', itens: ['Administrador: cartão "Quem joga e quem sumiu" em Jogadores. Mostra quantos estão ativos (até 2 dias sem entrar no app), esfriando (3 a 6), sumidos (7 a 29) e quantos abandonaram (30 ou mais), e as listas de quem mais joga, quem menos joga e os sumidos que jogavam bastante, com os dias sem entrar.'] },
   { v: '3.61.0', data: '17/11/2026', itens: ['Desafio das Confrarias: os confrontos entre Turmas aparecem ao vivo no alto da Calçada, agora também na mesa rápida (é lá que sai a maioria dos pontos). A mesa ganha a etiqueta ⚔️ com o nome das Turmas, e quem é das Turmas recebe o aviso para assistir.', 'Hora do Desafio: todo dia, das 21h às 22h, cada vitória contra outra Turma vale 1 ponto a mais. Aviso no celular às 21h para quem é de Turma.', 'Na mesa rápida, quem é de Turma senta, quando dá, contra gente de outra Turma: mais confrontos valendo ponto.'] },
   { v: '3.60.2', data: '17/11/2026', itens: ['Administrador: no Crescimento e conversão, o botão Atualizar ficou do tamanho do 30/60 dias, com o ícone que gira enquanto busca, e embaixo aparece a hora dos números.'] },
   { v: '3.60.1', data: '17/11/2026', itens: ['Administrador: grupo novo "Crescimento e conversão" no painel. Mostra a semana contra a anterior (novos, ativos por dia, sócios pagantes, vendas, conversão dos novos e retenção), as curvas de 30 ou 60 dias (pessoas ativas e novas, sócios pagantes, quem entrou e quem saiu do plano), o funil dos novos, os novos de cada semana (quantos voltaram, ficaram e viraram sócios) e a retenção semanal. Sócio ali é só quem pagou.', 'Mesa Porto de Manaus com desenho novo: o cais cheio de caminhões, carros e gente carregando os barcos.'] },
@@ -15024,7 +15042,7 @@ function desenharDesafioCalcada() {
 const DN_GRUPOS = [
   ['Relatório do dia', ['dnRel'], true],   // 13/11: os números de ontem, os destaques e o parcial de hoje
   ['Precisa de você', ['dnMsgs', 'dnPapo', 'dnFotos', 'dnRobo'], true],
-  ['Jogadores', ['dnNoApp', 'dnFilas', 'dnJog', 'dnPresente'], true],   // 17/11: presentes
+  ['Jogadores', ['dnNoApp', 'dnFilas', 'dnRitmo', 'dnJog', 'dnPresente'], true],   // 18/11: quem joga e quem sumiu   // 17/11: presentes
   ['Números do jogo', ['dnNum', 'dnQuarta', 'dnTreino'], true],
   ['Crescimento e conversão', ['dnCresc'], true],   // 17/11 (pedido do dono): conversão x novos, curvas de subida e queda   // 13/11: robô que treina toda noite   // 12/11: Quarta dos Amigos e convites   // 03/11: jogadores desde o início, partidas, horários e picos
   ['Dinheiro', ['dnPag', 'dnApoiadores', 'dnBurlas', 'dnPatroCard', 'dnAnuncieLink'], false],
@@ -16734,7 +16752,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.0-989306c6';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.1-a2f1aded';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -18432,6 +18450,46 @@ $('#dnCrPer') && $('#dnCrPer').addEventListener('click', e => {
   dnCrescimento();
 });
 $('#dnCrAt') && $('#dnCrAt').addEventListener('click', () => dnCrescimento(true));
+
+// ===== 18/11 (pedido do dono): quem mais joga, quem menos joga e quem sumiu (com os dias sem entrar) =====
+const RT = { aba: 'mais', j: null };
+const RT_FX = { ativo: ['Ativos', '#86c98f'], esfriando: ['Esfriando', '#f3c063'], sumido: ['Sumidos', '#e5a650'], abandonou: ['Abandonaram', '#e58a6c'] };
+(function () {
+  const ref = $('#dnJog'); if (!ref) return;
+  ref.insertAdjacentHTML('beforebegin', `<div class="dn-list wood dn-jog dn-rt" id="dnRitmo" hidden>
+    <span class="ck">Quem joga e quem sumiu</span>
+    <p class="dn-avn">Pelos dias sem abrir o app: ativo até 2 dias, esfriando de 3 a 6, sumido de 7 a 29 e abandonou com 30 ou mais. Conta quem já jogou pelo menos uma partida.</p>
+    <div class="dn-rt-fx" id="dnRtFx"></div>
+    <div class="dn-seg" id="dnRtAbas" role="group" aria-label="Lista"><button type="button" data-a="mais" aria-pressed="true">Mais jogam</button><button type="button" data-a="menos" aria-pressed="false">Menos jogam</button><button type="button" data-a="sumidos" aria-pressed="false">Sumidos</button></div>
+    <p class="dn-avn" id="dnRtNota"></p>
+    <ul class="dn-joglista" id="dnRtLista"></ul></div>`);
+  $('#dnRtAbas').addEventListener('click', e => {
+    const b = e.target.closest('button[data-a]'); if (!b) return;
+    RT.aba = b.dataset.a; $$('#dnRtAbas button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); dnRitmoLista();
+  });
+})();
+async function dnRitmoCarregar() {
+  const box = $('#dnRitmo'); if (!box) return;
+  box.hidden = !CONFIG.api || !souAdmin(); if (box.hidden) return;
+  try { RT.j = await dnMsgPedir('/dono/ritmo'); } catch (e) { $('#dnRtLista').innerHTML = '<li class="dn-jog-vazio">Não deu para carregar agora.</li>'; return; }
+  const f = RT.j.faixas || {}, lim = RT.j.limites || { ativo: 2, esfriando: 6, sumido: 29 };
+  const sub = { ativo: `até ${lim.ativo} dias sem entrar`, esfriando: `${lim.ativo + 1} a ${lim.esfriando} dias`, sumido: `${lim.esfriando + 1} a ${lim.sumido} dias`, abandonou: `${lim.sumido + 1} dias ou mais` };
+  $('#dnRtFx').innerHTML = Object.keys(RT_FX).map(k => `<div class="dn-rt-f" style="--c:${RT_FX[k][1]}"><b>${fmtN(f[k] || 0)}</b><span>${RT_FX[k][0]}</span><small>${sub[k]}</small></div>`).join('');
+  dnRitmoLista();
+}
+function dnRitmoLista() {
+  const j = RT.j; if (!j) return;
+  const l = j[RT.aba] || [];
+  $('#dnRtNota').textContent = { mais: 'Mais partidas terminadas nos últimos 30 dias (offline e online). Embaixo do nome: partidas em 30 dias e no total.', menos: 'Abriram o app nos últimos 30 dias e chegaram há 7 dias ou mais, com menos partidas.', sumidos: 'Jogaram 5 partidas ou mais e não abrem o app há 7 dias ou mais.' }[RT.aba];
+  const diasTx = d => d === 0 ? 'hoje' : d === 1 ? 'há 1 dia' : `há ${d} dias`;
+  $('#dnRtLista').innerHTML = l.length ? l.map((x, i) => `<li><span class="dn-rt-n">${i + 1}</span><span class="dn-jog-r">${x.menor ? '<i>18</i>' : dnJogRosto(x)}</span>
+      <span class="dn-jog-t"><b>${x.menor ? 'Menor de 18' : esc(x.nome || 'Sem apelido no servidor')}${x.socio ? '<span class="dn-rt-socio" aria-label="sócio">★</span>' : ''}</b>
+        <small>${fmtN(x.p30)} em 30 dias · ${fmtN(x.total)} no total${RT.aba === 'menos' ? ` · chegou ${dnDM(x.desde)}` : ''}</small></span>
+      <span class="dn-rt-dias" style="--c:${RT_FX[x.faixa][1]}"><b>${diasTx(x.dias)}</b><small>${x.faixa}</small></span></li>`).join('')
+    : '<li class="dn-jog-vazio">Ninguém nesta lista agora.</li>';
+}
+const renderDonoRt = renderDono;
+renderDono = function () { const r = renderDonoRt.apply(this, arguments); try { dnRitmoCarregar(); } catch (e) {} return r; };
 
 // Montar avatar: a partir de 5/11, só para sócio. O avatar montado que a pessoa estiver usando quando os limites
 // começarem continua dela (fica guardado aqui); para trocar por outro montado, só sendo sócio.
