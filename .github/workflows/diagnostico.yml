@@ -27,8 +27,8 @@ jobs:
           sed -e "s/__D1_ID__/$id/" -e "s/__VERSAO__/diag/" wrangler.template.toml > wrangler.toml
           AGORA=$(($(date +%s) * 1000))
           p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
-          # 18/11, 3h: só leitura (números da sustentabilidade: pagamentos, gente, uso do Cloudflare e totais do Asaas)
-          python3 "$GITHUB_WORKSPACE/.github/diag/sustentabilidade.py" $OUT 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
+          # 18/11, 3h30: só leitura (erros e limites do Cloudflare por dia e por hora)
+          python3 "$GITHUB_WORKSPACE/.github/diag/limites.py" $OUT 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
           rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
