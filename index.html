@@ -310,7 +310,7 @@ html g.ouro .t-div{stroke:rgba(70,52,30,.42)}
 .ht svg{width:100%;height:100%;display:block}
 .hand .ht{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .ht.lift{opacity:.25;transform:translateY(4px)}
-.dragtile{position:fixed;left:0;top:0;z-index:40;pointer-events:none;width:calc(var(--tw)*1.3);aspect-ratio:1/2;transform:translate(-50%,-112%) rotate(-5deg);filter:drop-shadow(0 12px 14px var(--shadow))}
+.dragtile{position:fixed;left:0;top:0;z-index:40;pointer-events:none;will-change:transform;width:calc(var(--tw)*1.3);aspect-ratio:1/2;transform:translate(-50%,-112%) rotate(-5deg);filter:drop-shadow(0 12px 14px var(--shadow))}
 .dragtile svg{width:100%;height:100%;display:block}
 .zone .z-body{fill:rgba(243,192,99,.10);stroke:var(--glow);stroke-width:.06;stroke-dasharray:.16 .1}
 .zone .z-tx{fill:var(--glow);font-family:var(--font-body);font-weight:700;font-size:.4px;text-anchor:middle}
@@ -4592,6 +4592,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.4', data: '18/11/2026', itens: ['Arrumar a mão ficou mais leve: as outras pedras deslizam sem travar, a pedra entra no lugar em que está o seu dedo, sem ficar indo e voltando, e pousa no lugar novo quando você solta.'] },
   { v: '3.61.3', data: '18/11/2026', itens: ['Quarta dos Amigos: o desenho de giz (os risquinhos e as pedras) agora fica bem no meio do cartão do início, da Calçada e do placar.'] },
   { v: '3.61.2', data: '18/11/2026', itens: ['Lembretes no celular para quem sumiu: enquanto você está sem jogar, o lembrete de sempre a cada 3 dias; com 7 dias sem aparecer, um "sentimos sua falta" com o evento do dia; com 30 dias, um último. Depois disso o jogo para de chamar, até você voltar.'] },
   { v: '3.61.1', data: '18/11/2026', itens: ['Administrador: cartão "Quem joga e quem sumiu" em Jogadores. Mostra quantos estão ativos (até 2 dias sem entrar no app), esfriando (3 a 6), sumidos (7 a 29) e quantos abandonaram (30 ou mais), e as listas de quem mais joga, quem menos joga e os sumidos que jogavam bastante, com os dias sem entrar.'] },
@@ -16163,20 +16164,22 @@ function ordemVista() {
 function podeArrumar() { return !!G && !dealing && seatMe != null && G.phase === 'play' && ((G.hands[seatMe] || []).length > 1) && !(typeof TREINO !== 'undefined' && TREINO.on); }
 // onde a pedra entraria se fosse solta aqui (null: o dedo não está em cima da mão)
 function lugarNaMao(x, y) {
-  const hr = $('#hand').getBoundingClientRect();
-  if (y < hr.top + 6 || y > hr.bottom + 44 || x < hr.left - 30 || x > hr.right + 30) return null;
-  let n = 0;
-  $$('#hand .ht').forEach(b => {
-    if (+b.dataset.i === drag.i) return;
-    const r = b.getBoundingClientRect(), cy = r.top + r.height / 2;
-    if (cy < y - r.height / 2 || (Math.abs(cy - y) <= r.height / 2 && r.left + r.width / 2 < x)) n++;
-  });
-  return n;
+  // 18/11: os lugares da mão são medidos uma vez, no começo (as pedras andando não mudam onde fica cada lugar)
+  if (!drag.lugares) { drag.mr = $('#hand').getBoundingClientRect(); drag.lugares = $$('#hand .ht').map(b => b.getBoundingClientRect()); }
+  const hr = drag.mr, L = drag.lugares;
+  if (y < hr.top + 6 || y > hr.bottom + 44 || x < hr.left - 30 || x > hr.right + 30 || !L.length) { drag.lugar = null; return null; }
+  const cx = r => r.left + r.width / 2, dist = r => Math.abs(cx(r) - x) + 3 * Math.max(0, Math.abs(r.top + r.height / 2 - y) - r.height / 2);
+  let k = 0; L.forEach((r, j) => { if (dist(r) < dist(L[k])) k = j; });
+  // folga: só troca de lugar quando o dedo passa bem do meio entre os dois (senão a pedra fica indo e voltando)
+  const a = drag.lugar;
+  if (a != null && a !== k && L[a] && Math.abs(L[a].top - L[k].top) < 4 && dist(L[a]) - dist(L[k]) < L[a].width * 0.22) k = a;
+  drag.lugar = k;
+  return Math.min(k, L.length - 1);
 }
 function arrumarDurante(x, y) {
   const h = G.hands[seatMe], t = h && h[drag.i]; if (!t) return false;
   // a base é a ordem de antes do arrasto (guardada no primeiro passo, antes de qualquer prévia)
-  if (!drag.base) drag.base = ordemVista().map(i => tkey(h[i]));
+  if (!drag.base) { drag.base = ordemVista().map(i => tkey(h[i])); drag.lugar = drag.base.indexOf(tkey(t)); }
   const k = lugarNaMao(x, y);
   let nova = null;
   if (k != null) { nova = drag.base.filter(c => c !== tkey(t)); nova.splice(k, 0, tkey(t)); }
@@ -16186,13 +16189,17 @@ function arrumarDurante(x, y) {
 }
 // as outras pedras deslizam para abrir espaço (em vez de pular de lugar)
 function maoSuave() {
-  const antes = {}; $$('#hand .ht').forEach(b => { antes[b.dataset.i] = b.getBoundingClientRect().left; });
-  renderHand();
+  const hand = $('#hand'), els = $$('#hand .ht'), porI = {}, antes = {};
+  els.forEach(b => { porI[b.dataset.i] = b; });
+  const ordem = ordemVista();
+  if (!els.length || ordem.length !== els.length || ordem.some(i => !porI[i])) { renderHand(); return; }
+  // 18/11: de onde cada pedra está saindo agora (mesmo no meio de uma animação), depois só muda a ordem
+  els.forEach(b => { const r = b.getBoundingClientRect(); antes[b.dataset.i] = [r.left, r.top]; try { b.getAnimations().forEach(a => a.cancel()); } catch (e) {} });
+  ordem.forEach(i => hand.appendChild(porI[i]));
   if (reduzMov()) return;
-  $$('#hand .ht').forEach(b => {
-    const a = antes[b.dataset.i]; if (a == null) return;
-    const d = a - b.getBoundingClientRect().left;
-    if (Math.abs(d) > 1) b.animate([{ transform: `translateX(${d}px)` }, { transform: 'none' }], { duration: 150, easing: 'ease-out' });
+  ordem.forEach(i => {
+    const b = porI[i], a = antes[i], r = b.getBoundingClientRect(), dx = a[0] - r.left, dy = a[1] - r.top;
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) b.animate([{ transform: `translate(${dx}px, ${dy}px)` }], { duration: 170, easing: 'cubic-bezier(.2,.8,.2,1)' });
   });
 }
 function renderHand() {
@@ -16507,7 +16514,7 @@ function shakeTile(i, msg) {
   if (msg) $('#feed').textContent = msg;
 }
 function placeGhostTile(x, y) {
-  drag.el.style.left = x + 'px'; drag.el.style.top = y + 'px';
+  drag.el.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -112%) rotate(-5deg)`;   // 18/11: transform, sem recalcular o layout
 }
 // devolve o lado da ponta mais perto onde a pedra encaixa; 'nao' se a mais perto é uma ponta onde ela não encaixa
 function nearestZone(x, y) {
@@ -16560,12 +16567,14 @@ function onDragMove(e) {
     el.innerHTML = `<svg viewBox="-0.04 -0.04 1.08 2.08">${tileSVG({ x: .5, y: 1, o: 'v', v1: t[0], v2: t[1] }, '', false)}</svg>`;
     document.body.appendChild(el);
     drag.el = el; drag.side = null;
-    renderHand(); renderBoard();
+    const bt = $(`#hand .ht[data-i="${drag.i}"]`);   // 18/11: só marca a pedra que saiu (antes redesenhava a mão inteira)
+    if (bt) bt.classList.add('lift'); else renderHand();
+    if (!drag.soArrumar || pedraEscolhida()) renderBoard();   // fora da sua vez a mesa não muda
   }
   e.preventDefault();
   placeGhostTile(x, y);
   // a pedra flutua acima do dedo: o alvo é o centro da pedra, não a ponta do dedo
-  const h = drag.el.getBoundingClientRect().height || 90;
+  const h = drag.gh || (drag.gh = drag.el.getBoundingClientRect().height) || 90;   // 18/11: mede uma vez
   let naMao = false; try { naMao = podeArrumar() && arrumarDurante(x, y); } catch (er) {}   // 17/11: arrumar a mão
   const side = naMao ? null : ladoDoSolto(x, y - h * 0.65);   // 17/11: era nearestZone (precisava acertar a ponta)
   if (side !== drag.side) {
@@ -16582,9 +16591,20 @@ function onDragEnd(e) {
     try { side = ladoDoSolto(e.clientX, e.clientY - (r.height || 90) * 0.65); } catch (er) {}   // 17/11
   }
   const arrumou = moved && drag.ordemPrev;   // 17/11: solta em cima da mão = arrumar
+  const gr = arrumou && drag.el ? drag.el.getBoundingClientRect() : null, soArr = drag.soArrumar && !pedraEscolhida();
   endDrag();
   if (arrumou) {
-    ordemMao = arrumou; render();
+    ordemMao = arrumou;
+    // 18/11: fora da sua vez a mão já está na ordem certa na tela: só devolve a pedra (sem redesenhar tudo)
+    const bt = $(`#hand .ht[data-i="${i}"]`);
+    if (soArr && bt && $$('#hand .ht').map(b => b.dataset.i).join() === ordemVista().join()) { bt.style.transition = 'none'; bt.classList.remove('lift'); setTimeout(() => { bt.style.transition = ''; }, 260); } else render();
+    try {
+      const b = $(`#hand .ht[data-i="${i}"]`);
+      if (gr && b && !reduzMov()) {
+        const r = b.getBoundingClientRect();
+        b.animate([{ transform: `translate(${gr.left + gr.width / 2 - (r.left + r.width / 2)}px, ${gr.top + gr.height / 2 - (r.top + r.height / 2)}px) scale(${(gr.width / r.width).toFixed(3)}) rotate(-5deg)`, opacity: 1 }], { duration: 190, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      }
+    } catch (er) {}
     try { if (!store.get('dmz-arrumou')) { store.set('dmz-arrumou', String(Date.now())); track('arrumar-mao'); } } catch (er) {}
     return;
   }
@@ -16754,7 +16774,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.3-7cb4ce7a';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.4-b26a00b2';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
