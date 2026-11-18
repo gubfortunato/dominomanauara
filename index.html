@@ -2679,7 +2679,11 @@ body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1
 #qaPlacar::before{margin:-12px -14px -2px;border-radius:12px 12px 0 0;background:var(--arte-qa) center/auto 78px no-repeat}
 #sgPlacar::before{background:var(--arte-sg) center/auto 84px no-repeat,radial-gradient(70% 70% at 50% 0%,rgba(255,79,123,.25),transparent 70%),linear-gradient(180deg,rgba(18,7,10,.35),rgba(33,16,26,1)),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='52' viewBox='0 0 120 52'%3E%3Crect width='120' height='52' fill='%23170a0c'/%3E%3Crect x='1.5' y='1.5' width='57' height='23' rx='1.5' fill='%235a2a2b'/%3E%3Crect x='61.5' y='1.5' width='57' height='23' rx='1.5' fill='%234f2427'/%3E%3Crect x='-28.5' y='27.5' width='57' height='23' rx='1.5' fill='%2362302d'/%3E%3Crect x='31.5' y='27.5' width='57' height='23' rx='1.5' fill='%23542729'/%3E%3Crect x='91.5' y='27.5' width='57' height='23' rx='1.5' fill='%235d2b2f'/%3E%3C/svg%3E") 0 0/120px 52px}
 /* 17/11 (pedido do dono): Sábado dos Torneios = a ilustração da mesa que dá nome ao torneio e a medalha 🏅 (o título é do sócio) */
-#scrCalcada .sb-arte{display:block;flex:none;height:150px;min-height:150px;margin:0 0 -4px;border-radius:18px;background:var(--sb-img) center 38%/cover no-repeat,#0c2f52;box-shadow:inset 0 0 0 2px #ffd66b,0 10px 24px -12px rgba(0,0,0,.35)}
+/* 17/11 (dono): a ilustração da mesa do torneio no alto do cartão azul da Calçada, sumindo no azul (como no cartão do início) */
+.calc-sexta .sb-foto{grid-column:1/-1;display:block;height:150px;margin:-12px -14px -6px;border-radius:16px 16px 0 0;background:linear-gradient(180deg,transparent 30%,rgba(16,50,90,.6) 72%,rgba(16,50,90,.8)),var(--sb-img) center 38%/cover no-repeat;-webkit-mask-image:linear-gradient(180deg,#000 45%,transparent 100%);mask-image:linear-gradient(180deg,#000 45%,transparent 100%)}
+.calc-sab .sb-nome{grid-column:1/-1;margin:-58px 0 0;position:relative;font-family:var(--font-display);font-weight:400;font-size:clamp(24px,7vw,29px);line-height:1.08;color:#fff;text-shadow:0 2px 0 rgba(10,30,55,.55),0 4px 18px rgba(10,30,55,.6);text-wrap:balance}
+.calc-sab .sb-nome span{font-size:.85em}
+.calc-sab .sb-tx{grid-column:1/3}.calc-sab .sb-tx small{font-size:14px;opacity:.92}
 .calc-sexta.calc-sab{background:linear-gradient(135deg,#1f6fb0,#0f3d66);color:#f4f8ff;box-shadow:0 0 0 1px rgba(255,255,255,.25),0 8px 24px rgba(15,61,102,.3)}
 .calc-sexta.calc-sab .cs-relogio b{color:#ffd66b}
 .calc-sexta .cs-medalha{font-size:34px;line-height:1}
@@ -4458,6 +4462,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.59.1', data: '17/11/2026', itens: ['O botão verde de convite saiu do início. O convite pelo WhatsApp continua na aba Ranking e nas faixas dos eventos na Calçada.', 'Na Calçada do Sábado dos Torneios, a ilustração da mesa do torneio fica no alto do cartão azul, logo abaixo do título.'] },
   { v: '3.59.0', data: '17/11/2026', itens: ['Sábado dos Torneios: todo sábado, das 10h às 22h, um torneio com o nome e a ilustração de uma mesa de Manaus (neste sábado, o Torneio do Teatro Amazonas). Toda partida online conta pontos: vitória vale 3, mais o bônus da semana. O sócio mais bem colocado vira o Campeão do Sábado, com o selo 🏅 na mesa até o próximo torneio.', 'Convite em destaque em todo evento: no início e na aba Ranking, um botão para chamar pelo WhatsApp quem ainda não joga, com uma mensagem que explica o jogo.', 'Os placares da Sexta, da Quarta e da Segunda ganharam a arte de cada noite em cima (varal de lâmpadas, quadro de giz e letreiro de neon) e mostram a foto (ou o avatar) e a ★ de quem é sócio. O resumo do ranking na Calçada também.', 'O nome da mesa no começo da partida: o texto de baixo agora quebra dentro da placa.', 'Imagem nova do link do Dominó Manauara no WhatsApp.'] },
   { v: '3.58.0', data: '17/11/2026', itens: ['Aba nova no menu de baixo: Ranking. Junta o ranking da semana e do mês (com a sua posição, o Rei da Calçada e o Campeão do Mês), o placar da noite de evento (Sexta, Quarta e Segunda), a Copa dos Sócios e o Desafio das Confrarias. Na noite de evento, abre no placar ao vivo.', 'Na Calçada ficam as mesas jogando agora e um resumo com os 3 primeiros, com o botão para o ranking completo.'] },
   { v: '3.57.0', data: '17/11/2026', itens: ['Segunda é de Lei: toda segunda, das 19h às 22h, a Calçada e a mesa de jogo viram parede de tijolo com letreiro de neon. Cada vitória online entra no Placar da Segunda, ao vivo na Calçada (na terça, fica o resultado).'] },
@@ -16585,7 +16590,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.59.0-6faa5d02';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.59.1-45006afc';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -18005,16 +18010,14 @@ document.addEventListener('click', e => {
 function sabadoFaixa() {
   const on = screen === 'calcada' && sbAgora() === 'agora';
   const cab = document.querySelector('#scrCalcada .aba-cab'); if (!cab) return;
-  let fx = $('#calcSab'), arte = $('#scrCalcada .sb-arte');
-  if (!on) { if (fx) fx.hidden = true; if (arte) arte.remove(); return; }
+  let fx = $('#calcSab'); const arte = $('#scrCalcada .sb-arte'); if (arte) arte.remove();   // 17/11: a ilustração foi para dentro do cartão
+  if (!on) { if (fx) fx.hidden = true; return; }
   const t = sbTema();
-  if (arte && arte.dataset.m !== t.mesa) { arte.remove(); arte = null; }
-  if (!arte) cab.insertAdjacentHTML('beforebegin', `<div class="sb-arte" data-m="${t.mesa}" style="--sb-img:${sbImg(t)}" aria-hidden="true"></div>`);
   const tit = cab.querySelector('.aba-tit'); if (tit) tit.textContent = 'Sábado dos Torneios';
   cab.classList.add('sexta');
   if (!fx) { cab.insertAdjacentHTML('afterend', '<div class="calc-sexta calc-sab" id="calcSab" role="status"></div>'); fx = $('#calcSab'); }
-  fx.hidden = false;
-  fx.innerHTML = `<span class="cs-fogo cs-medalha" aria-hidden="true">🏅</span><span class="cs-tx"><b>${t.nome}</b><small>Vitória vale 3 e ${t.regra}. ${sbFim()}</small></span><span class="cs-relogio"><small>termina em</small><b>${faltaAte(22)}</b></span>`
+  fx.hidden = false; fx.style.setProperty('--sb-img', sbImg(t));
+  fx.innerHTML = `<span class="sb-foto" aria-hidden="true"></span><b class="sb-nome"><span aria-hidden="true">🏅</span> ${t.nome}</b><span class="cs-tx sb-tx"><small>Vitória vale 3 e ${t.regra}. ${sbFim()}</small></span><span class="cs-relogio"><small>termina em</small><b>${faltaAte(22)}</b></span>`
     + '<button type="button" class="cs-chamar cs-jogar" id="sbJogar">Jogar na mesa rápida</button>'
     + `<button type="button" class="cs-chamar" id="sbChamar">${WA_IC}Chamar a turma pro torneio</button>`;
   $('#sbJogar').addEventListener('click', () => { track('sabado-jogar-calcada'); const b = $('#goRapida'); if (b && !b.hidden) b.click(); else show('home'); });
@@ -18114,7 +18117,8 @@ function evConvitePintar() {
   if (b.dataset.t !== t) { b.dataset.t = t; b.innerHTML = conviteHTML(t); }
 }
 const desenharEvCardCv = desenharEvCard;
-desenharEvCard = function () { const r = desenharEvCardCv.apply(this, arguments); try { evConvitePintar(); } catch (e) {} return r; };
+// 17/11 (dono: "retire esse botão verde do WhatsApp"): o convite saiu do início (fica na aba Ranking e nas faixas da Calçada)
+desenharEvCard = function () { const r = desenharEvCardCv.apply(this, arguments); try { const b = $('#evConvite'); if (b) b.hidden = true; } catch (e) {} return r; };
 // na aba Ranking: embaixo do ranking escolhido (na noite de evento, o convite é do evento)
 function rnkConvitePintar() {
   const corpo = $('#rnkCorpo'); if (!corpo || menorDeIdade()) return;
