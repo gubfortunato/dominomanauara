@@ -3230,7 +3230,7 @@ body.papo-aberto{overflow:hidden}
 .vt-placa-topo small{font-size:10px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;opacity:.75}
 .vt-placa-topo b{font-family:var(--font-display);font-weight:400;font-size:21px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 0 rgba(255,255,255,.45)}
 .vt-caixa{position:relative;display:block;overflow:hidden;border-radius:14px;padding:16px 6px 0;
-  background:radial-gradient(70% 38% at 50% 0%,rgba(255,214,140,.30),transparent 72%),radial-gradient(120% 90% at 50% 40%,#5a1426 0%,#34091a 55%,#1c040d 100%);
+  background:radial-gradient(70% 38% at 50% 0%,rgba(255,214,140,.30),transparent 72%),radial-gradient(120% 90% at 50% 40%,#16563a 0%,#0b3524 55%,#041a11 100%);
   box-shadow:inset 0 0 0 2px #1a0d05,inset 0 10px 24px rgba(0,0,0,.55),inset 0 -6px 18px rgba(0,0,0,.5)}
 .vt-caixa::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 2px,transparent 2px 6px);pointer-events:none}
 .vt-lampada{position:absolute;top:0;left:12%;right:12%;height:5px;border-radius:0 0 6px 6px;background:linear-gradient(90deg,transparent,#fff3cf 20%,#fff9e6 50%,#fff3cf 80%,transparent);box-shadow:0 0 18px 6px rgba(255,228,160,.45)}
@@ -3266,7 +3266,7 @@ body.papo-aberto{overflow:hidden}
 .est-selos span{padding:5px 11px;border-radius:999px;background:linear-gradient(180deg,#fbe7ad,#d9a94a);color:#3b220c;font-size:13.5px;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
 .est-lista{list-style:none;margin:0 0 6px;padding:0;display:grid;gap:10px}
 .est-lista li{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:12px}
-.est-ic{display:grid;place-items:center;width:58px;height:58px;border-radius:14px;background:radial-gradient(90% 80% at 50% 30%,#5a1426,#2a0612);box-shadow:inset 0 0 0 1.5px rgba(233,196,106,.6)}
+.est-ic{display:grid;place-items:center;width:58px;height:58px;border-radius:14px;background:radial-gradient(90% 80% at 50% 30%,#16563a,#041a11);box-shadow:inset 0 0 0 1.5px rgba(233,196,106,.6)}
 .est-ic .vt-svg{width:46px;max-width:46px}
 .est-lista b{display:block;font-size:16px}.est-lista small{display:block;font-size:14px;color:var(--muted);line-height:1.3}
 .est-bar{display:block;height:6px;margin-top:5px;border-radius:3px;background:rgba(127,127,127,.22);overflow:hidden}
@@ -4678,6 +4678,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.10', data: '18/11/2026', itens: ['Estante com a cara de Manaus: a taça de vitórias tem a cúpula do Teatro Amazonas, e as raras viraram estatuetas da Amazônia (vitória-régia, boto-cor-de-rosa e onça-pintada), num fundo verde-floresta.'] },
   { v: '3.61.9', data: '18/11/2026', itens: ['Estante no Perfil: uma vitrine com troféus de bronze, prata e ouro (100, 500 e 1.000) em partidas jogadas, partidas ganhas, batidas e galos, e as joias raras: batida de carroça, zerou a dupla e virada de 100 pontos.', 'Na mesa online, toque no avatar de quem está jogando (ou na cadeira, na sala) para ver a estante e os títulos da pessoa. No seu, embaixo, abre a sua.'] },
   { v: '3.61.8', data: '18/11/2026', itens: ['Mesa com os amigos: o sócio que cria a mesa escolhe na sala até quantos pontos vai a partida (100, 150 ou 200) e quantas partidas tem o jogo (1, melhor de 3 ou melhor de 5).', 'Partida até 100 ou 150 é para a resenha: não conta para o ranking, os placares da semana nem o Desafio das Confrarias.'] },
   { v: '3.61.7', data: '18/11/2026', itens: ['Natal na Calçada, de 1º a 25/12: mesa nova Natal no Largo, com o Teatro Amazonas iluminado e uma árvore de Natal amazônica, liberada para todo mundo nesses dias.', 'Nos mesmos dias, a turma toda joga de gorro de Natal no avatar. Quem preferir sem, tira no cartão de Natal do início.'] },
@@ -12603,7 +12604,7 @@ renderHome = function () { renderHomeNv.apply(this, arguments); try { desenharFa
 const EST_KEY = 'dmz-estante', EST_META = [100, 500, 1000], TIER_NOME = ['', 'bronze', 'prata', 'ouro'];
 const EST_LINHAS = [
   { k: 'partidas', nome: 'Partidas jogadas', curto: 'Partidas', ic: 'pedra', un: ['partida jogada', 'partidas jogadas'] },
-  { k: 'partidasVencidas', nome: 'Partidas ganhas', curto: 'Vitórias', ic: 'coroa', un: ['partida ganha', 'partidas ganhas'] },
+  { k: 'partidasVencidas', nome: 'Partidas ganhas', curto: 'Vitórias', ic: 'teatro', un: ['partida ganha', 'partidas ganhas'] },
   { k: 'batidas', nome: 'Batidas', curto: 'Batidas', ic: 'batida', un: ['batida', 'batidas'] },
   { k: 'galos', nome: 'Galos', curto: 'Galos', ic: 'galo', un: ['galo', 'galos'] }];
 const EST_RARAS = [
@@ -12641,7 +12642,7 @@ function estDepoisDaMao(antes) {
   const t = loadHist(), sobe = EST_LINHAS.map((l, i) => ({ l, de: antes[i], para: estTier(t[l.k] || 0), n: t[l.k] || 0 })).filter(x => x.para > x.de);
   const fala = [];
   sobe.forEach(x => fala.push([`🏆 Troféu de ${TIER_NOME[x.para]}!`, `${EST_META[x.para - 1]} ${x.l.un[1]}. Veja na sua estante, no Perfil.`]));
-  novas.forEach(x => fala.push(['💎 Joia rara!', `${x.nome}. Veja na sua estante, no Perfil.`]));
+  novas.forEach(x => fala.push(['✨ Estatueta rara!', `${x.nome}. Veja na sua estante, no Perfil.`]));
   fala.forEach((f, i) => setTimeout(() => { try { quandoLivre(() => aviso(f[0], f[1], 3800)); } catch (x) { toast(f[0] + ' ' + f[1]); } }, 1400 + i * 4200));
   if (fala.length) track('estante-nova');
 }
@@ -12653,12 +12654,13 @@ trackOffline = function () {
   return r;
 };
 // Desenho (18/11, o dono: "tem que ser algo mais imponente... bonito, chamativo, com glamour"): uma vitrine de troféus.
-// Armário de madeira escura com friso dourado, fundo de veludo, luz de spot em cada troféu ganho, prateleiras, taças de
-// bronze, prata e ouro (o ouro brilha) e as raras como joias numa almofada. O que falta aparece como sombra.
+// Armário de madeira escura com friso dourado, luz de spot em cada troféu ganho, prateleiras, taças de
+// bronze, prata e ouro (o ouro brilha; a de vitórias com a cúpula do Teatro Amazonas) e as raras como estatuetas da Amazônia:
+// vitória-régia, boto-cor-de-rosa e onça-pintada (18/11, o dono: motivos regionais). Fundo verde-floresta. O que falta aparece como sombra.
 const METAL = { 1: ['#ffe2c2', '#eba468', '#b06a2c', '#5a2c0c'], 2: ['#ffffff', '#e6ebef', '#a2adb6', '#4b545b'], 3: ['#fff7c9', '#ffd65c', '#c99418', '#6a4606'] };
-const JOIA = { carroca: ['#ffd0d8', '#ff5a78', '#c3123a', '#5e0619'], zerou: ['#d6f0ff', '#5cb8ff', '#1a5fd6', '#0a2463'], virada: ['#d4ffe9', '#4fe0a0', '#12a067', '#04452b'] };
 let vtN = 0;
-function vtEmblema(ic, c) {
+function vtEmblema(ic, c, luz) {
+  if (ic === 'teatro') return `<g transform="scale(.86)"><path d="M-7.6 3.2C-7.6 -3.6 -4 -7 0 -7S7.6 -3.6 7.6 3.2Z" fill="${c}"/><path d="M-3.8 3C-3.8 -2.6 -2 -5.8 0 -7M3.8 3C3.8 -2.6 2 -5.8 0 -7M0 3V-7M-6.9 -1.2H6.9" stroke="${luz}" stroke-opacity=".75" stroke-width=".8" fill="none"/><rect x="-1.3" y="-10" width="2.6" height="3" fill="${c}"/><path d="M0 -10V-12.4" stroke="${c}" stroke-width="1"/><rect x="-9" y="3.2" width="18" height="2.4" rx=".6" fill="${c}"/><path d="M-7 5.6V8M-3.5 5.6V8M0 5.6V8M3.5 5.6V8M7 5.6V8" stroke="${c}" stroke-width="1.2"/><rect x="-9.5" y="8" width="19" height="1.6" fill="${c}"/></g>`;
   if (ic === 'pedra') return `<rect x="-4.2" y="-7.4" width="8.4" height="14.8" rx="1.6" fill="none" stroke="${c}" stroke-width="1.5"/><path d="M-3 0H3" stroke="${c}" stroke-width="1.2"/><circle cx="0" cy="-3.7" r="1.15" fill="${c}"/><circle cx="-1.8" cy="2.4" r="1" fill="${c}"/><circle cx="1.8" cy="4.8" r="1" fill="${c}"/>`;
   if (ic === 'coroa') return `<path d="M-7.5 4.5L-8 -4L-3.6 -0.2L0 -6.8L3.6 -0.2L8 -4L7.5 4.5Z" fill="${c}"/><path d="M-7.5 6H7.5" stroke="${c}" stroke-width="1.6"/>`;
   if (ic === 'batida') { let d = ''; for (let i = 0; i < 16; i++) { const a = Math.PI * i / 8 - Math.PI / 2, r = i % 2 ? 3.4 : 8; d += (i ? 'L' : 'M') + (r * Math.cos(a)).toFixed(2) + ' ' + (r * Math.sin(a)).toFixed(2); } return `<path d="${d}Z" fill="${c}"/>`; }
@@ -12680,23 +12682,52 @@ function vtTaca(tier, ic) {
     + `<path d="M28 74H52L56 81H24Z" fill="url(#${id}m)"/><path d="M33 72H47V75H33Z" fill="${c2}"/><path d="M36.5 60H43.5L45.5 72H34.5Z" fill="url(#${id}m)"/><ellipse cx="40" cy="64" rx="5.6" ry="2.2" fill="url(#${id}m)"/>`
     + `<path d="M15 22C3 21 2.5 43 20 47" fill="none" stroke="url(#${id}m)" stroke-width="4.2" stroke-linecap="round"/><path d="M65 22C77 21 77.5 43 60 47" fill="none" stroke="url(#${id}m)" stroke-width="4.2" stroke-linecap="round"/>`
     + `<path d="M14 16H66C66 42 56 58 40 60C24 58 14 42 14 16Z" fill="url(#${id}m)"/><ellipse cx="40" cy="16" rx="26" ry="4.2" fill="url(#${id}r)"/><ellipse cx="40" cy="16.2" rx="22.5" ry="2.7" fill="${c3}" opacity=".55"/>`
-    + `<circle cx="40" cy="34" r="10.5" fill="${c2}" opacity=".55"/><circle cx="40" cy="34" r="10.5" fill="none" stroke="${c0}" stroke-opacity=".7" stroke-width="1"/><g transform="translate(40 34)">${vtEmblema(ic, c3)}</g>`
+    + `<circle cx="40" cy="34" r="10.5" fill="${c2}" opacity=".55"/><circle cx="40" cy="34" r="10.5" fill="none" stroke="${c0}" stroke-opacity=".7" stroke-width="1"/><g transform="translate(40 34)">${vtEmblema(ic, c3, c0)}</g>`
     + `<path d="M20.5 21C20.8 35 25 47 33 54" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.6" stroke-linecap="round"/><path d="M25 20.5C25.4 26 26.4 30 28 33" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.4" stroke-linecap="round"/></g>`
     + (tier === 3 ? '<g class="vt-brilho" fill="#fffbe6"><path d="M62 10l1.2 3.6 3.6 1.2-3.6 1.2L62 19.6l-1.2-3.6-3.6-1.2 3.6-1.2z"/><path d="M18 46l.8 2.4 2.4.8-2.4.8L18 52.4l-.8-2.4-2.4-.8 2.4-.8z"/></g>' : '') + '</svg>';
 }
-// joia das raras: pedestal, almofada de veludo e a pedra lapidada (sem a pedra: vidro escuro com "?")
-function vtJoia(ok, cor) {
-  const id = 'vt' + (++vtN), [c0, c1, c2, c3] = ok ? JOIA[cor] : ['#6d6476', '#3c3542', '#2a2430', '#16121a'], ap = ok ? '' : ' opacity=".5"';
+// 18/11 (o dono: motivos regionais): estatuetas da Amazônia no lugar das joias, numa base de madeira com disco dourado.
+// vitória-régia (batida de carroça), boto-cor-de-rosa (zerou a dupla) e onça-pintada (virada). Sem ganhar: vidro escuro com "?".
+const EST_FIG = {
+  carroca: { g: ['#e6ffd9', '#7fd36a', '#2f8a3a', '#0f3d18'] },
+  zerou: { g: ['#ffe3ee', '#ff9cc2', '#e0588f', '#7a1e48'] },
+  virada: { g: ['#fff7c9', '#ffd65c', '#c99418', '#6a4606'] } };
+function vtFigura(cor, id, g, ok) {
+  const [c0, c1, c2, c3] = g, f = `url(#${id}g)`, pet = ok ? `url(#${id}f)` : c1, pet2 = ok ? '#fff4f8' : c0;
+  if (cor === 'carroca') {
+    let p = '';
+    [-70, -35, 0, 35, 70].forEach(a => { p += `<path transform="translate(40 55) rotate(${a})" d="M0 0C-4 -6 -3.4 -13 0 -16C3.4 -13 4 -6 0 0Z" fill="${pet}" stroke="${ok ? '#e0a2bd' : c2}" stroke-width=".5"/>`; });
+    [-48, -16, 16, 48].forEach(a => { p += `<path transform="translate(40 55) rotate(${a})" d="M0 0C-3 -5 -2.4 -10 0 -12C2.4 -10 3 -5 0 0Z" fill="${pet2}" stroke="${ok ? '#eab3c9' : c2}" stroke-width=".5"/>`; });
+    return `<path d="M17 63Q17 71 40 72Q63 71 63 63L63 60Q62 66 40 67Q18 66 17 60Z" fill="${c2}"/>`
+      + `<ellipse cx="40" cy="61" rx="23" ry="6" fill="${f}"/>`
+      + `<path d="M40 61L40 55M40 61L22 60M40 61L58 60M40 61L28 65M40 61L52 65M40 61L30 57M40 61L50 57" stroke="${c3}" stroke-opacity=".45" stroke-width=".7"/>`
+      + `<path d="M40 61L33 67H47Z" fill="${c3}" opacity=".5"/>`
+      + p + `<circle cx="40" cy="54" r="3.2" fill="${ok ? '#ffd65c' : c1}"/><circle cx="39" cy="53" r="1" fill="#fff" opacity=".8"/>`;
+  }
+  if (cor === 'zerou') return `<path d="M27 63L18 69L21 62L15 58L24 59Z" fill="${f}"/>`
+    + `<path d="M24 61C25 45 36 35 47 36C54 37 58 41 60 45L68 49.5L60 49C57 52 52 51 50 48C45 43 35 46 29 62Z" fill="${f}"/>`
+    + `<path d="M39 38C41 33.5 44.5 33.5 46 36.5Z" fill="${c2}"/><path d="M45 47C44 51 41 53 38 53C41 50 42 48 41 46Z" fill="${c2}"/>`
+    + `<circle cx="55.5" cy="42.5" r="1.1" fill="${c3}"/>`
+    + `<path d="M28 55C30 46 37 40 45 39" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="1.6" stroke-linecap="round"/>`;
+  // onça-pintada deitada, de frente para a direita, cabeça erguida
+  const spots = [[28, 60], [34, 56], [41, 58], [47, 55], [31, 64], [38, 63], [52, 59], [24, 63], [45, 62]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.7" fill="none" stroke="${c3}" stroke-width="1"/><circle cx="${x + .2}" cy="${y + .1}" r=".55" fill="${c3}"/>`).join('');
+  return `<path d="M21 64C15 63 12 58 14 52C15 49 17 49 17 51C16 55 17 59 22 60Z" fill="${f}"/>`
+    + `<path d="M19 66C18 58 24 52 33 52C40 52 46 51 51 49L56 45C57 41 61 38 65 39C69 40 70 44 69 47L66 50C65 53 62 55 58 55C57 59 56 62 57 64L62 64C63 66 62 67 60 67H19Z" fill="${f}"/>`
+    + `<path d="M58 40L59 36L62 39Z M64 39L66 35.5L67 39.5Z" fill="${c2}"/>`
+    + `<circle cx="64.5" cy="43.5" r="1" fill="${c3}"/><path d="M68.5 46.5L67 47.5" stroke="${c3}" stroke-width="1"/>`
+    + spots + `<path d="M24 57C27 54 31 53 35 53" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.4" stroke-linecap="round"/>`;
+}
+function vtEstatueta(ok, cor) {
+  const id = 'vt' + (++vtN), g = ok ? EST_FIG[cor].g : ['#6d6476', '#3c3542', '#2a2430', '#16121a'];
   return `<svg class="vt-svg joia${ok ? '' : ' sombra'}" viewBox="0 20 80 86" aria-hidden="true"><defs>`
-    + `<linearGradient id="${id}g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${c0}"/><stop offset=".45" stop-color="${c1}"/><stop offset="1" stop-color="${c3}"/></linearGradient>`
-    + `<linearGradient id="${id}c" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#a5243c"/><stop offset="1" stop-color="#4c0a18"/></linearGradient>`
+    + `<linearGradient id="${id}g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${g[0]}"/><stop offset=".4" stop-color="${g[1]}"/><stop offset=".75" stop-color="${g[2]}"/><stop offset="1" stop-color="${g[3]}"/></linearGradient>`
+    + `<linearGradient id="${id}f" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#f5a3c3"/></linearGradient>`
     + `<linearGradient id="${id}b" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3a2416"/><stop offset="1" stop-color="#0d0704"/></linearGradient>`
     + `<linearGradient id="${id}o" x1="0" x2="1"><stop offset="0" stop-color="#9c7230"/><stop offset=".45" stop-color="#f6dc9a"/><stop offset="1" stop-color="#a77b33"/></linearGradient></defs>`
-    + `<ellipse cx="40" cy="101" rx="26" ry="3.6" fill="rgba(0,0,0,.45)"/><path d="M24 100L27 80H53L56 100Z" fill="url(#${id}b)"/><rect x="25" y="77" width="30" height="4" rx="1.2" fill="url(#${id}o)"/>`
-    + `<path d="M18 76C18 68 24 66 40 66S62 68 62 76C62 79 56 80 40 80S18 79 18 76Z" fill="url(#${id}c)"${ap}/><circle cx="19" cy="77" r="2" fill="#e9c46a"${ap}/><circle cx="61" cy="77" r="2" fill="#e9c46a"${ap}/>`
-    + `<g${ok ? '' : ' opacity=".55"'}><path d="M22 44L31 32H49L58 44L40 70Z" fill="url(#${id}g)"/><path d="M22 44H58M31 32L35 44L40 70L45 44L49 32M35 44L40 32L45 44" fill="none" stroke="${c0}" stroke-opacity=".75" stroke-width=".9"/>`
-    + `<path d="M31 32H49L45 44H35Z" fill="${c0}" opacity=".35"/><path d="M22 44L35 44L40 70Z" fill="${c3}" opacity=".35"/>${ok ? '<path d="M33 35L36.5 35L34 41Z" fill="#fff" opacity=".85"/>' : ''}</g>`
-    + (ok ? '<g class="vt-brilho" fill="#fff"><path d="M60 24l1 3 3 1-3 1-1 3-1-3-3-1 3-1z"/><path d="M20 30l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></g>' : '<text x="40" y="54" text-anchor="middle" font-size="16" font-weight="900" fill="rgba(255,230,190,.45)" font-family="system-ui,sans-serif">?</text>') + '</svg>';
+    + `<ellipse cx="40" cy="101" rx="27" ry="3.6" fill="rgba(0,0,0,.45)"/><path d="M20 100L23 78H57L60 100Z" fill="url(#${id}b)"/><rect x="28" y="86" width="24" height="7" rx="1.4" fill="url(#${id}o)"/>`
+    + `<ellipse cx="40" cy="74" rx="23" ry="4.4" fill="url(#${id}o)"/><ellipse cx="40" cy="73.4" rx="20" ry="3" fill="#6b4a1c" opacity=".35"/>`
+    + `<g transform="translate(40 74) scale(1.25) translate(-40 -74)"${ok ? '' : ' opacity=".6"'}>${vtFigura(cor, id, g, ok)}</g>`
+    + (ok ? '<g class="vt-brilho" fill="#fff"><path d="M64 30l1 3 3 1-3 1-1 3-1-3-3-1 3-1z"/><path d="M15 40l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></g>' : '<text x="40" y="58" text-anchor="middle" font-size="16" font-weight="900" fill="rgba(255,230,190,.5)" font-family="system-ui,sans-serif">?</text>') + '</svg>';
 }
 // a vitrine inteira: tiers (0 a 3) e raras (0/1) das linhas; sub = o que vai embaixo do nome na placa
 function vitrineHTML(nome, tiers, raras, subs, pe, grande) {
@@ -12704,7 +12735,7 @@ function vitrineHTML(nome, tiers, raras, subs, pe, grande) {
   return `<span class="vitrine${grande ? ' grande' : ''}"><span class="vt-topo"><span class="vt-placa-topo"><small>Estante de</small><b>${esc(nome)}</b></span></span>`
     + `<span class="vt-caixa"><i class="vt-lampada" aria-hidden="true"></i>`
     + `<span class="vt-prat">${EST_LINHAS.map((l, i) => slot(vtTaca(tiers[i], l.ic), !!tiers[i], l.curto, subs ? subs[i] : tiers[i] ? TIER_CAP[tiers[i]] : '', tiers[i] === 3)).join('')}</span><i class="vt-tabua" aria-hidden="true"></i>`
-    + `<span class="vt-prat joias">${EST_RARAS.map((x, i) => slot(vtJoia(!!raras[i], x.id), !!raras[i], x.curto, '', false)).join('')}</span><i class="vt-tabua" aria-hidden="true"></i>`
+    + `<span class="vt-prat joias">${EST_RARAS.map((x, i) => slot(vtEstatueta(!!raras[i], x.id), !!raras[i], x.curto, '', false)).join('')}</span><i class="vt-tabua" aria-hidden="true"></i>`
     + `<i class="vt-vidro" aria-hidden="true"></i></span>` + (pe ? `<span class="vt-pe">${pe}</span>` : '') + '</span>';
 }
 const TIER_CAP = ['', 'Bronze', 'Prata', 'Ouro'];
@@ -12744,14 +12775,14 @@ function abrirEstante() {
     const de = tr ? EST_META[tr - 1] : 0, pct = tr === 3 ? 100 : Math.round(100 * (n - de) / (prox - de));
     return `<li><span class="est-ic">${vtTaca(tr, l.ic)}</span><span><b>${l.nome}</b><small>${tx}</small><span class="est-bar"><i style="width:${Math.max(0, Math.min(100, pct))}%"></i></span></span></li>`;
   }).join('');
-  const raras = EST_RARAS.map(x => `<li><span class="est-ic">${vtJoia(!!r[x.id], x.id)}</span><span><b>${x.nome}</b><small>${esc(x.tx)}${r[x.id] ? ' · conseguiu em ' + dt(r[x.id]) : ''}</small></span></li>`).join('');
+  const raras = EST_RARAS.map(x => `<li><span class="est-ic">${vtEstatueta(!!r[x.id], x.id)}</span><span><b>${x.nome}</b><small>${esc(x.tx)}${r[x.id] ? ' · conseguiu em ' + dt(r[x.id]) : ''}</small></span></li>`).join('');
   let socio = false; try { socio = temPlano(); } catch (e) {}
   let camp = false; try { camp = souCampeao(); } catch (e) {}
   openSheet('info', `<p class="eyebrow">Estante</p><h2 id="sheetTitle">Sua estante</h2>
     ${vitrineHTML((profile && profile.name) || 'Você', m.tiers, m.raras, null, `Nível ${v.n} · ${esc(v.titulo)}`, true)}
     ${estSelos({ socio, campeao: camp })}
     <p class="es-gk">Troféus</p><ul class="est-lista">${linhas}</ul><p class="note">Bronze com 100, prata com 500 e ouro com 1.000.</p>
-    <p class="es-gk">Joias raras</p><ul class="est-lista">${raras}</ul>
+    <p class="es-gk">Raras da Amazônia</p><ul class="est-lista">${raras}</ul>
     <p class="es-gk">Conquistas da calçada</p><p class="est-cq">${m.feitas} de ${tot}. Cada uma dá um item para o avatar. <button type="button" class="linkbtn" id="estConq">Ver conquistas</button></p>
     <p class="note">Contam as partidas offline e online. Na mesa online, quem tocar no seu avatar vê a sua estante.</p>
     <button type="button" class="secondary" id="estFechar" style="width:100%">Fechar</button>`);
@@ -17149,7 +17180,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.9-df2b818d';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.10-e36b0839';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
