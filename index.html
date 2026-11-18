@@ -1157,6 +1157,16 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 .torneio-op .to-chk{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;border:2px solid var(--line);font-weight:900;color:#fff}
 .torneio-op.ligado{border-color:#c98a3a}
 .torneio-op.ligado .to-chk{background:#9b5414;border-color:#9b5414}
+/* 18/11: até quantos pontos e quantas partidas (mesa com os amigos, o sócio escolhe) */
+.formato-op{display:grid;gap:8px;width:100%;box-sizing:border-box;padding:12px 14px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg)}
+.formato-op .fo-tit{display:flex;align-items:center;justify-content:space-between;margin:2px 0 0;font-size:16px}
+.formato-op .fo-socio{font-size:13px;font-weight:700;color:#9b5414}
+.formato-op .fo-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.formato-op .fo-seg button{min-height:44px;padding:8px 6px;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:var(--fg);font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+.formato-op .fo-seg button[aria-pressed="true"]{background:#9b5414;border-color:#9b5414;color:#fff}
+.formato-op .fo-seg button.trava{opacity:.62}
+.formato-op .fo-seg button.trava[aria-pressed="true"]{opacity:1}
+.formato-op small{font-size:14px;color:var(--muted);line-height:1.35}
 .pedir-ponto{margin-left:auto;border:0;border-radius:999px;padding:9px 16px;background:#f3c25a;color:#2a1a08;font:inherit;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.18)}
 .pedir-ponto:active{transform:scale(.97)}
 .relogio-vez{flex:none;min-width:58px;text-align:center;padding:7px 12px;border-radius:999px;border:1.5px solid var(--glow);font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--fg);
@@ -4239,10 +4249,10 @@ function endHand(st, info) {
   const r = Object.assign({}, info, { hands: st.hands.map(h => h.map(t => t.slice())), score: st.score.slice(),
     handNo: st.handNo, partida: st.partida });
   const [a, b] = st.score;
-  if (Math.max(a, b) >= TARGET && a !== b) {
+  if (Math.max(a, b) >= (st.alvo || TARGET) && a !== b) {   // 18/11: o sócio pode jogar até 100 ou 150
     const w = a > b ? 0 : 1;
     st.series[w]++; r.matchWinner = w; r.series = st.series.slice();
-    if (st.series[w] >= 2) r.gameWinner = w;
+    if (st.series[w] >= (st.vence || 2)) r.gameWinner = w;   // 18/11: 1, 2 (melhor de 3) ou 3 (melhor de 5)
   }
   st.result = r;
 }
@@ -4251,7 +4261,7 @@ function nextHand(st) {
   const r = st.result;
   if (r && r.matchWinner != null) {
     // Jogo novo e partida nova (depois dos 200) começam com a carroça de sena.
-    if (r.gameWinner != null) { const fresh = newGame(st.names); fresh.torneio = st.torneio; Object.keys(st).forEach(k => delete st[k]); Object.assign(st, fresh); }
+    if (r.gameWinner != null) { const fresh = newGame(st.names); fresh.torneio = st.torneio; if (st.alvo) fresh.alvo = st.alvo; if (st.vence) fresh.vence = st.vence; Object.keys(st).forEach(k => delete st[k]); Object.assign(st, fresh); }
     else { st.partida++; st.score = [0, 0]; st.handNo = 0; st.nextStart = { mode: 'sena' }; }
   }
   startHand(st);
@@ -4614,6 +4624,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.8', data: '18/11/2026', itens: ['Mesa com os amigos: o sócio que cria a mesa escolhe na sala até quantos pontos vai a partida (100, 150 ou 200) e quantas partidas tem o jogo (1, melhor de 3 ou melhor de 5).', 'Partida até 100 ou 150 é para a resenha: não conta para o ranking, os placares da semana nem o Desafio das Confrarias.'] },
   { v: '3.61.7', data: '18/11/2026', itens: ['Natal na Calçada, de 1º a 25/12: mesa nova Natal no Largo, com o Teatro Amazonas iluminado e uma árvore de Natal amazônica, liberada para todo mundo nesses dias.', 'Nos mesmos dias, a turma toda joga de gorro de Natal no avatar. Quem preferir sem, tira no cartão de Natal do início.'] },
   { v: '3.61.6', data: '18/11/2026', itens: ['Mesa online, fim da mão: cada um toca em Próxima mão quando terminar de ver as pedras. A próxima começa quando todos tocarem, ou sozinha em 20 s (30 s no fim da partida). Ninguém corta mais a leitura dos outros, e a mesa não fica parada esperando. Sugestão de um jogador.'] },
   { v: '3.61.5', data: '18/11/2026', itens: ['Mesa nova: Palácio da Justiça, a fachada do palácio da Avenida Eduardo Ribeiro no pôr do sol, com a história dele.', 'Resultado da mão mais fácil de entender: as pedras que sobraram aparecem agrupadas por dupla, com o total de cada uma, na cor do placar. Quem bateu aparece no bloco da dupla. Sugestão de um jogador.', 'Mesa online: quem ficou sem conexão tem 10 s na vez (o robô joga por ele), em vez dos 20 s de quem está jogando. A mesa não fica mais parada esperando quem caiu. Sugestão de um jogador.'] },
@@ -11502,8 +11513,37 @@ function salaTorneio() {
   el.classList.toggle('ligado', !!v.torneio);
   el.innerHTML = `<span class="to-chk" aria-hidden="true">${v.torneio ? '✓' : ''}</span><span><b>Modo torneio ${v.torneio ? 'ligado' : 'desligado'}</b><small>Sem o contador das pontas: cada um soma de cabeça.${v.dono ? '' : ' Quem criou a mesa escolhe.'}</small></span>`;
 }
+// 18/11 (sugestões #35 e #36): na mesa com os amigos, o sócio que criou escolhe até quantos pontos e quantas partidas.
+// Partida até 100 ou 150 não conta para o ranking nem para o Desafio. Na mesa de desafio entre Turmas, fica o normal.
+function alvoDe(g) { return (g && g.alvo) || TARGET; }
+const FORMATO_ALVOS = [100, 150, 200], FORMATO_VENCE = [[1, '1 partida'], [2, 'Melhor de 3'], [3, 'Melhor de 5']];
+function salaFormato() {
+  let el = $('#salaFormato');
+  const v = ON.vista;
+  if (screen !== 'sala' || !v || v.fase !== 'espera' || v.publica || v.vs) { if (el) el.hidden = true; return; }
+  if (!el) {
+    ($('#salaTorneio') || $('#salaPedraPick')).insertAdjacentHTML('afterend', '<div class="formato-op" id="salaFormato"></div>');
+    el = $('#salaFormato');
+    el.addEventListener('click', e => {
+      const b = e.target.closest('button[data-k]'); const w = ON.vista; if (!b || !w) return;
+      if (!w.dono) { toast('Quem criou a mesa escolhe até quantos pontos e quantas partidas.'); return; }
+      if (!temPlano() && !souAdmin()) { track('formato-sem-plano'); toast('Escolher até quantos pontos e quantas partidas é para os sócios da Calçada. Sem plano, a mesa vai até 200, melhor de 3.'); return; }
+      const novo = { alvo: w.alvo || 200, vence: w.vence || 2 }; novo[b.dataset.k] = +b.dataset.v;
+      if (novo.alvo === (w.alvo || 200) && novo.vence === (w.vence || 2)) return;
+      if (mandar(Object.assign({ t: 'formato' }, novo))) track('formato-' + novo.alvo + '-' + novo.vence);
+    });
+  }
+  const alvo = v.alvo || 200, vence = v.vence || 2, pode = v.dono && (temPlano() || souAdmin());
+  const bt = (k, val, tx, on) => `<button type="button" data-k="${k}" data-v="${val}" aria-pressed="${on}"${pode ? '' : ' class="trava"'}>${tx}</button>`;
+  el.hidden = false;
+  el.innerHTML = `<p class="fo-tit"><b>Até quantos pontos</b>${v.dono && !pode ? '<span class="fo-socio">🔒 Sócio</span>' : ''}</p>`
+    + `<div class="fo-seg" role="group" aria-label="Até quantos pontos">${FORMATO_ALVOS.map(a => bt('alvo', a, a, a === alvo)).join('')}</div>`
+    + `<p class="fo-tit"><b>Quantas partidas</b></p>`
+    + `<div class="fo-seg" role="group" aria-label="Quantas partidas">${FORMATO_VENCE.map(([n, tx]) => bt('vence', n, tx, n === vence)).join('')}</div>`
+    + `<small>${alvo < 200 ? 'Partida até ' + alvo + ' não conta para o ranking nem para o Desafio.' : 'Vale para o ranking e para o Desafio.'}${v.dono ? '' : ' Quem criou a mesa escolhe.'}</small>`;
+}
 const renderSalaTorneio = renderSala;
-renderSala = function () { renderSalaTorneio(); try { salaTorneio(); } catch (e) {} };
+renderSala = function () { renderSalaTorneio(); try { salaTorneio(); } catch (e) {} try { salaFormato(); } catch (e) {} };
 
 // ===== Ganha-chama (mesa com os amigos) =====
 // Mesa cheia: quem chega entra na fila. No fim de cada partida, a dupla que perdeu vai para o fim da fila e os
@@ -11544,7 +11584,7 @@ function desenharFila(v) {
     const nomes = t => juntar([t, t + 2].map(k => v.cad[k] ? v.cad[k].nome : '?'));
     const fica = t => v.fica && v.fica.team === t && v.fica.n ? ` <i class="fp-fica" title="Ganhou ${v.fica.n} partida${v.fica.n > 1 ? 's' : ''} seguida${v.fica.n > 1 ? 's' : ''}">🐟 ${v.fica.n}</i>` : '';
     const linha = t => `<div class="fp-linha"><span class="fp-nomes">${esc(nomes(t))}${fica(t)}</span><b>${J.score[t]}</b></div>`;
-    pl.innerHTML = `<p class="fp-tit">Jogando agora</p>${linha(0)}${linha(1)}<small>Partida ${J.partida || 1} · até ${TARGET}${J.series ? ` · série ${J.series[0]} × ${J.series[1]}` : ''}</small>`;
+    pl.innerHTML = `<p class="fp-tit">Jogando agora</p>${linha(0)}${linha(1)}<small>Partida ${J.partida || 1} · até ${J.alvo || TARGET}${J.series ? ` · série ${J.series[0]} × ${J.series[1]}` : ''}</small>`;
   }
   $('#filaLista').innerHTML = fila.map((c, i) => {
     const eu = i === pos;
@@ -12082,9 +12122,9 @@ function emocao(evs) {
   }
   EMO.lider = lider;
   for (const t of [0, 1]) {
-    if (!EMO.reta[t] && sc[t] >= TARGET - 30 && sc[t] < TARGET && G.phase === 'play') {
+    if (!EMO.reta[t] && sc[t] >= alvoDe(G) - 30 && sc[t] < alvoDe(G) && G.phase === 'play') {
       EMO.reta[t] = true;
-      const falta = TARGET - sc[t];
+      const falta = alvoDe(G) - sc[t];
       setTimeout(() => quandoLivre(() => { if (G && G.phase === 'play') aviso('Reta final!', t === nos ? `Faltam ${falta} para vocês fecharem a partida` : `Eles estão a ${falta} de fechar a partida`, 2200); }), 900);
     }
   }
@@ -14838,6 +14878,7 @@ const receberOnlinePlano = receberOnline;
 receberOnline = function (m) {
   const r = receberOnlinePlano.apply(this, arguments);
   if (m && m.t === 'erro' && (m.cod === 'limite' || m.cod === 'limite-rapida' || m.cod === 'limite-desafio')) { if (m.pessoa) LIM_PESSOA.em = Date.now(); setTimeout(() => convitePlano(m.cod), 450); }
+  if (m && m.t === 'erro' && m.cod === 'formato-socio') toast('Escolher até quantos pontos e quantas partidas é para os sócios da Calçada.');   // 18/11
   if (m && m.t === 'erro' && m.cod === 'mesa-socio') { toast(avisoMesaSocio()); try { aplicarMesa(); } catch (e) {} }
   return r;
 };
@@ -16199,9 +16240,9 @@ function render() {
   const L = TEAM(base()), R = 1 - L;
   rotuloDupla($('#tL'), L); rotuloDupla($('#tR'), R);
   $('#sL').textContent = G.score[L]; $('#sR').textContent = G.score[R];
-  $('#bL').style.width = Math.min(100, G.score[L] / TARGET * 100) + '%';
-  $('#bR').style.width = Math.min(100, G.score[R] / TARGET * 100) + '%';
-  $('#ptLbl').textContent = `Partida ${G.partida} · até ${TARGET}`;
+  $('#bL').style.width = Math.min(100, G.score[L] / alvoDe(G) * 100) + '%';
+  $('#bR').style.width = Math.min(100, G.score[R] / alvoDe(G) * 100) + '%';
+  $('#ptLbl').textContent = `Partida ${G.partida} · até ${alvoDe(G)}`;
   $('#srLbl').textContent = `${G.series[L]} × ${G.series[R]}`;
   for (const pos of [1, 2, 3]) {
     const p = (base() + pos) % 4, n = dealing ? dealtCount[p] : G.hands[p].length, el = $(`.seat[data-pos="${pos}"]`);
@@ -16772,7 +16813,7 @@ function showResult() {
     const wtxt = seatMe == null ? `${duo(r.matchWinner)} venceram a partida.` : ours ? 'Vocês venceram a partida!' : 'Eles venceram a partida.';
     win = `<p class="win ${r.matchWinner === L ? '' : 'them'}">${esc(wtxt)}</p>`;
     if (r.gameWinner != null) { win += `<p>Jogo decidido em ${r.series[L]} × ${r.series[R]}.</p>`; btn = 'Novo jogo'; }
-    else { win += `<p>Série: ${esc(teamName(L))} ${r.series[L]} × ${r.series[R]} ${esc(teamName(R))}. Melhor de 3.</p>`; btn = 'Próxima partida'; }
+    else { win += `<p>Série: ${esc(teamName(L))} ${r.series[L]} × ${r.series[R]} ${esc(teamName(R))}. Melhor de ${G.vence === 3 ? 5 : 3}.</p>`; btn = 'Próxima partida'; }
   }
   const sh = r.gameWinner != null ? gameShare() : null;
   openSheet('result', `<div class="res-grid"><div class="res-main"><p class="eyebrow">Mão ${r.handNo} · Partida ${r.partida}</p>
@@ -16864,7 +16905,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.7-3eb4622e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.8-37e9cbfe';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

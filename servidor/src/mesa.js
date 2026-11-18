@@ -472,6 +472,7 @@ export class Mesa {
       case 'reacao': if (p >= 0) return this.reagir(p, msg.k); return;
       case 'mesa': if (p >= 0 && m.cad[p].id === m.dono) return this.trocarTema(msg.id); return;
       case 'torneio': if (p >= 0 && m.cad[p].id === m.dono) return this.ligarTorneio(msg.on); return;
+      case 'formato': if (p >= 0 && m.cad[p].id === m.dono) return this.trocarFormato(ws, msg); return;   // 18/11
       case 'ponto': if (p >= 0) return this.pontoPedido(p); return;
       case 'papo': return this.falar(ws, att, p, msg);   // 3.42
       case 'papoDenuncia': return this.denunciarPapo(ws, att, msg.n);
@@ -684,7 +685,7 @@ export class Mesa {
     // quem criou foi para a fila: quem ficou na mesa passa a mandar nela
     if (!m.cad.some(c => c && c.id === m.dono)) { const h = m.cad.find(c => c && !c.bot && c.id); if (h) m.dono = h.id; }
     const torneio = m.G.torneio;
-    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = torneio; startHand(m.G); m.robo = null; m.tempos = null; this.inicioDePartida();
+    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = torneio; this.formatoNoJogo(m.G); startHand(m.G); m.robo = null; m.tempos = null; this.inicioDePartida();
     m.troca = { seq: m.seq + 1, entraram, sairam, ficam: [0, 1, 2, 3].filter(k => k % 2 === w).map(k => m.cad[k].nome) };
     return true;
   }
@@ -783,6 +784,20 @@ export class Mesa {
     m.torneio = !!on; m.ultimo = Date.now();
     await this.salvar(); this.espalhar();
   }
+  // 18/11 (sugestões #35 e #36): quem criou a mesa com os amigos, sendo sócio, escolhe na sala até quantos pontos (100, 150
+  // ou 200) e quantas partidas (1, melhor de 3 ou melhor de 5). Mesa rápida e desafio entre Turmas: sempre 200, melhor de 3.
+  async trocarFormato(ws, msg) {
+    const m = this.m;
+    if (m.fase !== 'espera' || m.publica || this.mesaDesafio()) return;
+    if (this.temasDoDono()) { this.enviar(ws, { t: 'erro', cod: 'formato-socio' }); return; }   // dono sem plano (com os limites valendo)
+    const alvo = [100, 150, 200].includes(+msg.alvo) ? +msg.alvo : (m.alvo || 200), vence = [1, 2, 3].includes(+msg.vence) ? +msg.vence : (m.vence || 2);
+    if (alvo === (m.alvo || 200) && vence === (m.vence || 2)) return;
+    if (alvo === 200) delete m.alvo; else m.alvo = alvo;
+    if (vence === 2) delete m.vence; else m.vence = vence;
+    m.ultimo = Date.now();
+    await this.salvar(); this.espalhar();
+  }
+  formatoNoJogo(G) { const m = this.m; if (m.publica || this.mesaDesafio()) return G; if (m.alvo) G.alvo = m.alvo; if (m.vence) G.vence = m.vence; return G; }
   // Pedir ponto: não muda a vez (nem o relógio de quem está jogando)
   async pontoPedido(p) {
     const m = this.m, G = m.G;
@@ -885,7 +900,7 @@ export class Mesa {
     await this.conferirSocios();   // 10/11: sócio nunca conta partida grátis
     if (m.fase !== 'espera') return;
     this.sentarRobos();
-    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = !!m.torneio && !m.publica; startHand(m.G); m.robo = null; m.tempos = null; this.inicioDePartida();
+    m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = !!m.torneio && !m.publica; this.formatoNoJogo(m.G); startHand(m.G); m.robo = null; m.tempos = null; this.inicioDePartida();
     if (!m.publica) this.contarPartidas();   // planos (28/10)
     m.fase = 'jogo'; m.seq++; m.porRobo = null; m.iniciaEm = null;
     m.ultimo = Date.now(); m.turnoDesde = m.ultimo + this.T.distribuir;   // 28/10: os 20 s contam depois de distribuir
@@ -1465,6 +1480,7 @@ export class Mesa {
     const m = this.m, G = m.G, r = G && G.result;
     if (!G || G.phase !== 'handEnd' || !r || r.matchWinner == null || r.ranking) return;
     r.ranking = true;
+    if ((G.alvo || 200) < 200) return;   // 18/11: partida até 100 ou 150 não conta (ranking, placares da semana, abandono)
     const quem = quemContaNoRanking(m, r.matchWinner);
     if (quem.length) { try { await somarRanking(this.env, quem); } catch (e) {} }
     if (quem.length && sextaValendo(this.env)) { try { await anotarSexta(this.env, m, quem); } catch (e) {} }   // 13/11: Placar da Sexta
@@ -1491,6 +1507,7 @@ export class Mesa {
     const m = this.m, G = m.G, r = G && G.result;
     if (!r || r.matchWinner == null || r.desafio) return;
     r.desafio = true;
+    if ((G.alvo || 200) < 200) return;   // 18/11: partida curta não vale ponto no Desafio
     const lado = w => m.cad.map((c, p) => c && !c.bot && c.id && p % 2 === w ? p : -1).filter(p => p >= 0);
     const ganhou = lado(r.matchWinner), perdeu = lado(1 - r.matchWinner);
     if (!ganhou.length || !perdeu.length) return;
@@ -1538,7 +1555,7 @@ export class Mesa {
       euPronto: minha >= 0 && G && G.phase === 'handEnd' && m.prontosSeq === m.seq && (m.prontos || []).includes(minha),
       vezMs: G && G.phase === 'play' && m.cad[G.turn] && !m.cad[G.turn].bot ? this.limiteVez(G.turn) : null,   // 18/11: limite da vez de quem joga
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, foto: c.menor ? null : c.foto || null, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
-      tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), quarta: !m.publica && this.socioArg() === 'livre', meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
+      tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), quarta: !m.publica && this.socioArg() === 'livre', meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, alvo: m.alvo || 200, vence: m.vence || 2, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
       cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, campea: !!c.campea && !c.saiu && !c.bot, dourada: !!c.dourada && !c.saiu && !c.bot, sabado: !!c.sabado && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || c.menor ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
       tempos: minha >= 0 && m.tempos ? m.tempos[minha] || 0 : 0, tolerado: TEMPO_TOLERADO,   // 03/11
