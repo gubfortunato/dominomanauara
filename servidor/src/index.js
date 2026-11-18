@@ -19,7 +19,8 @@ import { donoQuarta, quartaPlacar } from './quarta.js';   // 12/11: Quarta dos A
 import { anotarSuporte, suporteDoAparelho, suporteLido, donoResponder, juntarSuporte } from './suporte.js';   // 12/11: conversa com o suporte
 import { relatorioDiario, donoRelatorio, alertas, sugerirResposta } from './gestor.js';
 import { donoRobo, donoRoboVoltar } from './robo.js';   // 13/11: robô que treina toda noite
-import { segundaPlacar } from './segunda.js';   // 17/11: Placar da Segunda (Segunda é de Lei)
+import { segundaPlacar } from './segunda.js';
+import { sabadoPlacar, avisosSabado } from './sabado.js';   // 17/11: Sábado dos Torneios   // 17/11: Placar da Segunda (Segunda é de Lei)
 import { sextaPlacar } from './sexta.js';   // 13/11: Placar da Sexta   // 13/11: relatório do dia, alertas e rascunho de resposta
 import { travaCodigo, anotarCodigoErrado, limparCodigos } from './codigos.js';
 import { saudeVoz, donoPapoVoz, limparVozesDenunciadas } from './voz.js';
@@ -462,6 +463,7 @@ async function avisosDeEvento(env, agora) {
   agora = agora || Date.now();
   const lista = await avisosAgendados(env, agora);
   try { lista.push(...await turmas.avisosDesafio(env, agora)); } catch (e) {}   // 10/11: avisos do Desafio das Confrarias
+  try { lista.push(...await avisosSabado(env, agora)); } catch (e) {}   // 17/11: Sábado dos Torneios (10h) e o campeão (domingo de manhã)
   const temChave = !!(env.VAPID_PRIVATE_JWK && env.VAPID_PUBLIC);
   let ok = 0, falhas = 0, sobra = EV_POR_RODADA;
   const naoFoi = 'NOT EXISTS (SELECT 1 FROM avisos_ev e WHERE e.aviso = a.id AND e.chave = ?)';
@@ -587,6 +589,7 @@ export default {
       if (url.pathname === '/saude/ia' && req.method === 'GET') return await fotos.saudeIA(env, origin, H);
       if (url.pathname === '/sexta/placar' && req.method === 'GET') return await sextaPlacar(env, url, H, origin);   // 13/11
       if (url.pathname === '/segunda/placar' && req.method === 'GET') return await segundaPlacar(env, url, H, origin);   // 17/11
+      if (url.pathname === '/sabado/placar' && req.method === 'GET') return await sabadoPlacar(env, url, H, origin);   // 17/11: Sábado dos Torneios
       if (url.pathname === '/quarta/placar' && req.method === 'GET') return await quartaPlacar(env, url, H, origin);   // 13/11: Duplas da Quarta
       if (url.pathname === '/suporte' && req.method === 'GET') return await suporteDoAparelho(req, env, origin, H, url);   // 12/11: conversa com o suporte
       if (url.pathname === '/suporte/lido' && req.method === 'POST') return await suporteLido(req, env, origin, H);

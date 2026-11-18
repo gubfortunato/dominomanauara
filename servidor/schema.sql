@@ -351,3 +351,8 @@ CREATE INDEX IF NOT EXISTS quarta_duplas_dia ON quarta_duplas (dia, vitorias);
 -- cada um nas mesas online, como o Placar da Sexta.
 CREATE TABLE IF NOT EXISTS segunda_placar (dia TEXT NOT NULL, aparelho TEXT NOT NULL, nome TEXT, partidas INTEGER NOT NULL DEFAULT 0, vitorias INTEGER NOT NULL DEFAULT 0, galos INTEGER NOT NULL DEFAULT 0, em INTEGER, PRIMARY KEY (dia, aparelho));
 CREATE INDEX IF NOT EXISTS segunda_placar_dia ON segunda_placar (dia, vitorias);
+-- 17/11 (pedido do dono): Sábado dos Torneios (sabado.js). Das 10h às 22h, pontos de cada um nas mesas online (vitória 3 +
+-- o bônus do tema). O campeão (o sócio mais bem colocado) fica guardado em sabado_campeao (lider: o 1º, quando não é sócio).
+CREATE TABLE IF NOT EXISTS sabado_placar (dia TEXT NOT NULL, aparelho TEXT NOT NULL, nome TEXT, partidas INTEGER NOT NULL DEFAULT 0, vitorias INTEGER NOT NULL DEFAULT 0, galos INTEGER NOT NULL DEFAULT 0, carrocas INTEGER NOT NULL DEFAULT 0, pontos INTEGER NOT NULL DEFAULT 0, em INTEGER, PRIMARY KEY (dia, aparelho));
+CREATE INDEX IF NOT EXISTS sabado_placar_dia ON sabado_placar (dia, pontos);
+CREATE TABLE IF NOT EXISTS sabado_campeao (dia TEXT PRIMARY KEY, aparelho TEXT, nome TEXT, pontos INTEGER, lider TEXT, em INTEGER);

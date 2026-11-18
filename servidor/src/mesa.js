@@ -19,7 +19,8 @@ import { limitesValem, limitesAgora, diaBR, usoDoDia, somarUso, podeJogar, LIMIT
 import { limitePessoa } from './pessoa.js';
 import { quartaValendo, contarQuarta, anotarConvite, anotarQuarta } from './quarta.js';
 import { pesosRobo } from './robo.js';   // 13/11: robô treinado toda noite
-import { segundaValendo, anotarSegunda } from './segunda.js';   // 17/11: Segunda é de Lei
+import { segundaValendo, anotarSegunda } from './segunda.js';
+import { sabadoValendo, anotarSabado, campeaoDoSabado } from './sabado.js';   // 17/11: Sábado dos Torneios   // 17/11: Segunda é de Lei
 import { sextaValendo, anotarSexta } from './sexta.js';   // 13/11: Placar da Sexta   // 12/11: Quarta dos Amigos
 // 3.38.2: na Calçada, apelido que o filtro passou a barrar (de quem entrou antes) aparece como "Jogador"
 const nomeVisivel = c => !c.bot && nomeOfensivo(c.nome) ? 'Jogador' : c.nome;
@@ -477,8 +478,9 @@ export class Mesa {
       let campeao = false; try { campeao = (await campeaoAte(this.env, id)) > Date.now(); } catch (e) {}   // 10/11: campeão da Copa dos Sócios
       let dourada = false; try { const k = await campeaoDoMes(this.env); dourada = !!(k && k.aparelho === id); } catch (e) {}   // 13/11: Campeão do Mês (pedra Dourada)
       let campea = false; try { campea = (await campeaDesafioAte(this.env, id)) > Date.now(); } catch (e) {}   // 10/11: da Turma campeã do Desafio
-      return { apoiador: !!(p && p.ate > Date.now()), planoIncerto: incerto, doador: Math.max(nivelDoador((d && d.t) || 0), (ct && ct.nivel) || 0), foto, turma, rei, campeao, campea, dourada };
-    } catch (e) { return { apoiador: !!(p && p.ate > Date.now()), planoIncerto: incerto, doador: 0, foto: null, turma: null, rei: false, campeao: false, campea: false, dourada: false }; }
+      let sabado = false; try { const k = await campeaoDoSabado(this.env); sabado = !!(k && k.aparelho === id); } catch (e) {}   // 17/11: Campeão do Sábado (selo 🏅)
+      return { apoiador: !!(p && p.ate > Date.now()), planoIncerto: incerto, doador: Math.max(nivelDoador((d && d.t) || 0), (ct && ct.nivel) || 0), foto, turma, rei, campeao, campea, dourada, sabado };
+    } catch (e) { return { apoiador: !!(p && p.ate > Date.now()), planoIncerto: incerto, doador: 0, foto: null, turma: null, rei: false, campeao: false, campea: false, dourada: false, sabado: false }; }
   }
   // 10/11: confere no banco, de novo, quem está na mesa sem o selo de sócio (no começo e no fim de cada partida, antes de
   // contar o limite ou tirar alguém da mesa). Quem tem plano valendo vira sócio na hora. Devolve false se o banco falhou.
@@ -537,7 +539,7 @@ export class Mesa {
     const f = (m.fila || []).findIndex(c => c.id === quem.id);
     if (p < 0 && f >= 0) {
       // já estava na fila (voltou): continua esperando a vez
-      Object.assign(m.fila[f], { apoiador: quem.planoIncerto ? m.fila[f].apoiador : quem.apoiador, doador: quem.doador, foto: quem.foto, turma: quem.turma, nv: quem.nv, rei: quem.rei, campeao: quem.campeao, campea: quem.campea, dourada: quem.dourada, uso: quem.uso || m.fila[f].uso, rede: quem.rede || m.fila[f].rede });
+      Object.assign(m.fila[f], { apoiador: quem.planoIncerto ? m.fila[f].apoiador : quem.apoiador, doador: quem.doador, foto: quem.foto, turma: quem.turma, nv: quem.nv, rei: quem.rei, campeao: quem.campeao, campea: quem.campea, dourada: quem.dourada, sabado: quem.sabado, uso: quem.uso || m.fila[f].uso, rede: quem.rede || m.fila[f].rede });
       att.id = quem.id; ws.serializeAttachment(att);
       m.ultimo = Date.now(); await this.salvar(); this.espalhar(); this.mandarPapo(ws, att);
       return;
@@ -546,7 +548,7 @@ export class Mesa {
       // voltou (ou abriu em outro aparelho): retoma a cadeira; se tinha saído, volta a jogar
       const c = m.cad[p];
       if (m.fase === 'espera') { c.nome = quem.nome; c.av = quem.av; c.bairro = quem.bairro; }
-      c.apoiador = quem.planoIncerto ? c.apoiador : quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv; c.menor = quem.menor; c.rei = quem.rei; c.campeao = quem.campeao; c.campea = quem.campea; c.dourada = quem.dourada; c.apelidoRuim = quem.apelidoRuim;   // 10/11: falha do banco não tira o selo
+      c.apoiador = quem.planoIncerto ? c.apoiador : quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv; c.menor = quem.menor; c.rei = quem.rei; c.campeao = quem.campeao; c.campea = quem.campea; c.dourada = quem.dourada; c.sabado = quem.sabado; c.apelidoRuim = quem.apelidoRuim;   // 10/11: falha do banco não tira o selo
       if (quem.uso) c.uso = quem.uso;
       if (quem.rede) c.rede = quem.rede;
       if (c.saiu) { c.saiu = false; c.bot = false; }
@@ -1389,7 +1391,7 @@ export class Mesa {
     if (evs.length && m.vivoVisto !== m.seq) {
       m.vivoVisto = m.seq;
       const v = m.vivo || (m.vivo = { g: 0, c: 0 });
-      for (const e of evs) { if (e.type === 'galo') { v.g++; if (e.p >= 0 && e.p < 4) (m.sxG || (m.sxG = [0, 0, 0, 0]))[e.p]++; } if (e.type === 'batida' && e.carroca) v.c++; }   // 13/11: galos por cadeira (Placar da Sexta)
+      for (const e of evs) { if (e.type === 'galo') { v.g++; if (e.p >= 0 && e.p < 4) (m.sxG || (m.sxG = [0, 0, 0, 0]))[e.p]++; } if (e.type === 'batida' && e.carroca) { v.c++; if (e.p >= 0 && e.p < 4) (m.sxC || (m.sxC = [0, 0, 0, 0]))[e.p]++; } }   // 13/11: galos por cadeira (Placar da Sexta); 17/11: e as batidas de carroça (Sábado)
     }
     const r = G.result;
     if (G.phase !== 'handEnd' || !r || r.vivo) return;
@@ -1419,7 +1421,7 @@ export class Mesa {
   }
   // Ranking (3.29): quem estava em cada cadeira quando a partida começou (só conta quem jogou a partida inteira)
   inicioDePartida() {
-    const m = this.m; m.naPartida = m.cad.map(c => c && !c.bot && c.id ? c.id : null); m.sxG = [0, 0, 0, 0];   // 13/11
+    const m = this.m; m.naPartida = m.cad.map(c => c && !c.bot && c.id ? c.id : null); m.sxG = [0, 0, 0, 0]; m.sxC = [0, 0, 0, 0];   // 13/11 (17/11: carroças)
     m.naPartidaInfo = m.cad.map(c => c && !c.bot && c.id ? { nome: c.nome, av: c.av || null, nv: c.nv || 1, menor: !!c.menor } : null);   // 10/11: para quem abandonar
   }
   async contarRanking() {
@@ -1430,6 +1432,7 @@ export class Mesa {
     if (quem.length) { try { await somarRanking(this.env, quem); } catch (e) {} }
     if (quem.length && sextaValendo(this.env)) { try { await anotarSexta(this.env, m, quem); } catch (e) {} }   // 13/11: Placar da Sexta
     if (quem.length && segundaValendo(this.env)) { try { await anotarSegunda(this.env, m, quem); } catch (e) {} }   // 17/11: Placar da Segunda
+    if (quem.length && sabadoValendo(this.env)) { try { await anotarSabado(this.env, m, quem); } catch (e) {} }   // 17/11: Sábado dos Torneios
     if (quem.length && !m.publica && quartaValendo(this.env)) { try { await anotarQuarta(this.env, m, quem); } catch (e) {} }   // 13/11: Duplas da Quarta
     // 10/11: quem abandonou a partida perde como se tivesse perdido para pessoas; na mesa rápida, conta para a trava do dia
     const sairam = quemAbandonou(m);
@@ -1494,7 +1497,7 @@ export class Mesa {
       leituraMs: G && G.phase === 'handEnd' ? Math.max(0, Math.round(m.turnoDesde + this.T.leitura - Date.now())) : 0, proximaPedida: !!(G && G.phase === 'handEnd' && m.proximaPedida === m.seq),   // 28/10
       naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, foto: c.menor ? null : c.foto || null, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), quarta: !m.publica && this.socioArg() === 'livre', meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
-      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, campea: !!c.campea && !c.saiu && !c.bot, dourada: !!c.dourada && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || c.menor ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
+      cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, campea: !!c.campea && !c.saiu && !c.bot, dourada: !!c.dourada && !c.saiu && !c.bot, sabado: !!c.sabado && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || c.menor ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
       tempos: minha >= 0 && m.tempos ? m.tempos[minha] || 0 : 0, tolerado: TEMPO_TOLERADO,   // 03/11
       jogo, agora: Date.now(), assistindo: this.quantosAssistem(),
