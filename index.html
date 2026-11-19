@@ -2089,6 +2089,16 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .qc-socio{display:grid;gap:10px;margin:14px 0 0;padding:14px;border-radius:16px;background:linear-gradient(135deg,#fbe7ad,#e0b25a);color:#3b220c;box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
 .qc-socio span{font-size:15.5px;font-weight:700;line-height:1.35}
 .qc-socio button{min-height:46px;border:0;border-radius:12px;background:#3b220c;color:#fbe7ad;font:inherit;font-size:16.5px;font-weight:800;cursor:pointer}
+.op-tx{font-size:17px;line-height:1.45;margin:4px 0 14px}
+.op-notas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px}
+.op-notas button{display:grid;justify-items:center;align-content:start;gap:7px;min-height:96px;padding:12px 4px 10px;border:2px solid var(--line);border-radius:14px;background:var(--bg-2);color:inherit;font:inherit;cursor:pointer;transition:opacity .15s,transform .15s}
+.op-notas i{font-style:normal;font-size:34px;line-height:1}
+.op-notas span{font-size:13.5px;font-weight:700;line-height:1.2;text-align:center}
+.op-notas button[aria-pressed="true"]{border-color:#e0b25a;background:#fbe7ad;color:#3b220c;transform:scale(1.04)}
+.op-notas.tem button[aria-pressed="false"]{opacity:.5}
+.op-mais{display:grid;gap:8px;margin:0 0 4px}
+.op-mais label{font-size:17px;font-weight:800;line-height:1.3}
+.op-mais .fale-texto{min-height:110px}
 .sala-quarta{margin:4px 0 10px;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,#1d5d78,#08222e);color:#eaf6fb;font-size:15px;line-height:1.4;text-align:center}   /* 12/11: Quarta dos Amigos */
 .sala-quarta b{display:block;font-size:16.5px;margin-bottom:2px;color:#fff}
 .ca-passos{margin:14px 0 16px;padding:0 0 0 18px;display:grid;gap:8px;font-size:15px;line-height:1.4}   /* 12/11: guarde o código */
@@ -4705,6 +4715,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.14', data: '18/11/2026', itens: ['O app pede a sua opinião: uma nota rápida e, se quiser, o que deixaria o jogo melhor. Vai direto para quem faz o jogo, e a resposta volta aqui no app.', 'Administrador: a estrela do sócio passou para antes do nome, na lista No app agora.'] },
   { v: '3.61.13', data: '18/11/2026', itens: ['Administrador: na lista No app agora, a estrela ao lado do nome mostra quem é sócio.'] },
   { v: '3.61.12', data: '18/11/2026', itens: ['Quarta dos Amigos: quando começa, às 20h, aparece o convite para chamar pelo menos 5 amigos e montar a mesa dos amigos.'] },
   { v: '3.61.11', data: '18/11/2026', itens: ['Estante nova: taças de bronze, prata e ouro com a pedra de dominó, a cúpula do Teatro Amazonas, a batida e o galo, e as estatuetas das raras (vitória-régia, boto-cor-de-rosa, onça-pintada e mais duas: o tucano, de quem ganha o jogo sem perder nenhuma partida, e o tambaqui, de quem bate em três mãos seguidas).'] },
@@ -6434,7 +6445,9 @@ const EV_NOMES = {
   abertura: 'Vezes que abriram o jogo', 'jogo-novo': 'Jogos começados', vitoria: 'Jogos que o jogador ganhou',
   derrota: 'Jogos que o jogador perdeu', convite: 'Convites mandados no WhatsApp', instalou: 'Instalaram o app',
   'patrocinio-clique': 'Cliques no patrocinador', 'plano-limite': 'Viram a tela de limite do dia', 'plano-quero': 'Tocaram em "Quero ser sócio" no limite',
-  'plano-cota': 'Tocaram em "Ser sócio" no fim da partida', 'apoio-pago': 'Planos pagos'
+  'plano-cota': 'Tocaram em "Ser sócio" no fim da partida', 'apoio-pago': 'Planos pagos',
+  'feedback-ver': 'Viram o pedido de opinião', 'feedback-nota-4': 'Opinião: 😍 tô gostando muito', 'feedback-nota-3': 'Opinião: 🙂 tá bom',
+  'feedback-nota-2': 'Opinião: 😐 mais ou menos', 'feedback-nota-1': 'Opinião: 😕 não tô gostando', 'feedback-enviou': 'Opinião escrita enviada'
 };
 const EV_SEMPRE = ['abertura', 'jogo-novo', 'convite', 'instalou', 'patrocinio-clique'];
 function dnEventos(rows) {
@@ -13365,7 +13378,7 @@ async function vivoPresenca(agora) {
     // 3.26.2: tempo real — só quem está com o app aberto agora; quem sai some na hora
     const extras = [j.semCadastro ? `${j.semCadastro} na entrada, sem cadastro` : '', j.menores ? `${j.menores} ${j.menores === 1 ? 'menor de 18' : 'menores de 18'}, sem nome` : ''].filter(Boolean);
     box.innerHTML = `<span class="vivo-pk"><span class="vivo-ponto vivo-ponto-p" aria-hidden="true"></span>No app agora · ${n} ${n === 1 ? 'pessoa' : 'pessoas'}</span>${extras.length ? `<small class="vivo-pjan">${extras.join(' · ')}</small>` : ''}` +
-      (l.length ? `<ul class="vivo-pl2" id="vivoPresLista">${l.map(x => `<li><span class="vivo-pl-t"><b>${esc(x.nome || 'Sem apelido')}${x.socio ? '<span class="vivo-socio" title="Sócio" aria-label="sócio"> ★</span>' : ''}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span>${x.bloq ? ' <em>bloqueado</em>' : x.trocar ? ' <em>trocando o apelido</em>' : ''}</span>`
+      (l.length ? `<ul class="vivo-pl2" id="vivoPresLista">${l.map(x => `<li><span class="vivo-pl-t"><b>${x.socio ? '<span class="vivo-socio" title="Sócio" aria-label="sócio">★ </span>' : ''}${esc(x.nome || 'Sem apelido')}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span>${x.bloq ? ' <em>bloqueado</em>' : x.trocar ? ' <em>trocando o apelido</em>' : ''}</span>`
         // 28/10 (pedido do dono): Derrubar (pedir outro apelido) em cada linha; o Bloquear continua na Área do administrador
         + (x.aparelho && x.aparelho !== meu && x.nome && !x.bloq && !x.trocar ? `<button type="button" class="vivo-derrubar" data-derrubar="${esc(x.aparelho)}" data-nome="${esc(x.nome)}">Derrubar</button>` : '')
         // 28/10 (pedido do dono): e Desbloquear na linha de quem está bloqueado
@@ -13596,7 +13609,7 @@ async function dnAgoraCarregar() {
     $('#dnNoAppK').textContent = `No app agora · ${n} ${n === 1 ? 'pessoa' : 'pessoas'}`;
     const extras = [j.semCadastro ? `${j.semCadastro} na entrada, sem cadastro` : '', j.menores ? `${j.menores} ${j.menores === 1 ? 'menor de 18' : 'menores de 18'}, sem nome` : ''].filter(Boolean);
     $('#dnNoAppLista').innerHTML = (l.length ? l.map(x => `<li class="${x.bloq ? 'bloq' : ''}"><span class="dn-jog-r">${dnJogRosto(x)}</span>
-        <span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')}${x.socio ? '<span class="vivo-socio" title="Sócio" aria-label="sócio"> ★</span>' : ''}</b><small>${esc(typeof presOnde === 'function' ? presOnde(x) : '')}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}${x.trocar && !x.bloq ? ' · trocando o apelido' : ''}</small></span>
+        <span class="dn-jog-t"><b>${x.socio ? '<span class="vivo-socio" title="Sócio" aria-label="sócio">★ </span>' : ''}${esc(x.nome || 'Sem apelido')}</b><small>${esc(typeof presOnde === 'function' ? presOnde(x) : '')}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}${x.trocar && !x.bloq ? ' · trocando o apelido' : ''}</small></span>
         ${x.bloq ? `<span class="dn-jog-acoes"><span class="dn-jog-st">bloqueado</span><button type="button" class="linkbtn dn-jog-b" data-desbloq="${esc(x.aparelho)}">Desbloquear</button></span>` : `<span class="dn-jog-acoes">${x.trocar ? '' : `<button type="button" class="linkbtn dn-jog-b" data-apelido="${esc(x.aparelho)}" data-nome="${esc(x.nome || '')}">Derrubar</button>`}<button type="button" class="linkbtn dn-jog-b" data-bloq="${esc(x.aparelho)}">Bloquear</button></span>`}</li>`).join('')
       : '<li class="dn-jog-vazio">Ninguém com o app aberto agora, além de você.</li>') + (extras.length ? `<li class="dn-jog-vazio">${esc(extras.join(' · '))}</li>` : '');
   } catch (e) { $('#dnNoAppLista').innerHTML = '<li class="dn-jog-vazio">Não deu para carregar agora.</li>'; }
@@ -16048,13 +16061,14 @@ function domingoCartao(dm) {
 // joga sem limite (o servidor libera); o sócio ganha moral em dobro nas mesas com os amigos. Aviso no celular às 18h.
 // 18/11 (o dono): começou a Quarta dos Amigos -> na tela de todo mundo, uma vez por Quarta: chame pelo menos 5 amigos
 const QUA_CONV_KEY = 'dmz-quarta-convite';
+let janelaAutoEm = 0;   // 18/11: hora da última janela automática (convite da Quarta, pedido de opinião)
 function quartaConvite() {
   try {
     if (quaAgora() !== 'agora' || !profile || screen !== 'home' || sheetKind || document.visibilityState !== 'visible') return;
     if (typeof avisoNaTela === 'function' && avisoNaTela()) return;
     const dia = new Date(Date.now() - 4 * 3600000).toISOString().slice(0, 10);
     if (store.get(QUA_CONV_KEY) === dia) return;
-    store.set(QUA_CONV_KEY, dia);
+    store.set(QUA_CONV_KEY, dia); janelaAutoEm = Date.now();
     const socio = temPlano();
     const zap = `🤝 Hoje é Quarta dos Amigos no Dominó Manauara! Dominó em duplas do jeito de Manaus, com bucho, garagem, passe e galo. Bora montar a mesa da nossa turma? Entra aí: ${SITE_URL}`;
     openSheet('info', `<p class="eyebrow">🤝 Quarta dos Amigos · até as 23h</p><h2 id="sheetTitle">Começou! Chame pelo menos 5 amigos</h2>
@@ -16076,6 +16090,85 @@ function quartaConvite() {
 setInterval(quartaConvite, 30000);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(quartaConvite, 2500); });
 setTimeout(quartaConvite, 4000);
+// 18/11 (pedido do dono): "preciso de feedback dos jogadores". No início, uma janela pede a opinião: uma nota rápida
+// (4 carinhas) e, se quiser, o que deixaria o jogo melhor. O texto entra no Fale com a gente (o dono responde pelo painel
+// e a resposta volta para o app); a nota conta no painel, em Eventos. Para quem já jogou 2 partidas, no início, com o app
+// livre, depois de 1 min no app e longe de outra janela automática (na Quarta, o convite vem primeiro).
+// Sem resposta ("Agora não"): volta em 5 dias, no máximo 3 vezes. Deu a nota ou escreveu: volta em 45 dias.
+const OPN_KEY = 'dmz-opiniao', OPN_T0 = Date.now();
+const OPN_NOTAS = [
+  { n: 4, e: '😍', r: 'Tô gostando muito', p: 'Massa! Do que você mais gosta? E o que ainda falta no jogo?', tipo: 'elogio' },
+  { n: 3, e: '🙂', r: 'Tá bom', p: 'O que deixaria o jogo ainda melhor?', tipo: 'ideia' },
+  { n: 2, e: '😐', r: 'Mais ou menos', p: 'O que está faltando ou atrapalhando?', tipo: 'ideia' },
+  { n: 1, e: '😕', r: 'Não tô gostando', p: 'Poxa! O que não está legal? A gente quer consertar.', tipo: 'problema' }
+];
+function opnLer() { try { return Object.assign({ vezes: 0, ate: 0 }, JSON.parse(store.get(OPN_KEY) || '{}') || {}); } catch (e) { return { vezes: 0, ate: 0 }; } }
+function opnGuardar(o) { store.set(OPN_KEY, JSON.stringify(o)); }
+function opnRespondeu() { opnGuardar({ vezes: 0, ate: Date.now() + 45 * 864e5 }); }
+function opiniaoPedir(forcar) {
+  try {
+    if (!CONFIG.api || !profile) return;
+    if (!forcar) {
+      if (screen !== 'home' || sheetKind || document.visibilityState !== 'visible') return;
+      if (typeof avisoNaTela === 'function' && avisoNaTela()) return;
+      if (Date.now() - OPN_T0 < 60000 || Date.now() - janelaAutoEm < 10 * 60000) return;
+      if (quaAgora() === 'agora' && store.get(QUA_CONV_KEY) !== new Date(Date.now() - 4 * 3600000).toISOString().slice(0, 10)) return;
+      if ((loadHist().partidas || 0) < 2) return;
+      const o = opnLer(); if (Date.now() < o.ate || o.vezes >= 3) return;
+    }
+    const o = opnLer(); opnGuardar({ vezes: o.vezes + 1, ate: Date.now() + 5 * 864e5 });
+    janelaAutoEm = Date.now();
+    let nota = null;
+    openSheet('info', `<p class="eyebrow">💬 Sua opinião</p><h2 id="sheetTitle">Como está o Dominó Manauara pra você?</h2>
+      <p class="op-tx">${me ? esc(me) + ', o' : 'O'} jogo é feito junto com quem joga. Conta pra gente: quem faz o jogo lê cada opinião.</p>
+      <div class="op-notas" id="opNotas" role="group" aria-label="Sua nota para o jogo">${OPN_NOTAS.map(x => `<button type="button" data-n="${x.n}" aria-pressed="false"><i aria-hidden="true">${x.e}</i><span>${x.r}</span></button>`).join('')}</div>
+      <div class="op-mais" id="opMais" hidden>
+        <label for="opTexto" id="opPergunta"></label>
+        <textarea id="opTexto" class="fale-texto" rows="4" maxlength="940" placeholder="Pode falar de tudo: regras, mesas, turma do bairro, mesa online…"></textarea>
+        <button type="button" class="primary" id="opEnviar" style="width:100%">Enviar minha opinião</button>
+      </div>
+      <button type="button" class="secondary" id="opDepois" style="width:100%;margin-top:10px">Agora não</button>`);
+    track('feedback-ver');
+    const fim = (titulo, tx) => {
+      openSheet('info', `<p class="eyebrow">💬 Sua opinião</p><h2 id="sheetTitle">${titulo}</h2><p class="op-tx">${tx}</p>
+        <button type="button" class="primary" id="opOk" style="width:100%">Bora jogar</button>`);
+      $('#opOk').addEventListener('click', closeSheet);
+    };
+    $('#opNotas').addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      nota = OPN_NOTAS.find(x => x.n === Number(b.dataset.n));
+      $$('#opNotas button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      $('#opNotas').classList.add('tem');
+      $('#opPergunta').textContent = nota.p; $('#opMais').hidden = false;
+      $('#opDepois').textContent = 'Só a nota, valeu';
+      track('feedback-nota-' + nota.n); opnRespondeu();
+      setTimeout(() => { try { $('#opTexto').focus({ preventScroll: true }); $('#opMais').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {} }, 60);
+    });
+    $('#opDepois').addEventListener('click', () => { closeSheet(); if (nota) toast('Valeu pela nota!'); });
+    $('#opEnviar').addEventListener('click', async () => {
+      const texto = $('#opTexto').value.trim();
+      if (!nota) return;
+      if (texto.length < 3) { toast('Escreva o que você achou antes de enviar.'); $('#opTexto').focus(); return; }
+      const msg = { tipo: nota.tipo, texto: `${nota.e} ${nota.r} (opinião pedida na tela)\n${texto}`, contato: '', nome: me || '', versao: APP_VERSION, aparelho: deviceInfo(), id: meuId() };
+      const btn = $('#opEnviar'); btn.disabled = true; btn.textContent = 'Enviando…';
+      const st = await faleMandar(msg);
+      btn.disabled = false; btn.textContent = 'Enviar minha opinião';
+      if (st === 429) { toast('Muitas mensagens em pouco tempo. Tente de novo mais tarde.'); return; }
+      if (st === 400) { toast('Escreva um pouco mais sobre o que você achou.'); return; }
+      track('feedback-enviou'); opnRespondeu();
+      if (st === 201) {
+        store.set(SUPKEY, String(Date.now()));   // entra na conversa do Fale com a gente: a resposta do dono volta para cá
+        (SUP.itens = SUP.itens || []).push({ de: 'j', texto: msg.texto, em: Date.now() });
+        fim('Valeu! Chegou pra gente.', 'Quem faz o jogo lê cada opinião. Se a gente responder, a resposta aparece aqui no app, no Fale com a gente.');
+        return;
+      }
+      saidaGuardar(saidaLer().concat([msg]));   // sem internet: vai sozinha quando a conexão voltar
+      fim('Valeu! Sua opinião está guardada.', 'Sem conexão agora: ela vai sozinha quando a internet voltar.');
+    });
+  } catch (e) {}
+}
+setInterval(opiniaoPedir, 30000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(opiniaoPedir, 3000); });
 function quaAgora(t) { const d = manausDe(t || Date.now()); if (d.getUTCDay() !== 3) return null; const h = d.getUTCHours(); return h >= 20 && h < 23 ? 'agora' : h < 20 ? 'hoje' : null; }
 // --- Tempo de casa ---
 function somaMesesM(ms, n) {
@@ -17208,7 +17301,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.13-c8a6e763';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.14-25ab5644';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
