@@ -2769,7 +2769,8 @@ body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1
 .dc-vv-pl b{font-size:32px;line-height:1}.dc-vv-pl i{font-size:18px}.dc-vv-pl small{font-size:12.5px;margin-top:4px}
 .dc-vv-go{padding:9px 22px;font-size:15.5px}
 #calcCorpo .calc-dcvivo .dc-vivo{padding:0;background:none;border:0;border-radius:0}
-#calcCorpo .calc-dcvivo .dc-vivo-k{padding-left:11px}   /* 18/11: o pulso da bolinha (10 px) cabe inteiro */
+#calcCorpo .calc-dcvivo .dc-vivo-k{padding-left:11px;padding-right:8px;white-space:nowrap;letter-spacing:.09em}
+#calcCorpo .calc-dcvivo .dc-vivo-sub{min-width:0;overflow:hidden;text-overflow:ellipsis}   /* 18/11: o pulso da bolinha (10 px) cabe inteiro */
 #calcCorpo .calc-dcvivo .dc-vv{background:var(--bg-2)}
 /* 18/11 (pedido do dono): quem joga e quem sumiu, com os dias sem entrar */
 .dn-rt-fx{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:6px 0 10px}
@@ -4716,6 +4717,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.16', data: '18/11/2026', itens: ['Calçada: no Acontecendo agora, o título Desafio das Confrarias fica alinhado com o cartão.'] },
   { v: '3.61.15', data: '18/11/2026', itens: ['Estante mais justa: o troféu de galos sai com 5, 25 e 50 galos (antes eram 100, 500 e 1.000, quase impossível). As raras ficaram raras de verdade: batida com a carroça de sena, Lavada (ganhar com a outra dupla abaixo de 50), Invicto (6 partidas ganhas seguidas) e 4 batidas seguidas na mesma partida. Quem já tem uma estatueta continua com ela.', 'Na estante, só contam as partidas de 200 pontos.', 'Calçada: a bolinha do Acontecendo agora pisca inteira, sem cortar na borda.'] },
   { v: '3.61.14', data: '18/11/2026', itens: ['O app pede a sua opinião: uma nota rápida e, se quiser, o que deixaria o jogo melhor. Vai direto para quem faz o jogo, e a resposta volta aqui no app.', 'Administrador: a estrela do sócio passou para antes do nome, na lista No app agora.'] },
   { v: '3.61.13', data: '18/11/2026', itens: ['Administrador: na lista No app agora, a estrela ao lado do nome mostra quem é sócio.'] },
@@ -17312,7 +17314,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.15-7f72656a';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.16-8cb295a8';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
