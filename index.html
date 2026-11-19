@@ -2162,6 +2162,8 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .vivo-pl2 li{line-height:1.35}
 .vivo-pl2 li span{color:var(--muted)}
 .vivo-pl2 li em{font-style:normal;font-size:12px;font-weight:800;color:#e5484d;text-transform:uppercase}
+/* 18/11: estrela de sócio na lista do No app agora (só o administrador vê) */
+.vivo-socio{color:#e9b43c !important;font-weight:900}
 /* 28/10: Derrubar em cada linha (só o administrador vê a lista) */
 .vivo-pl2 li{display:flex;align-items:center;gap:8px}
 .vivo-pl2 li > .vivo-pl-t{flex:1;min-width:0;color:inherit}
@@ -4703,6 +4705,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.13', data: '18/11/2026', itens: ['Administrador: na lista No app agora, a estrela ao lado do nome mostra quem é sócio.'] },
   { v: '3.61.12', data: '18/11/2026', itens: ['Quarta dos Amigos: quando começa, às 20h, aparece o convite para chamar pelo menos 5 amigos e montar a mesa dos amigos.'] },
   { v: '3.61.11', data: '18/11/2026', itens: ['Estante nova: taças de bronze, prata e ouro com a pedra de dominó, a cúpula do Teatro Amazonas, a batida e o galo, e as estatuetas das raras (vitória-régia, boto-cor-de-rosa, onça-pintada e mais duas: o tucano, de quem ganha o jogo sem perder nenhuma partida, e o tambaqui, de quem bate em três mãos seguidas).'] },
   { v: '3.61.10', data: '18/11/2026', itens: ['Estante com a cara de Manaus: a taça de vitórias tem a cúpula do Teatro Amazonas, e as raras viraram estatuetas da Amazônia (vitória-régia, boto-cor-de-rosa e onça-pintada), num fundo verde-floresta.'] },
@@ -13362,7 +13365,7 @@ async function vivoPresenca(agora) {
     // 3.26.2: tempo real — só quem está com o app aberto agora; quem sai some na hora
     const extras = [j.semCadastro ? `${j.semCadastro} na entrada, sem cadastro` : '', j.menores ? `${j.menores} ${j.menores === 1 ? 'menor de 18' : 'menores de 18'}, sem nome` : ''].filter(Boolean);
     box.innerHTML = `<span class="vivo-pk"><span class="vivo-ponto vivo-ponto-p" aria-hidden="true"></span>No app agora · ${n} ${n === 1 ? 'pessoa' : 'pessoas'}</span>${extras.length ? `<small class="vivo-pjan">${extras.join(' · ')}</small>` : ''}` +
-      (l.length ? `<ul class="vivo-pl2" id="vivoPresLista">${l.map(x => `<li><span class="vivo-pl-t"><b>${esc(x.nome || 'Sem apelido')}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span>${x.bloq ? ' <em>bloqueado</em>' : x.trocar ? ' <em>trocando o apelido</em>' : ''}</span>`
+      (l.length ? `<ul class="vivo-pl2" id="vivoPresLista">${l.map(x => `<li><span class="vivo-pl-t"><b>${esc(x.nome || 'Sem apelido')}${x.socio ? '<span class="vivo-socio" title="Sócio" aria-label="sócio"> ★</span>' : ''}${x.aparelho === meu ? ' (você)' : ''}</b> <span>${presOnde(x)}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}</span>${x.bloq ? ' <em>bloqueado</em>' : x.trocar ? ' <em>trocando o apelido</em>' : ''}</span>`
         // 28/10 (pedido do dono): Derrubar (pedir outro apelido) em cada linha; o Bloquear continua na Área do administrador
         + (x.aparelho && x.aparelho !== meu && x.nome && !x.bloq && !x.trocar ? `<button type="button" class="vivo-derrubar" data-derrubar="${esc(x.aparelho)}" data-nome="${esc(x.nome)}">Derrubar</button>` : '')
         // 28/10 (pedido do dono): e Desbloquear na linha de quem está bloqueado
@@ -13593,7 +13596,7 @@ async function dnAgoraCarregar() {
     $('#dnNoAppK').textContent = `No app agora · ${n} ${n === 1 ? 'pessoa' : 'pessoas'}`;
     const extras = [j.semCadastro ? `${j.semCadastro} na entrada, sem cadastro` : '', j.menores ? `${j.menores} ${j.menores === 1 ? 'menor de 18' : 'menores de 18'}, sem nome` : ''].filter(Boolean);
     $('#dnNoAppLista').innerHTML = (l.length ? l.map(x => `<li class="${x.bloq ? 'bloq' : ''}"><span class="dn-jog-r">${dnJogRosto(x)}</span>
-        <span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')}</b><small>${esc(typeof presOnde === 'function' ? presOnde(x) : '')}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}${x.trocar && !x.bloq ? ' · trocando o apelido' : ''}</small></span>
+        <span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')}${x.socio ? '<span class="vivo-socio" title="Sócio" aria-label="sócio"> ★</span>' : ''}</b><small>${esc(typeof presOnde === 'function' ? presOnde(x) : '')}${x.detalhe ? ' · ' + esc(x.detalhe) : ''}${x.trocar && !x.bloq ? ' · trocando o apelido' : ''}</small></span>
         ${x.bloq ? `<span class="dn-jog-acoes"><span class="dn-jog-st">bloqueado</span><button type="button" class="linkbtn dn-jog-b" data-desbloq="${esc(x.aparelho)}">Desbloquear</button></span>` : `<span class="dn-jog-acoes">${x.trocar ? '' : `<button type="button" class="linkbtn dn-jog-b" data-apelido="${esc(x.aparelho)}" data-nome="${esc(x.nome || '')}">Derrubar</button>`}<button type="button" class="linkbtn dn-jog-b" data-bloq="${esc(x.aparelho)}">Bloquear</button></span>`}</li>`).join('')
       : '<li class="dn-jog-vazio">Ninguém com o app aberto agora, além de você.</li>') + (extras.length ? `<li class="dn-jog-vazio">${esc(extras.join(' · '))}</li>` : '');
   } catch (e) { $('#dnNoAppLista').innerHTML = '<li class="dn-jog-vazio">Não deu para carregar agora.</li>'; }
@@ -17205,7 +17208,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.12-27ddaf32';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.13-c8a6e763';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

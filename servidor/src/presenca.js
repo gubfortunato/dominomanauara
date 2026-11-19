@@ -46,8 +46,9 @@ export async function donoPresenca(req, env, origin, h) {
   if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
   const { results } = await env.DB.prepare(`SELECT p.aparelho, p.nome, p.av, p.nv, p.tela, p.modo, p.detalhe, p.menor, p.visto_em,
       (SELECT 1 FROM bloqueios b WHERE b.aparelho = p.aparelho) AS bloq,
-      (SELECT 1 FROM apelidos_trocar t WHERE t.aparelho = p.aparelho) AS trocar
-    FROM presenca p WHERE p.visto_em > ? AND p.aparelho NOT LIKE 'teste-publicacao-%' ORDER BY p.visto_em DESC LIMIT 120`).bind(Date.now() - JANELA_MS).all();
+      (SELECT 1 FROM apelidos_trocar t WHERE t.aparelho = p.aparelho) AS trocar,
+      (SELECT 1 FROM planos s WHERE s.aparelho = p.aparelho AND s.ate > ?) AS socio
+    FROM presenca p WHERE p.visto_em > ? AND p.aparelho NOT LIKE 'teste-publicacao-%' ORDER BY p.visto_em DESC LIMIT 120`).bind(Date.now(), Date.now() - JANELA_MS).all();   // 18/11: e quem é sócio (a estrela na lista do dono)
   const lista = results || [];
   // 3.26.1: quem está na entrada sem cadastro (sem apelido) entra só na contagem, como os menores
   // 3.30: quantos abriram o app nas últimas 24 h (a presença guarda 1 dia; só a contagem, sem nomes)
