@@ -2618,7 +2618,7 @@ body.assistindo #scrGame.game{padding-bottom:calc(env(safe-area-inset-bottom,0px
 .ev-card .ct-sol{display:inline-block;width:.95em;height:.95em;vertical-align:-.12em;margin-right:.3em;filter:drop-shadow(0 0 7px rgba(255,200,60,.7))}
 body.calc-sol{--bg:#fff1d6;--bg-2:#fff8ea;--fg:#2a1a0c;--muted:#7a5a36;--line:#e8cf9f;--nos:#97520f;--eles:#245e6a;--alert:#a8402a;--ok:#2f7a3d;color-scheme:light;color:var(--fg);background:linear-gradient(180deg,#86cdee 0%,#bfe6f5 13%,#ffe9bf 32%,#fff1d6 58%) fixed}
 body.calc-sol #scrCalcada .aba-tit{color:#b5420e;text-shadow:0 1px 0 rgba(255,255,255,.7)}
-#scrCalcada .dm-arte{display:block;width:calc(100% + 32px);height:96px;margin:-10px -16px -6px;overflow:visible}
+#scrCalcada .dm-arte{display:block;width:calc(100% + 32px);height:96px;margin:-50px -16px -6px;overflow:visible;position:relative;z-index:0;pointer-events:none}   /* 24/11 (dono): o Domingão sobe ~40 px; a arte divide a linha com o sino */
 #scrCalcada .dm-arte .halo,#scrGame .mesa-sol .halo{transform-box:fill-box;transform-origin:center;animation:dmBrilha 4s ease-in-out infinite}
 @keyframes dmBrilha{0%,100%{opacity:.85;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
 @media (prefers-reduced-motion:reduce){#scrCalcada .dm-arte *,#scrGame .mesa-sol *{animation:none!important}}
@@ -2643,7 +2643,7 @@ body.jogo-sol.jdom-noite #scrGame{--bg:#0c1a33;--bg-2:#152a4d;--fg:#eef3ff;--mut
 #scrGame .mesa-sol .ms-lua{position:absolute;top:calc(env(safe-area-inset-top,0px) - 4px);left:54px;width:60px;height:60px}
 @media (orientation: landscape) and (max-height: 560px){#scrGame .mesa-sol .ms-lua{top:auto;bottom:8px;left:8px}}
 .ev-card.domingo.tarde{--wood-1:#e8673e;--wood-2:#7a2f5a;background:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22%3E%3Cdefs%3E%3CradialGradient id=%22h%22%3E%3Cstop offset=%220%22 stop-color=%22%23ffe2b4%22 stop-opacity=%221%22/%3E%3Cstop offset=%22.45%22 stop-color=%22%23ff9e6e%22 stop-opacity=%22.55%22/%3E%3Cstop offset=%221%22 stop-color=%22%23ff7a5a%22 stop-opacity=%220%22/%3E%3C/radialGradient%3E%3CradialGradient id=%22d%22 cx=%22.45%22 cy=%22.38%22 r=%22.72%22%3E%3Cstop offset=%220%22 stop-color=%22%23fff4cc%22/%3E%3Cstop offset=%22.42%22 stop-color=%22%23ffc56a%22/%3E%3Cstop offset=%22.82%22 stop-color=%22%23ff7d3c%22/%3E%3Cstop offset=%221%22 stop-color=%22%23ef5a2e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx=%2260%22 cy=%2260%22 r=%2257%22 fill=%22url(%23h)%22/%3E%3Ccircle cx=%2260%22 cy=%2260%22 r=%2224%22 fill=%22url(%23d)%22/%3E%3C/svg%3E") right -60px top -48px/150px auto no-repeat,repeating-linear-gradient(92deg, rgba(255,235,205,.04) 0 2px, transparent 2px 7px),linear-gradient(165deg,#ff9c6b 0%,#e0566a 55%,#7a3a6e 100%)}
-.ev-card.domingo.noite{--wood-1:#24467a;--wood-2:#0c1a33;background:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 150%22 preserveAspectRatio=%22xMidYMid slice%22%3E%3Ccircle cx=%2219%22 cy=%229%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.45%22/%3E%3Ccircle cx=%22102%22 cy=%2250%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.55%22/%3E%3Ccircle cx=%22185%22 cy=%2291%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.65%22/%3E%3Ccircle cx=%22268%22 cy=%22132%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.75%22/%3E%3Ccircle cx=%22351%22 cy=%2223%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.85%22/%3E%3Ccircle cx=%2234%22 cy=%2264%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.45%22/%3E%3Ccircle cx=%22117%22 cy=%22105%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.55%22/%3E%3Ccircle cx=%22200%22 cy=%22146%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.65%22/%3E%3Ccircle cx=%22283%22 cy=%2237%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.75%22/%3E%3Ccircle cx=%22366%22 cy=%2278%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.85%22/%3E%3Ccircle cx=%2249%22 cy=%22119%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.45%22/%3E%3Ccircle cx=%22132%22 cy=%2210%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.55%22/%3E%3Ccircle cx=%22215%22 cy=%2251%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.65%22/%3E%3Ccircle cx=%22298%22 cy=%2292%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.75%22/%3E%3Ccircle cx=%22381%22 cy=%22133%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.85%22/%3E%3Ccircle cx=%2264%22 cy=%2224%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.45%22/%3E%3Ccircle cx=%22147%22 cy=%2265%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.55%22/%3E%3Ccircle cx=%22230%22 cy=%22106%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.65%22/%3E%3Ccircle cx=%22313%22 cy=%22147%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.75%22/%3E%3Ccircle cx=%22396%22 cy=%2238%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.85%22/%3E%3Ccircle cx=%2279%22 cy=%2279%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.45%22/%3E%3Ccircle cx=%22162%22 cy=%22120%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.55%22/%3E%3Ccircle cx=%22245%22 cy=%2211%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.65%22/%3E%3Ccircle cx=%22328%22 cy=%2252%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.75%22/%3E%3Ccircle cx=%2211%22 cy=%2293%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.85%22/%3E%3Ccircle cx=%2294%22 cy=%22134%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.45%22/%3E%3Ccircle cx=%22177%22 cy=%2225%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.55%22/%3E%3Ccircle cx=%22260%22 cy=%2266%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.65%22/%3E%3Ccircle cx=%22343%22 cy=%22107%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.75%22/%3E%3Ccircle cx=%2226%22 cy=%22148%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.85%22/%3E%3Ccircle cx=%22109%22 cy=%2239%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.45%22/%3E%3Ccircle cx=%22192%22 cy=%2280%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.55%22/%3E%3Ccircle cx=%22275%22 cy=%22121%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.65%22/%3E%3Ccircle cx=%22358%22 cy=%2212%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.75%22/%3E%3Cg transform=%22translate(336 90) scale(.8)%22%3E%3Ccircle cx=%2246%22 cy=%2232%22 r=%2226%22 fill=%22%23fff1c9%22 fill-opacity=%22.12%22/%3E%3Cpath d=%22M48.3 14.0 A16 16 0 1 0 61.8 38.2 A14 14 0 0 1 48.3 14.0Z%22 fill=%22%23fff1c9%22/%3E%3C/g%3E%3C/svg%3E") center/cover no-repeat,radial-gradient(120% 90% at 50% 45%,#24467a,#0c1a33)}
+.ev-card.domingo.noite{--wood-1:#24467a;--wood-2:#0c1a33;background:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 150%22 preserveAspectRatio=%22xMidYMid slice%22%3E%3Ccircle cx=%2219%22 cy=%229%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.45%22/%3E%3Ccircle cx=%22102%22 cy=%2250%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.55%22/%3E%3Ccircle cx=%22185%22 cy=%2291%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.65%22/%3E%3Ccircle cx=%22268%22 cy=%22132%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.75%22/%3E%3Ccircle cx=%22351%22 cy=%2223%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.85%22/%3E%3Ccircle cx=%2234%22 cy=%2264%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.45%22/%3E%3Ccircle cx=%22117%22 cy=%22105%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.55%22/%3E%3Ccircle cx=%22200%22 cy=%22146%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.65%22/%3E%3Ccircle cx=%22283%22 cy=%2237%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.75%22/%3E%3Ccircle cx=%22366%22 cy=%2278%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.85%22/%3E%3Ccircle cx=%2249%22 cy=%22119%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.45%22/%3E%3Ccircle cx=%22132%22 cy=%2210%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.55%22/%3E%3Ccircle cx=%22215%22 cy=%2251%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.65%22/%3E%3Ccircle cx=%22298%22 cy=%2292%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.75%22/%3E%3Ccircle cx=%22381%22 cy=%22133%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.85%22/%3E%3Ccircle cx=%2264%22 cy=%2224%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.45%22/%3E%3Ccircle cx=%22147%22 cy=%2265%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.55%22/%3E%3Ccircle cx=%22230%22 cy=%22106%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.65%22/%3E%3Ccircle cx=%22313%22 cy=%22147%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.75%22/%3E%3Ccircle cx=%22396%22 cy=%2238%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.85%22/%3E%3Ccircle cx=%2279%22 cy=%2279%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.45%22/%3E%3Ccircle cx=%22162%22 cy=%22120%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.55%22/%3E%3Ccircle cx=%22245%22 cy=%2211%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.65%22/%3E%3Ccircle cx=%22328%22 cy=%2252%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.75%22/%3E%3Ccircle cx=%2211%22 cy=%2293%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.85%22/%3E%3Ccircle cx=%2294%22 cy=%22134%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.45%22/%3E%3Ccircle cx=%22177%22 cy=%2225%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.55%22/%3E%3Ccircle cx=%22260%22 cy=%2266%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.65%22/%3E%3Ccircle cx=%22343%22 cy=%22107%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.75%22/%3E%3Ccircle cx=%2226%22 cy=%22148%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.85%22/%3E%3Ccircle cx=%22109%22 cy=%2239%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.45%22/%3E%3Ccircle cx=%22192%22 cy=%2280%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.55%22/%3E%3Ccircle cx=%22275%22 cy=%22121%22 r=%221.4%22 fill=%22%23fff6dc%22 fill-opacity=%220.65%22/%3E%3Ccircle cx=%22358%22 cy=%2212%22 r=%220.9%22 fill=%22%23fff6dc%22 fill-opacity=%220.75%22/%3E%3C/svg%3E") center/cover no-repeat,radial-gradient(120% 90% at 50% 45%,#24467a,#0c1a33)}
 .ev-card.domingo.noite .ck{color:#ffe8a8}.ev-card.domingo.noite .vivo-ponto{--bg-2:#152a4d}.ev-card.domingo.tarde .vivo-ponto{--bg-2:#c4416a}
 
 body.jogo-sol #scrGame{--bg:#fff1d6;--bg-2:#fff8ea;--fg:#2a1a0c;--muted:#6c5640;--line:#e3c48f;--nos:#97520f;--eles:#245e6a;--alert:#a8402a;--ok:#2f7a3d;color:var(--fg);isolation:isolate}
@@ -2725,7 +2725,7 @@ body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1
 /* 17/11 (pedido do dono): a arte de cada noite em cima do placar: varal de lâmpadas (Sexta), giz (Quarta) e neon (Segunda) */
 #sxPlacar{background:#1e1634;border:0;--fg:#f6ecdc;--muted:#bfb0d4;--nos:#e5a650;color:var(--fg);box-shadow:0 0 0 1px rgba(255,200,120,.25),0 8px 24px rgba(40,20,80,.25)}
 #sxPlacar::before,#qaPlacar::before,#sgPlacar::before{content:'';display:block;height:80px;margin:-14px -16px -2px;border-radius:16px 16px 0 0}
-#sxPlacar::before{background:var(--arte-sx) center/auto 92px no-repeat,linear-gradient(180deg,#3a2758,#1e1634)}
+#sxPlacar::before{height:auto;aspect-ratio:400/84;background:var(--arte-sx) center top/100% auto no-repeat,linear-gradient(180deg,#3a2758,#1e1634)}   /* 24/11: o varal inteiro, sem cortar as lâmpadas */
 #qaPlacar::before{margin:-12px -14px -2px;border-radius:12px 12px 0 0;background:var(--arte-qa) center/auto 78px no-repeat}
 #sgPlacar::before{background:var(--arte-sg) center/auto 84px no-repeat,radial-gradient(70% 70% at 50% 0%,rgba(255,79,123,.25),transparent 70%),linear-gradient(180deg,rgba(18,7,10,.35),rgba(33,16,26,1)),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='52' viewBox='0 0 120 52'%3E%3Crect width='120' height='52' fill='%23170a0c'/%3E%3Crect x='1.5' y='1.5' width='57' height='23' rx='1.5' fill='%235a2a2b'/%3E%3Crect x='61.5' y='1.5' width='57' height='23' rx='1.5' fill='%234f2427'/%3E%3Crect x='-28.5' y='27.5' width='57' height='23' rx='1.5' fill='%2362302d'/%3E%3Crect x='31.5' y='27.5' width='57' height='23' rx='1.5' fill='%23542729'/%3E%3Crect x='91.5' y='27.5' width='57' height='23' rx='1.5' fill='%235d2b2f'/%3E%3C/svg%3E") 0 0/120px 52px}
 /* 17/11 (pedido do dono): Sábado dos Torneios = a ilustração da mesa que dá nome ao torneio e a medalha 🏅 (o título é do sócio) */
@@ -2741,6 +2741,12 @@ body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1
 .ev-card.sabado .ck{color:#ffd66b}.ev-card.sabado .ct{color:#f4f8ff}.ev-card.sabado .cd{color:#dce8f6;opacity:1}.ev-card.sabado .vivo-ponto{--bg-2:#174f80}
 #sbPlacar{box-shadow:0 0 0 1.5px #e0a83a,0 8px 24px rgba(15,61,102,.12);border:0}
 #sbPlacar::before{content:'';display:block;height:108px;margin:-14px -16px -2px;border-radius:16px 16px 0 0;background:linear-gradient(180deg,transparent 50%,var(--bg-2)),var(--sb-img,none) center 38%/cover no-repeat}
+/* 24/11 (dono): o monumento/bicho do torneio aparece melhor. Calçada: faixa 16:9; início: faixa 2:1 no alto do cartão (o
+   resto do cartão fica azul, como antes); Ranking: faixa 2,6:1. O recorte de cada mesa vem de sbY() (--sb-y) */
+.calc-sab .sb-foto{height:auto;aspect-ratio:16/9;background:linear-gradient(180deg,transparent 52%,rgba(16,50,90,.55) 80%,rgba(16,50,90,.8)),var(--sb-img) center var(--sb-y,38%)/cover no-repeat;-webkit-mask-image:linear-gradient(180deg,#000 64%,transparent 100%);mask-image:linear-gradient(180deg,#000 64%,transparent 100%)}
+.ev-card.sabado{position:relative;isolation:isolate;padding-top:max(92px,calc(50% - 52px));background:linear-gradient(180deg,#0f3558,#0a2744)}
+.ev-card.sabado::before{content:'';position:absolute;z-index:-1;left:2px;right:2px;top:2px;aspect-ratio:2/1;border-radius:16px 16px 0 0;background:linear-gradient(180deg,rgba(15,53,88,0) 48%,rgba(15,53,88,.72) 78%,#0f3558),var(--sb-img,none) center var(--sb-y,32%)/cover no-repeat}
+#sbPlacar::before{height:auto;aspect-ratio:2.6/1;background:linear-gradient(180deg,transparent 55%,var(--bg-2)),var(--sb-img,none) center var(--sb-y,38%)/cover no-repeat}
 .sb-placar .sxp-n{display:grid;justify-items:end;line-height:1.15}.sb-placar .sxp-n small{font-size:12px}
 .sb-regra{margin:0;font-size:14px;line-height:1.4;color:var(--muted)}
 .sb-campeao{margin:0;padding:9px 12px;border-radius:12px;background:color-mix(in srgb,#f2c14e 16%,transparent);font-size:15px;line-height:1.35}
@@ -2775,6 +2781,7 @@ body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1
 .dc-vv-pl b{font-size:32px;line-height:1}.dc-vv-pl i{font-size:18px}.dc-vv-pl small{font-size:12.5px;margin-top:4px}
 .dc-vv-go{padding:9px 22px;font-size:15.5px}
 #calcCorpo .calc-dcvivo .dc-vivo{padding:0;background:none;border:0;border-radius:0}
+#calcCorpo .calc-dcvivo .dc-vivo{grid-template-columns:minmax(0,1fr)}   /* 24/11: o título em uma linha não alarga mais o cartão (passava 5 px da borda no Android) */
 #calcCorpo .calc-dcvivo .dc-vivo-k{padding-left:11px;padding-right:8px;white-space:nowrap;letter-spacing:.09em}
 #calcCorpo .calc-dcvivo .dc-vivo-sub{min-width:0;overflow:hidden;text-overflow:ellipsis}   /* 18/11: o pulso da bolinha (10 px) cabe inteiro */
 #calcCorpo .calc-dcvivo .dc-vv{background:var(--bg-2)}
@@ -2804,6 +2811,13 @@ body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1
 .rv-l .rv-cab b,.rv-l .rv-cab span{color:var(--nos)}
 .rv-r .rv-cab b,.rv-r .rv-cab span{color:var(--eles)}
 .rv-cab span{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.rv.rv-bateu{align-items:center}
+.rv-selo{display:inline-flex;align-items:center;gap:6px;padding:5px 14px 5px 9px;border-radius:999px;background:var(--nos);color:var(--bg);font-weight:800;font-size:16px;letter-spacing:.01em;box-shadow:0 3px 10px -3px color-mix(in srgb,var(--nos) 70%,transparent);animation:rvSelo .5s cubic-bezier(.2,1.5,.4,1) both}
+.rv-r .rv-selo{background:var(--eles);box-shadow:0 3px 10px -3px color-mix(in srgb,var(--eles) 70%,transparent)}
+.rv-selo svg{width:19px;height:19px;flex:none}
+.rv-bateu-g{display:inline-flex;align-items:center;gap:10px;flex-wrap:nowrap}
+@keyframes rvSelo{from{transform:scale(.55);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.rv-selo{animation:none}}
 .rv.rv-bateu .rv-tag{font-size:14px;font-weight:700;color:var(--muted);padding:2px 10px;border-radius:999px;border:1px solid var(--line)}
 /* 17/11 (pedido do dono): crescimento e conversão no painel */
 .dn-cr{display:grid;gap:12px}
@@ -4798,6 +4812,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.22', data: '24/11/2026', itens: ['Resumo da mão: quem bateu ganha um selo na cor da dupla e, ao lado, a pedra com que bateu.', 'Os torneios do sábado agora se chamam só pelo lugar: Torneio Teatro Amazonas, Torneio Encontro das Águas e assim por diante.', 'Domingão da Calçada mais para cima na tela; o cartão do Domingão à noite, no início, ficou sem a lua do canto.', 'Placar da Sexta: a lua mais para dentro e o varal de lâmpadas inteiro, sem cair atrás do título.', 'Cartão do Desafio das Confrarias na Calçada sem passar da borda nos celulares mais estreitos.', 'No início, o cartão do evento que está acontecendo agora fica sempre em cima do cartão da Copa dos Sócios.', 'Sábado dos Torneios: a ilustração do cartão ficou maior e mostra melhor o monumento ou o bicho de cada torneio (a Arena, o Teatro, o tucano...).'] },
   { v: '3.61.21', data: '24/11/2026', itens: ['Pedras da mesa maiores no celular em pé. Numa mão bem comprida, a mesa se afasta um pouco perto do fim para tudo caber.', 'As pedras usam a mesa até embaixo e podem passar por cima do Mesa oferecida por.'] },
   { v: '3.61.20', data: '24/11/2026', itens: ['Pedras da mesa um pouco maiores (no celular em pé).', 'A ponta que sobe ou desce rente à borda continua reta quando chega uma carroça (antes ela virava para dentro da mesa antes da hora).'] },
   { v: '3.61.19', data: '24/11/2026', itens: ['Mesa nova no celular: as pontas saem do meio, vão até a borda e viram rente a ela, como numa mesa de verdade; o bucho sobe e desce; a mesa inteira é aproveitada, nas laterais, em cima e embaixo.', 'As pedras da mesa ficam do mesmo tamanho a mão inteira (só diminuem um pouco se a mão ficar muito comprida) e não passam mais por cima do Mesa oferecida por.', 'As pedras da sua mão ficaram um pouco menores e a mesa ganhou esse espaço.'] },
@@ -4824,7 +4839,7 @@ const NOVIDADES = [
   { v: '3.60.1', data: '17/11/2026', itens: ['Administrador: grupo novo "Crescimento e conversão" no painel. Mostra a semana contra a anterior (novos, ativos por dia, sócios pagantes, vendas, conversão dos novos e retenção), as curvas de 30 ou 60 dias (pessoas ativas e novas, sócios pagantes, quem entrou e quem saiu do plano), o funil dos novos, os novos de cada semana (quantos voltaram, ficaram e viraram sócios) e a retenção semanal. Sócio ali é só quem pagou.', 'Mesa Porto de Manaus com desenho novo: o cais cheio de caminhões, carros e gente carregando os barcos.'] },
   { v: '3.60.0', data: '17/11/2026', itens: ['Mesa nova: Flutuantes no rio, as casas flutuantes no Rio Negro no fim da tarde, com a história da Cidade Flutuante de Manaus.', 'Mesa mais bem aproveitada: quando um lado da mesa cresce e o bucho daquele lado está vazio, as pedras seguem em fileiras pela largura toda, em vez de subir numa escadinha estreita num canto. No fim da mão, as pedras ficam até 20% maiores. Se depois alguém jogar no bucho, as pedras daquele lado deslizam para o canto delas.', 'Mesa Guaraná: a imagem ficou mais aberta, com o cacho inteiro na mesa e folga em volta.', 'Tela do Sócio da Calçada atualizada: a tabela "Grátis ou sócio", a oferta e a carta de boas-vindas agora mostram o Sábado dos Torneios (só o sócio vira Campeão do Sábado, com o selo 🏅) e a Copa dos Sócios.'] },
   { v: '3.59.1', data: '17/11/2026', itens: ['O botão verde de convite saiu do início. O convite pelo WhatsApp continua na aba Ranking e nas faixas dos eventos na Calçada.', 'Na Calçada do Sábado dos Torneios, a ilustração da mesa do torneio fica no alto do cartão azul, logo abaixo do título.'] },
-  { v: '3.59.0', data: '17/11/2026', itens: ['Sábado dos Torneios: todo sábado, das 10h às 22h, um torneio com o nome e a ilustração de uma mesa de Manaus (neste sábado, o Torneio do Teatro Amazonas). Toda partida online conta pontos: vitória vale 3, mais o bônus da semana. O sócio mais bem colocado vira o Campeão do Sábado, com o selo 🏅 na mesa até o próximo torneio.', 'Convite em destaque em todo evento: no início e na aba Ranking, um botão para chamar pelo WhatsApp quem ainda não joga, com uma mensagem que explica o jogo.', 'Os placares da Sexta, da Quarta e da Segunda ganharam a arte de cada noite em cima (varal de lâmpadas, quadro de giz e letreiro de neon) e mostram a foto (ou o avatar) e a ★ de quem é sócio. O resumo do ranking na Calçada também.', 'O nome da mesa no começo da partida: o texto de baixo agora quebra dentro da placa.', 'Imagem nova do link do Dominó Manauara no WhatsApp.'] },
+  { v: '3.59.0', data: '17/11/2026', itens: ['Sábado dos Torneios: todo sábado, das 10h às 22h, um torneio com o nome e a ilustração de uma mesa de Manaus (neste sábado, o Torneio Teatro Amazonas). Toda partida online conta pontos: vitória vale 3, mais o bônus da semana. O sócio mais bem colocado vira o Campeão do Sábado, com o selo 🏅 na mesa até o próximo torneio.', 'Convite em destaque em todo evento: no início e na aba Ranking, um botão para chamar pelo WhatsApp quem ainda não joga, com uma mensagem que explica o jogo.', 'Os placares da Sexta, da Quarta e da Segunda ganharam a arte de cada noite em cima (varal de lâmpadas, quadro de giz e letreiro de neon) e mostram a foto (ou o avatar) e a ★ de quem é sócio. O resumo do ranking na Calçada também.', 'O nome da mesa no começo da partida: o texto de baixo agora quebra dentro da placa.', 'Imagem nova do link do Dominó Manauara no WhatsApp.'] },
   { v: '3.58.0', data: '17/11/2026', itens: ['Aba nova no menu de baixo: Ranking. Junta o ranking da semana e do mês (com a sua posição, o Rei da Calçada e o Campeão do Mês), o placar da noite de evento (Sexta, Quarta e Segunda), a Copa dos Sócios e o Desafio das Confrarias. Na noite de evento, abre no placar ao vivo.', 'Na Calçada ficam as mesas jogando agora e um resumo com os 3 primeiros, com o botão para o ranking completo.'] },
   { v: '3.57.0', data: '17/11/2026', itens: ['Segunda é de Lei: toda segunda, das 19h às 22h, a Calçada e a mesa de jogo viram parede de tijolo com letreiro de neon. Cada vitória online entra no Placar da Segunda, ao vivo na Calçada (na terça, fica o resultado).'] },
   { v: '3.56.3', data: '17/11/2026', itens: ['O nome da mesa no começo da partida ficou mais fácil de ler: a placa é mais escura e o texto de baixo, mais forte, sem o desenho da mesa atravessando. Na sala de espera, o nome da mesa também ganhou fundo.'] },
@@ -12757,6 +12772,18 @@ function estanteMinha() {
   let feitas = 0; try { feitas = CONQUISTAS.filter(c => conquistaVisivel(c) && conquistaFeita(c.id)).length; } catch (x) {}
   return { n: EST_LINHAS.map(l => t[l.k] || 0), tiers: EST_LINHAS.map(l => estTier(t[l.k] || 0, l)), raras: EST_RARAS.map(x => r[x.id] || 0), feitas };
 }
+// 24/11 (dono: "como eu e a Erika somos adm do jogo, quero que coloque todos os troféus e prêmios na estante"): no aparelho de
+// administrador, a estante vem completa (ouro nas quatro linhas, as cinco raras e todas as conquistas da calçada), no Perfil e
+// na mesa online (pelo código da estante). Os números de verdade continuam guardados; os títulos (Copa, Sábado...) não mudam.
+// Os itens dos prêmios (avatar, mesas, pedras) o administrador já tinha liberados
+const estanteDeVerdade = estanteMinha;
+estanteMinha = function () {
+  const m = estanteDeVerdade.apply(this, arguments);
+  if (!(typeof souAdmin === 'function' && souAdmin())) return m;
+  let tot = m.feitas; try { tot = CONQUISTAS.filter(conquistaVisivel).length; } catch (e) {}
+  return Object.assign({}, m, { tiers: EST_LINHAS.map(() => 3), raras: m.raras.map(x => x || 1), feitas: Math.max(m.feitas, tot) });
+};
+function estRarasVer() { const r = Object.assign({}, estLer().raras || {}); if (typeof souAdmin === 'function' && souAdmin()) EST_RARAS.forEach(x => { if (!r[x.id]) r[x.id] = 1; }); return r; }
 function estCod() { try { const m = estanteMinha(); return m.tiers.join('') + m.raras.map(x => x ? 1 : 0).join('') + '.' + Math.min(999, m.feitas); } catch (e) { return null; } }
 function estDoCod(c) {
   const s = String(c || ''), m = s.match(/^([0-3]{4})([01]{3,5})(\.(\d{1,3}))?$/); if (!m) return null;   // 18/11: 3 raras (app antigo) ou 5
@@ -12878,7 +12905,7 @@ function renderPerfilEstante() {
 }
 // A sua estante, com o caminho até o próximo troféu
 function abrirEstante() {
-  const m = estanteMinha(), v = nivelDe(nvEstado().xp), r = estLer().raras || {};
+  const m = estanteMinha(), v = nivelDe(nvEstado().xp), r = estRarasVer();
   let tot = 0; try { tot = CONQUISTAS.filter(conquistaVisivel).length; } catch (e) {}
   const dt = t => new Date(t - 4 * 3600000).toISOString().slice(0, 10).split('-').reverse().join('/');
   const linhas = EST_LINHAS.map((l, i) => {
@@ -12887,12 +12914,12 @@ function abrirEstante() {
     const de = tr ? mt[tr - 1] : 0, pct = tr === 3 ? 100 : Math.round(100 * (n - de) / (prox - de));
     return `<li><span class="est-ic">${vtTaca(tr, l.ic)}</span><span><b>${l.nome}</b><small>${tx}</small><span class="est-bar"><i style="width:${Math.max(0, Math.min(100, pct))}%"></i></span></span></li>`;
   }).join('');
-  const raras = EST_RARAS.map(x => `<li><span class="est-ic">${vtEstatueta(!!r[x.id], x.id)}</span><span><b>${x.nome}</b><small>${esc(x.tx)}${r[x.id] ? ' · conseguiu em ' + dt(r[x.id]) : ''}</small></span></li>`).join('');
+  const raras = EST_RARAS.map(x => `<li><span class="est-ic">${vtEstatueta(!!r[x.id], x.id)}</span><span><b>${x.nome}</b><small>${esc(x.tx)}${r[x.id] > 1 ? ' · conseguiu em ' + dt(r[x.id]) : ''}</small></span></li>`).join('');
   let socio = false; try { socio = temPlano(); } catch (e) {}
   let camp = false; try { camp = souCampeao(); } catch (e) {}
   openSheet('info', `<p class="eyebrow">Estante</p><h2 id="sheetTitle">Sua estante</h2>
     ${vitrineHTML((profile && profile.name) || 'Você', m.tiers, m.raras, null, `Nível ${v.n} · ${esc(v.titulo)}`, true)}
-    ${estSelos({ socio, campeao: camp })}
+    ${estSelos({ socio, campeao: camp })}${souAdmin() ? '<p class="note">Administrador: a sua estante vem completa. Os números abaixo são os seus de verdade.</p>' : ''}
     <p class="es-gk">Troféus</p><ul class="est-lista">${linhas}</ul><p class="note">Bronze com 100, prata com 500 e ouro com 1.000. Galos: bronze com 5, prata com 25 e ouro com 50.</p>
     <p class="es-gk">Raras da Amazônia</p><ul class="est-lista">${raras}</ul>
     <p class="es-gk">Conquistas da calçada</p><p class="est-cq">${m.feitas} de ${tot}. Cada uma dá um item para o avatar. <button type="button" class="linkbtn" id="estConq">Ver conquistas</button></p>
@@ -13050,6 +13077,20 @@ const VARAL = (() => {
     + `<radialGradient id="sxLuaG"><stop offset="0" stop-color="#fff1c9" stop-opacity=".45"/><stop offset="1" stop-color="#fff1c9" stop-opacity="0"/></radialGradient></defs>`
     + `<g class="ceu">${est}</g><circle cx="46" cy="32" r="30" fill="url(#sxLuaG)"/><path class="lua" d="M48.3 14.0 A16 16 0 1 0 61.8 38.2 A14 14 0 0 1 48.3 14.0Z" fill="#fff1c9"/>`
     + `<path d="M0 50 Q200 114 400 50" fill="none" stroke="#0d0817" stroke-width="1.6"/>` + lamps + '</svg>';
+})();
+// 24/11 (dono): no Placar da Sexta, a lua estava espremida no canto e as lâmpadas do meio caíam atrás do título. O placar
+// ganha um varal próprio: a lua mais para dentro, o fio menos caído (as lâmpadas acabam antes do título) e o desenho inteiro
+// na largura do cartão (nada cortado nas laterais)
+const VARAL_PLACAR = (() => {
+  const est = [[22, 14], [132, 12], [150, 38], [186, 20], [222, 34], [258, 10], [296, 26], [332, 40], [366, 14], [118, 46], [206, 50], [388, 32]]
+    .map(([x, y], i) => `<circle class="est" cx="${x}" cy="${y}" r="${i % 3 ? 1.1 : 1.6}" fill="#fff6dc" style="--d:${(i * 0.53) % 3}s"/>`).join('');
+  const fio = x => 40 + 22 * Math.sin(Math.PI * x / 400), cores = ['#ffd27a', '#ff9f5a', '#ffe9b0', '#ffb36b'];
+  const lamps = Array.from({ length: 11 }, (_, i) => { const x = 32 + i * 33.6, y = fio(x);
+    return `<g class="lp"><rect x="${(x - 1.6).toFixed(1)}" y="${(y + 1).toFixed(1)}" width="3.2" height="4" rx="1" fill="#1a1222"/><circle cx="${x.toFixed(1)}" cy="${(y + 9).toFixed(1)}" r="4.6" fill="${cores[i % 4]}"/></g>`; }).join('');
+  return `<svg class="varal" viewBox="0 0 400 84" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs>`
+    + `<radialGradient id="sxLuaP"><stop offset="0" stop-color="#fff1c9" stop-opacity=".45"/><stop offset="1" stop-color="#fff1c9" stop-opacity="0"/></radialGradient></defs>`
+    + `<g class="ceu">${est}</g><g transform="translate(36 -2)"><circle cx="46" cy="32" r="28" fill="url(#sxLuaP)"/><path class="lua" d="M48.3 14.0 A16 16 0 1 0 61.8 38.2 A14 14 0 0 1 48.3 14.0Z" fill="#fff1c9"/></g>`
+    + `<path d="M0 40 Q200 84 400 40" fill="none" stroke="#0d0817" stroke-width="1.6"/>` + lamps + '</svg>';
 })();
 // 17/11 (dono: "concluir a Quarta dos Amigos"; a primeira versão, azul com varal, parecia a Sexta): a Quarta é um quadro de
 // giz de taberna. Os desenhos (pedras e risquinhos de contar ponto, a giz) são feitos uma vez só.
@@ -13804,6 +13845,7 @@ function presDetalhe() {
   try {
     if (screen === 'game' && G && G.score) {
       const pl = `${G.score[TEAM(seatMe || 0)]} × ${G.score[1 - TEAM(seatMe || 0)]}`;
+      if (mode === 'on' && ON.assistindo) return `${String(ON.cod || '').startsWith('ver:') ? 'assistindo o Desafio das Confrarias' : 'assistindo a mesa ' + (ON.cod || '')} · ${pl}`;   // 24/11: antes aparecia "mesa ver:..."
       if (mode === 'on') return `mesa ${ON.cod || ''} · ${pl}`;
       const m = typeof mesaEscolhida === 'function' ? mesaEscolhida() : null;
       return `${m && m.nome ? m.nome + ' · ' : ''}${pl}`;
@@ -17306,6 +17348,8 @@ function openSheet(kind, html) {
 }
 function closeSheet() { sheetKind = null; $('#back').hidden = true; $('#sheet').innerHTML = ''; }
 
+// 24/11: a pedra batendo na mesa (o selo de quem bateu no resumo da mão)
+const BATEU_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".22"/><path d="M7 12.4l3.3 3.3L17.2 8.8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function showResult() {
   if (!G || G.phase !== 'handEnd' || !G.result || sheetKind === 'rules') return;
   const r = G.result;
@@ -17327,6 +17371,12 @@ function showResult() {
     detail += ' Na próxima mão, sai quem tiver a carroça de sena.';
   }
   const L = TEAM(base()), R = 1 - L;
+  // 24/11 (o dono: "esse pequeno card escrito bateu pode melhorar"): selo cheio na cor da dupla, com a pedra da batida
+  const seloBateu = p => {
+    if (!(r.kind === 'batida' && r.p === p)) return '<span class="rv-tag">sem pedras</span>';
+    const k = String(G.lastKey || '').split('-').map(Number), t = k.length === 2 && k.every(n => n >= 0 && n <= 6) ? k : null;
+    return `<span class="rv-bateu-g"><span class="rv-selo">${BATEU_IC}Bateu</span>${t ? miniTile(t) : ''}</span>`;
+  };
   // 18/11 (sugestão de jogador): as pedras que sobraram agrupadas por dupla, com o total de cada uma (antes vinham na
   // ordem das cadeiras, uma dupla e outra intercaladas)
   const somaMao = p => r.hands[p].reduce((s, t) => s + pips(t), 0);
@@ -17334,7 +17384,7 @@ function showResult() {
     const ps = [0, 1, 2, 3].filter(p => TEAM(p) === t), tot = ps.reduce((s, p) => s + somaMao(p), 0);
     return `<div class="rv-dupla ${t === L ? 'rv-l' : 'rv-r'}"><div class="rv-cab"><b>${esc(teamName(t))}</b><span>${tot} ${tot === 1 ? 'ponto' : 'pontos'}</span></div>` +
       ps.map(p => r.hands[p].length ? `<div class="rv"><span class="who">${esc(who(p))}</span>${r.hands[p].map(miniTile).join('')}<span class="sum">${somaMao(p)} ${somaMao(p) === 1 ? 'pt' : 'pts'}</span></div>`
-        : `<div class="rv rv-bateu"><span class="who">${esc(who(p))}</span><span class="rv-tag">${r.kind === 'batida' && r.p === p ? 'bateu' : 'sem pedras'}</span></div>`).join('') + '</div>';
+        : `<div class="rv rv-bateu"><span class="who">${esc(who(p))}</span>${seloBateu(p)}</div>`).join('') + '</div>';
   }).join('') : '';
   let win = '', btn = 'Próxima mão';
   if (r.matchWinner != null) {
@@ -17434,7 +17484,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.21-bfe07ef7';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.22-f50868ca';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -18801,7 +18851,7 @@ for (const [nome, f] of [['sx', sextaPlacarBuscar], ['qa', quartaPlacarBuscar], 
 // 17/11 (pedido do dono): a arte de cada noite em cima do placar (as mesmas da Calçada, viradas imagem do fundo)
 (function () {
   const uri = svg => 'url("data:image/svg+xml,' + encodeURIComponent(svg.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ')) + '")';
-  try { const r = document.documentElement.style; r.setProperty('--arte-sx', uri(VARAL)); r.setProperty('--arte-qa', uri(GIZ_CALCADA)); r.setProperty('--arte-sg', uri(NEON_CALCADA)); } catch (e) {}
+  try { const r = document.documentElement.style; r.setProperty('--arte-sx', uri(VARAL_PLACAR)); r.setProperty('--arte-qa', uri(GIZ_CALCADA)); r.setProperty('--arte-sg', uri(NEON_CALCADA)); } catch (e) {}
 })();
 
 // ===== 17/11 (pedido do dono): Sábado dos Torneios =====
@@ -18814,7 +18864,7 @@ const REGRAS_SABADO = [
   { id: 'carroca', regra: 'cada batida de carroça vale +2 pontos' },
   { id: 'maratona', regra: 'cada partida jogada até o fim vale +1 ponto' }
 ];
-const TORNEIO_MESAS = [['teatro', 'do Teatro Amazonas'], ['encontro', 'do Encontro das Águas'], ['arena', 'da Arena da Amazônia'], ['boto', 'do Boto-rosa'], ['mercado', 'do Mercado Adolpho Lisboa'], ['peixeboi', 'do Peixe-boi'], ['ponte', 'da Ponte Rio Negro'], ['guarana', 'do Guaraná'], ['palacio', 'do Palácio Rio Negro'], ['onca', 'da Onça-pintada'], ['pontanegra', 'da Ponta Negra'], ['pirarucu', 'do Pirarucu'], ['relogio', 'do Relógio Municipal'], ['tucano', 'do Tucano'], ['calcadao', 'do Largo de São Sebastião'], ['vitoria', 'da Vitória-régia'], ['igreja', 'da Igreja de São Sebastião'], ['araraazul', 'da Arara-Azul'], ['chamine', 'da Usina Chaminé'], ['tambaqui', 'do Tambaqui']];
+const TORNEIO_MESAS = [['teatro', 'Teatro Amazonas'], ['encontro', 'Encontro das Águas'], ['arena', 'Arena da Amazônia'], ['boto', 'Boto-rosa'], ['mercado', 'Mercado Adolpho Lisboa'], ['peixeboi', 'Peixe-boi'], ['ponte', 'Ponte Rio Negro'], ['guarana', 'Guaraná'], ['palacio', 'Palácio Rio Negro'], ['onca', 'Onça-pintada'], ['pontanegra', 'Ponta Negra'], ['pirarucu', 'Pirarucu'], ['relogio', 'Relógio Municipal'], ['tucano', 'Tucano'], ['calcadao', 'Largo de São Sebastião'], ['vitoria', 'Vitória-régia'], ['igreja', 'Igreja de São Sebastião'], ['araraazul', 'Arara-Azul'], ['chamine', 'Usina Chaminé'], ['tambaqui', 'Tambaqui']];
 function sbTema(t) {
   const dia = manausDe(t || Date.now()).toISOString().slice(0, 10), r = REGRAS_SABADO, m = TORNEIO_MESAS;
   const k = Math.round((Date.parse(dia + 'T12:00:00Z') - Date.parse('2026-11-21T12:00:00Z')) / (7 * 864e5));
@@ -18822,6 +18872,19 @@ function sbTema(t) {
   return { id: g.id, regra: g.regra, mesa: me[0], nome: 'Torneio ' + me[1] };
 }
 const sbImg = t => `var(--img-${(t && t.mesa) || 'teatro'}-sw)`;   // a ilustração da mesa do torneio
+// 24/11 (dono: "tem que aparecer melhor o monumento/animal... a arena deve aparecer melhor"): de cada ilustração, onde o
+// monumento ou o bicho começa e termina (de 0 a 1, de cima para baixo) e a largura natural (todas têm 150 de altura). As faixas
+// da imagem têm proporção fixa (largura/altura = A), então o recorte é o mesmo em qualquer celular. A parte clara da faixa vai
+// do alto até "claro" (fração da altura, antes do título): se o monumento cabe nela, fica no meio; se não cabe, começa no alto.
+// Nos altos demais (Relógio, Igreja, Chaminé, Arara), a parte que mais identifica: o relógio, as torres, a usina, a arara
+const SB_FOCO = { teatro: [.12, .77, 103], encontro: [.4, .8, 103], arena: [.36, .68, 103], boto: [.33, .94, 84], mercado: [.23, .86, 84], peixeboi: [.18, .86, 84], ponte: [.13, .62, 103], guarana: [.12, .72, 117], palacio: [.34, .85, 103], onca: [.08, .85, 103], pontanegra: [.25, .58, 103], pirarucu: [.43, .55, 103], relogio: [.17, .31, 84], tucano: [.54, .87, 84], calcadao: [.26, .69, 84], vitoria: [.02, .4, 103], igreja: [.2, .62, 103], araraazul: [.1, .52, 103], chamine: [.3, .7, 103], tambaqui: [.38, .65, 103] };
+function sbY(t, A, claro) {
+  const [a, b, w] = SB_FOCO[(t && t.mesa) || 'teatro'] || [.2, .8, 103], r = A * 150 / w;   // r = altura da imagem / altura da faixa
+  if (r <= 1) return '50%';
+  const topo = .03, o = (b - a) * r <= claro - topo ? (a + b) / 2 * r - (topo + claro) / 2 : a * r - topo;   // o quanto a imagem sobe
+  return Math.min(100, Math.max(0, 100 * o / (r - 1))).toFixed(1) + '%';
+}
+
 function sbAgora(t) {
   const d = manausDe(t || Date.now()); if (d.getUTCDay() !== 6) return null;
   try { if (csAgora().fase === 'agora') return null; } catch (e) {}   // sábado da Copa dos Sócios: sem torneio
@@ -18844,7 +18907,7 @@ evCardExtra = function (v) { if (v && v.tipo === 'sabado') return evAntes; retur
 const evCardPintarSb = evCardPintar;
 evCardPintar = function (b, v) {   // o cartão do torneio leva a ilustração da mesa
   evCardPintarSb.apply(this, arguments);
-  if (!b) return; if (v && v.tipo === 'sabado') b.style.setProperty('--sb-img', sbImg(sbTema())); else b.style.removeProperty('--sb-img');
+  if (!b) return; if (v && v.tipo === 'sabado') { b.style.setProperty('--sb-img', sbImg(sbTema())); b.style.setProperty('--sb-y', sbY(sbTema(), 2, .66)); } else { b.style.removeProperty('--sb-img'); b.style.removeProperty('--sb-y'); }
 };
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('.ev-card'); if (!b || b.dataset.ir !== 'sabado') return;
@@ -18860,7 +18923,7 @@ function sabadoFaixa() {
   const tit = cab.querySelector('.aba-tit'); if (tit) tit.textContent = 'Sábado dos Torneios';
   cab.classList.add('sexta');
   if (!fx) { cab.insertAdjacentHTML('afterend', '<div class="calc-sexta calc-sab" id="calcSab" role="status"></div>'); fx = $('#calcSab'); }
-  fx.hidden = false; fx.style.setProperty('--sb-img', sbImg(t));
+  fx.hidden = false; fx.style.setProperty('--sb-img', sbImg(t)); fx.style.setProperty('--sb-y', sbY(t, 16 / 9, .68));
   fx.innerHTML = `<span class="sb-foto" aria-hidden="true"></span><b class="sb-nome"><span aria-hidden="true">🏅</span> ${t.nome}</b><span class="cs-tx sb-tx"><small>Vitória vale 3 e ${t.regra}. ${sbFim()}</small></span><span class="cs-relogio"><small>termina em</small><b>${faltaAte(22)}</b></span>`
     + '<button type="button" class="cs-chamar cs-jogar" id="sbJogar">Jogar na mesa rápida</button>'
     + `<button type="button" class="cs-chamar" id="sbChamar">${WA_IC}Chamar a turma pro torneio</button>`;
@@ -18891,7 +18954,7 @@ function sabadoPlacarDesenhar() {
     } else if (box.previousElementSibling !== cab) cab.insertAdjacentElement('afterend', box);
     box.hidden = false;
     const d = j.dia.slice(8, 10) + '/' + j.dia.slice(5, 7), med = ['🥇', '🥈', '🥉'], t = j.tema || sbTema();
-    box.style.setProperty('--sb-img', sbImg(t));   // a ilustração da mesa do torneio, em cima do placar
+    box.style.setProperty('--sb-img', sbImg(t)); box.style.setProperty('--sb-y', sbY(t, 2.6, .7));   // a ilustração da mesa do torneio, em cima do placar
     const vit = n => `${n} ${n === 1 ? 'vitória' : 'vitórias'}`, pts = n => `${n} ${n === 1 ? 'ponto' : 'pontos'}`;
     const extra = q => t.id === 'galo' ? ` · ${q.galos} ${q.galos === 1 ? 'galo' : 'galos'}` : t.id === 'carroca' ? ` · ${q.carrocas} ${q.carrocas === 1 ? 'carroça' : 'carroças'}` : ` · ${q.partidas} ${q.partidas === 1 ? 'partida' : 'partidas'}`;
     const lin = (j.top || []).map((q, i) => `<li${j.eu && j.eu.pos === i + 1 ? ' class="eu"' : ''}><span class="sxp-pos">${med[i] || (i + 1) + 'º'}</span>`
@@ -18963,6 +19026,19 @@ function evConvitePintar() {
 const desenharEvCardCv = desenharEvCard;
 // 17/11 (dono: "retire esse botão verde do WhatsApp"): o convite saiu do início (fica na aba Ranking e nas faixas da Calçada)
 desenharEvCard = function () { const r = desenharEvCardCv.apply(this, arguments); try { const b = $('#evConvite'); if (b) b.hidden = true; } catch (e) {} return r; };
+// 24/11 (dono: "o card do evento atual sempre deve ficar em cima da copa dos sócios"): quando o segundo cartão é um evento
+// ao vivo (Domingão, Sexta, Sábado...) e o primeiro é a Copa, o evento sobe; fora disso, a ordem de sempre
+const desenharEvCardOrdem = desenharEvCard;
+desenharEvCard = function () {
+  const r = desenharEvCardOrdem.apply(this, arguments);
+  try {
+    const b1 = $('#evCard'), b2 = $('#evCard2'); if (!b1 || !b2) return r;
+    const sobe = !b1.hidden && !b2.hidden && b1.classList.contains('copa') && !b2.classList.contains('copa') && !!b2.querySelector('.ck .vivo-ponto');
+    if (sobe && b2.nextElementSibling !== b1) b1.insertAdjacentElement('beforebegin', b2);
+    else if (!sobe && b1.nextElementSibling !== b2) b1.insertAdjacentElement('afterend', b2);
+  } catch (e) {}
+  return r;
+};
 // na aba Ranking: embaixo do ranking escolhido (na noite de evento, o convite é do evento)
 function rnkConvitePintar() {
   const corpo = $('#rnkCorpo'); if (!corpo || menorDeIdade()) return;
