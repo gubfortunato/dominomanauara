@@ -23,13 +23,14 @@ export const PRODUTOS = {
   // prefere o Pix. Preço normal em valor; na promoção de lançamento (até 05/11, 00:00 de Brasília), quem assina paga
   // promo.valor nas primeiras promo.vezes cobranças (mensal: 3 meses a R$ 9,90; trimestral: o 1º trimestre a R$ 24,90;
   // anual: o 1º ano a R$ 74,90) e depois o normal (o servidor muda o valor da assinatura no Asaas).
-  apm: { nome: 'Dominó Manauara - mensal', desc: 'Sócio da Calçada todo mês: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 14.90, dias: 31, recorrente: 'MONTHLY', promo: { valor: 9.90, vezes: 3 } },
-  ap3: { nome: 'Dominó Manauara - 3 meses', desc: 'Sócio da Calçada trimestral: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 37.90, dias: 92, recorrente: 'QUARTERLY', promo: { valor: 24.90, vezes: 1 } },
-  ap12: { nome: 'Dominó Manauara - 1 ano', desc: 'Sócio da Calçada anual: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 99.90, dias: 366, recorrente: 'YEARLY', promo: { valor: 74.90, vezes: 1 } },
-  ap1: { nome: 'Dominó Manauara - 1 mês', desc: 'Sócio da Calçada por 1 mês: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 14.90, dias: 31, promo: { valor: 9.90, vezes: 1 } },
+  // 24/11 (dono): o normal passou a R$ 12,90 por mês, R$ 27,90 a cada 3 meses e R$ 84,90 por ano (eram 14,90, 37,90 e 99,90)
+  apm: { nome: 'Dominó Manauara - mensal', desc: 'Sócio da Calçada todo mês: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 12.90, dias: 31, recorrente: 'MONTHLY', promo: { valor: 9.90, vezes: 3 } },
+  ap3: { nome: 'Dominó Manauara - 3 meses', desc: 'Sócio da Calçada trimestral: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 27.90, dias: 92, recorrente: 'QUARTERLY', promo: { valor: 24.90, vezes: 1 } },
+  ap12: { nome: 'Dominó Manauara - 1 ano', desc: 'Sócio da Calçada anual: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 84.90, dias: 366, recorrente: 'YEARLY', promo: { valor: 74.90, vezes: 1 } },
+  ap1: { nome: 'Dominó Manauara - 1 mês', desc: 'Sócio da Calçada por 1 mês: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 12.90, dias: 31, promo: { valor: 9.90, vezes: 1 } },
   // 04/11 (pedido do dono): 3 meses e 1 ano avulsos (Pix ou cartão, sem renovar), para quem não tem cartão
-  ap3u: { nome: 'Dominó Manauara - 3 meses', desc: 'Sócio da Calçada por 3 meses: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 37.90, dias: 92, promo: { valor: 24.90, vezes: 1 } },
-  ap12u: { nome: 'Dominó Manauara - 1 ano', desc: 'Sócio da Calçada por 1 ano: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 99.90, dias: 366, promo: { valor: 74.90, vezes: 1 } },
+  ap3u: { nome: 'Dominó Manauara - 3 meses', desc: 'Sócio da Calçada por 3 meses: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 27.90, dias: 92, promo: { valor: 24.90, vezes: 1 } },
+  ap12u: { nome: 'Dominó Manauara - 1 ano', desc: 'Sócio da Calçada por 1 ano: partidas sem limite, papo de mesa, ranking completo, estatísticas, foto, selo e avatares.', valor: 84.90, dias: 366, promo: { valor: 74.90, vezes: 1 } },
   // 12/11 (pedido do dono): Passe da semana, 7 dias de sócio, pago uma vez (Pix ou cartão), sem renovar. Para quem bate o
   // limite e quer jogar mais sem assinar. R$ 5,90 (dono). O Asaas não aceita cobrança abaixo de R$ 5,00 (testado em 12/11: R$ 4,90 recusado).
   aps: { nome: 'Dominó Manauara - 7 dias', desc: 'Passe da semana: 7 dias de Sócio da Calçada, com partidas sem limite, todas as mesas, papo de mesa e ranking completo.', valor: 5.90, dias: 7 },
@@ -190,6 +191,8 @@ export async function pagar(req, env, origin, h) {
   if (!env.ASAAS_API_KEY) return h.json({ erro: 'sem-pagamento' }, 503, origin);
   let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
   if (!PRODUTOS[b.produto]) return h.json({ erro: 'produto' }, 400, origin);
+  // 24/11 (dono): só os planos à venda (os produtos antigos, como 31 dias por R$ 4,90, ficam só para os pedidos já feitos)
+  if (!A_VENDA.includes(b.produto)) return h.json({ erro: 'produto' }, 400, origin);
   if (PRODUTOS[b.produto].livre && valorLivre(b.valor) == null) return h.json({ erro: 'valor', min: LIVRE.min, max: LIVRE.max }, 400, origin);
   const prod = produtoDoPedido(b.produto, PRODUTOS[b.produto].livre ? valorLivre(b.valor) : undefined);
   if (prod.dias && !idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
