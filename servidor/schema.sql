@@ -181,6 +181,9 @@ CREATE TABLE IF NOT EXISTS assinaturas (pedido TEXT PRIMARY KEY, aparelho TEXT N
   produto TEXT NOT NULL DEFAULT 'apm', valor REAL, promo INTEGER NOT NULL DEFAULT 0, pagos INTEGER NOT NULL DEFAULT 0,
   reajustada INTEGER, reajuste_tentado INTEGER, reajuste_erro TEXT);
 CREATE INDEX IF NOT EXISTS assinaturas_ass ON assinaturas (assinatura);
+-- 24/11 (dono): preços novos (12,90 / 27,90 / 84,90). Quem já teve a renovação ajustada para o preço antigo (14,90 / 37,90 /
+-- 99,90) volta para a fila e o servidor ajusta no Asaas para o novo. Só os ajustes feitos até 24/11 (o corte é meia-noite de 25/11 em Manaus).
+UPDATE assinaturas SET reajustada = NULL, reajuste_tentado = NULL WHERE status = 'ativa' AND produto IN ('apm', 'ap3', 'ap12') AND reajustada IS NOT NULL AND reajustada < 1795579200000;
 CREATE INDEX IF NOT EXISTS assinaturas_cli ON assinaturas (cliente);
 CREATE INDEX IF NOT EXISTS assinaturas_ap ON assinaturas (aparelho);
 CREATE INDEX IF NOT EXISTS assinaturas_ck ON assinaturas (checkout);
