@@ -23,13 +23,15 @@ export async function anotarSegunda(env, m, quem) {
     } catch (e) {}
   }
 }
-// GET /segunda/placar?id=: na Segunda (das 19h), o de hoje (ao vivo até as 22h); na terça, o de ontem; nos outros dias, nada
+// GET /segunda/placar?id=: na Segunda (das 19h), o de hoje (ao vivo até as 22h); na terça e na quarta até as 20h (24/11: até o
+// próximo evento, a Quarta dos Amigos), o da segunda; nos outros dias, nada
 export async function segundaPlacar(env, url, h, origin) {
   const agora = Date.now(), d = manaus(agora), ws = d.getUTCDay(), hr = d.getUTCHours();
   let dia = null, aoVivo = false;
   if (env.SEGUNDA_TESTE === '1') { dia = diaM(agora); aoVivo = true; }
   else if (ws === 1 && hr >= 19) { dia = diaM(agora); aoVivo = hr < 22; }
   else if (ws === 2) dia = diaM(agora - DIA);
+  else if (ws === 3 && hr < 20) dia = diaM(agora - 2 * DIA);
   if (!dia) return h.json({ dia: null }, 200, origin);
   let top = [], eu = null;
   try {

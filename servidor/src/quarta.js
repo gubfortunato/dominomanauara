@@ -84,7 +84,8 @@ export async function anotarQuarta(env, m, quem) {
     } catch (e) {}
   }
 }
-// GET /quarta/placar?id=&dia=: na Quarta, o de hoje (ao vivo); na quinta, o de ontem; nos outros dias, nada (a não ser com dia=)
+// GET /quarta/placar?id=&dia=: na Quarta, o de hoje (ao vivo); na quinta e na sexta até as 20h, o da quarta (18/11, o dono: até o
+// próximo evento; o app esconde às 17h de sexta para quem tem o Happy Hour); nos outros dias, nada (a não ser com dia=)
 export async function quartaPlacar(env, url, h, origin) {
   const agora = Number(env && env.COPA_AGORA) || Date.now(), d = new Date(agora - MANAUS), ws = d.getUTCDay(), hr = d.getUTCHours();
   let dia = null, aoVivo = false;
@@ -93,6 +94,7 @@ export async function quartaPlacar(env, url, h, origin) {
   else if (env.QUARTA_TESTE === '1') { dia = diaManaus(Date.now()); aoVivo = true; }
   else if (ws === 3 && hr >= QUARTA_HORA.inicio) { dia = diaManaus(agora); aoVivo = hr < QUARTA_HORA.fim; }
   else if (ws === 4) dia = diaManaus(agora - DIA);
+  else if (ws === 5 && hr < 20) dia = diaManaus(agora - 2 * DIA);
   if (!dia) return h.json({ dia: null }, 200, origin);
   let top = [], eu = null;
   try {

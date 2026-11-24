@@ -362,9 +362,13 @@ export class Mesa {
     if (!(this.mesaDesafio() || (m.publica && edicao(this.env).aberto)) || !m.G || !this.confronto()) return null;
     if (m.cad.some(c => c && !c.bot && c.menor)) return null;   // com menor na mesa, só pelo número (como antes)
     if (!m.verId) m.verId = [...crypto.getRandomValues(new Uint8Array(8))].map(b => b.toString(16).padStart(2, '0')).join('');
-    const lado = w => { for (let p = w; p < 4; p += 2) { const c = m.cad[p]; if (c && !c.bot && c.turma) return c.turma; } return null; };
+    // 24/11 (o dono: "por que tem equipe jogando 2x ao mesmo tempo?"): só puxa a Confraria quem está na mesa agora (quem saiu
+    // e deixou o robô jogando não aparece) e vão os nomes de quem joga de cada lado (uma Confraria tem até 40 pessoas)
+    const aqui = p => { const c = m.cad[p]; return !!(c && !c.bot && this.conectado(p)); };
+    const lado = w => { for (let p = w; p < 4; p += 2) { const c = m.cad[p]; if (aqui(p) && c.turma) return c.turma; } return null; };
+    const nomes = w => [w, w + 2].filter(aqui).map(p => nomeVisivel(m.cad[p]));
     const a = lado(0), b = lado(1);
-    return a && b && a !== b ? { ver: m.verId, a, b } : null;
+    return a && b && a !== b ? { ver: m.verId, a, b, na: nomes(0), nb: nomes(1) } : null;
   }
   infoVivo() {
     const m = this.viva();
@@ -1509,11 +1513,16 @@ export class Mesa {
     if (!r || r.matchWinner == null || r.desafio) return;
     r.desafio = true;
     if ((G.alvo || 200) < 200) return;   // 18/11: partida curta não vale ponto no Desafio
-    const lado = w => m.cad.map((c, p) => c && !c.bot && c.id && p % 2 === w ? p : -1).filter(p => p >= 0);
-    const ganhou = lado(r.matchWinner), perdeu = lado(1 - r.matchWinner);
-    if (!ganhou.length || !perdeu.length) return;
+    // 24/11 (o dono: "não daria vantagem em dobro?"): como no ranking, pontua só quem jogou a partida inteira, sem a turma
+    // do bairro no lugar (quem sai e deixa o robô jogando não leva ponto para a Confraria). Do lado que perdeu, conta quem
+    // estava na mesa no começo da partida: sair no meio não tira o ponto de quem ganhou.
+    const inteiro = p => { const c = m.cad[p]; return !!(c && !c.bot && !c.saiu && c.id && m.naPartida && m.naPartida[p] === c.id && !(m.robo && m.robo.partida[p])); };
+    const ganhou = [0, 1, 2, 3].filter(p => p % 2 === r.matchWinner && inteiro(p));
+    const perdeuIds = [...new Set([0, 1, 2, 3].filter(p => p % 2 !== r.matchWinner)
+      .map(p => (m.naPartida && m.naPartida[p]) || (m.cad[p] && !m.cad[p].bot && m.cad[p].id) || null).filter(Boolean))];
+    if (!ganhou.length || !perdeuIds.length) return;
     let res = null;
-    try { res = await pontuar(this.env, ganhou.map(p => m.cad[p].id), perdeu.map(p => m.cad[p].id)); } catch (e) {}
+    try { res = await pontuar(this.env, ganhou.map(p => m.cad[p].id), perdeuIds); } catch (e) {}
     if (res && res.turmas.length) m.desafio = { seq: m.seq + 1, turmas: res.turmas, pontos: res.pontos || 1, cadeiras: ganhou.filter(p => res.ids.includes(m.cad[p].id)) };   // 10/11: na reta final, 2 pontos
     // 11/11: ganhou de outra Turma, mas a Turma dele é só ele (precisa de pelo menos 2 pessoas para pontuar): o app avisa e chama a turma
     const sos = res && res.sozinhos && res.sozinhos.length ? ganhou.filter(p => res.sozinhos.includes(m.cad[p].id)) : [];

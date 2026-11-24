@@ -2766,6 +2766,7 @@ body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1
 .dc-vv{gap:10px 10px;padding:16px 12px 14px;border-color:color-mix(in srgb,#2ecc71 35%,var(--line))}
 .dc-vv-t{gap:7px;align-self:start}.dc-vv-pl{align-self:start;margin-top:10px}
 .dc-vv-t b{font-size:17px;line-height:1.2;font-weight:800}
+.dc-vv-n{display:block;max-width:100%;font-size:13.5px;line-height:1.3;font-weight:600;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}   /* 24/11: quem joga */
 .dc-vv-pl b{font-size:32px;line-height:1}.dc-vv-pl i{font-size:18px}.dc-vv-pl small{font-size:12.5px;margin-top:4px}
 .dc-vv-go{padding:9px 22px;font-size:15.5px}
 #calcCorpo .calc-dcvivo .dc-vivo{padding:0;background:none;border:0;border-radius:0}
@@ -4717,6 +4718,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.17', data: '24/11/2026', itens: ['Placares das noites de evento: o resultado fica no Ranking e na Calçada até começar o próximo evento. Segunda: até quarta às 20h. Quarta: até sexta. Sexta: até sábado às 10h, quando começa o torneio. Sábado: até a Segunda, às 19h.', 'Desafio das Confrarias: no Acontecendo agora, o nome de quem está jogando aparece embaixo de cada escudo (uma Confraria pode ter várias mesas ao mesmo tempo).', 'Desafio das Confrarias: o ponto agora é de quem joga a partida inteira, como no ranking. Quem sai da mesa e deixa a turma do bairro jogando no lugar não pontua para a Confraria.'] },
   { v: '3.61.16', data: '18/11/2026', itens: ['Calçada: no Acontecendo agora, o título Desafio das Confrarias fica alinhado com o cartão.'] },
   { v: '3.61.15', data: '18/11/2026', itens: ['Estante mais justa: o troféu de galos sai com 5, 25 e 50 galos (antes eram 100, 500 e 1.000, quase impossível). As raras ficaram raras de verdade: batida com a carroça de sena, Lavada (ganhar com a outra dupla abaixo de 50), Invicto (6 partidas ganhas seguidas) e 4 batidas seguidas na mesma partida. Quem já tem uma estatueta continua com ela.', 'Na estante, só contam as partidas de 200 pontos.', 'Calçada: a bolinha do Acontecendo agora pisca inteira, sem cortar na borda.'] },
   { v: '3.61.14', data: '18/11/2026', itens: ['O app pede a sua opinião: uma nota rápida e, se quiser, o que deixaria o jogo melhor. Vai direto para quem faz o jogo, e a resposta volta aqui no app.', 'Administrador: a estrela do sócio passou para antes do nome, na lista No app agora.'] },
@@ -11882,15 +11884,17 @@ function dcLista(d, t, n) {
   return `<ol class="dc-ol">${html}</ol>`;
 }
 // 10/11 (pedido do dono): os confrontos do Desafio acontecendo agora, para qualquer um assistir (sem o número da mesa)
+// 24/11 (o dono: "por que tem equipe jogando 2x ao mesmo tempo?"): quem joga por cada Confraria, embaixo do escudo
+const dcNomes = l => Array.isArray(l) && l.length ? `<small class="dc-vv-n">${l.map(esc).join(' e ')}</small>` : '';
 function dcAoVivo() {
   const l = (typeof VIVO !== 'undefined' && VIVO.mesas || []).filter(v => v.desafio && v.desafio.ver && v.fase === 'jogo').slice(0, 4);
   if (!l.length) return '';
   return `<div class="dc-vivo"><p class="dc-vivo-k"><i aria-hidden="true"></i>Acontecendo agora<span class="dc-vivo-sub">⚔️ Desafio das Confrarias</span></p>${l.map(v => {
     const pl = v.placar || [0, 0];
     return `<button type="button" class="dc-vv" data-ver="${esc(v.desafio.ver)}" aria-label="Assistir ${esc(nomeTurma(v.desafio.a))} contra ${esc(nomeTurma(v.desafio.b))}">
-      <span class="dc-vv-t">${brasao(v.desafio.a, 46)}<b>${esc(v.desafio.a)}</b></span>
+      <span class="dc-vv-t">${brasao(v.desafio.a, 46)}<b>${esc(v.desafio.a)}</b>${dcNomes(v.desafio.na)}</span>
       <span class="dc-vv-pl"><b>${pl[0]}</b><i>×</i><b>${pl[1]}</b><small>partida ${v.partida || 1}</small></span>
-      <span class="dc-vv-t">${brasao(v.desafio.b, 46)}<b>${esc(v.desafio.b)}</b></span>
+      <span class="dc-vv-t">${brasao(v.desafio.b, 46)}<b>${esc(v.desafio.b)}</b>${dcNomes(v.desafio.nb)}</span>
       <span class="dc-vv-go"><span aria-hidden="true">👀</span> Assistir</span></button>`;
   }).join('')}</div>`;
 }
@@ -13006,6 +13010,16 @@ async function quartaPlacarBuscar() {
   try { QAP.j = await (await fetch(`${CONFIG.api}/quarta/placar?id=${encodeURIComponent(meuId())}`, { cache: 'no-store' })).json(); } catch (e) {}
   return QAP.j;
 }
+// 18/11 (o dono: "o ranking da quarta deveria ficar até o próximo evento"): o resultado fica de quarta, depois das 23h, até
+// começar o próximo evento: o Happy Hour de sexta às 17h (quem não é sócio) ou a Sexta da Calçada às 20h (sócio)
+function quartaResultado(t) {
+  const d = manausDe(t || Date.now()), dw = d.getUTCDay(), h = d.getUTCHours();
+  let hh = false; try { hh = hhPara(); } catch (e) {}
+  return (dw === 3 && h >= 23) || dw === 4 || (dw === 5 && h < (hh ? 17 : 20));
+}
+// 24/11 (o dono: "pode fazer"): o mesmo para a Segunda (até quarta 20h) e a Sexta (até sábado 10h, quando começa o torneio)
+function segundaResultado(t) { const d = manausDe(t || Date.now()), dw = d.getUTCDay(), h = d.getUTCHours(); return (dw === 1 && h >= 22) || dw === 2 || (dw === 3 && h < 20); }
+function sextaResultado(t) { const d = manausDe(t || Date.now()), dw = d.getUTCDay(), h = d.getUTCHours(); return (dw === 5 && h >= 23) || (dw === 6 && h < 10); }
 function quartaPlacarDesenhar() {
   const cab = $('#rnkAncora'); if (!cab) return;
   let box = $('#qaPlacar');
@@ -13230,8 +13244,8 @@ function calcCabSexta() {
   try { sextaNoite(ev); } catch (e) {}
   try { domingoSol(); } catch (e) {}   // 14/11: Domingão da Calçada, das 10h às 22h   // 13/11: a Calçada vira rua à noite, com o varal de lâmpadas e o relógio
   try { quartaNoite(qa); } catch (e) {}   // 17/11: a Quarta dos Amigos, quadro de giz
-  try { if (qa || manausDe(Date.now()).getUTCDay() === 4) quartaPlacarDesenhar(); else if ($('#qaPlacar')) $('#qaPlacar').hidden = true; } catch (e) {}   // Duplas da Quarta (na quinta, o resultado)
-  try { if (!ev && (manausDe(Date.now()).getUTCDay() === 6 || sxAgora() === 'agora')) sextaPlacarDesenhar(); else if (!ev && $('#sxPlacar')) $('#sxPlacar').hidden = true; } catch (e) {}   // 13/11: no sábado, o resultado
+  try { if (qa || quartaResultado()) quartaPlacarDesenhar(); else if ($('#qaPlacar')) $('#qaPlacar').hidden = true; } catch (e) {}   // Duplas da Quarta (depois, o resultado até o próximo evento)
+  try { if (!ev && (sextaResultado() || sxAgora() === 'agora')) sextaPlacarDesenhar(); else if (!ev && $('#sxPlacar')) $('#sxPlacar').hidden = true; } catch (e) {}   // 13/11: depois, o resultado (24/11: até sábado 10h)
   if (qa && sub && !vivoDetalhes()) sub.textContent = 'As mesas jogando agora estão aqui. Na mesa com os amigos, a turma joga junto até as 23h.';   // a faixa já fala da mesa liberada
   if (ev && sub && !vivoDetalhes()) sub.textContent = 'As mesas jogando agora estão aqui, com lugar vago primeiro: toque numa e entre.';   // 13/11: a faixa da Sexta já fala da moral
 }
@@ -17314,7 +17328,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.16-8cb295a8';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.17-0ed60f8d';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -18504,7 +18518,7 @@ function segundaPlacarDesenhar() {
 }
 function segundaPlacarAqui() {
   const d = manausDe(Date.now()), dw = d.getUTCDay(), h = d.getUTCHours();
-  if ((dw === 1 && h >= 19) || dw === 2) segundaPlacarDesenhar(); else if ($('#sgPlacar')) $('#sgPlacar').hidden = true;
+  if ((dw === 1 && h >= 19) || segundaResultado()) segundaPlacarDesenhar(); else if ($('#sgPlacar')) $('#sgPlacar').hidden = true;   // 24/11: até quarta 20h
 }
 const calcCabSextaEv = calcCabSexta;
 calcCabSexta = function () {
@@ -18581,8 +18595,8 @@ setInterval(() => {
 
 // ===== 17/11 (pedido do dono): aba Ranking =====
 // Os rankings saem da Calçada e ficam juntos numa aba do menu: Semana e Mês (o Ranking da calçada, com a sua posição, o
-// Rei da Calçada e o Campeão do Mês), o placar da noite de evento (Sexta, Quarta ou Segunda; no dia seguinte, o
-// resultado), a Copa e as Turmas (Desafio das Confrarias), cada um só quando existe. Na noite de evento, a aba abre no
+// Rei da Calçada e o Campeão do Mês), o placar da noite de evento (Sexta, Quarta ou Segunda; depois, o
+// resultado, até começar o próximo evento), a Copa e as Turmas (Desafio das Confrarias), cada um só quando existe. Na noite de evento, a aba abre no
 // placar ao vivo. A Calçada fica com o que está rolando agora e um resumo (os 3 primeiros) com o botão para a aba.
 const RNK = { seg: 'semana', auto: true, pedido: false, assin: '' };
 function rnkSegs() {
@@ -18610,9 +18624,9 @@ function rnkAbasPintar() {
 // os placares da noite de evento: na noite (das 19h ou 20h) e no dia seguinte, o resultado
 function rnkPlacares() {
   const d = manausDe(Date.now()), dw = d.getUTCDay(), h = d.getUTCHours();
-  if (sxAgora() === 'agora' || dw === 6) sextaPlacarDesenhar(); else if ($('#sxPlacar')) $('#sxPlacar').hidden = true;
-  if (quaAgora() === 'agora' || dw === 4) quartaPlacarDesenhar(); else if ($('#qaPlacar')) $('#qaPlacar').hidden = true;
-  if ((dw === 1 && h >= 19) || dw === 2) segundaPlacarDesenhar(); else if ($('#sgPlacar')) $('#sgPlacar').hidden = true;
+  if (sxAgora() === 'agora' || sextaResultado()) sextaPlacarDesenhar(); else if ($('#sxPlacar')) $('#sxPlacar').hidden = true;   // 24/11: até sábado 10h
+  if (quaAgora() === 'agora' || quartaResultado()) quartaPlacarDesenhar(); else if ($('#qaPlacar')) $('#qaPlacar').hidden = true;   // 18/11: até o próximo evento
+  if ((dw === 1 && h >= 19) || segundaResultado()) segundaPlacarDesenhar(); else if ($('#sgPlacar')) $('#sgPlacar').hidden = true;   // 24/11: até quarta 20h
 }
 function rnkAtualizar(forcar) {
   try { rkBuscar(forcar); } catch (e) {}
@@ -18789,7 +18803,7 @@ function sabadoPlacarDesenhar() {
   pinta(SBP.j);
   sabadoPlacarBuscar().then(pinta);
 }
-const sabadoDia = () => { const d = manausDe(Date.now()), dw = d.getUTCDay(), h = d.getUTCHours(); return (dw === 6 && h >= 10) || dw === 0; };
+const sabadoDia = () => { const d = manausDe(Date.now()), dw = d.getUTCDay(), h = d.getUTCHours(); return (dw === 6 && h >= 10) || dw === 0 || (dw === 1 && h < 19); };   // 24/11: até a Segunda (19h)
 const rnkPlacaresSb = rnkPlacares;
 rnkPlacares = function () { rnkPlacaresSb.apply(this, arguments); if (sabadoDia()) sabadoPlacarDesenhar(); else if ($('#sbPlacar')) $('#sbPlacar').hidden = true; };
 const calcCabSextaSb = calcCabSexta;
