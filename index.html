@@ -4445,7 +4445,7 @@ function botChoose(st, p, rnd, W) {
 // de lugar no meio da mão por causa de outra ponta; se a parte dela acabar, ela fecha em caracol para dentro.
 // B = { xb, yt, yb }: até onde as pedras podem ir, em unidades, a partir do centro. fora: alguma pedra não coube.
 let mesaBordas = null, escalaMao = 1;
-const MESA_UNID = 12.5;   // unidades na largura da mesa em pé (24/11, o dono: "aumente um pouquinho": era 14; ~6 pedras deitadas lado a lado)
+const MESA_UNID = 11.5;   // unidades na largura da mesa em pé (24/11, o dono: "aumente um pouquinho" e "ainda estão muito pequenas": era 14, depois 12,5)
 function layoutBorda(T, B) {
   const chain = T.chain, center = T.center, bu = T.bucho || {};
   const res = { main: new Array(chain.length), U: [], D: [], fora: false };
@@ -4798,6 +4798,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.21', data: '24/11/2026', itens: ['Pedras da mesa maiores no celular em pé. Numa mão bem comprida, a mesa se afasta um pouco perto do fim para tudo caber.', 'As pedras usam a mesa até embaixo e podem passar por cima do Mesa oferecida por.'] },
   { v: '3.61.20', data: '24/11/2026', itens: ['Pedras da mesa um pouco maiores (no celular em pé).', 'A ponta que sobe ou desce rente à borda continua reta quando chega uma carroça (antes ela virava para dentro da mesa antes da hora).'] },
   { v: '3.61.19', data: '24/11/2026', itens: ['Mesa nova no celular: as pontas saem do meio, vão até a borda e viram rente a ela, como numa mesa de verdade; o bucho sobe e desce; a mesa inteira é aproveitada, nas laterais, em cima e embaixo.', 'As pedras da mesa ficam do mesmo tamanho a mão inteira (só diminuem um pouco se a mão ficar muito comprida) e não passam mais por cima do Mesa oferecida por.', 'As pedras da sua mão ficaram um pouco menores e a mesa ganhou esse espaço.'] },
   { v: '3.61.18', data: '24/11/2026', itens: ['Segunda é de Lei: no desenho de neon, a pedra com a sena agora é igual à do jogo (deitada, 3 colunas de 2).', 'Segunda é de Lei: no cartão do início, a pedra em pé não encosta mais no texto.', 'As bordas de neon dos placares e cartões e a bolinha do ao vivo aparecem inteiras, sem cortar nas laterais (Android e iPhone).'] },
@@ -16899,7 +16900,7 @@ function renderBoard() {
   mesaBordas = null;
   let vbFixo = null;
   if (aMesa < 1.05) {
-    const ptq = wrap.querySelector('.mesa-patro'), hUtil = ptq && ptq.offsetHeight ? Math.max(80, ptq.getBoundingClientRect().top - wrap.getBoundingClientRect().top) : H;
+    const hUtil = H;   // 24/11 (o dono): a mesa toda, até a faixa do Ampliar; as pedras podem passar por cima do "Mesa oferecida por"
     const u = Math.max(18, Math.min(34, W / MESA_UNID, hUtil / 15));
     const nT = G.chain.length + ((G.bucho && G.bucho.U) || []).length + ((G.bucho && G.bucho.D) || []).length;
     if (nT <= 1) escalaMao = 1;   // mão nova
@@ -17433,7 +17434,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.20-2847bfb3';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.21-bfe07ef7';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
