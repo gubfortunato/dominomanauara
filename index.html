@@ -814,6 +814,8 @@ body{touch-action:manipulation}
 /* Pedras da mão: o maior tamanho que cabe 7 lado a lado.
    70px = margens da tela (32) + 6 espaços entre pedras (24) + borda de "sua vez" (12) + folga. */
 :root{--tw:clamp(34px,calc((min(100vw,720px) - 70px) / 7),66px)}
+/* 24/11 (o dono: "diminuir um pouco as pedras do jogador na mão e aumentar a mesa pra baixo"): na mesa de jogo, em pé */
+@media (orientation: portrait){ :root:has(#scrGame:not([hidden])){--tw:clamp(32px,calc((min(100vw,720px) - 70px) / 8.1),58px)} }
 .hand{gap:4px}
 /* A mão nunca alarga a tela: se faltar espaço, as pedras encolhem um pouco em vez de empurrar a mesa para a direita */
 .game>*,.me>*{min-width:0}
@@ -4435,7 +4437,80 @@ function botChoose(st, p, rnd, W) {
 // Mesa: com carroça de saída, cada braço ocupa um quadrante (cata-vento) — ponta direita desce pela direita,
 // ponta esquerda sobe pela esquerda, bucho de baixo vai para a esquerda e bucho de cima para a direita.
 // Sem carroça no centro, as duas pontas usam a largura toda.
+// 24/11 (o dono: "abrir as pontas, o bucho caso alguém jogue, e aproveitar toda a mesa nas laterais, em cima e embaixo";
+// "as pedras no mesmo tamanho o jogo todo, sem ficarem muito pequenas"). Na mesa em pé, como numa mesa de verdade: cada
+// ponta sai reta do meio até perto da borda, vira e segue rente à borda, sempre girando para o mesmo lado (cata-vento): a
+// ponta direita vai até a borda direita e desce, a esquerda vai até a borda esquerda e sobe, o bucho de cima sobe e vira
+// para a direita, o de baixo desce e vira para a esquerda. Cada ponta tem a sua parte da mesa, então uma pedra nunca muda
+// de lugar no meio da mão por causa de outra ponta; se a parte dela acabar, ela fecha em caracol para dentro.
+// B = { xb, yt, yb }: até onde as pedras podem ir, em unidades, a partir do centro. fora: alguma pedra não coube.
+let mesaBordas = null, escalaMao = 1;
+const MESA_UNID = 14;   // unidades na largura da mesa em pé (7 pedras deitadas lado a lado)
+function layoutBorda(T, B) {
+  const chain = T.chain, center = T.center, bu = T.bucho || {};
+  const res = { main: new Array(chain.length), U: [], D: [], fora: false };
+  if (!chain.length) return res;
+  const c = chain[center], pin = c.a === c.b, X = B.xb, YT = B.yt, YB = B.yb, eps = 1e-6, folga = 0.2;
+  const rects = [{ r: pin ? [-0.5, 0.5, -1, 1] : [-1, 1, -0.5, 0.5], arm: 'C', i: 0 }];
+  res.main[center] = { x: 0, y: 0, o: pin ? 'v' : 'h', v1: c.a, v2: c.b };
+  // a parte de cada ponta (retângulos [x0, x1, y0, y1]); entre partes vizinhas fica meia unidade livre
+  const terr = pin ? {
+    R: [[0.5, X, -1, 1], [1.5, X, -1, YB]], D: [[-1, 1, 1, YB], [-X, 1, 1.5, YB]],
+    L: [[-X, -0.5, -1, 1], [-X, -1.5, -YT, 1]], U: [[-1, 1, -YT, -1], [-1, X, -YT, -1.5]]
+  } : { R: [[1, X, -1, 1.5], [-X, X, 1.5, YB]], L: [[-X, -1, -1.5, 1], [-X, X, -YT, -1.5]] };
+  const dentro = (r, arm) => terr[arm].some(t => r[0] >= t[0] - eps && r[1] <= t[1] + eps && r[2] >= t[2] - eps && r[3] <= t[3] + eps);
+  const bate = (r, arm, i) => rects.some(q => {
+    if (q.arm === arm && q.i === i - 1) return false;          // a anterior do mesmo braço: encostada de propósito
+    if (i === 0 && (q.arm === 'C' || q.i === 0)) return false;  // a primeira de cada ponta encosta no centro (e nas outras primeiras)
+    return r[0] < q.r[1] + folga && q.r[0] < r[1] + folga && r[2] < q.r[3] + folga && q.r[2] < r[3] + folga;
+  });
+  const DV = { E: [1, 0], S: [0, 1], W: [-1, 0], N: [0, -1] }, GIRA = { E: 'S', S: 'W', W: 'N', N: 'E' }, VOLTA = { E: 'N', N: 'W', W: 'S', S: 'E' };
+  const reta = (hx, hy, d, t) => {
+    const [dx, dy] = DV[d];
+    if (t.near === t.far) {   // carroça atravessada na linha, centrada na ponta
+      const cx = hx + dx * 0.5, cy = hy + dy * 0.5;
+      return { r: dx ? [cx - 0.5, cx + 0.5, cy - 1, cy + 1] : [cx - 1, cx + 1, cy - 0.5, cy + 0.5], pos: { x: cx, y: cy, o: dx ? 'v' : 'h', v1: t.near, v2: t.far }, hx: hx + dx, hy: hy + dy, d, dbl: { x: cx, y: cy } };
+    }
+    const cx = hx + dx, cy = hy + dy, ida = dx ? dx > 0 : dy > 0;
+    return { r: dx ? [cx - 1, cx + 1, cy - 0.5, cy + 0.5] : [cx - 0.5, cx + 0.5, cy - 1, cy + 1], pos: { x: cx, y: cy, o: dx ? 'h' : 'v', v1: ida ? t.near : t.far, v2: ida ? t.far : t.near }, hx: hx + 2 * dx, hy: hy + 2 * dy, d };
+  };
+  // vira: a pedra sai de lado, encostada na ponta. 'fora': passa da ponta (a fileira parece continuar e dobrar);
+  // 'dentro': fica embaixo (ou em cima) da metade da ponta, sem passar dela (para quando a borda está perto)
+  const vira = (hx, hy, d, d2, t, dbl, dentroDa) => {
+    const [dx, dy] = DV[d], [ex, ey] = DV[d2];
+    if (dbl) return dentroDa ? null : reta(dbl.x + ex, dbl.y + ey, d2, t);   // depois da carroça atravessada: sai da ponta dela
+    const k = dentroDa ? -0.5 : 0.5, cx = hx + k * dx + (dentroDa ? 1.5 : 0.5) * ex, cy = hy + k * dy + (dentroDa ? 1.5 : 0.5) * ey, ida = ex ? ex > 0 : ey > 0;
+    return { r: ex ? [cx - 1, cx + 1, cy - 0.5, cy + 0.5] : [cx - 0.5, cx + 0.5, cy - 1, cy + 1], pos: { x: cx, y: cy, o: ex ? 'h' : 'v', v1: ida ? t.near : t.far, v2: ida ? t.far : t.near },
+      hx: cx + ex, hy: cy + ey, d: d2 };
+  };
+  const poe = (arm, tiles, hx, hy, d, out) => {
+    let dbl = null;
+    tiles.forEach((t, i) => {
+      const op = [reta(hx, hy, d, t), vira(hx, hy, d, GIRA[d], t, dbl), vira(hx, hy, d, GIRA[d], t, dbl, true),
+        vira(hx, hy, d, VOLTA[d], t, dbl), vira(hx, hy, d, VOLTA[d], t, dbl, true)].filter(Boolean);
+      let ok = op.find(o => dentro(o.r, arm) && !bate(o.r, arm, i));
+      if (!ok) { ok = op[0]; res.fora = true; }
+      rects.push({ r: ok.r, arm, i }); out(t, ok.pos);
+      hx = ok.hx; hy = ok.hy; d = ok.d; dbl = ok.dbl || null;
+    });
+  };
+  const right = [], left = [];
+  for (let i = center + 1; i < chain.length; i++) right.push({ idx: i, near: chain[i].a, far: chain[i].b });
+  for (let i = center - 1; i >= 0; i--) left.push({ idx: i, near: chain[i].b, far: chain[i].a });
+  const hw = pin ? 0.5 : 1;
+  poe('R', right, hw, 0, 'E', (t, p) => { res.main[t.idx] = p; });
+  poe('L', left, -hw, 0, 'W', (t, p) => { res.main[t.idx] = p; });
+  if (pin) {
+    const asArm = arr => (arr || []).map(t => ({ near: t.n, far: t.f }));
+    poe('U', asArm(bu.U), 0, -1, 'N', (t, p) => res.U.push(p));
+    poe('D', asArm(bu.D), 0, 1, 'S', (t, p) => res.D.push(p));
+  }
+  return res;
+}
+// a pedra (posição do layout) está dentro das bordas?
+const naBorda = (p, B) => { if (!p) return true; const w = p.o === 'h' ? 1 : .5, h = p.o === 'h' ? .5 : 1; return p.x - w >= -B.xb - 1e-6 && p.x + w <= B.xb + 1e-6 && p.y - h >= -B.yt - 1e-6 && p.y + h <= B.yb + 1e-6; };
 function layoutTable(T, Xmax) {
+  if (mesaBordas) return layoutBorda(T, mesaBordas);   // 24/11: mesa em pé
   const chain = T.chain, center = T.center, bu = T.bucho || {};
   const res = { main: new Array(chain.length), U: [], D: [] };
   if (!chain.length) return res;
@@ -4721,6 +4796,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.19', data: '24/11/2026', itens: ['Mesa nova no celular: as pontas saem do meio, vão até a borda e viram rente a ela, como numa mesa de verdade; o bucho sobe e desce; a mesa inteira é aproveitada, nas laterais, em cima e embaixo.', 'As pedras da mesa ficam do mesmo tamanho a mão inteira (só diminuem um pouco se a mão ficar muito comprida) e não passam mais por cima do Mesa oferecida por.', 'As pedras da sua mão ficaram um pouco menores e a mesa ganhou esse espaço.'] },
   { v: '3.61.18', data: '24/11/2026', itens: ['Segunda é de Lei: no desenho de neon, a pedra com a sena agora é igual à do jogo (deitada, 3 colunas de 2).', 'Segunda é de Lei: no cartão do início, a pedra em pé não encosta mais no texto.', 'As bordas de neon dos placares e cartões e a bolinha do ao vivo aparecem inteiras, sem cortar nas laterais (Android e iPhone).'] },
   { v: '3.61.17', data: '24/11/2026', itens: ['Placares das noites de evento: o resultado fica no Ranking e na Calçada até começar o próximo evento. Segunda: até quarta às 20h. Quarta: até sexta. Sexta: até sábado às 10h, quando começa o torneio. Sábado: até a Segunda, às 19h.', 'Desafio das Confrarias: no Acontecendo agora, o nome de quem está jogando aparece embaixo de cada escudo (uma Confraria pode ter várias mesas ao mesmo tempo).', 'Desafio das Confrarias: o ponto agora é de quem joga a partida inteira, como no ranking. Quem sai da mesa e deixa a turma do bairro jogando no lugar não pontua para a Confraria.'] },
   { v: '3.61.16', data: '18/11/2026', itens: ['Calçada: no Acontecendo agora, o título Desafio das Confrarias fica alinhado com o cartão.'] },
@@ -16812,11 +16888,32 @@ function renderBoard() {
   const xPin = Math.max(5.5, Math.min(12, base * 1.25)), aMesa = W / H;
   // 03/11 (bug: pedras uma por cima da outra): com 4,5 as pontas se cruzavam em ~14% das mãos; de 5,5 para cima, nenhuma
   // 17/11 (o dono, com foto: pedras pequenas com a fileira de 3 pedras na mesa em pé): mesa em pé ou quadrada, sempre 2 pedras de cada lado
-  Xmax = pin ? (aMesa < 1 ? 5.5 : xPin) : Math.max(5.5, Math.min(10, base * 1.1));   // 3.25: fileiras longas e retas, viram só perto da borda (3.40.1: no celular em pé, 2 pedras de cada lado antes de virar, em vez de 3: a mesa fica mais estreita e as pedras maiores)
+  Xmax = pin ? (aMesa < 1 ? 5.5 : xPin) : Math.max(5.5, Math.min(10, base * 1.1));   // (mesa deitada: como era)
+  // 24/11 (o dono: "abrir as pontas e o bucho, aproveitar toda a mesa nas laterais, em cima e embaixo; pedras do mesmo
+  // tamanho o jogo todo, sem ficarem muito pequenas"): na mesa em pé, a pedra tem tamanho fixo (MESA_UNID unidades na
+  // largura; 18 a 34 px por unidade), as pontas vão até a borda (layoutBorda) e a vista fica parada a mão inteira. Se a mão
+  // não couber, a mesa se afasta 12% de cada vez (e fica assim até o fim da mão). Mesa deitada: como era.
+  mesaBordas = null;
+  let vbFixo = null;
+  if (aMesa < 1.05) {
+    const ptq = wrap.querySelector('.mesa-patro'), hUtil = ptq && ptq.offsetHeight ? Math.max(80, ptq.getBoundingClientRect().top - wrap.getBoundingClientRect().top) : H;
+    const u = Math.max(18, Math.min(34, W / MESA_UNID, hUtil / 15));
+    const nT = G.chain.length + ((G.bucho && G.bucho.U) || []).length + ((G.bucho && G.bucho.D) || []).length;
+    if (nT <= 1) escalaMao = 1;   // mão nova
+    const querZonas = !!(drag && drag.moved && !drag.soArrumar) || !!pedraEscolhida();
+    for (let k = escalaMao; ; k *= 1.12) {
+      const wu = W / u * k, hu = hUtil / u * k;
+      mesaBordas = { xb: wu / 2 - 0.3, yt: hu / 2 - 0.3, yb: hu / 2 - 0.3 };
+      const l = layoutBorda(G, mesaBordas);
+      const cabe = !l.fora && (!querZonas || dropZones().every(z => naBorda(z.pos, mesaBordas)));
+      if (cabe) { escalaMao = k; vbFixo = { x: -wu / 2, y: -hu / 2, w: wu, h: H / u * k, a, Xmax }; break; }
+      if (k > 2.6) { mesaBordas = null; break; }   // garantia: se nem assim couber, usa a mesa de antes (nunca uma pedra por cima da outra)
+    }
+  }   // 3.25: fileiras longas e retas, viram só perto da borda (3.40.1: no celular em pé, 2 pedras de cada lado antes de virar, em vez de 3: a mesa fica mais estreita e as pedras maiores)
   mesaA = a; Xmax = xmaxMelhor(W, H, a, Xmax);   // a mesma largura a mão inteira (a mesa não se rearruma no meio)
   let lay = layoutTable(G, Xmax);
   // segurança: se alguma pedra ficar por cima de outra, a fileira alarga até não ficar (vale para o resto da mão)
-  if (pedrasSobrepostas(lay)) for (const x of [5.5, 6, 7, 8, 10, 12]) if (x > Xmax) { const l2 = layoutTable(G, x); if (!pedrasSobrepostas(l2)) { Xmax = xmAtual = x; lay = l2; break; } }
+  if (!mesaBordas && pedrasSobrepostas(lay)) for (const x of [5.5, 6, 7, 8, 10, 12]) if (x > Xmax) { const l2 = layoutTable(G, x); if (!pedrasSobrepostas(l2)) { Xmax = xmAtual = x; lay = l2; break; } }
   const pos = lay.main;
   const bTiles = [];
   for (const k of ['U', 'D']) ((G.bucho && G.bucho[k]) || []).forEach((t, j) => bTiles.push({ key: tkey([t.n, t.f]), pos: lay[k][j] }));
@@ -16847,7 +16944,8 @@ function renderBoard() {
     });
   };
   let vb;
-  if (patroReserva && aUtil !== a) vb = estica(cameraMesa(minX, maxX, minY, maxY, Xmax, aUtil, showZones));
+  if (vbFixo) { vb = vbFixo; camMesa = Object.assign({}, vbFixo); }   // 24/11: mesa em pé: vista parada
+  else if (patroReserva && aUtil !== a) vb = estica(cameraMesa(minX, maxX, minY, maxY, Xmax, aUtil, showZones));
   else {
     const salvo = camMesa && Object.assign({}, camMesa);
     vb = cameraMesa(minX, maxX, minY, maxY, Xmax, a, showZones);
@@ -17332,7 +17430,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.18-be0d3af4';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.19-12ff0ca1';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
