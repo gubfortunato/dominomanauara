@@ -6,6 +6,18 @@
 import { bloqueado, pegaPeloApelido } from './bloqueio.js';
 import { nomeOfensivo } from './motor.js';
 import { enviarPush } from './webpush.js';
+import { temPlano } from './planos.js';
+import { JANELA_PRESENCA } from './presenca.js';
+// 24/11 (ideia de jogador, aprovada pelo dono): o escudo da Turma. Quem criou (ou, se saiu, quem está há mais tempo)
+// escolhe a cor e o símbolo, se for sócio. Os escudos escolhidos vão para todo mundo (são poucos), pelo nome da Turma
+export const ESCUDO = { cores: 12, simbolos: ['ini', 'estrela', 'coroa', 'raio', 'peixe', 'pedra'] };
+async function escudos(env) {
+  try {
+    const { results } = await env.DB.prepare('SELECT t.nome, e.cor, e.simbolo FROM turma_escudo e JOIN turmas t ON t.codigo = e.turma LIMIT 500').all();
+    const o = {}; for (const r of results || []) { const n = nomeSeguro(r.nome); if (n && n !== 'Turma sem nome') o[n] = { c: r.cor, s: r.simbolo }; }
+    return o;
+  } catch (e) { return {}; }
+}
 
 const LETRAS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const MAX_MEMBROS = 40, MAX_POR_PAR_DIA = 5;
@@ -164,12 +176,20 @@ async function resumo(env, ap) {
   if (idOk(ap)) {
     const t = await turmaDoAparelho(env, ap);
     if (t) {
-      const { results } = await env.DB.prepare('SELECT nome FROM turma_membros WHERE turma = ? ORDER BY entrou LIMIT ?').bind(t.codigo, MAX_MEMBROS).all();
+      // 24/11: e quem está com o app aberto agora (a bolinha verde na lista, só para quem é da Turma)
+      const { results } = await env.DB.prepare('SELECT m.nome, m.aparelho, (SELECT p.visto_em FROM presenca p WHERE p.aparelho = m.aparelho) AS visto FROM turma_membros m WHERE m.turma = ? ORDER BY m.entrou LIMIT ?').bind(t.codigo, MAX_MEMBROS).all()
+        .catch(() => env.DB.prepare('SELECT nome FROM turma_membros WHERE turma = ? ORDER BY entrou LIMIT ?').bind(t.codigo, MAX_MEMBROS).all());
       const p = await env.DB.prepare('SELECT pontos FROM desafio_pontos WHERE edicao = ? AND turma = ?').bind(e.ano, t.codigo).first();
       const i = rk.findIndex(r => r.codigo === t.codigo);
-      turma = { codigo: t.codigo, nome: nomeSeguro(t.nome), titulos: t.titulos, taca: t.titulos >= 3, membros: (results || []).map(r => r.nome), pontos: (p && p.pontos) || 0, pos: i >= 0 ? i + 1 : null, campea: !!campea && campea.codigo === t.codigo };
+      const agoraMs = Date.now();
+      turma = { codigo: t.codigo, nome: nomeSeguro(t.nome), titulos: t.titulos, taca: t.titulos >= 3, membros: (results || []).map(r => r.nome), membrosOn: (results || []).map(r => r.aparelho === ap || (r.visto || 0) > agoraMs - JANELA_PRESENCA), pontos: (p && p.pontos) || 0, pos: i >= 0 ? i + 1 : null, campea: !!campea && campea.codigo === t.codigo };
       if (i >= 0) { const l = linha(rk[i], i); turma.hoje = l.hoje; turma.mov = l.mov; turma.acima = i > 0 ? { nome: nomeSeguro(rk[i - 1].nome), falta: rk[i - 1].pontos - rk[i].pontos } : null; }
       try { Object.assign(turma, await craquesERival(env, e, t)); } catch (er) {}
+      try {   // 24/11: o escudo e quem pode escolher
+        const es = await env.DB.prepare('SELECT cor, simbolo FROM turma_escudo WHERE turma = ?').bind(t.codigo).first();
+        const r = await responsavel(env, t);
+        turma.escudo = es ? { c: es.cor, s: es.simbolo } : null; turma.escolheEscudo = !!(r && r.aparelho === ap); turma.quemEscolhe = r ? r.nome : null;
+      } catch (er) {}
       if (nomeRetirado(t.nome)) {
         const r = await responsavel(env, t);
         turma.retirado = true; turma.renomeia = !!(r && r.aparelho === ap); turma.quemRenomeia = r ? r.nome : null; turma.quemCriou = !!(r && r.aparelho === t.criador);
@@ -177,7 +197,7 @@ async function resumo(env, ap) {
     }
   }
   let campeaAte = 0; if (idOk(ap)) { try { campeaAte = await campeaDesafioAte(env, ap); } catch (er) {} }
-  return { desafio, turma, campeaAte };
+  return { desafio, turma, campeaAte, escudos: await escudos(env) };
 }
 // GET /turma?aparelho=  e  GET /desafio
 export async function ver(env, origin, h, url) { return h.json(await resumo(env, url.searchParams.get('aparelho')), 200, origin); }
@@ -242,6 +262,22 @@ export async function renomear(req, env, origin, h) {
   if (await env.DB.prepare('SELECT 1 FROM turmas WHERE lower(nome) = lower(?) AND codigo <> ?').bind(nome, t.codigo).first()) return h.json({ erro: 'nome-usado' }, 409, origin);
   try { await env.DB.prepare('UPDATE turmas SET nome = ? WHERE codigo = ?').bind(nome, t.codigo).run(); }
   catch (e) { return h.json({ erro: 'nome-usado' }, 409, origin); }
+  return h.json(await resumo(env, b.aparelho), 200, origin);
+}
+// POST /turma/escudo {aparelho, cor, simbolo}: quem criou a Turma (sócio) escolhe o escudo
+export async function escudo(req, env, origin, h) {
+  let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
+  if (!idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
+  if (await bloqueado(env, b.aparelho)) return h.json({ erro: 'bloqueado' }, 403, origin);
+  const cor = Number(b.cor), simbolo = String(b.simbolo || '');
+  if (!Number.isInteger(cor) || cor < 0 || cor >= ESCUDO.cores || !ESCUDO.simbolos.includes(simbolo)) return h.json({ erro: 'escudo' }, 400, origin);
+  const t = await turmaDoAparelho(env, b.aparelho);
+  if (!t) return h.json({ erro: 'sem-turma' }, 404, origin);
+  const r = await responsavel(env, t);
+  if (!r || r.aparelho !== b.aparelho) return h.json({ erro: 'so-quem-criou-escudo' }, 403, origin);
+  if (!(await temPlano(env, b.aparelho))) return h.json({ erro: 'socio-escudo' }, 403, origin);
+  await env.DB.prepare('INSERT INTO turma_escudo (turma, cor, simbolo, por, em) VALUES (?, ?, ?, ?, ?) ON CONFLICT (turma) DO UPDATE SET cor = excluded.cor, simbolo = excluded.simbolo, por = excluded.por, em = excluded.em')
+    .bind(t.codigo, cor, simbolo, b.aparelho, Date.now()).run();
   return h.json(await resumo(env, b.aparelho), 200, origin);
 }
 // POST /turma/sair {aparelho}

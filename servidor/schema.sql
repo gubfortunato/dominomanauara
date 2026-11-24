@@ -70,6 +70,8 @@ CREATE TABLE IF NOT EXISTS turmas (codigo TEXT PRIMARY KEY, nome TEXT NOT NULL, 
 CREATE UNIQUE INDEX IF NOT EXISTS turmas_nome ON turmas (lower(nome));
 CREATE TABLE IF NOT EXISTS turma_membros (aparelho TEXT PRIMARY KEY, turma TEXT NOT NULL, nome TEXT, entrou INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS turma_membros_turma ON turma_membros (turma, entrou);
+-- 24/11 (ideia de jogador, aprovada pelo dono): o escudo da Turma, escolhido por quem criou (sócio): a cor e o símbolo
+CREATE TABLE IF NOT EXISTS turma_escudo (turma TEXT PRIMARY KEY, cor INTEGER NOT NULL, simbolo TEXT NOT NULL, por TEXT, em INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS desafio_pontos (edicao INTEGER NOT NULL, turma TEXT NOT NULL, pontos INTEGER NOT NULL DEFAULT 0, ultimo INTEGER, PRIMARY KEY (edicao, turma));
 CREATE TABLE IF NOT EXISTS desafio_jogos (edicao INTEGER NOT NULL, dia TEXT NOT NULL, vencedora TEXT NOT NULL, perdedora TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (edicao, dia, vencedora, perdedora));
 CREATE TABLE IF NOT EXISTS desafio_campeas (edicao INTEGER PRIMARY KEY, turma TEXT, pontos INTEGER, fechada_em INTEGER);

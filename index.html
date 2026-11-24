@@ -313,6 +313,7 @@ html g.ouro .t-div{stroke:rgba(70,52,30,.42)}
 .dragtile{position:fixed;left:0;top:0;z-index:40;pointer-events:none;will-change:transform;width:calc(var(--tw)*1.3);aspect-ratio:1/2;transform:translate(-50%,-112%) rotate(-5deg);filter:drop-shadow(0 12px 14px var(--shadow))}
 .dragtile svg{width:100%;height:100%;display:block}
 .zone .z-body{fill:rgba(243,192,99,.10);stroke:var(--glow);stroke-width:.06;stroke-dasharray:.16 .1}
+.zone .z-hit{fill:transparent;stroke:none}   /* 24/11: a área de toque maior, invisível */
 .zone .z-tx{fill:var(--glow);font-family:var(--font-body);font-weight:700;font-size:.4px;text-anchor:middle}
 .zone.over .z-body{fill:rgba(243,192,99,.38);stroke-width:.1;stroke-dasharray:none}
 .ht.wait{opacity:.6}
@@ -1404,6 +1405,12 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
 /* 10/11 (o dono viu a Azul e a Vermelha mudando de tom): a luz ficava presa em quem assistia ou voltava para um jogo (sem
    embaralhar, nada apagava a luz) e a mesa ficava 50% mais clara. Agora a luz some sozinha e, apagada, sai de vez (visibility). */
 @media (prefers-reduced-motion:reduce){.table::before{transition:none}}
+/* 24/11 (o dono: "escurecer todas as mesas um pouco mais quando o jogo começar, sem afetar a jogabilidade e a estética"):
+   uma sombra leve por cima só do pano (atrás das pedras, dos lugares e dos avisos; a borda dourada da mesa fica de fora).
+   Aparece junto com o fim da luz de antes do jogo e só na tela do jogo */
+#scrGame .table::after{content:"";position:absolute;inset:3px;border-radius:17px;z-index:-1;pointer-events:none;background:radial-gradient(120% 95% at 50% 45%,rgba(0,0,0,.1),rgba(0,0,0,.2));opacity:1;transition:opacity 1.4s cubic-bezier(.45,0,.55,1)}
+#scrGame .table.clara::after{opacity:0;transition:none}
+@media (prefers-reduced-motion:reduce){#scrGame .table::after{transition:none}}
 
 /* 28/10 (o dono achou o balão da vez imprensado): letra um pouco menor e mais ar dentro do balão */
 #scrGame #prompt.you{font-size:16.5px;padding-inline:14px}
@@ -1622,6 +1629,22 @@ a.tm-zap.secondary{color:var(--ink)}
 .sala-desafio{margin:4px 0 10px;padding:10px 12px;border-radius:14px;border:1.5px solid #c98a3a;background:color-mix(in srgb,#c98a3a 12%,transparent);text-align:center;color:var(--ink)}
 .tm-k{margin:16px 0 6px;font-size:13.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .tm-membros{margin:0;font-size:17px;line-height:1.45}
+/* 24/11: quem está online na Turma e o escudo */
+.tm-mb.on::before{content:'';display:inline-block;width:8px;height:8px;margin:0 5px 2px 0;border-radius:50%;background:#2fa35a;box-shadow:0 0 0 2px color-mix(in srgb,#2fa35a 25%,transparent);vertical-align:middle}
+.tm-on-n{color:#2fa35a;letter-spacing:.06em}
+.tm-tit-br{display:inline-block;vertical-align:-6px;margin-right:8px}
+.tm-escudo{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;margin:14px 0 4px;padding:10px 12px;border-radius:14px;background:var(--bg-2);border:1px solid var(--line)}
+.tm-escudo b{display:block;font-size:15.5px}.tm-escudo small{display:block;font-size:13.5px;line-height:1.35;color:var(--muted)}
+.tm-escudo .secondary{min-height:40px;padding:0 14px;border-radius:12px}
+.esc-prev{display:grid;place-items:center;margin:6px 0 4px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))}
+.esc-cores{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.esc-cores button{aspect-ratio:1;border-radius:50%;border:3px solid var(--c2);background:var(--c1);cursor:pointer;padding:0}
+.esc-cores button[aria-pressed="true"]{outline:3px solid var(--glow);outline-offset:3px}
+.esc-simb{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.esc-simb button{display:grid;justify-items:center;gap:2px;padding:8px 4px;border-radius:12px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg);cursor:pointer;font:inherit}
+.esc-simb button small{font-size:12.5px;color:var(--muted)}
+.esc-simb button[aria-pressed="true"]{border-color:var(--glow);box-shadow:inset 0 0 0 2px var(--glow)}
+.esc-amostra{display:flex;justify-content:center;gap:10px;margin:10px 0 16px}
 .tm-rank,.tm-camp{list-style:none;margin:0;padding:0;display:grid;gap:4px}
 .tm-rank li,.tm-camp li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:var(--bg-2)}
 .tm-camp li{grid-template-columns:52px minmax(0,1fr)}
@@ -2236,6 +2259,10 @@ html[data-mesa="palacio"] .table.wood{--wood-1:#14306e;--wood-2:#0b1c44;--wood-e
 .me-selo{color:#f0b45e;font-weight:800;letter-spacing:.04em}
 /* 3.40.1: selo na linha de baixo ("★♥ 7 pedras"), assim o nome não perde espaço */
 .seat .sc .sc-selo{white-space:nowrap}
+/* 24/11: as pedras de cada um, de costas, logo abaixo do cartão (o mesmo tamanho em todos); a fileira dos cartões guarda o espaço */
+#scrGame .table .seats{margin-bottom:19px}
+.seat .seat-pd{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);display:flex;gap:2px;pointer-events:none}
+.seat .seat-pd i{display:block;flex:none;width:6px;height:11px;border-radius:1.5px;background:linear-gradient(180deg,#fdf8ec,#e2d2b3);box-shadow:0 1px 0 rgba(0,0,0,.5),inset 0 0 0 .6px rgba(110,80,40,.4)}
 /* 28/10: etiqueta do robô da turma que entrou no lugar de quem saiu */
 .seat .sc .sc-robo{display:inline-block;font-size:.82em;font-weight:800;line-height:1.35;padding:0 6px;border-radius:7px;background:rgba(255,255,255,.2);color:#fff;letter-spacing:.02em;vertical-align:1px}
 /* selo desenhado: estrela (Apoiador) e coração (doador), do mesmo tamanho e na mesma cor neutra (dourado da mesa).
@@ -2741,12 +2768,20 @@ body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1
 .ev-card.sabado .ck{color:#ffd66b}.ev-card.sabado .ct{color:#f4f8ff}.ev-card.sabado .cd{color:#dce8f6;opacity:1}.ev-card.sabado .vivo-ponto{--bg-2:#174f80}
 #sbPlacar{box-shadow:0 0 0 1.5px #e0a83a,0 8px 24px rgba(15,61,102,.12);border:0}
 #sbPlacar::before{content:'';display:block;height:108px;margin:-14px -16px -2px;border-radius:16px 16px 0 0;background:linear-gradient(180deg,transparent 50%,var(--bg-2)),var(--sb-img,none) center 38%/cover no-repeat}
-/* 24/11 (dono): o monumento/bicho do torneio aparece melhor. Calçada: faixa 16:9; início: faixa 2:1 no alto do cartão (o
-   resto do cartão fica azul, como antes); Ranking: faixa 2,6:1. O recorte de cada mesa vem de sbY() (--sb-y) */
-.calc-sab .sb-foto{height:auto;aspect-ratio:16/9;background:linear-gradient(180deg,transparent 52%,rgba(16,50,90,.55) 80%,rgba(16,50,90,.8)),var(--sb-img) center var(--sb-y,38%)/cover no-repeat;-webkit-mask-image:linear-gradient(180deg,#000 64%,transparent 100%);mask-image:linear-gradient(180deg,#000 64%,transparent 100%)}
+/* 24/11 (dono): o monumento/bicho do torneio aparece inteiro e no meio. Calçada: faixa 16:9; início: faixa 2:1 no alto do
+   cartão (o resto do cartão fica azul); Ranking: faixa 2,6:1. Embaixo, a ilustração desfocada (laterais); em cima, a ilustração
+   no tamanho e na posição de sbRecorte() (--sb-tam, --sb-x, --sb-y), com as bordas laterais suaves (--sb-borda) */
+.calc-sab .sb-foto{position:relative;overflow:hidden;height:auto;aspect-ratio:16/9;background:#174f80;-webkit-mask-image:linear-gradient(180deg,#000 64%,transparent 100%);mask-image:linear-gradient(180deg,#000 64%,transparent 100%)}
+.calc-sab .sb-foto::before,.calc-sab .sb-foto::after{content:'';position:absolute;inset:0}
+.calc-sab .sb-foto::before{inset:-24px;background:linear-gradient(180deg,transparent 52%,rgba(16,50,90,.55) 80%,rgba(16,50,90,.8)),var(--sb-img,none) center/cover no-repeat;filter:blur(12px) brightness(.82) saturate(1.1)}
+.calc-sab .sb-foto::after{background:linear-gradient(180deg,transparent 52%,rgba(16,50,90,.55) 80%,rgba(16,50,90,.8)),var(--sb-img,none) var(--sb-x,50%) var(--sb-y,38%)/var(--sb-tam,cover) no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 var(--sb-borda,0%),#000 calc(100% - var(--sb-borda,0%)),transparent);mask-image:linear-gradient(90deg,transparent,#000 var(--sb-borda,0%),#000 calc(100% - var(--sb-borda,0%)),transparent);-webkit-mask-size:var(--sb-mtam,100% 100%);mask-size:var(--sb-mtam,100% 100%);-webkit-mask-position:var(--sb-x,50%) 0;mask-position:var(--sb-x,50%) 0;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .ev-card.sabado{position:relative;isolation:isolate;padding-top:max(92px,calc(50% - 52px));background:linear-gradient(180deg,#0f3558,#0a2744)}
-.ev-card.sabado::before{content:'';position:absolute;z-index:-1;left:2px;right:2px;top:2px;aspect-ratio:2/1;border-radius:16px 16px 0 0;background:linear-gradient(180deg,rgba(15,53,88,0) 48%,rgba(15,53,88,.72) 78%,#0f3558),var(--sb-img,none) center var(--sb-y,32%)/cover no-repeat}
-#sbPlacar::before{height:auto;aspect-ratio:2.6/1;background:linear-gradient(180deg,transparent 55%,var(--bg-2)),var(--sb-img,none) center var(--sb-y,38%)/cover no-repeat}
+.ev-card.sabado::before,.ev-card.sabado::after{content:'';position:absolute;left:2px;right:2px;top:2px;aspect-ratio:2/1;border-radius:16px 16px 0 0}
+.ev-card.sabado::before{z-index:-1;background:linear-gradient(180deg,rgba(15,53,88,0) 48%,rgba(15,53,88,.72) 78%,#0f3558),var(--sb-img,none) var(--sb-x,50%) var(--sb-y,38%)/var(--sb-tam,cover) no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 var(--sb-borda,0%),#000 calc(100% - var(--sb-borda,0%)),transparent);mask-image:linear-gradient(90deg,transparent,#000 var(--sb-borda,0%),#000 calc(100% - var(--sb-borda,0%)),transparent);-webkit-mask-size:var(--sb-mtam,100% 100%);mask-size:var(--sb-mtam,100% 100%);-webkit-mask-position:var(--sb-x,50%) 0;mask-position:var(--sb-x,50%) 0;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.ev-card.sabado::after{z-index:-2;background:linear-gradient(180deg,rgba(15,53,88,0) 48%,rgba(15,53,88,.72) 78%,#0f3558),var(--sb-img,none) center/cover no-repeat;filter:blur(12px) brightness(.82) saturate(1.1);clip-path:inset(0 round 16px 16px 0 0)}
+#sbPlacar{position:relative;isolation:isolate}
+#sbPlacar::before{position:relative;height:auto;aspect-ratio:2.6/1;background:linear-gradient(180deg,transparent 62%,var(--bg-2)),var(--sb-img,none) var(--sb-x,50%) var(--sb-y,38%)/var(--sb-tam,cover) no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 var(--sb-borda,0%),#000 calc(100% - var(--sb-borda,0%)),transparent);mask-image:linear-gradient(90deg,transparent,#000 var(--sb-borda,0%),#000 calc(100% - var(--sb-borda,0%)),transparent);-webkit-mask-size:var(--sb-mtam,100% 100%);mask-size:var(--sb-mtam,100% 100%);-webkit-mask-position:var(--sb-x,50%) 0;mask-position:var(--sb-x,50%) 0;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+#sbPlacar::after{content:'';position:absolute;z-index:-1;left:0;right:0;top:0;aspect-ratio:2.6/1;border-radius:16px 16px 0 0;background:linear-gradient(180deg,transparent 62%,var(--bg-2)),var(--sb-img,none) center/cover no-repeat;filter:blur(12px) brightness(.82) saturate(1.1);clip-path:inset(0 round 16px 16px 0 0)}
 .sb-placar .sxp-n{display:grid;justify-items:end;line-height:1.15}.sb-placar .sxp-n small{font-size:12px}
 .sb-regra{margin:0;font-size:14px;line-height:1.4;color:var(--muted)}
 .sb-campeao{margin:0;padding:9px 12px;border-radius:12px;background:color-mix(in srgb,#f2c14e 16%,transparent);font-size:15px;line-height:1.35}
@@ -2807,6 +2842,14 @@ body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1
 .reveal .rv-dupla.rv-l{border-color:color-mix(in srgb,var(--nos) 50%,var(--line))}
 .reveal .rv-dupla.rv-r{border-color:color-mix(in srgb,var(--eles) 50%,var(--line))}
 .rv-cab{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+/* 24/11: pontos desta mão, por dupla e por tipo */
+.rv-pontos{display:grid;gap:6px;margin:12px 0 2px}
+.rv-pk{margin:0;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.rv-pts{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px 10px;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.rv-pts.rv-l{border-color:color-mix(in srgb,var(--nos) 50%,var(--line))}.rv-pts.rv-r{border-color:color-mix(in srgb,var(--eles) 50%,var(--line))}
+.rv-pts>b{font-size:15px;font-weight:800}.rv-pts.rv-l>b,.rv-pts.rv-l>em{color:var(--nos)}.rv-pts.rv-r>b,.rv-pts.rv-r>em{color:var(--eles)}
+.rv-pts>em{grid-row:1/3;grid-column:2;font-style:normal;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.rv-pts-l{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:13.5px;color:var(--muted)}.rv-pts-l b{color:var(--fg);font-variant-numeric:tabular-nums}
 .rv-cab b{font-size:17px;font-weight:800}
 .rv-l .rv-cab b,.rv-l .rv-cab span{color:var(--nos)}
 .rv-r .rv-cab b,.rv-r .rv-cab span{color:var(--eles)}
@@ -4143,7 +4186,11 @@ function newGame(names) {
     hands: [[], [], [], []], chain: [], center: 0, bucho: { U: [], D: [] }, turn: 0, phase: 'idle', openMode: null,
     passStreak: [], lastPlayer: null, lastKey: null, lacks: [[], [], [], []], events: [], result: null };
 }
-function addScore(st, team, pts) { st.score[team] += pts; }
+// 24/11 (sugestão de jogador: "não entendi muito bem a minha pontuação"): cada ponto da mão guarda de onde veio (maoPts)
+function addScore(st, team, pts, cat) {
+  st.score[team] += pts;
+  if (cat && pts) { const m = st.maoPts || (st.maoPts = [{}, {}]); m[team][cat] = (m[team][cat] || 0) + pts; }
+}
 
 // Soma das pontas: carroça na ponta conta dobrado; a pedra de saída sozinha conta a soma dela.
 function endsSum(chain) {
@@ -4236,17 +4283,18 @@ function place(st, t, side) {
 
 function startHand(st) {
   st.handNo++;
-  let redeals = 0, hands;
+  let redeals = 0, hands, quem = null;   // 24/11: quem tirou as 5 carroças (o aviso diz para todos)
   for (;;) {
     const d = shuffle(fullSet());
     hands = [d.slice(0, 7), d.slice(7, 14), d.slice(14, 21), d.slice(21, 28)];
-    if (hands.some(h => h.filter(isDbl).length >= 5)) { redeals++; continue; }
+    const q = hands.findIndex(h => h.filter(isDbl).length >= 5);
+    if (q >= 0) { redeals++; quem = q; continue; }
     break;
   }
   hands.forEach(h => h.sort((x, y) => x[0] - y[0] || x[1] - y[1]));
   Object.assign(st, { hands, chain: [], center: 0, bucho: { U: [], D: [] }, passStreak: [], lastPlayer: null, lastKey: null, donoPonta: {}, ultLado: {},
-    lacks: [[], [], [], []], result: null, phase: 'play', events: [], pedido: null });
-  if (redeals) st.events.push({ type: 'redeal', n: redeals });
+    lacks: [[], [], [], []], result: null, phase: 'play', events: [], pedido: null, maoPts: [{}, {}] });
+  if (redeals) st.events.push({ type: 'redeal', n: redeals, p: quem });
   const ns = st.nextStart;
   if (ns.mode === 'sena') {
     st.turn = hands.findIndex(h => h.some(t => t[0] === 6 && t[1] === 6));
@@ -4256,7 +4304,7 @@ function startHand(st) {
     let b = ns.player;
     for (let k = 0; k < 4 && !hands[b].some(isDbl); k++) {
       const team = 1 - TEAM(b);
-      addScore(st, team, 20);
+      addScore(st, team, 20, 'semCarroca');
       st.events.push({ type: 'semCarroca', p: b, team, pts: 20 });
       b = (b + 1) % 4;
     }
@@ -4278,24 +4326,24 @@ function applyMove(st, p, mv) {
   st.ultLado = Object.assign({}, st.ultLado || {}, { [p]: mv.side });
   const pts = tableScore(st);   // soma das 4 pontas (bucho incluído)
   // modo torneio: o ponto fica esperando a dupla pedir
-  if (pts) { if (st.pedirPonto) st.pedido = { team: TEAM(p), pts, p }; else addScore(st, TEAM(p), pts); }
+  if (pts) { if (st.pedirPonto) st.pedido = { team: TEAM(p), pts, p }; else addScore(st, TEAM(p), pts, 'mesa'); }
   st.events.push({ type: 'play', p, t, pts, team: TEAM(p), side: mv.side, pedir: !!(pts && st.pedirPonto) });
   if (!st.hands[p].length) {
-    if (st.pedido) { addScore(st, st.pedido.team, st.pedido.pts); st.pedido = null; }   // na batida, o ponto da última pedra vale direto
+    if (st.pedido) { addScore(st, st.pedido.team, st.pedido.pts, 'mesa'); st.pedido = null; }   // na batida, o ponto da última pedra vale direto
     const carroca = isDbl(t);
-    if (carroca) addScore(st, TEAM(p), 20);
+    if (carroca) addScore(st, TEAM(p), 20, 'batida');
     st.events.push({ type: 'batida', p, carroca, team: TEAM(p), pts: carroca ? 20 : 0 });
     // Garagem: os pontos que sobraram na mão da dupla que não bateu vão para a dupla que bateu
     // (arredondados para baixo no múltiplo de 5, como no jogo fechado).
     const opp = 1 - TEAM(p);
     const gSum = st.hands.reduce((s, h, q) => TEAM(q) === opp ? s + h.reduce((a, x) => a + pips(x), 0) : s, 0);
     const garagem = Math.floor(gSum / 5) * 5;
-    if (garagem) addScore(st, TEAM(p), garagem);
+    if (garagem) addScore(st, TEAM(p), garagem, 'garagem');
     st.events.push({ type: 'garagem', p, team: TEAM(p), sum: gSum, pts: garagem });
     endHand(st, { kind: 'batida', p, carroca, lastPts: pts, garagem, garagemSum: gSum });
     return;
   }
-  if (!anyoneCanPlay(st)) { if (st.pedido) { addScore(st, st.pedido.team, st.pedido.pts); st.pedido = null; } closeHand(st, p); return; }
+  if (!anyoneCanPlay(st)) { if (st.pedido) { addScore(st, st.pedido.team, st.pedido.pts, 'mesa'); st.pedido = null; } closeHand(st, p); return; }
   st.turn = (p + 1) % 4;
 }
 
@@ -4306,13 +4354,13 @@ function applyPass(st, p) {
   // O passe vale 20 para a dupla de quem jogou por último. Se quem passa é parceiro de quem jogou, ninguém marca.
   const lp = st.lastPlayer, team = TEAM(lp);
   const pts = TEAM(p) !== team ? 20 : 0;
-  if (pts) addScore(st, team, pts);
+  if (pts) addScore(st, team, pts, 'passe');
   st.passStreak.push({ team, pts, p });
   if (st.passStreak.length >= 3) {
     // Passe geral (galo): os três passaram e a vez volta para quem jogou.
-    for (const e of st.passStreak) addScore(st, e.team, -e.pts);
+    for (const e of st.passStreak) addScore(st, e.team, -e.pts, 'passe');
     const ap = st.lastPlayer;
-    addScore(st, TEAM(ap), 50);
+    addScore(st, TEAM(ap), 50, 'galo');
     st.events.push({ type: 'pass', p, team, pts, voided: true });
     st.events.push({ type: 'galo', p: ap, team: TEAM(ap), pts: 50 });
     st.passStreak = [];
@@ -4331,13 +4379,13 @@ function expirarPonto(st) {
 function pedirPonto(st, p, junto) {
   if (!junto) st.events = [];
   if (st.pedido && st.pedido.team === TEAM(p)) {
-    addScore(st, st.pedido.team, st.pedido.pts);
+    addScore(st, st.pedido.team, st.pedido.pts, 'mesa');
     st.events.push({ type: 'ponto', p, team: st.pedido.team, pts: st.pedido.pts });
     st.pedido = null;
     return true;
   }
   const team = 1 - TEAM(p);
-  addScore(st, team, 20);
+  addScore(st, team, 20, 'pontoErrado');
   st.events.push({ type: 'pontoErrado', p, team, pts: 20 });
   return false;
 }
@@ -4348,7 +4396,7 @@ function closeHand(st, p) {
   if (sums[0] !== sums[1]) {
     hi = sums[0] > sums[1] ? 0 : 1; team = 1 - hi;
     pts = Math.floor(sums[hi] / 5) * 5;
-    if (pts) addScore(st, team, pts);
+    if (pts) addScore(st, team, pts, 'fechado');
   }
   st.events.push({ type: 'fechado', p, sums, team, pts });
   endHand(st, { kind: 'fechado', p, sums, team, hi, pts });
@@ -4752,7 +4800,7 @@ const PIPS = { 0: [], 1: [[.5, .5]], 2: [[.27, .27], [.73, .73]], 3: [[.27, .27]
   6: [[.28, .22], [.28, .5], [.28, .78], [.72, .22], [.72, .5], [.72, .78]] };
 const f2 = n => Math.round(n * 1000) / 1000;
 // Ritmo fixo dos robôs: 4,5 s por jogada, para dar tempo de contar as pedras.
-const SPEEDS = { normal: { play: 4500, pass: 3000, mine: 1500, end: 2200 } };
+const SPEEDS = { normal: { play: 3000, pass: 2200, mine: 1500, end: 2200 } };   // 24/11 (sugestão de jogador, aprovada pelo dono): a turma do bairro joga mais rápido (era 4,5 s e 3 s)
 const POS = ['Sul', 'Oeste', 'Norte', 'Leste'];
 
 // ===== Dominó Manauara =====
@@ -4812,6 +4860,8 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.24', data: '24/11/2026', itens: ['Na mesa, logo abaixo do cartão de cada um, as pedras dele, pequenas e de costas: dá para ver de relance quantas cada um tem.', 'Mesa online: quem deixa o tempo acabar 3 vezes seguidas sai da cadeira e um robô da turma do bairro joga no lugar (a mesa não fica mais esperando). Dá para voltar na hora, pelo aviso.', 'Falas novas na mesa: "Aprende, que a aula é de graça!", "Passou, coitadinho!", "Sou profissional!", "Jogador dodói!", "Roubou minha batida!", "Tirou meu galo!", "Não sabe contar pedra!", "Tinha a pedra e não fez!", e os emojis 🫏 😢 🥲 😩.', 'A turma do bairro joga mais rápido.', 'Resumo da mão: de onde vieram os pontos de cada dupla (pontas, passes, galo, batida de carroça, garagem).', 'Turma: quem criou escolhe a cor e o símbolo do escudo (para os sócios), e a lista mostra quem está online agora.', 'Pontas e bucho com área de toque maior: fica mais difícil jogar no lugar errado.', 'A mesa fica um pouco mais escura depois de embaralhar, e as pedras ganham destaque.', 'Mão com 5 carroças: aviso para todos de quem tirou e as pedras misturadas de novo à vista.', 'Copa dos Sócios: a janela tem o × para fechar.'] },
+  { v: '3.61.23', data: '24/11/2026', itens: ['Sábado dos Torneios: a ilustração de cada torneio aparece inteira e no meio do cartão (o Relógio, a Usina Chaminé, o Largo de São Sebastião, o Teatro...), com as laterais da própria ilustração desfocadas.'] },
   { v: '3.61.22', data: '24/11/2026', itens: ['Resumo da mão: quem bateu ganha um selo na cor da dupla e, ao lado, a pedra com que bateu.', 'Os torneios do sábado agora se chamam só pelo lugar: Torneio Teatro Amazonas, Torneio Encontro das Águas e assim por diante.', 'Domingão da Calçada mais para cima na tela; o cartão do Domingão à noite, no início, ficou sem a lua do canto.', 'Placar da Sexta: a lua mais para dentro e o varal de lâmpadas inteiro, sem cair atrás do título.', 'Cartão do Desafio das Confrarias na Calçada sem passar da borda nos celulares mais estreitos.', 'No início, o cartão do evento que está acontecendo agora fica sempre em cima do cartão da Copa dos Sócios.', 'Sábado dos Torneios: a ilustração do cartão ficou maior e mostra melhor o monumento ou o bicho de cada torneio (a Arena, o Teatro, o tucano...).'] },
   { v: '3.61.21', data: '24/11/2026', itens: ['Pedras da mesa maiores no celular em pé. Numa mão bem comprida, a mesa se afasta um pouco perto do fim para tudo caber.', 'As pedras usam a mesa até embaixo e podem passar por cima do Mesa oferecida por.'] },
   { v: '3.61.20', data: '24/11/2026', itens: ['Pedras da mesa um pouco maiores (no celular em pé).', 'A ponta que sobe ou desce rente à borda continua reta quando chega uma carroça (antes ela virava para dentro da mesa antes da hora).'] },
@@ -6552,7 +6602,9 @@ const EV_NOMES = {
   'patrocinio-clique': 'Cliques no patrocinador', 'plano-limite': 'Viram a tela de limite do dia', 'plano-quero': 'Tocaram em "Quero ser sócio" no limite',
   'plano-cota': 'Tocaram em "Ser sócio" no fim da partida', 'apoio-pago': 'Planos pagos',
   'feedback-ver': 'Viram o pedido de opinião', 'feedback-nota-4': 'Opinião: 😍 tô gostando muito', 'feedback-nota-3': 'Opinião: 🙂 tá bom',
-  'feedback-nota-2': 'Opinião: 😐 mais ou menos', 'feedback-nota-1': 'Opinião: 😕 não tô gostando', 'feedback-enviou': 'Opinião escrita enviada'
+  'turma-escudo-salvo': 'Escudos de Turma escolhidos', 'turma-escudo-socio': 'Viram o convite de sócio do escudo da Turma',
+  'feedback-nota-2': 'Opinião: 😐 mais ou menos', 'feedback-nota-1': 'Opinião: 😕 não tô gostando', 'feedback-enviou': 'Opinião escrita enviada',
+  'tempo-robo': 'Saíram da cadeira por 3 vezes seguidas sem jogar', 'tempo-robo-voltou': 'Voltaram para a mesa depois de sair por tempo'
 };
 const EV_SEMPRE = ['abertura', 'jogo-novo', 'convite', 'instalou', 'patrocinio-clique'];
 function dnEventos(rows) {
@@ -7760,6 +7812,7 @@ function girar(J, s) {
   G2.names = rot(J.names); G2.hands = rot(J.hands); G2.lacks = rot(J.lacks);
   G2.turn = P(J.turn); G2.lastPlayer = P(J.lastPlayer);
   G2.score = TA(J.score); G2.series = TA(J.series);
+  if (J.maoPts) G2.maoPts = TA(J.maoPts);   // 24/11
   if (J.nextStart && J.nextStart.player != null) G2.nextStart = Object.assign({}, J.nextStart, { player: P(J.nextStart.player) });
   G2.passStreak = (J.passStreak || []).map(ev);
   if (J.pedido) G2.pedido = Object.assign({}, J.pedido, { p: P(J.pedido.p), team: T(J.pedido.team) });
@@ -7854,7 +7907,18 @@ const ERROS_MESA = {
 const REACOES = ['Boa, parceiro!', 'Vô mermo!', 'Leseira baré!', 'Bate logo!', 'Segura essa!', 'Tá fácil!', 'Hoje tem galo!', 'Bora, bora!', '👏', '😂', '😮', '🔥',
   'Ê, caroço!', 'Chibata!', 'Telezé!', 'Tá de bubuia?', 'Bom jogo, turma!', 'Bora um tacacá?',   // 3.25: no lugar de "Joga logo, caboco!" (mesma posição, para os celulares que ainda não atualizaram)
   'Deu galo!', 'Comeu abiu?', 'Nem com nojo!', 'Vou pegar o beco!', 'Até o tucupi!',
-  '🐓', '🤣', '😎', '🙏', '💪', '🎉', '😭', '😡', '🤔', '👀'];   // 10/11 (ideia de um jogador): mais emojis (sempre no fim: os números antigos não mudam)
+  '🐓', '🤣', '😎', '🙏', '💪', '🎉', '😭', '😡', '🤔', '👀',   // 10/11 (ideia de um jogador): mais emojis (sempre no fim: os números antigos não mudam)
+  // 24/11 (ideias de jogadores no "Fale com a gente", aprovadas pelo dono): mais falas de mesa e caras mais tristes
+  'Aprende, que a aula é de graça!', 'Passou, coitadinho!', 'Sou profissional!', 'Jogador dodói!', 'Roubou minha batida!', 'Tirou meu galo!',
+  'Não sabe contar pedra!', 'Tinha a pedra e não fez!', '🫏', '😢', '🥲', '😩'];
+// 24/11: o 🫏 é novo (2022) e não existe em celular mais antigo: lá aparece o 🐴. Compara o desenho com o de um caractere que
+// nenhum celular tem; se for igual, o emoji não existe aqui
+(function () {
+  try {
+    const desenho = t => { const c = document.createElement('canvas'); c.width = c.height = 24; const x = c.getContext('2d'); x.textBaseline = 'top'; x.font = '20px sans-serif'; x.fillText(t, 0, 0); return c.toDataURL(); };
+    const i = REACOES.indexOf('🫏'); if (i >= 0 && desenho('🫏') === desenho('\u{10FFFD}')) REACOES[i] = '🐴';
+  } catch (e) {}
+})();
 const FALA_MS = 2800;
 let falaMinhaT = null, reagiuEm = 0;
 function mostrarReacao(pos, txt) {
@@ -7901,7 +7965,23 @@ $('#back').addEventListener('click', e => { if (e.target.id === 'back' && sheetK
   $('#reagirBtn').addEventListener('click', abrirReacoes);
 })();
 
+// 24/11: deixou o tempo acabar 3 vezes seguidas: a turma do bairro assumiu a cadeira. A mesa fica guardada para voltar
+function avisoTempoRobo(n) {
+  openSheet('info', `<p class="eyebrow">Mesa online</p><h2 id="sheetTitle">A turma do bairro assumiu a sua cadeira</h2>
+    <p>O tempo acabou ${n || 3} vezes seguidas e a mesa ficou esperando. Um robô da turma está jogando no seu lugar.</p>
+    <p>Quer voltar? Você retoma a sua cadeira na hora.</p>
+    <button type="button" class="primary" id="tempoVoltar" style="width:100%">Voltar para a mesa</button>
+    <button type="button" class="secondary" id="tempoDepois" style="width:100%;margin-top:8px">Agora não</button>`);
+  $('#tempoVoltar').addEventListener('click', () => { closeSheet(); track('tempo-robo-voltou'); voltarMesa(); });
+  $('#tempoDepois').addEventListener('click', () => { closeSheet(); track('tempo-robo-depois'); });
+}
 function receberOnline(m) {
+  if (m.t === 'tempo') {   // 24/11
+    pausarOnline();
+    if (screen === 'game') { leaveGameBase(); show('home'); } else if (screen === 'sala') show('home');
+    track('tempo-robo'); avisoTempoRobo(m.n);
+    return;
+  }
   if (m.t === 'reacao') {
     if (!ON.vista || !REACOES[m.k]) return;
     // robô reage depois que a pedra pousa (3.23); gente, na hora
@@ -8016,6 +8096,7 @@ function aplicarJogo(m) {
     if (m.porRobo != null && posDe(m.porRobo) === 0) {
       const n = m.tempos || 0, lim = m.tolerado || 3;
       toast(!m.porTempo ? 'Você ficou sem conexão e a turma jogou por você. Esta partida não conta pra você.'
+        : m.seguidosMax && m.seguidos === m.seguidosMax - 1 ? 'O tempo acabou de novo e a turma jogou por você. Mais uma vez seguida e um robô da turma assume a sua cadeira.'   // 24/11
         : !n ? 'Passou dos 20 segundos: a turma jogou essa por você.'
         : n < lim ? 'O tempo acabou e a turma jogou essa por você. A partida continua valendo.'
         : n === lim ? 'O tempo acabou e a turma jogou essa por você. Na próxima, a partida deixa de contar pra você.'
@@ -11834,7 +11915,7 @@ function avisarTroca(m, antes) {
   } else if (m.minha >= 0) {
     const n = t.entraram.length;
     // 28/10: saiu (ou ficou sem conexão) e um robô da turma do bairro entrou no lugar, com o nome dele; ou a pessoa voltou
-    if (t.robo) toast(`${juntar(t.sairam)} ${t.motivo === 'conexao' ? 'ficou sem conexão' : 'saiu da mesa'}. ${juntar(t.entraram)}, robô da turma do bairro, entrou no lugar.`);
+    if (t.robo) toast(`${juntar(t.sairam)} ${t.motivo === 'conexao' ? 'ficou sem conexão' : t.motivo === 'tempo' ? 'ficou 3 vezes seguidas sem jogar' : 'saiu da mesa'}. ${juntar(t.entraram)}, robô da turma do bairro, entrou no lugar.`);   // 24/11: tempo
     else if (t.volta) toast(`${juntar(t.entraram)} voltou para a mesa no lugar de ${juntar(t.sairam)}.`);
     else toast(t.ficam.length ? `${juntar(t.entraram)} ${n > 1 ? 'entraram' : 'entrou'}. Quem come jaraqui não sai mais daqui!` : `${juntar(t.entraram)} entrou no lugar de ${juntar(t.sairam)}.`);
   }
@@ -11905,7 +11986,7 @@ async function turmaApi(path, body) {
   const r = await fetch(CONFIG.api + path, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : undefined);
   return { ok: r.ok, status: r.status, j: await r.json().catch(() => ({})) };
 }
-function turmaGuardar(j) { if (j && 'turma' in j) TM.info = j.turma; if (j && j.desafio) TM.desafio = j.desafio; if (j && 'campeaAte' in j) { TM.campeaAte = Number(j.campeaAte) || 0; store.set('dmz-campea-ate', String(TM.campeaAte)); } TM.em = Date.now(); }
+function turmaGuardar(j) { if (j && j.escudos) escudosGuardar(j.escudos); if (j && 'turma' in j) TM.info = j.turma; if (j && j.desafio) TM.desafio = j.desafio; if (j && 'campeaAte' in j) { TM.campeaAte = Number(j.campeaAte) || 0; store.set('dmz-campea-ate', String(TM.campeaAte)); } TM.em = Date.now(); }
 async function turmaCarregar(forcar) {
   if (!CONFIG.api || !profile || (!forcar && Date.now() - TM.em < 60000)) return;
   TM.em = Date.now();
@@ -11927,7 +12008,23 @@ const pts = n => `${n} ${n === 1 ? 'ponto' : 'pontos'}`;
 // brasão de cada Turma (escudo com as iniciais e uma cor tirada do nome, sempre a mesma), pontos de hoje, seta de quem
 // subiu ou caiu desde ontem, barra de pontos, a sua Turma sempre à vista, a contagem para o fim e a reta final em dobro.
 const BRASAO_CORES = [['#b3261e', '#f7d27d'], ['#1f5fa8', '#ffe2a0'], ['#1e7a4a', '#fff1d6'], ['#6b3fa0', '#f7d27d'], ['#c4561b', '#fff1d6'], ['#0f6e7a', '#ffe2a0'], ['#8a1c4a', '#fff1d6'], ['#4a5a12', '#f7d27d'], ['#2b2b2b', '#f3c063']];
-function brasao(nome, tam) {
+// 24/11 (ideia de jogador, aprovada pelo dono): o escudo escolhido por quem criou a Turma (sócio): a cor e o símbolo
+const ESCUDO_CORES = BRASAO_CORES.concat([['#0b3d91', '#f3c063'], ['#d4a017', '#3a2400'], ['#c2185b', '#fff1d6']]);
+const ESCUDO_SIMB = {
+  ini: { nome: 'Iniciais' },
+  estrela: { nome: 'Estrela', svg: c => `<polygon points="20,13 22.5,19.6 29.5,19.9 24,24.3 25.9,31.1 20,27.2 14.1,31.1 16,24.3 10.5,19.9 17.5,19.6" fill="${c}"/>` },
+  coroa: { nome: 'Coroa', svg: c => `<path d="M11.2 28.4 12.4 16.8l4.6 4.8L20 14.6l3 7 4.6-4.8 1.2 11.6z" fill="${c}"/><rect x="11.2" y="29.8" width="17.6" height="2.8" rx="1" fill="${c}"/>` },
+  raio: { nome: 'Raio', svg: c => `<path d="M22.8 11.8 13.4 24.6h6.2l-2.4 8.8 9.6-13h-6.2z" fill="${c}"/>` },
+  peixe: { nome: 'Peixe', svg: (c, f) => `<path d="M10.6 23c2.4-4.6 6.4-6.6 10.4-6.6 3.4 0 5.6 2.2 7 4.6l3.8-3.2v10.4L28 25c-1.4 2.4-3.6 4.6-7 4.6-4 0-8-2-10.4-6.6z" fill="${c}"/><circle cx="15.2" cy="22.2" r="1.3" fill="${f}"/>` },
+  pedra: { nome: 'Pedra', svg: (c, f) => `<rect x="14.4" y="12.6" width="11.2" height="20.4" rx="2.4" fill="${c}"/><path d="M15.6 22.8h8.8" stroke="${f}" stroke-width="1.2"/><circle cx="17.4" cy="16" r="1.35" fill="${f}"/><circle cx="22.6" cy="19.6" r="1.35" fill="${f}"/><circle cx="20" cy="27.9" r="1.35" fill="${f}"/>` }
+};
+const escNorm = n => String(n || '').replace(/^turma\s+/i, '').trim().toLowerCase();
+function escudosGuardar(o) {
+  const m = {}; for (const k in o || {}) m[escNorm(k)] = o[k];
+  TM.escudos = m; try { store.set('dmz-escudos', JSON.stringify(m)); } catch (e) {}
+}
+try { TM.escudos = JSON.parse(store.get('dmz-escudos') || '{}') || {}; } catch (e) { TM.escudos = {}; }
+function brasao(nome, tam, forcado) {
   const n = String(nome || '').replace(/^turma\s+/i, '').trim();
   const cp = TM.desafio && TM.desafio.campea && String(TM.desafio.campea.nome || '').replace(/^turma\s+/i, '').trim().toLowerCase() === n.toLowerCase();   // 10/11: a campeã tem o brasão dourado
   const pal = n.split(/\s+/).filter(w => w && !/^(d[aeo]s?|e|of?|the|o|a|os|as)$/i.test(w));
@@ -11935,8 +12032,10 @@ function brasao(nome, tam) {
   let ini = pal.length >= 2 ? pri(pal[0]) + pri(pal[1]) : [...(pal[0] || '')].filter(ch => /[\p{L}\p{N}]/u.test(ch)).slice(0, 2).join('');
   ini = (ini || '?').toUpperCase();
   let h = 7; for (const ch of n.toLowerCase()) h = (h * 31 + ch.codePointAt(0)) >>> 0;
-  const [c1, c2] = cp ? ['url(#brOuro)', '#5a3608'] : BRASAO_CORES[h % BRASAO_CORES.length], w = tam || 34, hh = Math.round(w * 46 / 40);
-  return `<svg class="brasao${cp ? ' campea' : ''}" viewBox="0 0 40 46" width="${w}" height="${hh}" aria-hidden="true">${cp ? '<defs><linearGradient id="brOuro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0b8"/><stop offset=".5" stop-color="#f3c063"/><stop offset="1" stop-color="#b47519"/></linearGradient></defs>' : ''}<path d="M20 2.2 36.8 8.2v13.6c0 11-7.4 18.4-16.8 21.9C10.6 40.2 3.2 32.8 3.2 21.8V8.2z" fill="${c1}" stroke="${c2}" stroke-width="2.6" stroke-linejoin="round"/><path d="M20 6.6 32.8 11.2v10.6c0 8.4-5.4 14.4-12.8 17.4z" fill="rgba(255,255,255,.13)"/><text x="20" y="27.6" text-anchor="middle" font-size="${ini.length > 1 ? 14.5 : 18}" font-weight="800" fill="${c2}" font-family="Figtree, system-ui, sans-serif">${esc(ini)}</text></svg>`;
+  const es = forcado || (TM.escudos && TM.escudos[n.toLowerCase()]);   // 24/11: o escudo escolhido (a campeã continua dourada)
+  const [c1, c2] = cp ? ['url(#brOuro)', '#5a3608'] : es && ESCUDO_CORES[es.c] ? ESCUDO_CORES[es.c] : BRASAO_CORES[h % BRASAO_CORES.length], w = tam || 34, hh = Math.round(w * 46 / 40);
+  const sim = es && ESCUDO_SIMB[es.s] && ESCUDO_SIMB[es.s].svg ? ESCUDO_SIMB[es.s].svg(c2, cp ? '#f3c063' : c1) : null;
+  return `<svg class="brasao${cp ? ' campea' : ''}" viewBox="0 0 40 46" width="${w}" height="${hh}" aria-hidden="true">${cp ? '<defs><linearGradient id="brOuro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0b8"/><stop offset=".5" stop-color="#f3c063"/><stop offset="1" stop-color="#b47519"/></linearGradient></defs>' : ''}<path d="M20 2.2 36.8 8.2v13.6c0 11-7.4 18.4-16.8 21.9C10.6 40.2 3.2 32.8 3.2 21.8V8.2z" fill="${c1}" stroke="${c2}" stroke-width="2.6" stroke-linejoin="round"/><path d="M20 6.6 32.8 11.2v10.6c0 8.4-5.4 14.4-12.8 17.4z" fill="rgba(255,255,255,.13)"/>${sim || `<text x="20" y="27.6" text-anchor="middle" font-size="${ini.length > 1 ? 14.5 : 18}" font-weight="800" fill="${c2}" font-family="Figtree, system-ui, sans-serif">${esc(ini)}</text>`}</svg>`;
 }
 // 17/11 (pedido do dono): Hora do Desafio, todo dia das 21h às 22h: vitória contra outra Turma vale 1 ponto a mais
 function dcHora(d) {
@@ -12120,7 +12219,7 @@ function desenharTurma() {
     const so = (d.aberto || d.antes) && turmaSozinha(t, d);
     const solo = so ? `<div class="tm-solo" role="note"><b>👥 Por enquanto, só você na Turma</b><p>No Desafio, a Turma precisa de pelo menos ${d.minimo || 2} pessoas para pontuar. Chame mais 1 amigo e a próxima vitória já vale ponto.${t.pontos ? ' Os pontos que a Turma já fez continuam.' : ''}</p><a class="share-wa tm-zap" id="tmZap" href="${esc(zap)}" target="_blank" rel="noopener">${WA_IC}Chamar a turma no WhatsApp</a></div>` : '';
     const status = d.aberto ? `<b>${pts(t.pontos)}</b>${t.pos ? ` · ${t.pos}º lugar` : ''}${t.hoje ? ` · <span class="dc-hoje">+${t.hoje} hoje</span>` : ''}` : d.antes ? 'Começa em 1º de novembro.' : `Este ano a sua Turma fez ${pts(t.pontos)}.`;
-    box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">${esc(nomeTurma(t.nome))}${estrelas(t.titulos)}</h2>
+    box.innerHTML = `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle" class="tm-tit"><span class="tm-tit-br">${brasao(t.nome, 34)}</span>${esc(nomeTurma(t.nome))}${estrelas(t.titulos)}</h2>
       ${t.retirado ? retiradoHTML(t) : ''}
       ${t.campea && d.campea ? `<p class="tm-campea">🏆 <b>${esc(nomeTurma(t.nome))} é a campeã de ${d.campea.ano}!</b> Brasão dourado, a Mesa da Campeã e o selo 🏆 para quem estava na Turma, até ${dataBR(d.campea.ate - 1)}.</p>` : souCampea() ? '<p class="tm-campea">🏆 Você tem a <b>Mesa da Campeã</b> e o selo 🏆 do Desafio das Confrarias.</p>' : ''}
       <p class="tm-status">${status}${t.taca ? ' · 🏆 Grande Taça' : t.titulos ? ` · ${t.titulos} ${t.titulos === 1 ? 'estrela' : 'estrelas'} de campeã` : ''}</p>
@@ -12129,7 +12228,8 @@ function desenharTurma() {
       ${so ? '' : `<a class="${d.aberto ? 'secondary' : 'primary'} tm-zap" id="tmZap" href="${esc(zap)}" target="_blank" rel="noopener">Chamar a turma no WhatsApp</a>`}
       ${dcFalta(t, d)}
       ${craquesRivalHTML(t, d)}
-      <p class="tm-k">Na Turma (${t.membros.length})</p><p class="tm-membros">${t.membros.map(n => esc(n)).join(', ')}</p>
+      ${escudoTurmaHTML(t)}
+      <p class="tm-k">Na Turma (${t.membros.length})${tmOnline(t) ? ` · <span class="tm-on-n">${tmOnline(t)} online agora</span>` : ''}</p><p class="tm-membros">${t.membros.map((n, i) => `<span class="tm-mb${t.membrosOn && t.membrosOn[i] ? ' on' : ''}">${esc(n)}</span>`).join('<span class="tm-sep">, </span>')}</p>
       ${rankingHTML(d, t)}${regra}${campeas}
       <button type="button" class="secondary tm-fechar" id="tmFechar">Fechar</button>
       <button type="button" class="linkbtn tm-sair" id="tmSair">Sair da Turma</button>`;
@@ -12141,6 +12241,7 @@ function desenharTurma() {
       turmaAcao('/turma/nome', { nome }, 'turma-renomeada');
     });
     const bd = $('#tmDesafiar'); if (bd) bd.addEventListener('click', desafiarTurma);
+    const be = $('#tmEscudo'); if (be) be.addEventListener('click', () => { track('turma-escudo-abriu'); if (temPlano() || souAdmin()) abrirEscudo(); else escudoSocio(); });
     $('#tmSair').addEventListener('click', () => {
       const b = $('#tmSair');
       if (b.dataset.certeza !== '1') { b.dataset.certeza = '1'; b.textContent = 'Toque de novo para sair da Turma'; return; }
@@ -12148,6 +12249,52 @@ function desenharTurma() {
     });
   }
   $('#tmFechar').addEventListener('click', closeSheet);
+}
+// 24/11 (ideia de jogador, aprovada pelo dono): quem está online agora na Turma e o escudo escolhido por quem criou (sócio)
+const tmOnline = t => (t.membrosOn || []).filter(Boolean).length;
+function escudoTurmaHTML(t) {
+  if (!t.escolheEscudo) return '';   // só quem criou vê o botão; os outros veem o escudo no título e no ranking
+  return `<div class="tm-escudo"><span class="tm-esc-br">${brasao(t.nome, 46)}</span><span><b>Escudo da Turma</b><small>${t.escudo ? 'Toque para trocar a cor e o símbolo.' : 'Você criou a Turma: escolha a cor e o símbolo do escudo.'}</small></span>
+    <button type="button" class="secondary" id="tmEscudo">${t.escudo ? 'Trocar' : 'Escolher'}</button></div>`;
+}
+function escudoSocio() {
+  const pode = typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !(profile && profile.idade === 'menor');
+  openSheet('info', `<p class="eyebrow">Escudo da Turma</p><h2 id="sheetTitle">O escudo é coisa de sócio</h2>
+    <p>Sendo Sócio da Calçada, você escolhe a cor e o símbolo do escudo da sua Turma. Ele aparece no ranking do Desafio, na mesa e no confronto ao vivo, para todo mundo ver.</p>
+    <div class="esc-amostra">${['estrela', 'coroa', 'peixe', 'pedra'].map((s, i) => brasao(TM.info ? TM.info.nome : 'Turma', 46, { c: [0, 3, 1, 10][i], s })).join('')}</div>
+    ${pode ? '<button type="button" class="primary" id="escSocio" style="width:100%">Quero ser sócio</button>' : ''}
+    <button type="button" class="secondary" id="escVoltar" style="width:100%;margin-top:8px">Voltar para a Turma</button>`);
+  track('turma-escudo-socio');
+  const b = $('#escSocio'); if (b) b.addEventListener('click', () => { track('plano-quero-turma-escudo'); closeSheet(); abrirApoio(screen || 'home'); });
+  $('#escVoltar').addEventListener('click', () => abrirTurma());
+}
+function abrirEscudo() {
+  const t = TM.info; if (!t) return;
+  const sel = { c: t.escudo ? t.escudo.c : 0, s: t.escudo ? t.escudo.s : 'ini' };
+  const desenha = () => {
+    $('#escPrev').innerHTML = brasao(t.nome, 84, sel);
+    $$('#escCores button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.c === sel.c)));
+    $$('#escSimb button').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.s === sel.s)); b.innerHTML = brasao(t.nome, 34, { c: sel.c, s: b.dataset.s }) + `<small>${ESCUDO_SIMB[b.dataset.s].nome}</small>`; });
+  };
+  openSheet('info', `<p class="eyebrow">Escudo da Turma</p><h2 id="sheetTitle">${esc(nomeTurma(t.nome))}</h2>
+    <div class="esc-prev" id="escPrev"></div>
+    <p class="tm-k">Cor</p><div class="esc-cores" id="escCores">${ESCUDO_CORES.map((c, i) => `<button type="button" data-c="${i}" aria-label="Cor ${i + 1}" style="--c1:${c[0]};--c2:${c[1]}"></button>`).join('')}</div>
+    <p class="tm-k">Símbolo</p><div class="esc-simb" id="escSimb">${Object.keys(ESCUDO_SIMB).map(s => `<button type="button" data-s="${s}"></button>`).join('')}</div>
+    <button type="button" class="primary" id="escSalvar" style="width:100%;margin-top:14px">Salvar o escudo</button>
+    <button type="button" class="secondary" id="escVoltar" style="width:100%;margin-top:8px">Voltar para a Turma</button>`);
+  $$('#escCores button').forEach(b => b.addEventListener('click', () => { sel.c = +b.dataset.c; desenha(); }));
+  $$('#escSimb button').forEach(b => b.addEventListener('click', () => { sel.s = b.dataset.s; desenha(); }));
+  $('#escVoltar').addEventListener('click', () => abrirTurma());
+  $('#escSalvar').addEventListener('click', async () => {
+    const bt = $('#escSalvar'); bt.disabled = true;
+    try {
+      const r = await turmaApi('/turma/escudo', { aparelho: meuId(), cor: sel.c, simbolo: sel.s });
+      if (r.ok) { turmaGuardar(r.j); track('turma-escudo-salvo'); toast('Escudo salvo! Agora ele aparece no ranking e na mesa.'); abrirTurma(); return; }
+      toast(r.j.erro === 'socio-escudo' ? 'O escudo da Turma é para os sócios da Calçada.' : r.j.erro === 'so-quem-criou-escudo' ? 'Só quem criou a Turma escolhe o escudo.' : TURMA_ERROS[r.j.erro] || 'Não deu para salvar agora. Tente de novo.');
+    } catch (e) { toast('Sem internet agora. Tente de novo.'); }
+    bt.disabled = false;
+  });
+  desenha();
 }
 // 04/11 (dono): o nome da Turma foi retirado por ter palavrão. Todo mundo da Turma fica sabendo por quê, e quem
 // criou (ou, se saiu, quem está há mais tempo) escolhe o novo nome, uma vez. Os pontos e os membros ficam.
@@ -16461,7 +16608,8 @@ async function abrirCopa() {
   };
   openSheet('copa', csSheetHTML(CSD.dados)); ligar();
   const d = await csBuscar(true);
-  if (sheetKind === 'copa' && d) { const y = $('#sheet').scrollTop; $('#sheet').innerHTML = csSheetHTML(d); ligar(); $('#sheet').scrollTop = y; }
+  // 24/11 (o dono: "tem que colocar o X pra fechar"): redesenha pela openSheet, que põe o × e a alça de novo
+  if (sheetKind === 'copa' && d) { const y = $('#sheet').scrollTop; openSheet('copa', csSheetHTML(d)); ligar(); $('#sheet').scrollTop = y; }
 }
 
 // ---- Cartão da Copa na aba Calçada (antes, durante e uma semana depois) ----
@@ -16730,7 +16878,7 @@ function describe(ev) {
     case 'ponto': return `${n} pediu ponto: +${ev.pts} para ${teamName(ev.team)}`;
     case 'pontoErrado': return `${n} pediu ponto sem ter: +20 para ${teamName(ev.team)}`;
     case 'pontoPerdido': return `Ninguém pediu o ponto: ${ev.pts} perdidos`;
-    case 'redeal': return 'Mão com 5 carroças: pedras misturadas de novo';
+    case 'redeal': return ev.p != null && G.names && G.names[ev.p] ? `${who(ev.p)} tirou 5 carroças: pedras misturadas de novo` : 'Mão com 5 carroças: pedras misturadas de novo';
     case 'start':
       if (ev.mode === 'sena') return `${sai} com a carroça de sena`;
       if (ev.mode === 'carroca') return `${sai} com uma carroça`;
@@ -16783,6 +16931,16 @@ function bubble(p, text, galo) {
   clearTimeout(bubbleTimers[pos]); bubbleTimers[pos] = setTimeout(() => el.classList.remove('show'), 1800);
 }
 
+// 24/11 (pedido do dono: "que apareçam as pedras dos adversários e do parceiro, só para ficar mais visível quantas cada um
+// tem; pequenas, para não atrapalhar o jogo" e "fora desse círculo, logo abaixo na mesa, e os textos dentro continuarem como
+// estavam"): as pedras de costas, todas do mesmo tamanho, logo abaixo do cartão de cada um (a mesa guarda esse espaço)
+function seatPedras(el, n) {
+  if (!el) return;
+  n = Math.max(0, Math.min(7, n | 0));
+  let pd = el.querySelector('.seat-pd');
+  if (!pd) { el.insertAdjacentHTML('beforeend', '<span class="seat-pd" aria-hidden="true"></span>'); pd = el.querySelector('.seat-pd'); }
+  if (pd.dataset.n !== String(n)) { pd.dataset.n = String(n); pd.innerHTML = '<i></i>'.repeat(n); }
+}
 // ---- Render do jogo ----
 function render() {
   if (!G) return;
@@ -16801,6 +16959,7 @@ function render() {
     el.querySelector('.sn').textContent = G.names[p];
     const cnt = n === 1 ? '1 pedra' : `${n} pedras`;
     el.querySelector('.sc').textContent = !dealing && G.phase === 'play' && G.turn === p ? `jogando · ${n}` : cnt;
+    seatPedras(el, n);   // 24/11
   }
   const s = tableSum(G), ends = $('#ends');
   ends.hidden = !G.chain.length; ends.textContent = `Pontas ${s}`; ends.classList.toggle('hit', s > 0 && s % 5 === 0);
@@ -17013,9 +17172,14 @@ function renderBoard() {
   freshKey = null;
   if (showZones) zones.forEach(z => {
     const p = z.pos, w = p.o === 'h' ? 2 : 1, h = p.o === 'h' ? 1 : 2;
+    // 24/11 (sugestão de jogador: "o bucho tá muito perto, joguei no lugar errado"): a área de toque passa da ponta desenhada
+    // (0,45 de pedra para cada lado, sem chegar na ponta vizinha: elas ficam a 2 pedras ou mais) e, na ponta em pé, a palavra
+    // fica de pé também (antes saía para fora da ponta)
+    const ZT = .45, pe = p.o !== 'h' && z.side !== 'C';
     html += `<g class="zone${drag && drag.side === z.side ? ' over' : ''}${drag ? '' : ' toque'}" data-side="${z.side}">
+      <rect class="z-hit" x="${f2(p.x - w / 2 - ZT)}" y="${f2(p.y - h / 2 - ZT)}" width="${f2(w + 2 * ZT)}" height="${f2(h + 2 * ZT)}" rx=".3"/>
       <rect class="z-body" x="${f2(p.x - w / 2 + .04)}" y="${f2(p.y - h / 2 + .04)}" width="${f2(w - .08)}" height="${f2(h - .08)}" rx=".13"/>
-      <text class="z-tx" x="${f2(p.x)}" y="${f2(p.y + .15)}">${z.side === 'C' ? (drag ? 'solte aqui' : 'toque aqui') : z.side === 'U' || z.side === 'D' ? 'bucho' : 'ponta'}</text></g>`;
+      <text class="z-tx" x="${f2(p.x)}" y="${f2(pe ? p.y : p.y + .15)}"${pe ? ` dominant-baseline="central" transform="rotate(-90 ${f2(p.x)} ${f2(p.y)})"` : ''}>${z.side === 'C' ? (drag ? 'solte aqui' : 'toque aqui') : z.side === 'U' || z.side === 'D' ? 'bucho' : 'ponta'}</text></g>`;
   });
   if (showZones) zonasNao.forEach(z => {
     const p = z.pos, w = p.o === 'h' ? 2 : 1, h = p.o === 'h' ? 1 : 2;
@@ -17118,7 +17282,17 @@ async function runDeal(after) {
       { duration: 340, delay: i * 50, easing: 'ease-out', fill: 'backwards' }));
     if (after) after();
   };
+  // 24/11 (o dono: "quando sair 5 carroças pra um único jogador, ter um aviso a todos e embaralhar as pedras pra todos
+  // verem"): na mão que veio de um embaralhar de novo, primeiro o aviso de quem tirou as 5 carroças (com a mesa limpa) e
+  // depois a mistura em duas voltas, com o som de novo
+  const re = (G && G.events || []).find(e => e.type === 'redeal');
+  if (re && screen === 'game') {
+    const q = re.p != null && G.names && G.names[re.p] != null ? (re.p === seatMe ? 'Você tirou' : `${G.names[re.p]} tirou`) : 'Saiu uma mão com';
+    dealPhase = 'Misturando as pedras de novo…'; try { render(); } catch (e) {}   // os lugares já com 0 pedras e ninguém na vez
+    aviso('5 carroças!', `${q} 5 carroças. As pedras vão ser misturadas de novo.`, 1900);
+  }
   if (reduce || screen !== 'game' || !G || !window.Element || !Element.prototype.animate) { done(); return; }
+  if (re) { await wait(1700); if (my !== dealToken) return; try { if (typeof tocar === 'function') tocar('embaralhar', 0); } catch (e) {} }
   render();
   const layer = $('#dealLayer'); layer.innerHTML = ''; layer.hidden = false;
   const br = $('#boardWrap').getBoundingClientRect();
@@ -17134,17 +17308,17 @@ async function runDeal(after) {
     el.className = 'dt'; el.style.width = tw + 'px'; el.style.height = th + 'px'; el.innerHTML = backTileSVG;
     layer.appendChild(el); tiles.push(el);
   }
-  // 1) embaralhar: as pedras se espalham e rodam na mesa, como mãos misturando
-  const SHUFFLE = 1600;
+  // 1) embaralhar: as pedras se espalham e rodam na mesa, como mãos misturando (5 carroças: duas voltas, 24/11)
+  const SHUFFLE = re ? 3400 : 1600, VOLTAS = re ? 8 : 4;
   const pile = k => [cx, cy - 10 + (k - 14) * 0.7];
   const mix = tiles.map((el, k) => {
     const kf = [{ transform: T(cx + rnd(-6, 6), cy + rnd(-6, 6), rnd(-10, 10), .7), opacity: 0 }];
     let ang = rnd(0, Math.PI * 2);
     const spin = Math.random() < .5 ? 1 : -1;
-    for (let j = 0; j < 4; j++) {
+    for (let j = 0; j < VOLTAS; j++) {
       ang += spin * rnd(.9, 1.6);
       const r = R * Math.sqrt(rnd(.15, 1));
-      kf.push({ transform: T(cx + Math.cos(ang) * r * 1.15, cy + Math.sin(ang) * r, rnd(-200, 200)), opacity: 1, offset: [.14, .38, .62, .84][j] });
+      kf.push({ transform: T(cx + Math.cos(ang) * r * 1.15, cy + Math.sin(ang) * r, rnd(-200, 200)), opacity: 1, offset: VOLTAS === 4 ? [.14, .38, .62, .84][j] : +(.08 + j * .84 / (VOLTAS - 1) * .95).toFixed(3) });
     }
     const [px, py] = pile(k);
     kf.push({ transform: T(px, py, 90, .9), opacity: 1 });
@@ -17175,6 +17349,7 @@ async function runDeal(after) {
       dealtCount[p]++;
       const sc = $(`.seat[data-pos="${pos}"] .sc`);
       if (sc) sc.textContent = dealtCount[p] === 1 ? '1 pedra' : `${dealtCount[p]} pedras`;
+      seatPedras($(`.seat[data-pos="${pos}"]`), dealtCount[p]);   // 24/11: as pedras chegando uma a uma
     };
   });
   mix.forEach(a => a.cancel());
@@ -17386,6 +17561,13 @@ function showResult() {
       ps.map(p => r.hands[p].length ? `<div class="rv"><span class="who">${esc(who(p))}</span>${r.hands[p].map(miniTile).join('')}<span class="sum">${somaMao(p)} ${somaMao(p) === 1 ? 'pt' : 'pts'}</span></div>`
         : `<div class="rv rv-bateu"><span class="who">${esc(who(p))}</span>${seloBateu(p)}</div>`).join('') + '</div>';
   }).join('') : '';
+  // 24/11 (sugestão de jogador): de onde vieram os pontos de cada dupla nesta mão (servidor antigo ou jogo guardado: não mostra)
+  const CAT_PTS = [['mesa', 'Pontas'], ['passe', 'Passes'], ['galo', 'Galo'], ['batida', 'Batida de carroça'], ['garagem', 'Garagem'], ['fechado', 'Jogo fechado'], ['semCarroca', 'Sem carroça na saída'], ['pontoErrado', 'Ponto pedido sem ter']];
+  const mp = Array.isArray(G.maoPts) && G.maoPts.length === 2 ? G.maoPts : null;
+  const pontosMao = mp ? `<div class="rv-pontos"><p class="rv-pk">Pontos desta mão</p>` + [L, R].map(t => {
+    const o = mp[t] || {}, l = CAT_PTS.filter(([k]) => o[k]), tot = l.reduce((s, [k]) => s + o[k], 0);
+    return `<div class="rv-pts ${t === L ? 'rv-l' : 'rv-r'}"><b>${esc(teamName(t))}</b><span class="rv-pts-l">${l.length ? l.map(([k, n]) => `<span>${n} <b>+${o[k]}</b></span>`).join('') : '<span>não marcou nesta mão</span>'}</span><em>${tot ? '+' + tot : '0'}</em></div>`;
+  }).join('') + '</div>' : '';
   let win = '', btn = 'Próxima mão';
   if (r.matchWinner != null) {
     const ours = seatMe != null && TEAM(seatMe) === r.matchWinner;
@@ -17397,7 +17579,7 @@ function showResult() {
   const sh = r.gameWinner != null ? gameShare() : null;
   openSheet('result', `<div class="res-grid"><div class="res-main"><p class="eyebrow">Mão ${r.handNo} · Partida ${r.partida}</p>
     <h2 id="sheetTitle">${esc(title)}</h2><p>${esc(detail)}</p>
-    ${rows ? `<div class="reveal">${rows}</div>` : ''}</div><div class="res-side">
+    ${pontosMao}${rows ? `<div class="reveal">${rows}</div>` : ''}</div><div class="res-side">
     <div class="tally"><div class="L"><span>${esc(teamName(L))}</span><b>${r.score[L]}</b></div><div class="R"><span>${esc(teamName(R))}</span><b>${r.score[R]}</b></div></div>
     ${win}${sh ? `<a class="share-wa" href="${sh}" target="_blank" rel="noopener">Mandar resultado no WhatsApp</a>` : ''}<button type="button" class="primary" id="nextBtn">${btn}</button><button type="button" class="secondary" id="resHome" style="width:100%;margin-top:10px">Voltar ao início</button>
     ${r.matchWinner != null ? sponsorResult() : ''}${r.gameWinner != null ? apoioInvite() : ''}</div></div>`);
@@ -17484,7 +17666,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.22-f50868ca';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.24-5f2b262d';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -18700,6 +18882,18 @@ function hhAvisos() {
   if (!(hhPara() && hhAgora() === 'agora')) return;
   ['#rapidaPlano', '#amigosPlano', '#offlinePlano'].forEach(id => { const el = $(id); if (el && !el.hidden) el.textContent = HH_TX; });
 }
+// 24/11 (dono: "retire essas informações das limitações dos planos gratuitos nesses cards"): os cartões de jogar do início
+// (mesa rápida, com os amigos e offline) não mostram mais a regra de quem não tem plano. No Happy Hour (só quem não é sócio),
+// fica o aviso de que até as 20h joga sem limite. As regras continuam valendo e aparecem na sala e quando acabam as partidas
+function cartaoSemLimite(id) {
+  const el = $(id); if (!el) return;
+  let hh = false; try { hh = hhPara() && hhAgora() === 'agora'; } catch (e) {}
+  if (hh && !el.hidden) el.textContent = HH_TX; else el.hidden = true;
+}
+const avisoPlanoRapidaLim = avisoPlanoRapida, avisoPlanoAmigosLim = avisoPlanoAmigos, avisoPlanoOfflineLim = avisoPlanoOffline;
+avisoPlanoRapida = function () { avisoPlanoRapidaLim.apply(this, arguments); cartaoSemLimite('#rapidaPlano'); };
+avisoPlanoAmigos = function () { avisoPlanoAmigosLim.apply(this, arguments); cartaoSemLimite('#amigosPlano'); };
+avisoPlanoOffline = function () { avisoPlanoOfflineLim.apply(this, arguments); cartaoSemLimite('#offlinePlano'); };
 const avisoPlanoSalaHH = avisoPlanoSala;
 avisoPlanoSala = function () {
   avisoPlanoSalaHH.apply(this, arguments);
@@ -18872,18 +19066,29 @@ function sbTema(t) {
   return { id: g.id, regra: g.regra, mesa: me[0], nome: 'Torneio ' + me[1] };
 }
 const sbImg = t => `var(--img-${(t && t.mesa) || 'teatro'}-sw)`;   // a ilustração da mesa do torneio
-// 24/11 (dono: "tem que aparecer melhor o monumento/animal... a arena deve aparecer melhor"): de cada ilustração, onde o
-// monumento ou o bicho começa e termina (de 0 a 1, de cima para baixo) e a largura natural (todas têm 150 de altura). As faixas
-// da imagem têm proporção fixa (largura/altura = A), então o recorte é o mesmo em qualquer celular. A parte clara da faixa vai
-// do alto até "claro" (fração da altura, antes do título): se o monumento cabe nela, fica no meio; se não cabe, começa no alto.
-// Nos altos demais (Relógio, Igreja, Chaminé, Arara), a parte que mais identifica: o relógio, as torres, a usina, a arara
-const SB_FOCO = { teatro: [.12, .77, 103], encontro: [.4, .8, 103], arena: [.36, .68, 103], boto: [.33, .94, 84], mercado: [.23, .86, 84], peixeboi: [.18, .86, 84], ponte: [.13, .62, 103], guarana: [.12, .72, 117], palacio: [.34, .85, 103], onca: [.08, .85, 103], pontanegra: [.25, .58, 103], pirarucu: [.43, .55, 103], relogio: [.17, .31, 84], tucano: [.54, .87, 84], calcadao: [.26, .69, 84], vitoria: [.02, .4, 103], igreja: [.2, .62, 103], araraazul: [.1, .52, 103], chamine: [.3, .7, 103], tambaqui: [.38, .65, 103] };
-function sbY(t, A, claro) {
-  const [a, b, w] = SB_FOCO[(t && t.mesa) || 'teatro'] || [.2, .8, 103], r = A * 150 / w;   // r = altura da imagem / altura da faixa
-  if (r <= 1) return '50%';
-  const topo = .03, o = (b - a) * r <= claro - topo ? (a + b) / 2 * r - (topo + claro) / 2 : a * r - topo;   // o quanto a imagem sobe
-  return Math.min(100, Math.max(0, 100 * o / (r - 1))).toFixed(1) + '%';
+// 24/11 (dono: "tem que aparecer melhor o monumento/animal" e "podem ficar melhor centralizadas... relógio, usina chaminé,
+// largo São Sebastião"): de cada ilustração, a janela que mostra o monumento ou o bicho inteiro (de y0 a y1, de 0 a 1, de cima
+// para baixo), o centro dele na horizontal (cx) e a largura natural (todas têm 150 de altura). Na faixa (largura/altura = A),
+// a imagem diminui até a janela caber na parte clara (do alto até "claro", antes do título), no mínimo SB_MIN da largura,
+// e fica com o monumento no meio (se ainda não couber, o alto do monumento no alto); as laterais mostram a própria ilustração desfocada. As faixas têm proporção fixa, então
+// o recorte (em %) é o mesmo em qualquer celular
+const SB_MIN = .62;
+const SB_JANELA = { teatro: [.1, .78, .5, 103], encontro: [.3, .85, .5, 103], arena: [.33, .72, .5, 103], boto: [.3, .82, .55, 84], mercado: [.22, .9, .55, 84], peixeboi: [.25, .85, .55, 84], ponte: [.12, .62, .55, 103], guarana: [.12, .78, .5, 117], palacio: [.25, .85, .5, 103], onca: [.12, .62, .45, 103], pontanegra: [.22, .62, .55, 103], pirarucu: [.4, .6, .5, 103], relogio: [.03, .5, .5, 84], tucano: [.52, .9, .55, 84], calcadao: [.25, .75, .55, 84], vitoria: [0, .45, .5, 103], igreja: [.18, .9, .55, 103], araraazul: [0, .7, .5, 103], chamine: [.25, .72, .5, 103], tambaqui: [.35, .68, .55, 103] };
+function sbRecorte(t, A, claro) {
+  const [y0, y1, cx, w] = SB_JANELA[(t && t.mesa) || 'teatro'] || [.2, .8, .5, 103], k = 150 / w, H = 1 / A, topo = .03 * H, cl = claro * H;   // em larguras da faixa
+  const Wi = Math.max(SB_MIN, Math.min(1, cl / (y1 - y0) / k)), Hi = Wi * k;   // o tamanho da imagem
+  const jan = (y1 - y0) * Hi, oy = Math.min(Math.max(jan <= cl - topo ? (y0 + y1) / 2 * Hi - (topo + cl) / 2 : y0 * Hi - topo, 0), Math.max(0, Hi - H));   // o quanto ela sobe: a janela no meio da parte clara (se não couber, o alto dela no alto)
+  const L = Math.min(Math.max(.5 - cx * Wi, 0), 1 - Wi);   // a esquerda da imagem: o monumento no meio, sem sair da faixa
+  const pc = v => (100 * v).toFixed(1) + '%';
+  return { tam: `${pc(Wi)} auto`, x: Wi < .999 ? pc(L / (1 - Wi)) : '50%', y: Hi > H ? pc(oy / (Hi - H)) : '50%', borda: Wi < .999 ? '14%' : '0%', mtam: `${pc(Wi)} 100%` };
 }
+function sbAplicar(el, t, A, claro) {
+  if (!el) return; const r = sbRecorte(t, A, claro);
+  el.style.setProperty('--sb-img', sbImg(t)); el.style.setProperty('--sb-tam', r.tam); el.style.setProperty('--sb-mtam', r.mtam);
+  el.style.setProperty('--sb-x', r.x); el.style.setProperty('--sb-y', r.y); el.style.setProperty('--sb-borda', r.borda);
+}
+function sbLimpar(el) { if (el) ['--sb-img', '--sb-tam', '--sb-mtam', '--sb-x', '--sb-y', '--sb-borda'].forEach(v => el.style.removeProperty(v)); }
+
 
 function sbAgora(t) {
   const d = manausDe(t || Date.now()); if (d.getUTCDay() !== 6) return null;
@@ -18907,7 +19112,7 @@ evCardExtra = function (v) { if (v && v.tipo === 'sabado') return evAntes; retur
 const evCardPintarSb = evCardPintar;
 evCardPintar = function (b, v) {   // o cartão do torneio leva a ilustração da mesa
   evCardPintarSb.apply(this, arguments);
-  if (!b) return; if (v && v.tipo === 'sabado') { b.style.setProperty('--sb-img', sbImg(sbTema())); b.style.setProperty('--sb-y', sbY(sbTema(), 2, .66)); } else { b.style.removeProperty('--sb-img'); b.style.removeProperty('--sb-y'); }
+  if (!b) return; if (v && v.tipo === 'sabado') sbAplicar(b, sbTema(), 2, .66); else sbLimpar(b);
 };
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('.ev-card'); if (!b || b.dataset.ir !== 'sabado') return;
@@ -18923,7 +19128,7 @@ function sabadoFaixa() {
   const tit = cab.querySelector('.aba-tit'); if (tit) tit.textContent = 'Sábado dos Torneios';
   cab.classList.add('sexta');
   if (!fx) { cab.insertAdjacentHTML('afterend', '<div class="calc-sexta calc-sab" id="calcSab" role="status"></div>'); fx = $('#calcSab'); }
-  fx.hidden = false; fx.style.setProperty('--sb-img', sbImg(t)); fx.style.setProperty('--sb-y', sbY(t, 16 / 9, .68));
+  fx.hidden = false; sbAplicar(fx, t, 16 / 9, .68);
   fx.innerHTML = `<span class="sb-foto" aria-hidden="true"></span><b class="sb-nome"><span aria-hidden="true">🏅</span> ${t.nome}</b><span class="cs-tx sb-tx"><small>Vitória vale 3 e ${t.regra}. ${sbFim()}</small></span><span class="cs-relogio"><small>termina em</small><b>${faltaAte(22)}</b></span>`
     + '<button type="button" class="cs-chamar cs-jogar" id="sbJogar">Jogar na mesa rápida</button>'
     + `<button type="button" class="cs-chamar" id="sbChamar">${WA_IC}Chamar a turma pro torneio</button>`;
@@ -18954,7 +19159,7 @@ function sabadoPlacarDesenhar() {
     } else if (box.previousElementSibling !== cab) cab.insertAdjacentElement('afterend', box);
     box.hidden = false;
     const d = j.dia.slice(8, 10) + '/' + j.dia.slice(5, 7), med = ['🥇', '🥈', '🥉'], t = j.tema || sbTema();
-    box.style.setProperty('--sb-img', sbImg(t)); box.style.setProperty('--sb-y', sbY(t, 2.6, .7));   // a ilustração da mesa do torneio, em cima do placar
+    sbAplicar(box, t, 2.6, .8);   // a ilustração da mesa do torneio, em cima do placar
     const vit = n => `${n} ${n === 1 ? 'vitória' : 'vitórias'}`, pts = n => `${n} ${n === 1 ? 'ponto' : 'pontos'}`;
     const extra = q => t.id === 'galo' ? ` · ${q.galos} ${q.galos === 1 ? 'galo' : 'galos'}` : t.id === 'carroca' ? ` · ${q.carrocas} ${q.carrocas === 1 ? 'carroça' : 'carroças'}` : ` · ${q.partidas} ${q.partidas === 1 ? 'partida' : 'partidas'}`;
     const lin = (j.top || []).map((q, i) => `<li${j.eu && j.eu.pos === i + 1 ? ' class="eu"' : ''}><span class="sxp-pos">${med[i] || (i + 1) + 'º'}</span>`

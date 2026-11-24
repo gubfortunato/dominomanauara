@@ -23,7 +23,11 @@ function newGame(names) {
     hands: [[], [], [], []], chain: [], center: 0, bucho: { U: [], D: [] }, turn: 0, phase: 'idle', openMode: null,
     passStreak: [], lastPlayer: null, lastKey: null, lacks: [[], [], [], []], events: [], result: null };
 }
-function addScore(st, team, pts) { st.score[team] += pts; }
+// 24/11 (sugestão de jogador: "não entendi muito bem a minha pontuação"): cada ponto da mão guarda de onde veio (maoPts)
+function addScore(st, team, pts, cat) {
+  st.score[team] += pts;
+  if (cat && pts) { const m = st.maoPts || (st.maoPts = [{}, {}]); m[team][cat] = (m[team][cat] || 0) + pts; }
+}
 
 // Soma das pontas: carroça na ponta conta dobrado; a pedra de saída sozinha conta a soma dela.
 function endsSum(chain) {
@@ -116,17 +120,18 @@ function place(st, t, side) {
 
 function startHand(st) {
   st.handNo++;
-  let redeals = 0, hands;
+  let redeals = 0, hands, quem = null;   // 24/11: quem tirou as 5 carroças (o aviso diz para todos)
   for (;;) {
     const d = shuffle(fullSet());
     hands = [d.slice(0, 7), d.slice(7, 14), d.slice(14, 21), d.slice(21, 28)];
-    if (hands.some(h => h.filter(isDbl).length >= 5)) { redeals++; continue; }
+    const q = hands.findIndex(h => h.filter(isDbl).length >= 5);
+    if (q >= 0) { redeals++; quem = q; continue; }
     break;
   }
   hands.forEach(h => h.sort((x, y) => x[0] - y[0] || x[1] - y[1]));
   Object.assign(st, { hands, chain: [], center: 0, bucho: { U: [], D: [] }, passStreak: [], lastPlayer: null, lastKey: null, donoPonta: {}, ultLado: {},
-    lacks: [[], [], [], []], result: null, phase: 'play', events: [], pedido: null });
-  if (redeals) st.events.push({ type: 'redeal', n: redeals });
+    lacks: [[], [], [], []], result: null, phase: 'play', events: [], pedido: null, maoPts: [{}, {}] });
+  if (redeals) st.events.push({ type: 'redeal', n: redeals, p: quem });
   const ns = st.nextStart;
   if (ns.mode === 'sena') {
     st.turn = hands.findIndex(h => h.some(t => t[0] === 6 && t[1] === 6));
@@ -136,7 +141,7 @@ function startHand(st) {
     let b = ns.player;
     for (let k = 0; k < 4 && !hands[b].some(isDbl); k++) {
       const team = 1 - TEAM(b);
-      addScore(st, team, 20);
+      addScore(st, team, 20, 'semCarroca');
       st.events.push({ type: 'semCarroca', p: b, team, pts: 20 });
       b = (b + 1) % 4;
     }
@@ -158,24 +163,24 @@ function applyMove(st, p, mv) {
   st.ultLado = Object.assign({}, st.ultLado || {}, { [p]: mv.side });
   const pts = tableScore(st);   // soma das 4 pontas (bucho incluído)
   // modo torneio: o ponto fica esperando a dupla pedir
-  if (pts) { if (st.pedirPonto) st.pedido = { team: TEAM(p), pts, p }; else addScore(st, TEAM(p), pts); }
+  if (pts) { if (st.pedirPonto) st.pedido = { team: TEAM(p), pts, p }; else addScore(st, TEAM(p), pts, 'mesa'); }
   st.events.push({ type: 'play', p, t, pts, team: TEAM(p), side: mv.side, pedir: !!(pts && st.pedirPonto) });
   if (!st.hands[p].length) {
-    if (st.pedido) { addScore(st, st.pedido.team, st.pedido.pts); st.pedido = null; }   // na batida, o ponto da última pedra vale direto
+    if (st.pedido) { addScore(st, st.pedido.team, st.pedido.pts, 'mesa'); st.pedido = null; }   // na batida, o ponto da última pedra vale direto
     const carroca = isDbl(t);
-    if (carroca) addScore(st, TEAM(p), 20);
+    if (carroca) addScore(st, TEAM(p), 20, 'batida');
     st.events.push({ type: 'batida', p, carroca, team: TEAM(p), pts: carroca ? 20 : 0 });
     // Garagem: os pontos que sobraram na mão da dupla que não bateu vão para a dupla que bateu
     // (arredondados para baixo no múltiplo de 5, como no jogo fechado).
     const opp = 1 - TEAM(p);
     const gSum = st.hands.reduce((s, h, q) => TEAM(q) === opp ? s + h.reduce((a, x) => a + pips(x), 0) : s, 0);
     const garagem = Math.floor(gSum / 5) * 5;
-    if (garagem) addScore(st, TEAM(p), garagem);
+    if (garagem) addScore(st, TEAM(p), garagem, 'garagem');
     st.events.push({ type: 'garagem', p, team: TEAM(p), sum: gSum, pts: garagem });
     endHand(st, { kind: 'batida', p, carroca, lastPts: pts, garagem, garagemSum: gSum });
     return;
   }
-  if (!anyoneCanPlay(st)) { if (st.pedido) { addScore(st, st.pedido.team, st.pedido.pts); st.pedido = null; } closeHand(st, p); return; }
+  if (!anyoneCanPlay(st)) { if (st.pedido) { addScore(st, st.pedido.team, st.pedido.pts, 'mesa'); st.pedido = null; } closeHand(st, p); return; }
   st.turn = (p + 1) % 4;
 }
 
@@ -186,13 +191,13 @@ function applyPass(st, p) {
   // O passe vale 20 para a dupla de quem jogou por último. Se quem passa é parceiro de quem jogou, ninguém marca.
   const lp = st.lastPlayer, team = TEAM(lp);
   const pts = TEAM(p) !== team ? 20 : 0;
-  if (pts) addScore(st, team, pts);
+  if (pts) addScore(st, team, pts, 'passe');
   st.passStreak.push({ team, pts, p });
   if (st.passStreak.length >= 3) {
     // Passe geral (galo): os três passaram e a vez volta para quem jogou.
-    for (const e of st.passStreak) addScore(st, e.team, -e.pts);
+    for (const e of st.passStreak) addScore(st, e.team, -e.pts, 'passe');
     const ap = st.lastPlayer;
-    addScore(st, TEAM(ap), 50);
+    addScore(st, TEAM(ap), 50, 'galo');
     st.events.push({ type: 'pass', p, team, pts, voided: true });
     st.events.push({ type: 'galo', p: ap, team: TEAM(ap), pts: 50 });
     st.passStreak = [];
@@ -211,13 +216,13 @@ function expirarPonto(st) {
 function pedirPonto(st, p, junto) {
   if (!junto) st.events = [];
   if (st.pedido && st.pedido.team === TEAM(p)) {
-    addScore(st, st.pedido.team, st.pedido.pts);
+    addScore(st, st.pedido.team, st.pedido.pts, 'mesa');
     st.events.push({ type: 'ponto', p, team: st.pedido.team, pts: st.pedido.pts });
     st.pedido = null;
     return true;
   }
   const team = 1 - TEAM(p);
-  addScore(st, team, 20);
+  addScore(st, team, 20, 'pontoErrado');
   st.events.push({ type: 'pontoErrado', p, team, pts: 20 });
   return false;
 }
@@ -228,7 +233,7 @@ function closeHand(st, p) {
   if (sums[0] !== sums[1]) {
     hi = sums[0] > sums[1] ? 0 : 1; team = 1 - hi;
     pts = Math.floor(sums[hi] / 5) * 5;
-    if (pts) addScore(st, team, pts);
+    if (pts) addScore(st, team, pts, 'fechado');
   }
   st.events.push({ type: 'fechado', p, sums, team, pts });
   endHand(st, { kind: 'fechado', p, sums, team, hi, pts });
