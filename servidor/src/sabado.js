@@ -10,14 +10,14 @@ const diaM = t => manaus(t).toISOString().slice(0, 10);
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
 export const SABADO_HORA = { inicio: 10, fim: 22 };
 // 17/11 (dono): cada sábado o torneio leva o nome de uma mesa de Manaus (e a ilustração dela), em rodízio; a regra do bônus
-// também roda (galo, carroça, maratona). O primeiro sábado, 21/11/2026, é o Torneio do Teatro Amazonas, com o bônus do galo.
+// também roda (galo, carroça, maratona). O primeiro sábado, 21/11/2026, é o Torneio Teatro Amazonas, com o bônus do galo (24/11, dono: os nomes sem "do/da").
 // O app tem as mesmas listas.
 export const REGRAS_SABADO = [
   { id: 'galo', regra: 'cada galo seu vale +1 ponto' },
   { id: 'carroca', regra: 'cada batida de carroça vale +2 pontos' },
   { id: 'maratona', regra: 'cada partida jogada até o fim vale +1 ponto' }
 ];
-export const TORNEIO_MESAS = [['teatro', 'do Teatro Amazonas'], ['encontro', 'do Encontro das Águas'], ['arena', 'da Arena da Amazônia'], ['boto', 'do Boto-rosa'], ['mercado', 'do Mercado Adolpho Lisboa'], ['peixeboi', 'do Peixe-boi'], ['ponte', 'da Ponte Rio Negro'], ['guarana', 'do Guaraná'], ['palacio', 'do Palácio Rio Negro'], ['onca', 'da Onça-pintada'], ['pontanegra', 'da Ponta Negra'], ['pirarucu', 'do Pirarucu'], ['relogio', 'do Relógio Municipal'], ['tucano', 'do Tucano'], ['calcadao', 'do Largo de São Sebastião'], ['vitoria', 'da Vitória-régia'], ['igreja', 'da Igreja de São Sebastião'], ['araraazul', 'da Arara-Azul'], ['chamine', 'da Usina Chaminé'], ['tambaqui', 'do Tambaqui']];
+export const TORNEIO_MESAS = [['teatro', 'Teatro Amazonas'], ['encontro', 'Encontro das Águas'], ['arena', 'Arena da Amazônia'], ['boto', 'Boto-rosa'], ['mercado', 'Mercado Adolpho Lisboa'], ['peixeboi', 'Peixe-boi'], ['ponte', 'Ponte Rio Negro'], ['guarana', 'Guaraná'], ['palacio', 'Palácio Rio Negro'], ['onca', 'Onça-pintada'], ['pontanegra', 'Ponta Negra'], ['pirarucu', 'Pirarucu'], ['relogio', 'Relógio Municipal'], ['tucano', 'Tucano'], ['calcadao', 'Largo de São Sebastião'], ['vitoria', 'Vitória-régia'], ['igreja', 'Igreja de São Sebastião'], ['araraazul', 'Arara-Azul'], ['chamine', 'Usina Chaminé'], ['tambaqui', 'Tambaqui']];
 const BASE = Date.parse('2026-11-21T12:00:00Z');
 export function temaDoSabado(dia) {
   const k = Math.round((Date.parse(dia + 'T12:00:00Z') - BASE) / SEMANA), r = REGRAS_SABADO, m = TORNEIO_MESAS;
