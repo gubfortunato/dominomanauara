@@ -23,7 +23,8 @@ export async function anotarSexta(env, m, quem) {
     } catch (e) {}
   }
 }
-// GET /sexta/placar?id=&dia=: na Sexta, o de hoje (ao vivo); no sábado, o de ontem; nos outros dias, nada (a não ser com dia=)
+// GET /sexta/placar?id=&dia=: na Sexta, o de hoje (ao vivo); no sábado até as 10h (o torneio), o de ontem (24/11: até o próximo
+// evento); nos outros dias, nada (a não ser com dia=)
 export async function sextaPlacar(env, url, h, origin) {
   const agora = Date.now(), d = manaus(agora), ws = d.getUTCDay(), hr = d.getUTCHours();
   let dia = null, aoVivo = false;
@@ -31,7 +32,7 @@ export async function sextaPlacar(env, url, h, origin) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(pedido)) dia = pedido;
   else if (env.SEXTA_TESTE === '1') { dia = diaM(agora); aoVivo = true; }
   else if (ws === 5 && hr >= 20) { dia = diaM(agora); aoVivo = hr < 23; }
-  else if (ws === 6) dia = diaM(agora - DIA);
+  else if (ws === 6 && hr < 10) dia = diaM(agora - DIA);
   if (!dia) return h.json({ dia: null }, 200, origin);
   let top = [], eu = null;
   try {

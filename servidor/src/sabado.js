@@ -76,13 +76,15 @@ export async function campeaoDoSabado(env, agora) {
   CAMP.em = agora; CAMP.chave = dia; CAMP.dados = dados;
   return dados;
 }
-// GET /sabado/placar?id=: no sábado (das 10h), o de hoje (ao vivo até as 22h); no domingo, o de ontem, com o campeão
+// GET /sabado/placar?id=: no sábado (das 10h), o de hoje (ao vivo até as 22h); no domingo e na segunda até as 19h (24/11: até a
+// Segunda, o próximo evento com placar), o de sábado, com o campeão
 export async function sabadoPlacar(env, url, h, origin) {
   const agora = Number(env && env.COPA_AGORA) || Date.now(), d = manaus(agora), ws = d.getUTCDay(), hr = d.getUTCHours();
   let dia = null, aoVivo = false;
   if (env.SABADO_TESTE === '1') { dia = diaM(agora); aoVivo = true; }
   else if (ws === 6 && hr >= SABADO_HORA.inicio) { dia = diaM(agora); aoVivo = hr < SABADO_HORA.fim; }
   else if (ws === 0) dia = diaM(agora - DIA);
+  else if (ws === 1 && hr < 19) dia = diaM(agora - 2 * DIA);
   if (dia && !semCopa(Date.parse(dia + 'T15:00:00-04:00'))) dia = null;   // sábado da Copa: sem torneio
   if (!dia) return h.json({ dia: null }, 200, origin);
   const tema = temaDoSabado(dia);
