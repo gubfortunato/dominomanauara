@@ -26,12 +26,13 @@ import { sextaValendo, anotarSexta } from './sexta.js';   // 13/11: Placar da Se
 const nomeVisivel = c => !c.bot && nomeOfensivo(c.nome) ? 'Jogador' : c.nome;
 
 const TEMPO = {
-  jogada: 4500,      // robô: espera antes de jogar (igual ao jogo offline)
+  jogada: 3000,      // robô: espera antes de jogar (igual ao jogo offline). 24/11 (sugestão de jogador, aprovada pelo dono): era 4,5 s
   torneio: 20000,    // modo torneio: tempo de cada jogada; passou, o robô joga pela pessoa
   vez: 20000,        // 3.41 (pedido do dono): toda jogada online tem 20 s, com o relógio à vista; passou, o robô joga pela pessoa
-  passe: 3000,       // robô: espera antes de passar
+  passe: 2200,       // robô: espera antes de passar (24/11: era 3 s)
   semPedra: 2600,    // pessoa sem pedra que encaixe: passa sozinha
   distribuir: 4300,  // tempo da animação de embaralhar e distribuir no celular
+  reembaralhar: 3600,   // 24/11: mão com 5 carroças: o aviso (1,7 s) e a segunda volta do embaralhar, à vista de todos
   ausente: 10000,    // 18/11 (sugestão de jogador): pessoa sem conexão: o robô joga por ela em 10 s (antes, os 20 s de todo mundo)
   leitura: 22000,   // 18/11 (sugestão de jogador): fim da mão: a próxima começa quando todos tocarem em Pronto, ou em 20 s (a janela abre uns 2 s depois da última pedra)
   leituraPartida: 32000,   // 18/11: no fim da partida, 30 s
@@ -47,8 +48,9 @@ const FILA = { mesas: 20, idade: 60 * 60 * 1000 };   // mesas rápidas lembradas
 // 28/10: quadro das mesas na fila: vale 30 min sem notícia, some depois de 3 h, até 80 mesas; a mesa repete a cada 5 min jogando
 const QUADRO = { validade: 30 * 60000, guarda: 3 * 3600000, max: 80, renova: 5 * 60000 };
 const SILENCIO = 50000;
+const TEMPO_SEGUIDOS = 3;   // 24/11 (sugestão de jogadores, aprovada pelo dono): 3 vezes seguidas sem jogar e um robô da turma assume a cadeira
 const TEMPO_TOLERADO = 3;   // 03/11: quantas vezes por partida quem está conectado pode passar dos 20 s sem a partida deixar de contar
-const REACAO = { intervalo: 2000, porMinuto: 8, maior: 33 };   // reações: só o número de uma frase pronta, nunca texto              // sem sinal do celular há 50 s: conta como desconectado
+const REACAO = { intervalo: 2000, porMinuto: 8, maior: 44 };   // 24/11: 12 reações novas (eram até 33)   // reações: só o número de uma frase pronta, nunca texto              // sem sinal do celular há 50 s: conta como desconectado
 const VIDA = 24 * 60 * 60 * 1000;    // a mesa some 24 h depois da última ação
 const ASSISTIR_MAX = 30;           // 3.28: quantas pessoas podem assistir a mesma mesa
 
@@ -541,7 +543,8 @@ export class Mesa {
     // 3.41: o administrador pediu outro apelido e a pessoa voltou com o mesmo (app antigo: 'nao-existe', volta ao início)
     if (await apelidoBarrado(this.env, quem.id, quem.nome)) return this.recusar(ws, att.apelido ? 'apelido' : 'nao-existe');
     // 3.41: quem chega agora (não estava sentado nem na fila) precisa estar com o app aberto
-    const jaEstava = m.cad.some(c => c && c.id === quem.id) || (m.fila || []).some(c => c.id === quem.id);
+    // 24/11: quem tem a cadeira guardada por um robô (saiu por conexão ou por tempo) também já estava: volta sem cair no limite do dia
+    const jaEstava = m.cad.some(c => c && (c.id === quem.id || (c.bot && c.lugarDe && c.lugarDe === quem.id))) || (m.fila || []).some(c => c.id === quem.id);
     if (!jaEstava && exigeApp(this.env) && !(await appAberto(this.env, quem.id))) { await anotarRitmo(this.env, quem.id, { semApp: 1 }); return this.recusar(ws, 'app'); }
     Object.assign(quem, await this.apoiador(quem.id));
     // planos (28/10; 03/11): sem plano, 1 partida por dia nas mesas com os amigos (mesmo convidado; até 3 na mesa de um sócio) e 3 na mesa rápida
@@ -908,8 +911,8 @@ export class Mesa {
     m.G = newGame(m.cad.map(c => c.nome)); m.G.torneio = !!m.torneio && !m.publica; this.formatoNoJogo(m.G); startHand(m.G); m.robo = null; m.tempos = null; this.inicioDePartida();
     if (!m.publica) this.contarPartidas();   // planos (28/10)
     m.fase = 'jogo'; m.seq++; m.porRobo = null; m.iniciaEm = null;
-    m.ultimo = Date.now(); m.turnoDesde = m.ultimo + this.T.distribuir;   // 28/10: os 20 s contam depois de distribuir
-    this.agendar(this.T.distribuir);
+    m.ultimo = Date.now(); m.turnoDesde = m.ultimo + this.tempoDistribuir();   // 28/10: os 20 s contam depois de distribuir
+    this.agendar(this.tempoDistribuir());
     await this.salvar(); this.espalhar();
     await this.registrarAtiva();
     // 11/11 (pedido do dono): confronto do Desafio começando: aviso no celular das duas Turmas (e do dono) para assistir
@@ -930,6 +933,7 @@ export class Mesa {
       const r = (m.ritmo || (m.ritmo = {}))[c.id] || (m.ritmo[c.id] = { n: 0, rapidas: 0, soma: 0 });
       r.n++; if (dt < RAPIDA_MS) r.rapidas++; r.soma += Math.min(dt, 30000);
     }
+    if (m.seguidos) m.seguidos[p] = 0;   // 24/11: jogou: zera as vezes seguidas sem jogar
     applyMove(G, p, mv);
     await this.depoisDaAcao(null);
     this.reacaoDosRobos();
@@ -973,12 +977,12 @@ export class Mesa {
         if (!m.cad.some(c => c && !c.bot) && !(m.fila || []).length) { await this.apagar(); return; }   // não sobrou ninguém para jogar
         this.sentarRobos(); m.cad.forEach((c, p) => { G.names[p] = c.nome; });
       }
-      if ((m.fila || []).length && this.ganhaChama(w)) { this.puxarDaFila(); this.contarPartidas(); this.novaMaoRobo(true); return this.depoisDaAcao(null, this.T.distribuir); }
+      if ((m.fila || []).length && this.ganhaChama(w)) { this.puxarDaFila(); this.contarPartidas(); this.novaMaoRobo(true); return this.depoisDaAcao(null, this.tempoDistribuir()); }
     }
     nextHand(G);
     if (r && r.matchWinner != null && !m.publica) { this.puxarDaFila(); this.contarPartidas(); }
     this.novaMaoRobo(r && r.matchWinner != null);
-    await this.depoisDaAcao(null, this.T.distribuir);
+    await this.depoisDaAcao(null, this.tempoDistribuir());
     if (r && r.matchWinner != null) await this.registrarAtiva();
   }
 
@@ -990,6 +994,8 @@ export class Mesa {
     const livres = BOT_NAMES.filter(n => !usados.includes(n.toLowerCase()));
     return livres[Math.floor(Math.random() * livres.length)] || 'Juca';
   }
+  // 24/11: o tempo da distribuição no celular; na mão com 5 carroças, mais o aviso e o embaralhar de novo
+  tempoDistribuir() { const G = this.m && this.m.G; return this.T.distribuir + (G && (G.events || []).some(e => e.type === 'redeal') ? this.T.reembaralhar : 0); }
   avisarTroca(t) {
     const m = this.m;
     m.trocaN = (m.trocaN || 0) + 1;
@@ -1012,6 +1018,25 @@ export class Mesa {
     this.avisarTroca({ entraram: [robo], sairam: [c.nome], robo: true, motivo });
     return true;
   }
+  // 24/11 (sugestão de jogadores, aprovada pelo dono): quem está conectado e deixa o tempo acabar TEMPO_SEGUIDOS vezes
+  // seguidas sai da cadeira: um robô da turma joga no lugar (a mesa não fica esperando 20 s a cada vez dele). O app avisa e
+  // oferece voltar; ao voltar, a pessoa retoma a cadeira. Só quando tem mais alguém de verdade conectado na mesa. App antigo
+  // (sem o aviso 'tempo'): a conexão fecha, ele entra de novo sozinho e retoma a cadeira (como antes)
+  tempoSeguido(p) {
+    const m = this.m, c = m.cad[p];
+    if (!c || c.bot || !c.id || !this.conectado(p)) return;
+    const s = m.seguidos || (m.seguidos = [0, 0, 0, 0]);
+    s[p] = (s[p] || 0) + 1;
+    if (s[p] < TEMPO_SEGUIDOS) return;
+    if (!m.cad.some((x, k) => k !== p && x && !x.bot && x.id && this.conectado(k))) return;
+    const id = c.id;
+    if (!this.substituir(p, 'tempo')) return;
+    s[p] = 0;
+    for (const ws of this.ctx.getWebSockets()) {
+      const a = ws.deserializeAttachment() || {};
+      if (a.id === id) { this.enviar(ws, { t: 'tempo', n: TEMPO_SEGUIDOS }); try { ws.close(4005, 'tempo'); } catch (e) {} }
+    }
+  }
   // quem voltou para a mesa onde um robô guardava o lugar dele: retoma a cadeira (devolve a cadeira, ou -1)
   voltarAoLugar(quem) {
     const m = this.m;
@@ -1021,6 +1046,7 @@ export class Mesa {
     const robo = m.cad[p].nome;
     quem.nome = this.nomeUnico(quem.nome, p);
     m.cad[p] = quem; m.G.names[p] = quem.nome;
+    if (m.seguidos) m.seguidos[p] = 0;   // 24/11
     this.avisarTroca({ entraram: [quem.nome], sairam: [robo], volta: true });
     return p;
   }
@@ -1404,6 +1430,7 @@ export class Mesa {
       this.marcarRobo(p, soMao);
       applyMove(G, p, botChoose(G, p));
       if (G.pedido) pedirPonto(G, p, true);
+      this.tempoSeguido(p);   // 24/11
       await this.depoisDaAcao(p);
       return this.reacaoDosRobos();
     }
@@ -1568,7 +1595,7 @@ export class Mesa {
       tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), quarta: !m.publica && this.socioArg() === 'livre', meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, alvo: m.alvo || 200, vence: m.vence || 2, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
       cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, campea: !!c.campea && !c.saiu && !c.bot, dourada: !!c.dourada && !c.saiu && !c.bot, sabado: !!c.sabado && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || c.menor ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, est: c.bot ? null : (c.est || null), on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
-      tempos: minha >= 0 && m.tempos ? m.tempos[minha] || 0 : 0, tolerado: TEMPO_TOLERADO,   // 03/11
+      tempos: minha >= 0 && m.tempos ? m.tempos[minha] || 0 : 0, tolerado: TEMPO_TOLERADO, seguidos: minha >= 0 && m.seguidos ? m.seguidos[minha] || 0 : 0, seguidosMax: TEMPO_SEGUIDOS,   // 03/11
       jogo, agora: Date.now(), assistindo: this.quantosAssistem(),
       confronto: (() => { try { const cf = this.confrontoVivo(m); return cf ? { a: cf.a, b: cf.b } : null; } catch (e) { return null; } })() };   // 11/11: o nome das Turmas para quem assiste
   }
