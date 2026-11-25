@@ -4884,6 +4884,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.30', data: '25/11/2026', itens: ['Na semana da Copa dos Sócios, o cartão da Quarta dos Amigos (e o da Sexta) aparece no início junto com o da Copa, e o evento do dia fica em cima.'] },
   { v: '3.61.29', data: '24/11/2026', itens: ['Turmas: o filtro de nomes ficou mais rígido, e nome impróprio vira "Turma sem nome" até quem criou escolher outro (os pontos e os membros ficam).', 'No domingo da Copa dos Sócios, o aviso das 10h para os sócios lembra que é o último dia da Copa, até as 22h.'] },
   { v: '3.61.28', data: '24/11/2026', itens: ['Uma mesa por vez: quem já está sentado numa mesa online não senta em outra ao mesmo tempo (nem por outro celular ou pelo navegador). O jogo oferece voltar para a mesa ou sair de lá e jogar na nova.', 'Sem plano: de novo 5 partidas por dia na mesa rápida e 2 nas mesas com os amigos (ou até 3 na mesa de um sócio).', 'Sábado dos Torneios: no fim de semana da Copa dos Sócios a lista não anda, e o Torneio Encontro das Águas fica para 05/12.', 'No iPhone, o placar da mesa desceu um pouco e saiu da faixa que o sistema deixa desfocada embaixo da barra de status.', 'Quem assiste: o nome comprido de quem está embaixo encurta com "…" e a contagem de pedras fica sempre à vista.', 'Turma: a bolinha de online não aparece para quem tem menos de 18 anos.'] },
   { v: '3.61.27', data: '24/11/2026', itens: ['Mesa maior: o placar ficou mais baixo (o "0 × 0" e o Menu na mesma linha) e as pedras crescem junto.', 'Quem assiste: a mesa vai até embaixo, com as pedras maiores e espalhadas até a borda, e uma linha só com o nome e as pedras de quem está embaixo.', 'O balão dos pontos e das conversas fica por cima das pedrinhas embaixo do nome.'] },
@@ -16587,7 +16588,17 @@ function sextaCartao(sx) {
   return null;
 }
 // numa sexta em que a Copa ocupa o cartão (Vem aí, ao vivo ou o pódio), a Sexta ganha o seu cartão logo abaixo
-function evCardExtra(v) { const sx = sxAgora(); if (v && v.tipo !== 'sexta' && sx) return sextaCartao(sx); const dm = dmAgora(); return v && v.tipo !== 'domingo' && dm ? domingoCartao(dm) : null; }   // 14/11: e o Domingão junto da Copa
+// 13/11 (dono, como a Sexta): na hora, a linha de cima vira "Agora" com a bolinha do ao vivo. 17/11: lousa de giz
+function quartaCartao(qa) {
+  const socio = temPlano();
+  if (qa === 'agora') return { tipo: 'quarta', ir: 'amigos', ck: 'Agora · até as 23h', vivo: true, ct: 'Quarta dos Amigos', ico: 'giz',
+    cd: socio ? 'Sua mesa está liberada: quem você chamar joga sem limite, mesmo sem ser sócio. E você ganha moral em dobro. Crie a mesa e chame a turma!'
+      : 'Na mesa com os amigos de um sócio, você joga sem limite até as 23h. Chame o seu amigo sócio, ou seja sócio e abra a mesa para a turma!' };
+  if (qa === 'hoje') return { tipo: 'quarta', ir: 'quarta', ck: 'Hoje · das 20h às 23h', ct: 'Quarta dos Amigos', ico: 'giz',
+    cd: socio ? 'Das 20h às 23h, a sua mesa fica liberada: quem você chamar joga sem limite. Já combina com a turma!' : 'Das 20h às 23h, na mesa de um amigo sócio você joga sem limite. Combine com a turma!' };
+  return null;
+}
+function evCardExtra(v) { const sx = sxAgora(), qa = quaAgora(); if (v && v.tipo !== 'sexta' && sx) return sextaCartao(sx); if (v && v.tipo !== 'quarta' && qa) return quartaCartao(qa); const dm = dmAgora(); return v && v.tipo !== 'domingo' && dm ? domingoCartao(dm) : null; }   // 14/11: e o Domingão junto da Copa
 function evCardDados() {
   const c = csAgora(), sx = sxAgora(), d = CSD.dados, socio = temPlano(), ed = c.ed;
   const eu = csMeu(d);
@@ -16595,11 +16606,8 @@ function evCardDados() {
     cd: socio ? (eu ? `Você está em ${eu.pos}º, com ${rkPts(eu.pontos)}. Cada vitória online vale ponto: bora subir!` : 'Cada vitória online vale ponto para os sócios. Entre no ranking da Copa!')
       : 'Só sócios pontuam. Veja o ranking e seja sócio para disputar o troféu.' };
   const qa = typeof quaAgora === 'function' ? quaAgora() : null;   // 12/11: Quarta dos Amigos
-  // 13/11 (dono, como a Sexta): na hora, a linha de cima vira "Agora" com a bolinha do ao vivo. 17/11: lousa de giz
-  if (qa === 'agora') return { tipo: 'quarta', ir: 'amigos', ck: 'Agora · até as 23h', vivo: true, ct: 'Quarta dos Amigos', ico: 'giz',
-    cd: socio ? 'Sua mesa está liberada: quem você chamar joga sem limite, mesmo sem ser sócio. E você ganha moral em dobro. Crie a mesa e chame a turma!'
-      : 'Na mesa com os amigos de um sócio, você joga sem limite até as 23h. Chame o seu amigo sócio, ou seja sócio e abra a mesa para a turma!' };
-  if (sx === 'agora') return sextaCartao(sx);
+  // 25/11: a Copa (Vem aí e pódio) fica no 1º cartão e a Quarta ou a Sexta vão para o 2º (que sobe quando é o evento do dia)
+  if (c.fase !== 'antes' && c.fase !== 'depois') { if (qa === 'agora') return quartaCartao(qa); if (sx === 'agora') return sextaCartao(sx); }
   if (c.fase === 'antes') return { tipo: 'copa', ir: 'copa', ck: 'Vem aí', ct: `🏆 ${ed.nome}`,
     cd: `${csQuando(ed).replace(/^d/, 'D')}. ${socio ? 'Você está dentro: o campeão leva o troféu na carteira e a mesa do campeão.' : 'Só sócios pontuam: o campeão leva o troféu na carteira e a mesa do campeão.'}` };
   if (c.fase === 'depois') {
@@ -16607,9 +16615,8 @@ function evCardDados() {
     return { tipo: 'copa', ir: 'copa', ck: 'Copa dos Sócios', ct: cp ? `🏆 ${cp.eu ? 'Você é o campeão!' : cp.nome + ' é o campeão!'}` : `🏆 A ${ed.nome} terminou`,
       cd: `Veja o pódio da ${ed.nome}. A próxima é em ${c.atual.mes}.` };
   }
-  if (qa === 'hoje') return { tipo: 'quarta', ir: 'quarta', ck: 'Hoje · das 20h às 23h', ct: 'Quarta dos Amigos', ico: 'giz',
-    cd: socio ? 'Das 20h às 23h, a sua mesa fica liberada: quem você chamar joga sem limite. Já combina com a turma!' : 'Das 20h às 23h, na mesa de um amigo sócio você joga sem limite. Combine com a turma!' };
-  if (sx === 'hoje') return sextaCartao(sx);
+  if (qa) return quartaCartao(qa);
+  if (sx) return sextaCartao(sx);
   const dm = dmAgora(); if (dm) return domingoCartao(dm);   // 14/11: Domingão da Calçada
   return null;
 }
@@ -17762,7 +17769,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.29-63a0499e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.30-d50a0bac';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -19335,7 +19342,7 @@ desenharEvCard = function () {
   const r = desenharEvCardOrdem.apply(this, arguments);
   try {
     const b1 = $('#evCard'), b2 = $('#evCard2'); if (!b1 || !b2) return r;
-    const sobe = !b1.hidden && !b2.hidden && b1.classList.contains('copa') && !b2.classList.contains('copa') && !!b2.querySelector('.ck .vivo-ponto');
+    const sobe = !b1.hidden && !b2.hidden && b1.classList.contains('copa') && !b2.classList.contains('copa') && (!!b2.querySelector('.ck .vivo-ponto') || csAgora().fase !== 'agora');   // 25/11: e o evento de hoje em cima do "Vem aí" e do pódio
     if (sobe && b2.nextElementSibling !== b1) b1.insertAdjacentElement('beforebegin', b2);
     else if (!sobe && b1.nextElementSibling !== b2) b1.insertAdjacentElement('afterend', b2);
   } catch (e) {}
