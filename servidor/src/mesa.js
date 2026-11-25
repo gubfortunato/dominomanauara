@@ -76,7 +76,8 @@ const TEMAS = ['madeira', 'garantido', 'caprichoso', 'encontro', 'feltro', 'pont
   'igreja',   // 14/11: Igreja de São Sebastião, agora o ano todo
   'guarana',   // 17/11: Guaraná
   'flutuantes',   // 17/11: Flutuantes no rio
-  'justica'];   // 18/11: Palácio da Justiça
+  'justica',   // 18/11: Palácio da Justiça
+  'pupunha'];   // 25/11: Pupunha
 // 28/10 (regras do dono): a partir de 5/11, a mesa com os amigos de quem não é sócio só usa as mesas grátis (Madeira,
 // Vermelha e Azul): no sorteio e na troca. Na mesa rápida o sorteio continua entre todas.
 export const TEMAS_GRATIS = ['madeira', 'garantido', 'caprichoso'];
