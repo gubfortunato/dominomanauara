@@ -1374,6 +1374,17 @@ html.recarregando body{opacity:0;transition:opacity .25s ease-in}
    meio pode ganhar "· Torneio · 6 na fila": antes a linha do meio não quebrava, espremia os nomes (uma palavra por
    linha) e empurrava o placar da direita para fora da tela */
 @media (orientation: portrait){
+  /* 24/11 (o dono: "aproveitar melhor o espaço da mesa"): o "0 × 0" e o Menu dividem a linha de cima; quem assiste não
+     tem Menu (ele ficava escondido, mas ocupando a altura) */
+  #scrGame .score .meta{grid-template-columns:auto auto;column-gap:10px;align-items:center}
+  #scrGame .score .meta .sr{grid-row:1;grid-column:1}
+  #scrGame .score .meta .menubtn{grid-row:1;grid-column:2}
+  #scrGame .score .meta .pt{grid-row:2;grid-column:1 / -1}
+  body.assistindo #scrGame .score .meta .menubtn{display:none}
+  body.assistindo #scrGame .score .meta .sr{grid-column:1 / -1}
+  /* os pontos que sobem ("+20") saem do canto de fora, acima do nome, para não passar por cima do Menu */
+  body:not(.assistindo) #scrGame .team.L .float{left:0;right:auto;top:-30px}
+  body:not(.assistindo) #scrGame .team.R .float{right:0;left:auto;top:-30px}
   #scrGame .score{grid-template-columns:minmax(0,1fr) fit-content(46%) minmax(0,1fr)}
   #scrGame .score .meta .pt{white-space:normal;text-align:center;text-wrap:balance;line-height:1.2}
   body.assistindo #scrGame .score .tlabel{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;letter-spacing:.06em}
@@ -2262,6 +2273,8 @@ html[data-mesa="palacio"] .table.wood{--wood-1:#14306e;--wood-2:#0b1c44;--wood-e
 /* 24/11: as pedras de cada um, de costas, logo abaixo do cartão (o mesmo tamanho em todos); a fileira dos cartões guarda o espaço */
 #scrGame .table .seats{margin-bottom:19px}
 .seat .seat-pd{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);display:flex;gap:2px;pointer-events:none}
+/* 24/11 (dono: "o balão dos pontos e das conversas está misturado com as pedras; o ideal seria ficar por cima") */
+.seat .bubble{z-index:6}
 .seat .seat-pd i{display:block;flex:none;width:6px;height:11px;border-radius:1.5px;background:linear-gradient(180deg,#fdf8ec,#e2d2b3);box-shadow:0 1px 0 rgba(0,0,0,.5),inset 0 0 0 .6px rgba(110,80,40,.4)}
 /* 28/10: etiqueta do robô da turma que entrou no lugar de quem saiu */
 .seat .sc .sc-robo{display:inline-block;font-size:.82em;font-weight:800;line-height:1.35;padding:0 6px;border-radius:7px;background:rgba(255,255,255,.2);color:#fff;letter-spacing:.02em;vertical-align:1px}
@@ -2600,6 +2613,9 @@ body.assistindo #menuBtn,body.assistindo #passBtn{visibility:hidden}
 html.mao-fora #hand > *{visibility:hidden}
 body.assistindo #scrGame .hand{display:none}   /* 03/11: quem assiste não vê as pedras de baixo: a mesa ganha a altura (a contagem vai na linha do nome) */
 body.assistindo #scrGame.game{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 76px)}
+/* 24/11: quem assiste: uma linha só embaixo da mesa (de quem é a vez já aparece na cadeira e na própria linha) */
+body.assistindo #scrGame #prompt{display:none}
+body.assistindo #scrGame .me-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* 3.29: conquistas à vista — cartão no Perfil, linha no cartão do nível e "falta pouco" no fim da mão */
 .cq-card{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:14px;width:100%;padding:14px 16px 14px 14px;border-radius:16px;border:1.5px solid var(--nos);background:color-mix(in srgb,var(--nos) 8%,var(--bg-2));color:var(--fg);font:inherit;text-align:left;cursor:pointer}
 .cq-card:active{transform:scale(.99)}
@@ -4862,6 +4878,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.27', data: '24/11/2026', itens: ['Mesa maior: o placar ficou mais baixo (o "0 × 0" e o Menu na mesma linha) e as pedras crescem junto.', 'Quem assiste: a mesa vai até embaixo, com as pedras maiores e espalhadas até a borda, e uma linha só com o nome e as pedras de quem está embaixo.', 'O balão dos pontos e das conversas fica por cima das pedrinhas embaixo do nome.'] },
   { v: '3.61.26', data: '24/11/2026', itens: ['Torneios: a ilustração agora ocupa o cartão inteiro, nítida, com a parte mais marcante de cada uma (o relógio, a cúpula, a cabeça do bicho) em destaque.', 'Copa dos Sócios: a janela abre sem piscar.', 'Termos de uso e Privacidade atualizados com os planos, os eventos da Calçada e as regras novas da mesa.'] },
   { v: '3.61.25', data: '24/11/2026', itens: ['Sócio da Calçada: depois da promoção (até 30/11), fica R$ 12,90 por mês, R$ 27,90 a cada 3 meses ou R$ 84,90 por ano, menos do que estava previsto. Quem assinou na promoção também renova por esses valores.'] },
   { v: '3.61.24', data: '24/11/2026', itens: ['Na mesa, logo abaixo do cartão de cada um, as pedras dele, pequenas e de costas: dá para ver de relance quantas cada um tem.', 'Mesa online: quem deixa o tempo acabar 3 vezes seguidas sai da cadeira e um robô da turma do bairro joga no lugar (a mesa não fica mais esperando). Dá para voltar na hora, pelo aviso.', 'Falas novas na mesa: "Aprende, que a aula é de graça!", "Passou, coitadinho!", "Sou profissional!", "Jogador dodói!", "Roubou minha batida!", "Tirou meu galo!", "Não sabe contar pedra!", "Tinha a pedra e não fez!", e os emojis 🫏 😢 🥲 😩.', 'A turma do bairro joga mais rápido.', 'Resumo da mão: de onde vieram os pontos de cada dupla (pontas, passes, galo, batida de carroça, garagem).', 'Turma: quem criou escolhe a cor e o símbolo do escudo (para os sócios), e a lista mostra quem está online agora.', 'Pontas e bucho com área de toque maior: fica mais difícil jogar no lugar errado.', 'A mesa fica um pouco mais escura depois de embaralhar, e as pedras ganham destaque.', 'Mão com 5 carroças: aviso para todos de quem tirou e as pedras misturadas de novo à vista.', 'Copa dos Sócios: a janela tem o × para fechar.'] },
@@ -14679,7 +14696,7 @@ render = function () {
         // 3.39.2: o selo (★ Apoiador, ♥ doador) de quem está embaixo também aparece para quem assiste
         const selo0 = c0.bot ? '' : seloSVG(c0.apoiador, c0.doador);
         const nb = G.hands && G.hands[0] ? G.hands[0].length : 0;   // 03/11: as pedras de baixo não aparecem para quem assiste: a contagem vai na linha do nome
-        me.innerHTML = `${src ? `<img class="fotoimg" src="${src}" alt="">` : ''}${!c0.bot && c0.turma && typeof brasao === 'function' ? `<span class="sn-br">${brasao(c0.turma, 16)}</span>` : ''}${esc(c0.nome)}${selo0 ? ` <span class="me-selo">${selo0}</span>` : ''} <small>· ${nb === 1 ? '1 pedra' : nb + ' pedras'} · parceiro de ${esc((cadDe(2) || {}).nome || '')}</small>`;
+        me.innerHTML = `${src ? `<img class="fotoimg" src="${src}" alt="">` : ''}${!c0.bot && c0.turma && typeof brasao === 'function' ? `<span class="sn-br">${brasao(c0.turma, 16)}</span>` : ''}${esc(c0.nome)}${selo0 ? ` <span class="me-selo">${selo0}</span>` : ''} <small>· ${nb === 1 ? '1 pedra' : nb + ' pedras'}${G.phase === 'play' && !dealing && G.turn === base() ? ' · jogando' : ''}</small>`;   // 24/11: o parceiro já aparece em cima ("Parceiro")
       }
       $('#prompt').textContent = G.phase === 'play' ? `Vez de ${G.names[G.turn] || ''}` : 'Fim da mão';
     } else if (ON.vista && ON.vista.assistindo > 0) {
@@ -17112,9 +17129,12 @@ function renderBoard() {
   // não couber, a mesa se afasta 12% de cada vez (e fica assim até o fim da mão). Mesa deitada: como era.
   mesaBordas = null;
   let vbFixo = null;
-  if (aMesa < 1.05) {
+  // 24/11 (o dono, com print de quem assistia: tudo amontoado no meio): vale até a mesa um pouco deitada (antes, só até 1,05)
+  if (aMesa < 1.35) {
     const hUtil = H;   // 24/11 (o dono): a mesa toda, até a faixa do Ampliar; as pedras podem passar por cima do "Mesa oferecida por"
-    const u = Math.max(18, Math.min(34, W / MESA_UNID, hUtil / 15));
+    // 24/11: na mesa um pouco deitada, a altura pede menos unidades (simulação de 500 mãos: pedras do tamanho da arrumação
+    // antiga ou maiores, espalhadas até a borda; se não couber, a mesa se afasta como sempre)
+    const u = Math.max(18, Math.min(34, W / MESA_UNID, hUtil / (aMesa < 1.05 ? 15 : aMesa < 1.2 ? 13 : 12)));
     const nT = G.chain.length + ((G.bucho && G.bucho.U) || []).length + ((G.bucho && G.bucho.D) || []).length;
     if (nT <= 1) escalaMao = 1;   // mão nova
     const querZonas = !!(drag && drag.moved && !drag.soArrumar) || !!pedraEscolhida();
@@ -17678,7 +17698,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.26-ccde29d6';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.27-072fcbe7';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
