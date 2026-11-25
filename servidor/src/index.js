@@ -381,10 +381,25 @@ function msgSumido(env, agora) {
   return { titulo: 'Sentimos sua falta na calçada!', texto: `${ev} Bora uma partida?`, url: '/' };
 }
 const MSG_ABANDONOU = { titulo: 'A calçada tá com saudade', texto: 'Faz um mês que a turma não te vê por aqui. Tem mesa nova, torneio no sábado e muita partida rolando. Sua cadeira tá guardada!', url: '/' };
+// 24/11 (dono: "Atualize os termos de privacidade"): o que ainda não tinha prazo passa a ter o prazo escrito na Privacidade.
+// Placares dos eventos e Duplas da Quarta: 13 meses. Convites pelo link e conversa do suporte: 12 meses. Vigia de burla:
+// 30 dias depois do fim (a que virou bloqueio fica enquanto ele durar; a com perdão do dono, até o fim do perdão).
+async function faxinaPrivacidade(env) {
+  const agora = Date.now(), DIA = 86400000, corte = new Date(agora - 400 * DIA - 4 * 3600000).toISOString().slice(0, 10);
+  const q = async (sql, ...v) => { try { await env.DB.prepare(sql).bind(...v).run(); } catch (e) {} };
+  for (const t of ['sexta_placar', 'segunda_placar', 'sabado_placar', 'sabado_campeao', 'quarta_duplas', 'quarta_jog']) await q(`DELETE FROM ${t} WHERE dia < ?`, corte);
+  await q('DELETE FROM convites WHERE em < ?', agora - 365 * DIA);
+  await q('DELETE FROM suporte_sugestao WHERE em < ?', agora - 365 * DIA);
+  await q('DELETE FROM suporte WHERE em < ?', agora - 365 * DIA);
+  await q('DELETE FROM mensagens WHERE criado_em < ?', agora - 365 * DIA);
+  await q('DELETE FROM apelidos_vigia WHERE ate < ? AND bloqueado IS NULL AND (perdao IS NULL OR perdao < ?)', agora - 30 * DIA, agora);
+  await q('DELETE FROM vigia_tentativas WHERE em < ?', agora - 30 * DIA);
+}
 async function lembretesDoDia(env) {
   // faxina: registros do limite de mesas com mais de 2 dias
   try { await env.DB.prepare('DELETE FROM mesas_criadas WHERE criado_em < ?').bind(Date.now() - 2 * 86400000).run(); } catch (e) {}
   try { await env.DB.prepare('DELETE FROM avisos_ev WHERE em < ?').bind(Date.now() - 30 * 86400000).run(); } catch (e) {}   // 10/11
+  await faxinaPrivacidade(env);   // 24/11: os prazos da página de Privacidade
   try { await rk.limparAbandonos(env); } catch (e) {}
   await limparCodigos(env);   // 10/11: números de mesa errados (mais de 2 horas)
   await limparVozesDenunciadas(env);   // 10/11: áudios denunciados (mais de 30 dias)

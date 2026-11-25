@@ -2770,7 +2770,9 @@ body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1
 #sbPlacar::before{content:'';display:block;height:108px;margin:-14px -16px -2px;border-radius:16px 16px 0 0;background:linear-gradient(180deg,transparent 50%,var(--bg-2)),var(--sb-img,none) center 38%/cover no-repeat}
 /* 24/11 (dono): o monumento/bicho do torneio aparece inteiro e no meio. Calçada: faixa 16:9; início: faixa 2:1 no alto do
    cartão (o resto do cartão fica azul); Ranking: faixa 2,6:1. Embaixo, a ilustração desfocada (laterais); em cima, a ilustração
-   no tamanho e na posição de sbRecorte() (--sb-tam, --sb-x, --sb-y), com as bordas laterais suaves (--sb-borda) */
+   no tamanho e na posição de sbRecorte() (--sb-tam, --sb-x, --sb-y), com as bordas laterais suaves (--sb-borda)
+   24/11 (dono: "a imagem precisa ser em todo o card"): sem a camada desfocada; a ilustração cobre a faixa de lado a lado */
+.calc-sab .sb-foto::before,.ev-card.sabado::after,#sbPlacar::after{display:none!important}
 .calc-sab .sb-foto{position:relative;overflow:hidden;height:auto;aspect-ratio:16/9;background:#174f80;-webkit-mask-image:linear-gradient(180deg,#000 64%,transparent 100%);mask-image:linear-gradient(180deg,#000 64%,transparent 100%)}
 .calc-sab .sb-foto::before,.calc-sab .sb-foto::after{content:'';position:absolute;inset:0}
 .calc-sab .sb-foto::before{inset:-24px;background:linear-gradient(180deg,transparent 52%,rgba(16,50,90,.55) 80%,rgba(16,50,90,.8)),var(--sb-img,none) center/cover no-repeat;filter:blur(12px) brightness(.82) saturate(1.1)}
@@ -4860,6 +4862,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.26', data: '24/11/2026', itens: ['Torneios: a ilustração agora ocupa o cartão inteiro, nítida, com a parte mais marcante de cada uma (o relógio, a cúpula, a cabeça do bicho) em destaque.', 'Copa dos Sócios: a janela abre sem piscar.', 'Termos de uso e Privacidade atualizados com os planos, os eventos da Calçada e as regras novas da mesa.'] },
   { v: '3.61.25', data: '24/11/2026', itens: ['Sócio da Calçada: depois da promoção (até 30/11), fica R$ 12,90 por mês, R$ 27,90 a cada 3 meses ou R$ 84,90 por ano, menos do que estava previsto. Quem assinou na promoção também renova por esses valores.'] },
   { v: '3.61.24', data: '24/11/2026', itens: ['Na mesa, logo abaixo do cartão de cada um, as pedras dele, pequenas e de costas: dá para ver de relance quantas cada um tem.', 'Mesa online: quem deixa o tempo acabar 3 vezes seguidas sai da cadeira e um robô da turma do bairro joga no lugar (a mesa não fica mais esperando). Dá para voltar na hora, pelo aviso.', 'Falas novas na mesa: "Aprende, que a aula é de graça!", "Passou, coitadinho!", "Sou profissional!", "Jogador dodói!", "Roubou minha batida!", "Tirou meu galo!", "Não sabe contar pedra!", "Tinha a pedra e não fez!", e os emojis 🫏 😢 🥲 😩.', 'A turma do bairro joga mais rápido.', 'Resumo da mão: de onde vieram os pontos de cada dupla (pontas, passes, galo, batida de carroça, garagem).', 'Turma: quem criou escolhe a cor e o símbolo do escudo (para os sócios), e a lista mostra quem está online agora.', 'Pontas e bucho com área de toque maior: fica mais difícil jogar no lugar errado.', 'A mesa fica um pouco mais escura depois de embaralhar, e as pedras ganham destaque.', 'Mão com 5 carroças: aviso para todos de quem tirou e as pedras misturadas de novo à vista.', 'Copa dos Sócios: a janela tem o × para fechar.'] },
   { v: '3.61.23', data: '24/11/2026', itens: ['Sábado dos Torneios: a ilustração de cada torneio aparece inteira e no meio do cartão (o Relógio, a Usina Chaminé, o Largo de São Sebastião, o Teatro...), com as laterais da própria ilustração desfocadas.'] },
@@ -16608,10 +16611,17 @@ async function abrirCopa() {
     const s = $('#csSer'); if (s) s.addEventListener('click', () => { track('copa-ser-socio'); closeSheet(); abrirApoio('home', 'plano'); });
     $('#csFechar').addEventListener('click', closeSheet);
   };
-  openSheet('copa', csSheetHTML(CSD.dados)); ligar();
+  let feito = csSheetHTML(CSD.dados);
+  openSheet('copa', feito); ligar();
   const d = await csBuscar(true);
-  // 24/11 (o dono: "tem que colocar o X pra fechar"): redesenha pela openSheet, que põe o × e a alça de novo
-  if (sheetKind === 'copa' && d) { const y = $('#sheet').scrollTop; openSheet('copa', csSheetHTML(d)); ligar(); $('#sheet').scrollTop = y; }
+  // 24/11 (o dono: "quando abro essa tela ela dá uma piscada"): abrir a janela de novo fazia a animação de troca. Agora só o
+  // conteúdo muda (o × e a alça ficam), e só se os números mudaram
+  if (sheetKind === 'copa' && d) {
+    const h = csSheetHTML(d); if (h === feito) return; feito = h;
+    const sh = $('#sheet'), y = sh.scrollTop;
+    [...sh.children].forEach(c => { if (!c.classList.contains('folha-alca') && !c.classList.contains('folha-x')) c.remove(); });
+    sh.insertAdjacentHTML('beforeend', h); ligar(); sh.scrollTop = y;
+  }
 }
 
 // ---- Cartão da Copa na aba Calçada (antes, durante e uma semana depois) ----
@@ -17668,7 +17678,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.25-e91a47a7';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.26-ccde29d6';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -19068,26 +19078,23 @@ function sbTema(t) {
   return { id: g.id, regra: g.regra, mesa: me[0], nome: 'Torneio ' + me[1] };
 }
 const sbImg = t => `var(--img-${(t && t.mesa) || 'teatro'}-sw)`;   // a ilustração da mesa do torneio
-// 24/11 (dono: "tem que aparecer melhor o monumento/animal" e "podem ficar melhor centralizadas... relógio, usina chaminé,
-// largo São Sebastião"): de cada ilustração, a janela que mostra o monumento ou o bicho inteiro (de y0 a y1, de 0 a 1, de cima
-// para baixo), o centro dele na horizontal (cx) e a largura natural (todas têm 150 de altura). Na faixa (largura/altura = A),
-// a imagem diminui até a janela caber na parte clara (do alto até "claro", antes do título), no mínimo SB_MIN da largura,
-// e fica com o monumento no meio (se ainda não couber, o alto do monumento no alto); as laterais mostram a própria ilustração desfocada. As faixas têm proporção fixa, então
-// o recorte (em %) é o mesmo em qualquer celular
-const SB_MIN = .62;
-const SB_JANELA = { teatro: [.1, .78, .5, 103], encontro: [.3, .85, .5, 103], arena: [.33, .72, .5, 103], boto: [.3, .82, .55, 84], mercado: [.22, .9, .55, 84], peixeboi: [.25, .85, .55, 84], ponte: [.12, .62, .55, 103], guarana: [.12, .78, .5, 117], palacio: [.25, .85, .5, 103], onca: [.12, .62, .45, 103], pontanegra: [.22, .62, .55, 103], pirarucu: [.4, .6, .5, 103], relogio: [.03, .5, .5, 84], tucano: [.52, .9, .55, 84], calcadao: [.25, .75, .55, 84], vitoria: [0, .45, .5, 103], igreja: [.18, .9, .55, 103], araraazul: [0, .7, .5, 103], chamine: [.25, .72, .5, 103], tambaqui: [.35, .68, .55, 103] };
+// 24/11 (dono: "não gostei de ter ficado embaçado dos lados" e "a imagem precisa ser em todo o card"): a ilustração cobre a
+// faixa inteira, de lado a lado (sem laterais). Como ela é em pé e a faixa é deitada, aparece uma tira dela: para cada mesa,
+// a altura (de 0 a 1, de cima para baixo) da parte mais marcante (o relógio, a cúpula, a cabeça do bicho...), que fica no
+// meio da parte clara da faixa (do alto até "claro", antes do título), e a largura natural (todas têm 150 de altura).
+// As faixas têm proporção fixa, então o recorte (em %) é o mesmo em qualquer celular
+const SB_FOCO = { teatro: [.27, 103], encontro: [.6, 103], arena: [.5, 103], boto: [.4, 84], mercado: [.37, 84], peixeboi: [.33, 84], ponte: [.3, 103],
+  guarana: [.38, 117], palacio: [.45, 103], onca: [.25, 103], pontanegra: [.38, 103], pirarucu: [.49, 103], relogio: [.25, 84], tucano: [.62, 84],
+  calcadao: [.37, 84], vitoria: [.14, 103], igreja: [.37, 103], araraazul: [.22, 103], chamine: [.42, 103], tambaqui: [.45, 103] };
 function sbRecorte(t, A, claro) {
-  const [y0, y1, cx, w] = SB_JANELA[(t && t.mesa) || 'teatro'] || [.2, .8, .5, 103], k = 150 / w, H = 1 / A, topo = .03 * H, cl = claro * H;   // em larguras da faixa
-  const Wi = Math.max(SB_MIN, Math.min(1, cl / (y1 - y0) / k)), Hi = Wi * k;   // o tamanho da imagem
-  const jan = (y1 - y0) * Hi, oy = Math.min(Math.max(jan <= cl - topo ? (y0 + y1) / 2 * Hi - (topo + cl) / 2 : y0 * Hi - topo, 0), Math.max(0, Hi - H));   // o quanto ela sobe: a janela no meio da parte clara (se não couber, o alto dela no alto)
-  const L = Math.min(Math.max(.5 - cx * Wi, 0), 1 - Wi);   // a esquerda da imagem: o monumento no meio, sem sair da faixa
-  const pc = v => (100 * v).toFixed(1) + '%';
-  return { tam: `${pc(Wi)} auto`, x: Wi < .999 ? pc(L / (1 - Wi)) : '50%', y: Hi > H ? pc(oy / (Hi - H)) : '50%', borda: Wi < .999 ? '14%' : '0%', mtam: `${pc(Wi)} 100%` };
+  const [fy, w] = SB_FOCO[(t && t.mesa) || 'teatro'] || [.4, 103], Hi = 150 / w, H = 1 / A;   // em larguras da faixa
+  const oy = Math.min(Math.max(fy * Hi - claro * H / 2, 0), Math.max(0, Hi - H));   // o quanto ela sobe
+  return { y: Hi > H ? (100 * oy / (Hi - H)).toFixed(1) + '%' : '50%' };
 }
 function sbAplicar(el, t, A, claro) {
   if (!el) return; const r = sbRecorte(t, A, claro);
-  el.style.setProperty('--sb-img', sbImg(t)); el.style.setProperty('--sb-tam', r.tam); el.style.setProperty('--sb-mtam', r.mtam);
-  el.style.setProperty('--sb-x', r.x); el.style.setProperty('--sb-y', r.y); el.style.setProperty('--sb-borda', r.borda);
+  el.style.setProperty('--sb-img', sbImg(t)); el.style.setProperty('--sb-y', r.y);
+  ['--sb-tam', '--sb-mtam', '--sb-x', '--sb-borda'].forEach(v => el.style.removeProperty(v));
 }
 function sbLimpar(el) { if (el) ['--sb-img', '--sb-tam', '--sb-mtam', '--sb-x', '--sb-y', '--sb-borda'].forEach(v => el.style.removeProperty(v)); }
 
