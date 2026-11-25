@@ -1,7 +1,7 @@
 // Servidor do Dominó Manauara (Cloudflare Workers + D1 + Durable Objects).
 // Caixa de mensagens "Fale com a gente", lembretes para jogar (Web Push), painel do dono e mesa online por convite.
 import { enviarPush } from './webpush.js';
-import { Mesa } from './mesa.js';
+import { Mesa, chavePessoa, outraMesaDe, liberarEm } from './mesa.js';
 import { pagar, pedido, plano, trazerPlano, webhook, donoPagamentos, donoDevolver, manterChaveAsaas, donoCortesia, donoPresenteBuscar, donoPresentear, donoPresenteTirar, guardarProgresso, verProgresso, donoApoiadores, cancelarAssinatura, precos, reajustesPendentes } from './pagamentos.js';
 import { atuais, imagem, contar, donoLista, donoImagem, donoSalvar, donoApagar } from './patrocinadores.js';
 import * as fotos from './fotos.js';
@@ -138,6 +138,12 @@ async function novaMesa(req, env, origin) {
   // planos (28/10): quem não é sócio cria 1 mesa com os amigos por dia (e precisa ter a partida do dia para jogar)
   let uso = null, apoia = false, outrosP = 0;
   const rede = await marcaRede(req.headers.get('cf-connecting-ip'), env);
+  // 24/11: uma mesa por vez (quem cria a mesa já senta nela)
+  { const pe = await chavePessoa(b && b.nome, rede), outra = await outraMesaDe(env, b && b.id, pe, '');
+    if (outra) {
+      if (b && b.trocar && String(b.trocar) === outra.codigo) await liberarEm(env, outra.codigo, b.id, pe);
+      else return json({ erro: 'outra-mesa', mesa: outra.codigo, publica: outra.publica, mesmo: outra.mesmo }, 409, origin);
+    } }
   // 04/11 (dono): mesa de desafio entre Turmas (botão Desafiar): só vale com o Desafio aberto e quem cria numa Turma.
   // Sem plano, não gasta a mesa nem a partida grátis do dia: até LIMITE.desafios partidas de desafio por dia.
   let vs = null;
@@ -191,6 +197,13 @@ async function mesaRapida(req, env, origin) {
   // planos (28/10; 03/11: 1 em vez de 5): sem plano, 1 partida completa por dia na mesa rápida (o limite é do aparelho: trocar de apelido
   // não muda nada; aparelho novo na mesma rede de quem acabou de bater o limite fica com o limite também)
   const rede = await marcaRede(req.headers.get('cf-connecting-ip'), env);
+  // 24/11 (dono, print do papo: "tava jogando em duas mesas"): uma mesa por vez. Sentado e conectado em outra mesa: o app
+  // pergunta se volta para ela ou sai de lá (trocar = o número da mesa de lá)
+  { const pe = await chavePessoa(b && b.nome, rede), outra = await outraMesaDe(env, b && b.id, pe, '');
+    if (outra) {
+      if (b && b.trocar && String(b.trocar) === outra.codigo) await liberarEm(env, outra.codigo, b.id, pe);
+      else return json({ erro: 'outra-mesa', mesa: outra.codigo, publica: outra.publica, mesmo: outra.mesmo }, 409, origin);
+    } }
   if (limitesAgora(env) && !(await temPlano(env, b && b.id))) {   // 17/11: fora do Happy Hour
     const uso = await usoDoDia(env, b && b.id);
     if (uso.publicas >= LIMITE.publicas) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);

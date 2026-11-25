@@ -16,7 +16,8 @@ import { anotarCodigoErrado } from './codigos.js';
 import { campeaoAte } from './copa.js';   // 10/11: o campeão da Copa dos Sócios (troféu na mesa e a mesa do campeão)
 import { VOZ, transcrever } from './voz.js';
 import { limitesValem, limitesAgora, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteHerdado, limiteDoIrmao, anotarLimite, mesasDoDia, bonusConfig, natalNoAr } from './planos.js';
-import { limitePessoa } from './pessoa.js';
+import { limitePessoa, nomeComum } from './pessoa.js';
+import { nomeChave } from './planos.js';
 import { quartaValendo, contarQuarta, anotarConvite, anotarQuarta } from './quarta.js';
 import { pesosRobo } from './robo.js';   // 13/11: robô treinado toda noite
 import { segundaValendo, anotarSegunda } from './segunda.js';
@@ -119,6 +120,30 @@ export function quemAbandonou(m) {
   });
   return out;
 }
+// 24/11 (uma mesa por vez): a mesma pessoa em outro aparelho = o mesmo apelido na mesma internet (rede do dia), em resumo;
+// nome comum fica de fora (dois "Carlos" na mesma casa jogam cada um na sua mesa)
+export async function chavePessoa(nome, rede) {
+  const n = nomeChave(nome);
+  if (!rede || !n || nomeComum(n)) return null;
+  const h = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(n + '|' + rede)));
+  return [...h.slice(0, 8)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+// a outra mesa em que a pessoa está sentada e conectada (pergunta à fila e confirma com a própria mesa); erro: deixa entrar
+export async function outraMesaDe(env, id, pe, exceto) {
+  if (!id && !pe) return null;
+  try {
+    const fila = env.MESA.get(env.MESA.idFromName('fila'));
+    const r = await (await fila.fetch('https://mesa/fila/onde', { method: 'POST', body: JSON.stringify({ id: id || '', pe: pe || '', exceto: exceto || '' }) })).json();
+    for (const x of (r && r.mesas) || []) {
+      const o = await (await env.MESA.get(env.MESA.idFromName(x.codigo)).fetch('https://mesa/ocupado', { method: 'POST', body: JSON.stringify({ id: id || '', pe: pe || '' }) })).json();
+      if (o && o.ocupado) return o;
+    }
+  } catch (e) {}
+  return null;
+}
+export async function liberarEm(env, codigo, id, pe) {
+  try { await env.MESA.get(env.MESA.idFromName(codigo)).fetch('https://mesa/liberar', { method: 'POST', body: JSON.stringify({ id: id || '', pe: pe || '' }) }); } catch (e) {}
+}
 export class Mesa {
   constructor(ctx, env) {
     this.ctx = ctx; this.env = env; this.m = null; this.reacoes = {}; bonusConfig(env);
@@ -145,6 +170,9 @@ export class Mesa {
     if (url.pathname === '/fila/vivo') return Response.json(await this.mesasAoVivo(!!url.searchParams.get('todas')));
     if (url.pathname === '/fila/ativa' && req.method === 'POST') return Response.json(await this.mesaAtiva(await req.json()));
     if (url.pathname === '/expulsar' && req.method === 'POST') return Response.json(await this.expulsar(await req.json()));
+    if (url.pathname === '/fila/onde' && req.method === 'POST') return Response.json(await this.ondeEsta(await req.json()));   // 24/11: uma mesa por vez
+    if (url.pathname === '/ocupado' && req.method === 'POST') return Response.json(this.ocupado(await req.json()));
+    if (url.pathname === '/liberar' && req.method === 'POST') return Response.json(await this.liberar(await req.json()));
     if (url.pathname === '/info' && url.searchParams.get('vivo')) return Response.json(this.infoVivo());
     if (url.pathname === '/info') {
       const m = this.viva(), id = url.searchParams.get('id');
@@ -289,6 +317,15 @@ export class Mesa {
     try { await this.ctx.storage.put('q:' + codigo, v); if (fora.length) await this.ctx.storage.delete(fora.map(c => 'q:' + c)); } catch (e) {}
     return { ok: true };
   }
+  // 24/11 (uma mesa por vez): as mesas vivas em que a pessoa aparece (pelo código do aparelho ou pelo resumo apelido + rede)
+  async ondeEsta(b) {
+    const id = String((b && b.id) || ''), pe = String((b && b.pe) || ''), exceto = String((b && b.exceto) || ''), agora = Date.now(), q = await this.quadro(), out = [];
+    for (const x of q.values()) {
+      if (!x.resumo || x.codigo === exceto || agora - x.t > QUADRO.guarda) continue;
+      if ((id && (x.resumo.ids || []).includes(id)) || (pe && (x.resumo.pes || []).includes(pe))) out.push({ codigo: x.codigo, publica: !!x.publica });
+    }
+    return { mesas: out.slice(-3) };
+  }
   async mesaPeloVer(t) {
     if (!/^[0-9a-f]{16}$/.test(String(t || ''))) return { codigo: null };
     const agora = Date.now(), q = await this.quadro();
@@ -329,6 +366,7 @@ export class Mesa {
       livres: m.cad.filter(c => !c || (c.bot && !c.saiu)).length,
       vagaEspera: m.cad.some(c => !c || c.bot), vagaJogo: m.cad.some(c => c && c.bot),
       ids: m.cad.filter(c => c && (c.id || c.lugarDe)).map(c => c.id || c.lugarDe),   // só para a fila saber quem volta para a própria mesa
+      pes: m.cad.filter(c => c && !c.bot && c.pe).map(c => c.pe),   // 24/11: uma mesa por vez (resumo do apelido + rede do dia)
       // 17/11: as Turmas de quem está em cada lado e se cada lado tem cadeira (vazia ou de robô), para a fila juntar Turmas diferentes
       tl: [0, 1].map(w => [...new Set(m.cad.filter((c, p) => c && !c.bot && c.turma && p % 2 === w).map(c => c.turma))]),
       vl: [0, 1].map(w => m.cad.some((c, p) => p % 2 === w && (!c || (c.bot && (m.fase === 'espera' || !c.lugarDe))))) };
@@ -568,6 +606,18 @@ export class Mesa {
       if (!jaEstava && !this.mesaDesafio() && !livre && await limiteDoIrmao(this.env, tipo, quem.id, quem.nome)) return this.recusar(ws, m.publica ? 'limite-rapida' : 'limite');   // 10/11 (desligado): outro aparelho com o mesmo apelido
     } else if (!jaEstava) await aparelhoDesde(this.env, quem.id);
     quem.rede = att.rede || null;
+    // 24/11 (dono, print do papo: "tava jogando em duas mesas"): uma mesa por vez. Quem já tem a cadeira aqui volta sempre;
+    // quem chega (ou volta para a cadeira guardada pelo robô) e está sentado e conectado em outra mesa, não senta
+    quem.pe = await chavePessoa(quem.nome, att.rede);
+    if (!att.so && !m.cad.some(c => c && !c.bot && c.id === quem.id)) {
+      // a mesma pessoa já sentada aqui por outro aparelho conta como outra mesa (não pega duas cadeiras)
+      const aqui = quem.pe ? m.cad.findIndex((c, k) => c && !c.bot && !c.saiu && c.pe === quem.pe && c.id !== quem.id && this.conectado(k)) : -1;
+      const outra = aqui >= 0 ? { ocupado: true, codigo: m.codigo, publica: !!m.publica, mesmo: false } : await this.outraMesa(quem);
+      if (outra) {
+        if (msg.trocar && String(msg.trocar) === outra.codigo) { if (outra.codigo === m.codigo) await this.liberar({ pe: quem.pe }); else await this.liberarEm(outra.codigo, quem); }
+        else return this.recusar(ws, msg.umaMesa ? 'outra-mesa' : 'app', { mesa: outra.codigo, publica: outra.publica, mesmo: outra.mesmo });   // app antigo: um aviso que ele conhece
+      }
+    }
     try { await apelidoNaTurma(this.env, quem.id, quem.nome); } catch (e) {}
     let p = m.cad.findIndex(c => c && c.id === quem.id);
     const f = (m.fila || []).findIndex(c => c.id === quem.id);
@@ -585,6 +635,7 @@ export class Mesa {
       c.apoiador = quem.planoIncerto ? c.apoiador : quem.apoiador; c.doador = quem.doador; c.foto = quem.foto; c.turma = quem.turma; c.nv = quem.nv; c.est = quem.est; c.menor = quem.menor; c.rei = quem.rei; c.campeao = quem.campeao; c.campea = quem.campea; c.dourada = quem.dourada; c.sabado = quem.sabado; c.apelidoRuim = quem.apelidoRuim;   // 10/11: falha do banco não tira o selo
       if (quem.uso) c.uso = quem.uso;
       if (quem.rede) c.rede = quem.rede;
+      if (quem.pe) c.pe = quem.pe;   // 24/11
       if (c.saiu) { c.saiu = false; c.bot = false; }
     } else if (m.fase === 'espera') {
       p = this.cadeiraNaEspera();
@@ -874,6 +925,45 @@ export class Mesa {
     for (let i = livres.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [livres[i], livres[j]] = [livres[j], livres[i]]; }
     m.cad = m.cad.map(c => c || { id: null, nome: livres.pop(), av: null, nv: nivelRobo(), bot: true, saiu: false });
   }
+  // 24/11 (uma mesa por vez)
+  daPessoa(c, id, pe) { return !!(c && !c.bot && !c.saiu && ((id && c.id === id) || (pe && c.pe === pe))); }
+  ocupado(b) {
+    const m = this.viva(), id = String((b && b.id) || ''), pe = String((b && b.pe) || '');
+    if (!m || (!id && !pe)) return { ocupado: false };
+    const p = m.cad.findIndex((c, k) => this.daPessoa(c, id, pe) && this.conectado(k));
+    return p < 0 ? { ocupado: false } : { ocupado: true, codigo: m.codigo, publica: !!m.publica, mesmo: m.cad[p].id === id };
+  }
+  // "Sair de lá e jogar aqui": a pessoa sai desta mesa (como se tocasse em Sair: no meio da partida, um robô assume e conta
+  // como saída no meio) e o app que ainda estava nela recebe o aviso de que ela foi para outra mesa
+  async liberar(b) {
+    const m = this.viva(), id = String((b && b.id) || ''), pe = String((b && b.pe) || '');
+    if (!m || (!id && !pe)) return { ok: false };
+    const ids = new Set(); let mudou = false;
+    m.cad.forEach((c, p) => {
+      if (!this.daPessoa(c, id, pe)) return;
+      ids.add(c.id); mudou = true;
+      if (m.fase === 'espera') {
+        m.cad[p] = null;
+        const i = !m.publica ? (m.fila || []).findIndex(x => this.conectadoId(x.id)) : -1;
+        if (i >= 0) { const novo = m.fila.splice(i, 1)[0]; novo.nome = this.nomeUnico(novo.nome, p); m.cad[p] = novo; }
+      } else this.substituir(p, 'saiu');
+    });
+    if (!mudou) return { ok: true };
+    for (const ws of this.ctx.getWebSockets()) {
+      const a = ws.deserializeAttachment() || {};
+      if (a.id && ids.has(a.id)) { this.enviar(ws, { t: 'erro', cod: 'foi-outra-mesa' }); a.id = null; ws.serializeAttachment(a); try { ws.close(4006, 'outra-mesa'); } catch (e) {} }
+    }
+    const humanos = m.cad.filter(c => c && !c.bot);
+    if (!humanos.length) { await this.apagar(); return { ok: true }; }
+    if (!humanos.some(c => c.id === m.dono)) m.dono = humanos[0].id;
+    m.ultimo = Date.now();
+    if (m.fase === 'jogo') this.agendar();
+    await this.salvar(); this.espalhar();
+    return { ok: true };
+  }
+  // a outra mesa em que a pessoa está sentada e conectada (pergunta à fila e confirma com a própria mesa); erro: deixa entrar
+  async liberarEm(codigo, quem) { await liberarEm(this.env, codigo, quem.id, quem.pe); }
+  async outraMesa(quem) { return outraMesaDe(this.env, quem.id, quem.pe, this.m.codigo); }
   recusar(ws, cod, extra) { this.enviar(ws, Object.assign({ t: 'erro', cod }, extra || {})); try { ws.close(4000, cod); } catch (e) {} }   // 12/11: extra (pessoa: o limite é por pessoa)
   nomeUnico(nome, p) {
     const usados = this.m.cad.filter((c, k) => c && k !== p).concat(this.m.fila || []).map(c => c.nome.toLowerCase());
