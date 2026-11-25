@@ -15,7 +15,7 @@ import { PAPO, limparPapo, tamanho, papoRuim } from './papo.js';
 import { anotarCodigoErrado } from './codigos.js';
 import { campeaoAte } from './copa.js';   // 10/11: o campeão da Copa dos Sócios (troféu na mesa e a mesa do campeão)
 import { VOZ, transcrever } from './voz.js';
-import { limitesValem, limitesAgora, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteHerdado, limiteDoIrmao, anotarLimite, mesasDoDia, bonusConfig, natalNoAr } from './planos.js';
+import { limitesValem, limitesAgora, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteHerdado, limiteDoIrmao, anotarLimite, mesasDoDia, bonusConfig, natalNoAr, reveillonNoAr } from './planos.js';
 import { limitePessoa, nomeComum } from './pessoa.js';
 import { nomeChave } from './planos.js';
 import { quartaValendo, contarQuarta, anotarConvite, anotarQuarta } from './quarta.js';
@@ -84,8 +84,8 @@ export const TEMAS_GRATIS = ['madeira', 'garantido', 'caprichoso'];
 const TEMAS_FORA = ['manaus357', 'branca', 'anavilhanas'];   // mesas que saíram do jogo (app antigo ainda pode pedir)
 // 05/11 (pedido do dono): de 5/11 a 19/11, mais 2 mesas grátis por dia (planos.js, mesasDoDia)
 // 18/11 (Natal): de 1º a 25/12, a mesa de Natal é de graça e entra no sorteio; fora disso, não vale
-const temasAgora = () => natalNoAr() ? TEMAS.concat('natal') : TEMAS;
-const temasGratis = () => TEMAS_GRATIS.concat(mesasDoDia(), natalNoAr() ? ['natal'] : []);
+const temasAgora = () => TEMAS.concat(natalNoAr() ? ['natal'] : [], reveillonNoAr() ? ['reveillon'] : []);   // 25/11: e a do Réveillon
+const temasGratis = () => TEMAS_GRATIS.concat(mesasDoDia(), natalNoAr() ? ['natal'] : [], reveillonNoAr() ? ['reveillon'] : []);
 const sortearTema = (atual, so) => { const l = (so || temasAgora()).filter(t => t !== atual); return l[Math.floor(Math.random() * l.length)]; };
 const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 
@@ -877,6 +877,7 @@ export class Mesa {
     if (t === 'campeao') { const m = this.m, d = m && m.cad.concat(m.fila || []).find(c => c && !c.bot && c.id === m.dono); return !!(d && d.campeao); }
     if (t === 'confraria') { const m = this.m, d = m && m.cad.concat(m.fila || []).find(c => c && !c.bot && c.id === m.dono); return !!(d && d.campea); }   // 10/11: Mesa da Campeã (Desafio das Confrarias)
     if (t === 'natal' && !natalNoAr()) return false;   // 18/11: a de Natal só de 1º a 25/12
+    if (t === 'reveillon' && !reveillonNoAr()) return false;   // 25/11: a do Réveillon só de 26/12 a 1º/1
     const so = this.temasDoDono(); return !TEMAS_FORA.includes(t) && (!so || so.includes(t));
   }   // 03/11: a Manaus 357 saiu do jogo; 10/11: a Branca também
   async trocarTema(id) {
