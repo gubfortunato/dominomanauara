@@ -51,7 +51,7 @@ const QUADRO = { validade: 30 * 60000, guarda: 3 * 3600000, max: 80, renova: 5 *
 const SILENCIO = 50000;
 const TEMPO_SEGUIDOS = 3;   // 24/11 (sugestão de jogadores, aprovada pelo dono): 3 vezes seguidas sem jogar e um robô da turma assume a cadeira
 const TEMPO_TOLERADO = 3;   // 03/11: quantas vezes por partida quem está conectado pode passar dos 20 s sem a partida deixar de contar
-const REACAO = { intervalo: 2000, porMinuto: 8, maior: 44 };   // 24/11: 12 reações novas (eram até 33)   // reações: só o número de uma frase pronta, nunca texto              // sem sinal do celular há 50 s: conta como desconectado
+const REACAO = { intervalo: 2000, porMinuto: 8, maior: 46 };   // 25/11: +2 frases do dono (eram até 44). 24/11: 12 reações novas (eram até 33)   // reações: só o número de uma frase pronta, nunca texto              // sem sinal do celular há 50 s: conta como desconectado
 const VIDA = 24 * 60 * 60 * 1000;    // a mesa some 24 h depois da última ação
 const ASSISTIR_MAX = 30;           // 3.28: quantas pessoas podem assistir a mesma mesa
 
