@@ -198,8 +198,9 @@ async function resumo(env, ap) {
       }
     }
   }
+  const extra = {}; await pedidosNoResumo(env, ap, idOk(ap) ? await turmaDoAparelho(env, ap) : null, turma, extra);   // 25/11: pedidos para entrar
   let campeaAte = 0; if (idOk(ap)) { try { campeaAte = await campeaDesafioAte(env, ap); } catch (er) {} }
-  return { desafio, turma, campeaAte, escudos: await escudos(env) };
+  return Object.assign({ desafio, turma, campeaAte, escudos: await escudos(env) }, extra);
 }
 // GET /turma?aparelho=  e  GET /desafio
 export async function ver(env, origin, h, url) { return h.json(await resumo(env, url.searchParams.get('aparelho')), 200, origin); }
@@ -223,6 +224,7 @@ export async function nova(req, env, origin, h) {
     try {
       await env.DB.prepare('INSERT INTO turmas (codigo, nome, criador, criada, titulos) VALUES (?, ?, ?, ?, 0)').bind(codigo, nome, b.aparelho, Date.now()).run();
       await env.DB.prepare('INSERT INTO turma_membros (aparelho, turma, nome, entrou) VALUES (?, ?, ?, ?)').bind(b.aparelho, codigo, apelidoOk(b.apelido), Date.now()).run();
+      await cancelarPedidos(env, b.aparelho);   // 25/11
       return h.json(await resumo(env, b.aparelho), 201, origin);
     } catch (e) { /* código repetido: tenta outro */ }
   }
@@ -240,9 +242,11 @@ export async function entrar(req, env, origin, h) {
   const ja = await turmaDoAparelho(env, b.aparelho);
   if (ja && ja.codigo === codigo) return h.json(await resumo(env, b.aparelho), 200, origin);
   if (ja) return h.json({ erro: 'ja-tem', turma: ja.nome }, 409, origin);
+  try { if (await env.DB.prepare('SELECT 1 FROM turma_fora WHERE turma = ? AND aparelho = ?').bind(codigo, b.aparelho).first()) return h.json({ erro: 'tirado-codigo' }, 403, origin); } catch (e) {}   // 25/11
   const n = await env.DB.prepare('SELECT COUNT(*) AS n FROM turma_membros WHERE turma = ?').bind(codigo).first();
   if (n && n.n >= MAX_MEMBROS) return h.json({ erro: 'cheia' }, 409, origin);
   await env.DB.prepare('INSERT INTO turma_membros (aparelho, turma, nome, entrou) VALUES (?, ?, ?, ?)').bind(b.aparelho, codigo, apelidoOk(b.apelido), Date.now()).run();
+  await cancelarPedidos(env, b.aparelho);   // 25/11: entrou por código: o pedido para outra Turma sai
   return h.json(await resumo(env, b.aparelho), 200, origin);
 }
 // POST /turma/nome {aparelho, nome}: novo nome para a Turma que teve o nome retirado
@@ -400,4 +404,154 @@ export async function avisosDesafio(env, agora) {
     if (rk.length) await env.DB.batch(rk.map((r, i) => st.bind(e.ano, r.codigo, i + 1, e.agora)));
   } catch (er) {}
   return out;
+}
+
+// ===== 25/11 (ideia de jogador no "Fale com a gente", aprovada pelo dono): pedir para entrar numa Turma =====
+// Quem é sócio e ainda não tem Turma pede para entrar (sem precisar do código); quem decide aceita ou recusa. Quem decide:
+// quem criou, se ainda está na Turma e jogou nos últimos 14 dias; senão, quem está há mais tempo e jogou nesse tempo.
+// Quem decide também tira alguém da Turma: os pontos ficam na Turma, e quem saiu só volta por pedido aceito (depois de 7 dias).
+// Turma com menor de 18 não recebe pedidos, e menor de 18 não pede (ninguém de fora chega até menor por aqui).
+// O código continua igual: quem recebe o código de alguém da Turma entra direto (o código já é o convite).
+const PEDIDO = { vence: 3 * 86400000, porDia: 5, espera: 7 * 86400000, inativo: 14 * 86400000 };
+async function chaveMembro(ap) {
+  const b = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode('turma|' + ap)));
+  return [...b.slice(0, 6)].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+async function decisor(env, t) {
+  const agora = Date.now();
+  const { results } = await env.DB.prepare('SELECT m.aparelho, m.nome, m.entrou, (SELECT p.visto_em FROM presenca p WHERE p.aparelho = m.aparelho) AS visto FROM turma_membros m WHERE m.turma = ? ORDER BY m.entrou').bind(t.codigo).all();
+  const ms = results || []; if (!ms.length) return null;
+  const ativo = m => (m.visto || 0) > agora - PEDIDO.inativo, cri = ms.find(m => m.aparelho === t.criador);
+  if (cri && ativo(cri)) return cri;
+  return ms.find(ativo) || cri || ms[0];
+}
+async function temMenor(env, codigo) {
+  try { return !!(await env.DB.prepare('SELECT 1 FROM turma_membros m JOIN presenca p ON p.aparelho = m.aparelho WHERE m.turma = ? AND p.menor = 1 LIMIT 1').bind(codigo).first()); }
+  catch (e) { return true; }   // na dúvida, não recebe pedido
+}
+async function ehMenor(env, ap) { try { const r = await env.DB.prepare('SELECT menor FROM presenca WHERE aparelho = ?').bind(ap).first(); return !!(r && r.menor); } catch (e) { return false; } }
+// um aviso no celular para um aparelho (uma vez por chave)
+async function pushPara(env, ap, chave, msg) {
+  if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC || !idOk(ap)) return 0;
+  const agora = Date.now();
+  let lista = [];
+  try { const { results } = await env.DB.prepare('SELECT DISTINCT a.id, a.endpoint, a.p256dh, a.auth FROM avisos a JOIN avisos_id i ON i.endpoint = a.endpoint WHERE i.aparelho = ? AND NOT EXISTS (SELECT 1 FROM avisos_ev e WHERE e.aviso = a.id AND e.chave = ?) LIMIT 5').bind(ap, chave).all(); lista = results || []; } catch (e) { return 0; }
+  let ok = 0;
+  for (const s of lista) {
+    try { await env.DB.prepare('INSERT OR IGNORE INTO avisos_ev (aviso, chave, em) VALUES (?, ?, ?)').bind(s.id, chave, agora).run(); } catch (e) {}
+    let r = 0; try { r = await enviarPush(s, msg, env); } catch (e) {}
+    if (r === 404 || r === 410) { try { await env.DB.prepare('DELETE FROM avisos WHERE id = ?').bind(s.id).run(); await env.DB.prepare('DELETE FROM avisos_id WHERE endpoint = ?').bind(s.endpoint).run(); } catch (e) {} }
+    if (r >= 200 && r < 300) { ok++; try { await env.DB.prepare('UPDATE avisos SET ultimo_envio = ?, envios = envios + 1 WHERE id = ?').bind(agora, s.id).run(); } catch (e) {} }
+  }
+  return ok;
+}
+async function pedidoAberto(env, ap) {
+  return await env.DB.prepare("SELECT p.id, p.turma, p.em, t.nome FROM turma_pedidos p JOIN turmas t ON t.codigo = p.turma WHERE p.aparelho = ? AND p.estado = 'aberto' AND p.em > ? ORDER BY p.em DESC LIMIT 1")
+    .bind(ap, Date.now() - PEDIDO.vence).first();
+}
+const cancelarPedidos = (env, ap) => env.DB.prepare("UPDATE turma_pedidos SET estado = 'cancelado', decidido = ? WHERE aparelho = ? AND estado = 'aberto'").bind(Date.now(), ap).run().catch(() => {});
+// as Turmas que recebem pedido (com gente, sem menor, com vaga), para quem ainda não tem Turma
+async function abertas(env, ano) {
+  try {
+    const { results } = await env.DB.prepare(`SELECT t.codigo, t.nome, (SELECT COUNT(*) FROM turma_membros m WHERE m.turma = t.codigo) AS membros,
+      COALESCE((SELECT p.pontos FROM desafio_pontos p WHERE p.turma = t.codigo AND p.edicao = ?), 0) AS pontos FROM turmas t WHERE ${COM_GENTE}
+      AND NOT EXISTS (SELECT 1 FROM turma_membros m JOIN presenca p ON p.aparelho = m.aparelho WHERE m.turma = t.codigo AND p.menor = 1)
+      ORDER BY pontos DESC, membros DESC LIMIT 60`).bind(ano).all();
+    return (results || []).filter(r => r.membros < MAX_MEMBROS && nomeSeguro(r.nome) !== 'Turma sem nome').slice(0, 30).map(r => ({ nome: r.nome, membros: r.membros, pontos: r.pontos }));
+  } catch (e) { return []; }
+}
+// o que vai no resumo: para quem decide, os pedidos e as chaves de quem está na Turma; para quem não tem Turma, o pedido e as Turmas
+async function pedidosNoResumo(env, ap, t, turma, out) {
+  try {
+    if (t) {
+      const d = await decisor(env, t);
+      turma.decide = !!(d && d.aparelho === ap); turma.quemDecide = d ? d.nome : null;
+      if (turma.decide) {
+        const { results } = await env.DB.prepare("SELECT id, nome, em FROM turma_pedidos WHERE turma = ? AND estado = 'aberto' AND em > ? ORDER BY em LIMIT 20").bind(t.codigo, Date.now() - PEDIDO.vence).all();
+        turma.pedidos = (results || []).map(r => ({ id: r.id, nome: nomeOfensivo(r.nome) ? 'Jogador' : r.nome, em: r.em, vence: r.em + PEDIDO.vence }));
+        const { results: ms } = await env.DB.prepare('SELECT aparelho FROM turma_membros WHERE turma = ? ORDER BY entrou LIMIT ?').bind(t.codigo, MAX_MEMBROS).all();
+        turma.membrosK = []; for (const m of ms || []) turma.membrosK.push(m.aparelho === ap ? null : await chaveMembro(m.aparelho));
+      }
+    } else if (idOk(ap)) {
+      const p = await pedidoAberto(env, ap);
+      out.pedido = p ? { turma: nomeSeguro(p.nome), em: p.em, vence: p.em + PEDIDO.vence } : null;
+      out.abertas = await abertas(env, edicao(env).ano);
+    }
+  } catch (e) {}
+}
+// POST /turma/pedir {aparelho, nome (da Turma), apelido, menor}
+export async function pedir(req, env, origin, h) {
+  let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
+  if (!idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
+  if (b.menor || await ehMenor(env, b.aparelho)) return h.json({ erro: 'menor' }, 403, origin);
+  if (await bloqueado(env, b.aparelho) || await pegaPeloApelido(env, b.aparelho, b.apelido)) return h.json({ erro: 'bloqueado' }, 403, origin);
+  if (!(await temPlano(env, b.aparelho))) return h.json({ erro: 'socio-pedir' }, 403, origin);
+  const ja = await turmaDoAparelho(env, b.aparelho); if (ja) return h.json({ erro: 'ja-tem', turma: ja.nome }, 409, origin);
+  const t = await env.DB.prepare(`SELECT t.codigo, t.nome, t.criador FROM turmas t WHERE lower(t.nome) = lower(?) AND ${COM_GENTE}`).bind(limpa(b.nome, 40)).first();
+  if (!t || nomeSeguro(t.nome) === 'Turma sem nome' || await temMenor(env, t.codigo)) return h.json({ erro: 'nao-recebe' }, 404, origin);
+  const n = await env.DB.prepare('SELECT COUNT(*) AS n FROM turma_membros WHERE turma = ?').bind(t.codigo).first();
+  if (n && n.n >= MAX_MEMBROS) return h.json({ erro: 'cheia' }, 409, origin);
+  const agora = Date.now();
+  const ab = await pedidoAberto(env, b.aparelho); if (ab) return h.json({ erro: 'ja-pediu', turma: nomeSeguro(ab.nome) }, 409, origin);
+  const dia = await env.DB.prepare('SELECT COUNT(*) AS n FROM turma_pedidos WHERE aparelho = ? AND em > ?').bind(b.aparelho, agora - 86400000).first();
+  if (dia && dia.n >= PEDIDO.porDia) return h.json({ erro: 'muitos-pedidos' }, 429, origin);
+  const rec = await env.DB.prepare("SELECT decidido FROM turma_pedidos WHERE aparelho = ? AND turma = ? AND estado = 'recusado' AND decidido > ? ORDER BY decidido DESC LIMIT 1").bind(b.aparelho, t.codigo, agora - PEDIDO.espera).first();
+  if (rec) return h.json({ erro: 'recusado', volta: rec.decidido + PEDIDO.espera }, 409, origin);
+  const fora = await env.DB.prepare('SELECT em FROM turma_fora WHERE turma = ? AND aparelho = ? AND em > ?').bind(t.codigo, b.aparelho, agora - PEDIDO.espera).first();
+  if (fora) return h.json({ erro: 'tirado', volta: fora.em + PEDIDO.espera }, 409, origin);
+  const nome = apelidoOk(b.apelido);
+  const r = await env.DB.prepare("INSERT INTO turma_pedidos (turma, aparelho, nome, em, estado) VALUES (?, ?, ?, ?, 'aberto')").bind(t.codigo, b.aparelho, nome, agora).run();
+  const id = r && r.meta ? r.meta.last_row_id : null;
+  try { const d = await decisor(env, t); if (d) await pushPara(env, d.aparelho, `tp:${id}:dec`, { titulo: `🙋 ${nome} quer entrar na ${nomeT(nomeSeguro(t.nome))}`, texto: 'Toque para aceitar ou recusar. O pedido vence em 3 dias.', url: '/?abrir=turma' }); } catch (e) {}
+  return h.json(await resumo(env, b.aparelho), 200, origin);
+}
+// POST /turma/pedido/cancelar {aparelho}
+export async function cancelarPedido(req, env, origin, h) {
+  let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
+  if (!idOk(b.aparelho)) return h.json({ erro: 'aparelho' }, 400, origin);
+  await cancelarPedidos(env, b.aparelho);
+  return h.json(await resumo(env, b.aparelho), 200, origin);
+}
+// POST /turma/pedido/responder {aparelho, id, aceitar}
+export async function responderPedido(req, env, origin, h) {
+  let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
+  if (!idOk(b.aparelho) || !Number.isInteger(Number(b.id))) return h.json({ erro: 'formato' }, 400, origin);
+  if (await bloqueado(env, b.aparelho)) return h.json({ erro: 'bloqueado' }, 403, origin);
+  const t = await turmaDoAparelho(env, b.aparelho); if (!t) return h.json({ erro: 'sem-turma' }, 404, origin);
+  const d = await decisor(env, t); if (!d || d.aparelho !== b.aparelho) return h.json({ erro: 'so-quem-decide' }, 403, origin);
+  const agora = Date.now();
+  const p = await env.DB.prepare("SELECT id, aparelho, nome, em FROM turma_pedidos WHERE id = ? AND turma = ? AND estado = 'aberto' AND em > ?").bind(Number(b.id), t.codigo, agora - PEDIDO.vence).first();
+  if (!p) return h.json(Object.assign(await resumo(env, b.aparelho), { aviso: 'pedido-fechado' }), 200, origin);
+  const nomeTu = nomeT(nomeSeguro(t.nome));
+  if (b.aceitar) {
+    const ja = await turmaDoAparelho(env, p.aparelho);
+    if (ja) { await env.DB.prepare("UPDATE turma_pedidos SET estado = 'cancelado', decidido = ? WHERE id = ?").bind(agora, p.id).run(); return h.json(Object.assign(await resumo(env, b.aparelho), { aviso: 'ja-tem-outra' }), 200, origin); }
+    const n = await env.DB.prepare('SELECT COUNT(*) AS n FROM turma_membros WHERE turma = ?').bind(t.codigo).first();
+    if (n && n.n >= MAX_MEMBROS) return h.json({ erro: 'cheia' }, 409, origin);
+    await env.DB.prepare('INSERT INTO turma_membros (aparelho, turma, nome, entrou) VALUES (?, ?, ?, ?)').bind(p.aparelho, t.codigo, apelidoOk(p.nome), agora).run();
+    await env.DB.prepare("UPDATE turma_pedidos SET estado = 'aceito', decidido = ? WHERE id = ?").bind(agora, p.id).run();
+    try { await env.DB.prepare('DELETE FROM turma_fora WHERE turma = ? AND aparelho = ?').bind(t.codigo, p.aparelho).run(); } catch (e) {}
+    try { await pushPara(env, p.aparelho, `tp:${p.id}:res`, { titulo: `✅ Você entrou na ${nomeTu}!`, texto: 'Seu pedido foi aceito. Bora jogar com a Turma e somar pontos no Desafio das Confrarias!', url: '/?abrir=turma' }); } catch (e) {}
+  } else {
+    await env.DB.prepare("UPDATE turma_pedidos SET estado = 'recusado', decidido = ? WHERE id = ?").bind(agora, p.id).run();
+    try { await pushPara(env, p.aparelho, `tp:${p.id}:res`, { titulo: 'Seu pedido de Turma', texto: `Desta vez a ${nomeTu} não aceitou. Tem outras Turmas esperando por você: toque para ver.`, url: '/?abrir=turma' }); } catch (e) {}
+  }
+  return h.json(await resumo(env, b.aparelho), 200, origin);
+}
+// POST /turma/tirar {aparelho, alvo (a chave de quem sai)}
+export async function tirar(req, env, origin, h) {
+  let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
+  if (!idOk(b.aparelho) || !/^[0-9a-f]{12}$/.test(String(b.alvo || ''))) return h.json({ erro: 'formato' }, 400, origin);
+  if (await bloqueado(env, b.aparelho)) return h.json({ erro: 'bloqueado' }, 403, origin);
+  const t = await turmaDoAparelho(env, b.aparelho); if (!t) return h.json({ erro: 'sem-turma' }, 404, origin);
+  const d = await decisor(env, t); if (!d || d.aparelho !== b.aparelho) return h.json({ erro: 'so-quem-decide' }, 403, origin);
+  const { results } = await env.DB.prepare('SELECT aparelho, nome FROM turma_membros WHERE turma = ?').bind(t.codigo).all();
+  let alvo = null; for (const m of results || []) { if (m.aparelho !== b.aparelho && await chaveMembro(m.aparelho) === b.alvo) { alvo = m; break; } }
+  if (!alvo) return h.json(await resumo(env, b.aparelho), 200, origin);
+  const agora = Date.now();
+  await env.DB.prepare('DELETE FROM turma_membros WHERE aparelho = ? AND turma = ?').bind(alvo.aparelho, t.codigo).run();
+  try { await env.DB.prepare('DELETE FROM desafio_membros WHERE aparelho = ?').bind(alvo.aparelho).run(); } catch (e) {}   // os pontos ficam na Turma
+  await env.DB.prepare('INSERT INTO turma_fora (turma, aparelho, em) VALUES (?, ?, ?) ON CONFLICT (turma, aparelho) DO UPDATE SET em = excluded.em').bind(t.codigo, alvo.aparelho, agora).run();
+  try { await pushPara(env, alvo.aparelho, `tt:${t.codigo}:${diaManaus(agora)}`, { titulo: 'Mudança na sua Turma', texto: `Você não faz mais parte da ${nomeT(nomeSeguro(t.nome))}. Pode entrar em outra Turma ou criar a sua: toque para ver.`, url: '/?abrir=turma' }); } catch (e) {}
+  return h.json(await resumo(env, b.aparelho), 200, origin);
 }

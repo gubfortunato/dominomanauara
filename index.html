@@ -2275,6 +2275,34 @@ html[data-mesa="palacio"] .table.wood{--wood-1:#14306e;--wood-2:#0b1c44;--wood-e
 .seat .seat-pd{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);display:flex;gap:2px;pointer-events:none}
 /* 24/11 (dono: "o balão dos pontos e das conversas está misturado com as pedras; o ideal seria ficar por cima") */
 .seat .bubble{z-index:6}
+/* 25/11: pedir para entrar numa Turma, os pedidos para quem decide e tirar alguém da Turma */
+.tm-pedir .tm-abertas{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.tm-abertas li{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 8px;border-radius:12px;background:color-mix(in srgb,var(--fg) 5%,transparent)}
+.tm-abertas li[hidden]{display:none}
+.tm-ab-br{display:grid;place-items:center}
+.tm-ab-tx{display:grid;min-width:0}
+.tm-ab-tx b{font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm-ab-tx small{font-size:13px;color:var(--muted)}
+.tm-ab-bt{padding:7px 14px;font-size:14.5px;min-height:0;width:auto}
+.tm-ab-ver{margin-top:6px;align-self:center}
+.tm-pedido-ok{border-color:color-mix(in srgb,var(--nos) 45%,var(--line))}
+.tm-pedidos{display:grid;gap:4px;margin:10px 0 12px;padding:12px;border-radius:14px;border:1.5px solid color-mix(in srgb,var(--nos) 55%,transparent);background:color-mix(in srgb,var(--nos) 9%,transparent)}
+.tm-pedidos > b{font-size:16px}
+.tm-pedidos > small{font-size:13.5px;color:var(--muted)}
+.tm-pedidos ul{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:8px}
+.tm-pedidos li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.tp-tx{display:grid;min-width:0}
+.tp-tx b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tp-tx small{font-size:12.5px;color:var(--muted)}
+.tp-bts{display:flex;gap:6px}
+.tm-pedidos .tp-bts button.primary,.tm-pedidos .tp-bts button.secondary{padding:8px 12px;font-size:14.5px;line-height:1.2;min-height:0;width:auto;margin:0}
+.tm-tirar{display:block;margin:4px auto 0}
+.tt-lista{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.tt-lista li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 10px;border-radius:12px;background:color-mix(in srgb,var(--fg) 5%,transparent)}
+.tt-lista li b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-lista button{padding:7px 14px;font-size:14px;min-height:0;width:auto}
+.tt-lista button.tt-certeza{background:#b33a2c;border-color:#b33a2c;color:#fff}
+.tt-vazio{color:var(--muted)}
 /* 24/11 (dono: "bastante destaque para os campeões"): Galeria dos Campeões, "Temos campeão!", Hall da Fama, títulos e mesa */
 .camp-gal{display:block;width:100%;margin:2px 0 16px;padding:11px 10px 10px;border:0;border-radius:18px;background:linear-gradient(160deg,#fbe3a2 0%,#f3c063 46%,#dd9e36 100%);color:#2a1a0b;text-align:left;font:inherit;cursor:pointer;box-shadow:0 8px 20px rgba(150,95,20,.3),inset 0 0 0 1.5px rgba(255,255,255,.5)}
 .camp-gal:active{transform:scale(.99)}
@@ -4987,6 +5015,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.35', data: '25/11/2026', itens: ['Turmas: quem é sócio e ainda não tem Turma pode pedir para entrar, sem precisar do código. Quem decide na Turma recebe o aviso e aceita ou recusa.', 'Quem decide também pode tirar alguém da Turma (os pontos continuam com a Turma).'] },
   { v: '3.61.34', data: '25/11/2026', itens: ['Mesa no celular em pé: a carroça fica sempre atravessada e centrada na pedra anterior, também perto da borda (antes ela podia ficar deitada na linha, igual a uma pedra comum, e confundia a contagem na ponta). As fileiras correm meia pedra longe da borda.'] },
   { v: '3.61.33', data: '25/11/2026', itens: ['No iPhone, o resumo do fim da mão (e as outras janelas que sobem de baixo) abre sempre do começo, não mais rolado para o fim.'] },
   { v: '3.61.32', data: '25/11/2026', itens: ['Duas frases novas no Reagir da mesa online: "Quem é o CEO dessa empresa?" e "No have to do, my friend!".', 'O botão "Ver o ranking" do Hall da Fama ficou mais bonito.'] },
@@ -12154,13 +12183,14 @@ const TURMA_ERROS = { bloqueado: 'Seu acesso às turmas foi bloqueado por desres
   nome: 'Esse nome não pode. Escolha outro, sem palavrão nem ofensa.', 'nome-usado': 'Já tem uma Turma com esse nome. Escolha outro.',
   'nao-existe': 'Não achei Turma com esse código. Confira as letras e os números.', codigo: 'O código tem 6 letras e números.',
   cheia: 'Essa Turma já está com 40 pessoas.', muitas: 'Muitas Turmas criadas hoje neste aparelho. Tente amanhã.',
-  'so-quem-criou': 'Só quem criou a Turma pode escolher o novo nome.', 'nao-pode': 'O nome desta Turma já foi escolhido.', 'sem-turma': 'Você não está numa Turma.'
+  'so-quem-criou': 'Só quem criou a Turma pode escolher o novo nome.', 'socio-pedir': 'Pedir para entrar numa Turma é um dos benefícios do Sócio da Calçada.', 'nao-recebe': 'Essa Turma não está recebendo pedidos agora.',
+  'muitos-pedidos': 'Muitos pedidos hoje. Tente amanhã.', 'tirado-codigo': 'Você saiu dessa Turma: para voltar, peça para entrar de novo.', 'so-quem-decide': 'Só quem decide na Turma pode fazer isso.', menor: 'Pedir para entrar numa Turma é para maiores de 18 anos.', 'nao-pode': 'O nome desta Turma já foi escolhido.', 'sem-turma': 'Você não está numa Turma.'
 };
 async function turmaApi(path, body) {
   const r = await fetch(CONFIG.api + path, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : undefined);
   return { ok: r.ok, status: r.status, j: await r.json().catch(() => ({})) };
 }
-function turmaGuardar(j) { if (j && j.escudos) escudosGuardar(j.escudos); if (j && 'turma' in j) TM.info = j.turma; if (j && j.desafio) TM.desafio = j.desafio; if (j && 'campeaAte' in j) { TM.campeaAte = Number(j.campeaAte) || 0; store.set('dmz-campea-ate', String(TM.campeaAte)); } TM.em = Date.now(); }
+function turmaGuardar(j) { if (j && j.escudos) escudosGuardar(j.escudos); if (j && 'turma' in j) { TM.info = j.turma; TM.pedido = j.pedido || null; TM.abertas = j.abertas || []; } if (j && j.desafio) TM.desafio = j.desafio; if (j && 'campeaAte' in j) { TM.campeaAte = Number(j.campeaAte) || 0; store.set('dmz-campea-ate', String(TM.campeaAte)); } TM.em = Date.now(); }
 async function turmaCarregar(forcar) {
   if (!CONFIG.api || !profile || (!forcar && Date.now() - TM.em < 60000)) return;
   TM.em = Date.now();
@@ -12375,6 +12405,7 @@ function desenharTurma() {
       <div class="tm-box"><b>Entrar numa Turma</b><small>Peça o código para quem criou.</small>
         <input id="tmCod" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="Código: 6 letras e números" value="${esc(TM.convite || '')}">
         <button type="button" class="primary" id="tmEntrar">Entrar na Turma</button></div>
+      ${pedidoHTML()}
       <div class="tm-box"><b>Criar uma Turma</b><small>Depois é só mandar o código para os amigos: com 2 pessoas, a Turma já pontua.</small>
         <input id="tmNome" maxlength="24" autocomplete="off" placeholder="Nome da Turma (ex.: Os do Japiim)">
         <button type="button" class="secondary" id="tmCriar">Criar Turma</button></div>
@@ -12397,7 +12428,7 @@ function desenharTurma() {
       ${t.retirado ? retiradoHTML(t) : ''}
       ${t.campea && d.campea ? `<p class="tm-campea">🏆 <b>${esc(nomeTurma(t.nome))} é a campeã de ${d.campea.ano}!</b> Brasão dourado, a Mesa da Campeã e o selo 🏆 para quem estava na Turma, até ${dataBR(d.campea.ate - 1)}.</p>` : souCampea() ? '<p class="tm-campea">🏆 Você tem a <b>Mesa da Campeã</b> e o selo 🏆 do Desafio das Confrarias.</p>' : ''}
       <p class="tm-status">${status}${t.taca ? ' · 🏆 Grande Taça' : t.titulos ? ` · ${t.titulos} ${t.titulos === 1 ? 'estrela' : 'estrelas'} de campeã` : ''}</p>
-      ${solo}<div class="tm-cod"><small>Código da Turma</small><b>${esc(t.codigo)}</b></div>
+      ${pedidosHTML(t)}${solo}<div class="tm-cod"><small>Código da Turma</small><b>${esc(t.codigo)}</b></div>
       ${d.aberto ? `<button type="button" class="${so ? 'secondary' : 'primary'} tm-desafiar" id="tmDesafiar">Desafiar outra Turma</button><p class="note tm-desafiar-n">Cria uma mesa online e manda o convite para a outra Turma. Quem ganhar leva o ponto${so ? ' (com pelo menos 2 pessoas na Turma)' : ''}. A partida passa ao vivo na Calçada: todo mundo pode assistir.</p>` : ''}
       ${so ? '' : `<a class="${d.aberto ? 'secondary' : 'primary'} tm-zap" id="tmZap" href="${esc(zap)}" target="_blank" rel="noopener">Chamar a turma no WhatsApp</a>`}
       ${dcFalta(t, d)}
@@ -12406,6 +12437,7 @@ function desenharTurma() {
       <p class="tm-k">Na Turma (${t.membros.length})${tmOnline(t) ? ` · <span class="tm-on-n">${tmOnline(t)} online agora</span>` : ''}</p><p class="tm-membros">${t.membros.map((n, i) => `<span class="tm-mb${t.membrosOn && t.membrosOn[i] ? ' on' : ''}">${esc(n)}</span>`).join('<span class="tm-sep">, </span>')}</p>
       ${rankingHTML(d, t)}${regra}${campeas}
       <button type="button" class="secondary tm-fechar" id="tmFechar">Fechar</button>
+      ${t.decide && t.membros.length > 1 ? '<button type="button" class="linkbtn tm-tirar" id="tmTirar">Tirar alguém da Turma</button>' : ''}
       <button type="button" class="linkbtn tm-sair" id="tmSair">Sair da Turma</button>`;
     $('#tmZap').addEventListener('click', () => track('turma-convite'));
     const br = $('#tmRenomear');
@@ -12423,6 +12455,81 @@ function desenharTurma() {
     });
   }
   $('#tmFechar').addEventListener('click', closeSheet);
+  ligarPedidos();   // 25/11
+}
+// ===== 25/11 (ideia de jogador, aprovada pelo dono): pedir para entrar numa Turma; quem decide aceita, recusa ou tira alguém =====
+const tmVence = v => { const d = Math.ceil((v - Date.now()) / 86400000); return d <= 1 ? 'em menos de 1 dia' : `em ${d} dias`; };
+const tmHa = t => { const m = Math.max(1, Math.round((Date.now() - t) / 60000)); return m < 60 ? `há ${m} min` : m < 1440 ? `há ${Math.round(m / 60)} h` : `há ${Math.round(m / 1440)} ${Math.round(m / 1440) === 1 ? 'dia' : 'dias'}`; };
+const TM_AB_MOSTRA = 6;
+function pedidoHTML() {
+  if (!profile || profile.idade === 'menor') return '';
+  const p = TM.pedido;
+  if (p) return `<div class="tm-box tm-pedido-ok"><b>🙋 Pedido enviado para a ${esc(nomeTurma(p.turma))}</b><small>Quem decide na Turma recebeu o aviso. Se ninguém responder, o pedido vence ${tmVence(p.vence)}.</small>
+    <button type="button" class="secondary" id="tmCancelarPedido">Cancelar o pedido</button></div>`;
+  const l = TM.abertas || []; if (!l.length) return '';
+  const it = (x, i) => `<li${i >= TM_AB_MOSTRA ? ' class="tm-ab-mais" hidden' : ''}><span class="tm-ab-br">${brasao(x.nome, 30)}</span><span class="tm-ab-tx"><b>${esc(nomeTurma(x.nome))}</b><small>${x.membros} ${x.membros === 1 ? 'pessoa' : 'pessoas'}${x.pontos ? ' · ' + pts(x.pontos) : ''}</small></span><button type="button" class="secondary tm-ab-bt" data-pedir="${esc(x.nome)}">Pedir</button></li>`;
+  return `<div class="tm-box tm-pedir"><b>Não tem código? Peça para entrar</b><small>${temPlano() ? 'Escolha a Turma: quem decide lá recebe o aviso e aceita ou recusa.' : 'Sócio da Calçada pede para entrar em qualquer Turma. Toque em Pedir e veja como.'}</small>
+    <ul class="tm-abertas">${l.map(it).join('')}</ul>${l.length > TM_AB_MOSTRA ? `<button type="button" class="linkbtn tm-ab-ver" id="tmAbVer">Ver todas (${l.length})</button>` : ''}</div>`;
+}
+function pedidosHTML(t) {
+  if (!t.decide || !t.pedidos || !t.pedidos.length) return '';
+  return `<div class="tm-pedidos" role="region" aria-label="Pedidos para entrar"><b>🙋 ${t.pedidos.length === 1 ? 'Pedido para entrar' : `${t.pedidos.length} pedidos para entrar`}</b><small>Você decide quem entra na Turma.</small>
+    <ul>${t.pedidos.map(p => `<li><span class="tp-tx"><b>${esc(p.nome)}</b><small>pediu ${tmHa(p.em)} · vence ${tmVence(p.vence)}</small></span>
+      <span class="tp-bts"><button type="button" class="primary" data-aceitar="${p.id}">Aceitar</button><button type="button" class="secondary" data-recusar="${p.id}">Recusar</button></span></li>`).join('')}</ul></div>`;
+}
+async function tmPedidoAcao(path, extra, ok, ev) {
+  const bt = $$('#turmaFolha button, #sheet .tt-lista button'); bt.forEach(b => b.disabled = true);
+  try {
+    const r = await turmaApi(path, Object.assign({ aparelho: meuId(), apelido: profile ? profile.name : '', menor: !!(profile && profile.idade === 'menor') }, extra));
+    if (r.ok) { turmaGuardar(r.j); track(ev); toast(r.j.aviso === 'pedido-fechado' ? 'Esse pedido já tinha vencido ou sido cancelado.' : r.j.aviso === 'ja-tem-outra' ? 'Essa pessoa já entrou em outra Turma.' : typeof ok === 'function' ? ok(r.j) : ok); }
+    else {
+      const e = r.j.erro, volta = r.j.volta ? ` Dá para pedir de novo a partir de ${dataBR(r.j.volta)}.` : '';
+      toast(e === 'ja-pediu' ? `Você já tem um pedido aberto para a ${nomeTurma(r.j.turma || '')}. Cancele antes de pedir para outra.` : e === 'ja-tem' ? `Você já está na ${nomeTurma(r.j.turma || '')}.`
+        : e === 'recusado' ? 'Essa Turma recusou o seu pedido há pouco.' + volta : e === 'tirado' ? 'Você saiu dessa Turma há pouco.' + volta : TURMA_ERROS[e] || 'Não deu agora. Tente de novo.');
+      if (e === 'socio-pedir') { pedirSocio(); return; }
+    }
+  } catch (er) { toast('Sem internet agora. Tente de novo.'); }
+  if (sheetKind === 'info' && $('#turmaFolha')) desenharTurma(); else abrirTurma();
+  if (screen === 'home') desenharCartaoTurma();
+}
+function ligarPedidos() {
+  const box = $('#turmaFolha'); if (!box || box.__pedidos) return; box.__pedidos = true;
+  box.addEventListener('click', e => {
+    const p = e.target.closest('[data-pedir]'), a = e.target.closest('[data-aceitar]'), r = e.target.closest('[data-recusar]');
+    if (p) { if (!temPlano()) { track('turma-pedir-socio'); pedirSocio(); return; } tmPedidoAcao('/turma/pedir', { nome: p.dataset.pedir }, j => `Pedido enviado para a ${nomeTurma((j.pedido && j.pedido.turma) || p.dataset.pedir)}! Quem decide lá recebe o aviso.`, 'turma-pediu'); return; }
+    if (a) { tmPedidoAcao('/turma/pedido/responder', { id: +a.dataset.aceitar, aceitar: true }, 'Pronto! A pessoa entrou na Turma.', 'turma-pedido-aceito'); return; }
+    if (r) {
+      if (r.dataset.certeza !== '1') { r.dataset.certeza = '1'; r.textContent = 'Recusar mesmo?'; return; }
+      tmPedidoAcao('/turma/pedido/responder', { id: +r.dataset.recusar, aceitar: false }, 'Pedido recusado.', 'turma-pedido-recusado'); return;
+    }
+    if (e.target.closest('#tmCancelarPedido')) { tmPedidoAcao('/turma/pedido/cancelar', {}, 'Pedido cancelado.', 'turma-pedido-cancelou'); return; }
+    if (e.target.closest('#tmAbVer')) { $$('#turmaFolha .tm-ab-mais').forEach(li => li.hidden = false); e.target.closest('#tmAbVer').remove(); return; }
+    if (e.target.closest('#tmTirar')) { abrirTirar(); return; }
+  });
+}
+function pedirSocio() {
+  const pode = typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !(profile && profile.idade === 'menor');
+  openSheet('info', `<p class="eyebrow">Desafio das Confrarias</p><h2 id="sheetTitle">Bora entrar numa Turma? 🤝</h2>
+    <p>Com o Sócio da Calçada, você escolhe a Turma que quiser e pede para entrar, mesmo sem conhecer ninguém lá. Quem decide na Turma recebe o aviso na hora e pode te aceitar.</p>
+    <p class="note">Ainda não é sócio? Sem problema: peça o código para alguém de uma Turma, ou crie a sua e chame os amigos.</p>
+    ${pode ? '<button type="button" class="primary" id="pdSocio" style="width:100%">Quero ser sócio</button>' : ''}
+    <button type="button" class="secondary" id="pdVoltar" style="width:100%;margin-top:8px">Voltar</button>`);
+  const b = $('#pdSocio'); if (b) b.addEventListener('click', () => { track('plano-quero-turma-pedir'); closeSheet(); abrirApoio(screen || 'home'); });
+  $('#pdVoltar').addEventListener('click', () => abrirTurma());
+}
+// quem decide tira alguém da Turma: os pontos ficam; a pessoa só volta por pedido aceito, depois de 7 dias
+function abrirTirar() {
+  const t = TM.info; if (!t || !t.decide || !t.membrosK) { abrirTurma(); return; }
+  const l = t.membros.map((n, i) => ({ n, k: t.membrosK[i] })).filter(x => x.k);
+  openSheet('info', `<p class="eyebrow">${esc(nomeTurma(t.nome))}</p><h2 id="sheetTitle">Tirar alguém da Turma</h2>
+    <p>Quem sair não perde nada para a Turma: os pontos que fez no Desafio continuam com vocês. A pessoa recebe um aviso e só volta se pedir para entrar de novo (depois de 7 dias) e você aceitar.</p>
+    <ul class="tt-lista">${l.map(x => `<li><b>${esc(x.n)}</b><button type="button" class="secondary" data-tirar="${x.k}">Tirar</button></li>`).join('') || '<li class="tt-vazio">Só você está na Turma.</li>'}</ul>
+    <button type="button" class="secondary" id="ttVoltar" style="width:100%;margin-top:12px">Voltar para a Turma</button>`);
+  $$('#sheet [data-tirar]').forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.certeza !== '1') { $$('#sheet [data-tirar]').forEach(o => { if (o !== b) { o.dataset.certeza = ''; o.textContent = 'Tirar'; } }); b.dataset.certeza = '1'; b.textContent = 'Tirar mesmo?'; b.classList.add('tt-certeza'); return; }
+    tmPedidoAcao('/turma/tirar', { alvo: b.dataset.tirar }, 'Pronto. A pessoa saiu da Turma.', 'turma-tirou');
+  }));
+  $('#ttVoltar').addEventListener('click', () => abrirTurma());
 }
 // 24/11 (ideia de jogador, aprovada pelo dono): quem está online agora na Turma e o escudo escolhido por quem criou (sócio)
 const tmOnline = t => (t.membrosOn || []).filter(Boolean).length;
@@ -18117,7 +18224,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.34-da4637b1';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.35-cb295395';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

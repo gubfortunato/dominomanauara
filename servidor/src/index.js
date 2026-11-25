@@ -409,6 +409,8 @@ async function faxinaPrivacidade(env) {
   await q('DELETE FROM apelidos_vigia WHERE ate < ? AND bloqueado IS NULL AND (perdao IS NULL OR perdao < ?)', agora - 30 * DIA, agora);
   await q('DELETE FROM vigia_tentativas WHERE em < ?', agora - 30 * DIA);
   await q('DELETE FROM campeoes WHERE em < ?', agora - 400 * DIA);   // 24/11: Hall da Fama, 13 meses
+  await q('DELETE FROM turma_pedidos WHERE em < ?', agora - 30 * DIA);   // 25/11: pedidos para entrar numa Turma, 30 dias
+  await q('DELETE FROM turma_fora WHERE em < ?', agora - 400 * DIA);   // 25/11: quem foi tirado de uma Turma, 13 meses
 }
 async function lembretesDoDia(env) {
   // faxina: registros do limite de mesas com mais de 2 dias
@@ -668,6 +670,10 @@ export default {
       if (url.pathname === '/offline' && req.method === 'POST') return await offline.conferir(req, env, origin, H);   // 04/11: trava do jogo offline
       if (url.pathname === '/turma/entrar' && req.method === 'POST') return await turmas.entrar(req, env, origin, H);
       if (url.pathname === '/turma/sair' && req.method === 'POST') return await turmas.sair(req, env, origin, H);
+      if (url.pathname === '/turma/pedir' && req.method === 'POST') return await turmas.pedir(req, env, origin, H);   // 25/11: pedir para entrar
+      if (url.pathname === '/turma/pedido/cancelar' && req.method === 'POST') return await turmas.cancelarPedido(req, env, origin, H);
+      if (url.pathname === '/turma/pedido/responder' && req.method === 'POST') return await turmas.responderPedido(req, env, origin, H);
+      if (url.pathname === '/turma/tirar' && req.method === 'POST') return await turmas.tirar(req, env, origin, H);
       if (url.pathname === '/turma/nome' && req.method === 'POST') return await turmas.renomear(req, env, origin, H);
       if (url.pathname === '/turma/escudo' && req.method === 'POST') return await turmas.escudo(req, env, origin, H);   // 24/11: o escudo da Turma (quem criou, sócio)   // 04/11: novo nome da Turma que perdeu o nome
       if (url.pathname === '/pagar' && req.method === 'POST') return await pagar(req, env, origin, H);

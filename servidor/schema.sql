@@ -369,3 +369,9 @@ CREATE TABLE IF NOT EXISTS sabado_campeao (dia TEXT PRIMARY KEY, aparelho TEXT, 
 -- 24/11 (dono: "bastante destaque para os campeões"): o Hall da Fama. O Rei da Calçada de cada semana e o Campeão de cada
 -- mês, guardados quando aparecem (a Copa fica em copa_premios e o sábado em sabado_campeao). 13 meses (faxina da Privacidade).
 CREATE TABLE IF NOT EXISTS campeoes (tipo TEXT NOT NULL, periodo TEXT NOT NULL, aparelho TEXT, nome TEXT, av TEXT, pontos INTEGER, em INTEGER NOT NULL, PRIMARY KEY (tipo, periodo));
+
+-- 25/11 (ideia de jogador, aprovada pelo dono): pedir para entrar numa Turma (30 dias) e quem foi tirado de uma Turma (13 meses)
+CREATE TABLE IF NOT EXISTS turma_pedidos (id INTEGER PRIMARY KEY AUTOINCREMENT, turma TEXT NOT NULL, aparelho TEXT NOT NULL, nome TEXT, em INTEGER NOT NULL, estado TEXT NOT NULL DEFAULT 'aberto', decidido INTEGER);
+CREATE INDEX IF NOT EXISTS turma_pedidos_ap ON turma_pedidos (aparelho, em);
+CREATE INDEX IF NOT EXISTS turma_pedidos_t ON turma_pedidos (turma, estado);
+CREATE TABLE IF NOT EXISTS turma_fora (turma TEXT NOT NULL, aparelho TEXT NOT NULL, em INTEGER NOT NULL, PRIMARY KEY (turma, aparelho));
