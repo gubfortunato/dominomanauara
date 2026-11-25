@@ -5020,6 +5020,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.38', data: '25/11/2026', itens: ['Pedras mais macias: a pedra jogada agora pousa na mesa sem dar aquela tremida no fim, e ao arrumar a mão as pedras deslizam direto para o lugar novo (antes davam um pulinho).'] },
   { v: '3.61.37', data: '25/11/2026', itens: ['Mesa Rio Negro: o barco agora é de madeira (era verde), e a borda da mesa acompanha a cor.', 'Conquistas de cara nova: cada uma ganhou a sua medalha (o galo, o boto, o Teatro Amazonas, o bolo da Copa...). A que falta aparece apagada até você conquistar.'] },
   { v: '3.61.36', data: '25/11/2026', itens: ['Mesa Palácio da Justiça com ilustração nova: a fachada de dia, com céu azul, sem carros nem placas.'] },
   { v: '3.61.35', data: '25/11/2026', itens: ['Turmas: quem é sócio e ainda não tem Turma pode pedir para entrar, sem precisar do código. Quem decide na Turma recebe o aviso e aceita ou recusa.', 'Quem decide também pode tirar alguém da Turma (os pontos continuam com a Turma).'] },
@@ -8323,7 +8324,7 @@ const announceBase = announce;
 announce = function () {
   announceBase();
   // a sua pedra já voou quando você jogou: não voa de novo quando o servidor confirma
-  if (mode === 'on' && ON.otimista && pendingFly && pendingFly.p === 0 && pendingFly.key === ON.otimista) pendingFly = null;
+  if (mode === 'on' && ON.otimista && pendingFly && pendingFly.p === 0 && pendingFly.key === ON.otimista) { pendingFly = null; if (freshKey === ON.otimista) freshKey = null; }   // 25/11: sem aparecer de novo
   if (mode === 'on') ON.otimista = null;
 };
 const seatFaceBase = seatFace;
@@ -17621,7 +17622,10 @@ function maoSuave() {
   if (reduzMov()) return;
   ordem.forEach(i => {
     const b = porI[i], a = antes[i], r = b.getBoundingClientRect(), dx = a[0] - r.left, dy = a[1] - r.top;
-    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) b.animate([{ transform: `translate(${dx}px, ${dy}px)` }], { duration: 170, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    // 25/11: dois quadros (de onde estava até o lugar novo). Com um quadro só, a pedra pulava, voltava e pulava de novo.
+    // A pedra que saiu (apagada, 4px abaixo) mantém o deslocamento dela no fim.
+    const bt = getComputedStyle(b).transform, fim = bt && bt !== 'none' ? ' ' + bt : '';
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) b.animate([{ transform: `translate(${dx}px, ${dy}px)${fim}` }, { transform: `translate(0px, 0px)${fim}` }], { duration: 180, easing: 'cubic-bezier(.2,.8,.2,1)' });
   });
 }
 function renderHand() {
@@ -17788,20 +17792,24 @@ function flyIn(pf) {
   const g = $('#board .tk' + pf.key);
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!g || reduce || !Element.prototype.animate || screen !== 'game') return;
-  const body = g.querySelector('.t-body'), tr = body.getBoundingClientRect();
-  if (!tr.width) return;
-  const horiz = tr.width > tr.height;
+  const body = g.querySelector('.t-body'), tb = body.getBoundingClientRect();
+  if (!tb.width) return;
+  const horiz = tb.width > tb.height;
+  // 25/11: o tamanho da casa inteira da pedra (o corpo tem 0,035 de folga de cada lado), no mesmo centro
+  const u = tb.width / (horiz ? 1.93 : .93), tr = { width: (horiz ? 2 : 1) * u, height: (horiz ? 1 : 2) * u };
+  tr.left = tb.left + tb.width / 2 - tr.width / 2; tr.top = tb.top + tb.height / 2 - tr.height / 2;
   const el = document.createElement('div');
   el.className = 'flytile';
   el.style.width = tr.width + 'px'; el.style.height = tr.height + 'px';
   const t = pf.tile;
   const lp = typeof posDaPedra === 'function' ? posDaPedra(pf.key) : null, vf = lp && lp.v1 != null ? [lp.v1, lp.v2] : [pf.v1, pf.v2];   // 3.25: já no lado certo
-  el.innerHTML = `<svg viewBox="${horiz ? '-1 -0.5 2 1' : '-0.5 -1 1 2'}">${tileSVG({ x: 0, y: 0, o: horiz ? 'h' : 'v', v1: vf[0], v2: vf[1] }, '', false)}</svg>`;
+  const fcls = [pf.key === G.lastKey ? 'last' : '', mode === 'on' && OURO.has(pf.key) ? 'ouro' : ''].join(' ').trim();   // 25/11: igual à da mesa
+  el.innerHTML = `<svg viewBox="${horiz ? '-1 -0.5 2 1' : '-0.5 -1 1 2'}">${tileSVG({ x: 0, y: 0, o: horiz ? 'h' : 'v', v1: vf[0], v2: vf[1] }, fcls)}</svg>`;
   document.body.appendChild(el);
   // de onde a pedra sai: o ponto onde você soltou, ou a foto de quem jogou
   let sx, sy, s0, r0, dur;
   const mine = pf.p === seatMe && lastDrop && Date.now() - lastDrop.t < 4000;
-  if (mine) { sx = lastDrop.x; sy = lastDrop.y; s0 = 1.05; r0 = horiz ? -90 : 0; dur = Math.min(380, 220 + Math.hypot(lastDrop.x - (tr.left + tr.width / 2), lastDrop.y - (tr.top + tr.height / 2)) * 0.35); lastDrop = null; }   // 17/11: mais longe, um pouco mais de tempo (suave)
+  if (mine) { sx = lastDrop.x; sy = lastDrop.y; s0 = 1.05; r0 = horiz ? -90 : 0; dur = Math.max(270, Math.min(380, 220 + Math.hypot(lastDrop.x - (tr.left + tr.width / 2), lastDrop.y - (tr.top + tr.height / 2)) * 0.35)); lastDrop = null; }   // 25/11: no mínimo 270 ms, o tempo da mesa terminar de se ajustar (260 ms)   // 17/11: mais longe, um pouco mais de tempo (suave)
   else {
     const pos = (pf.p - base() + 4) % 4;
     const src = pos === 0 ? $('#hand') : $(`.seat[data-pos="${pos}"] .av`);
@@ -17813,13 +17821,16 @@ function flyIn(pf) {
   const T = (x, y, sc, r) => `translate(${(x - tr.width / 2).toFixed(1)}px, ${(y - tr.height / 2).toFixed(1)}px) rotate(${r}deg) scale(${sc})`;
   flying = { key: pf.key }; g.classList.add('incoming'); g.classList.remove('fresh');
   // 17/11 (dono: "mais suave, direto"): a sua pedra vai reta do dedo até o lugar, girando e encolhendo junto; a dos outros mantém o arco
+  // 25/11: a sombra do voo (pedra no alto) vai baixando e some no pouso, onde fica só a sombra da pedra na mesa
+  const NO_AR = 'drop-shadow(0px 10px 12px rgba(0,0,0,.5))', POUSO = 'drop-shadow(0px 0px 0px rgba(0,0,0,0))';
   const a = el.animate(mine ? [
-    { transform: T(sx, sy, s0, r0), opacity: 1 },
-    { transform: T(tx, ty, 1, 0), opacity: 1 }
+    { transform: T(sx, sy, s0, r0), opacity: 1, filter: NO_AR },
+    { offset: .6, filter: NO_AR },
+    { transform: T(tx, ty, 1, 0), opacity: 1, filter: POUSO }
   ] : [
-    { transform: T(sx, sy, s0, r0), opacity: 0 },
-    { transform: T((sx + tx) / 2, Math.min(sy, ty) - 30, (s0 + 1) / 2 + .08, r0 / 3), opacity: 1, offset: .55 },
-    { transform: T(tx, ty, 1, 0), opacity: 1 }
+    { transform: T(sx, sy, s0, r0), opacity: 0, filter: NO_AR },
+    { transform: T((sx + tx) / 2, Math.min(sy, ty) - 30, (s0 + 1) / 2 + .08, r0 / 3), opacity: 1, filter: NO_AR, offset: .55 },
+    { transform: T(tx, ty, 1, 0), opacity: 1, filter: POUSO }
   ], { duration: dur, easing: mine ? 'cubic-bezier(.2,.85,.25,1)' : 'cubic-bezier(.3,.6,.25,1)', fill: 'forwards' });
   const land = () => {
     el.remove();
@@ -18065,7 +18076,9 @@ function onDragEnd(e) {
       const b = $(`#hand .ht[data-i="${i}"]`);
       if (gr && b && !reduzMov()) {
         const r = b.getBoundingClientRect();
-        b.animate([{ transform: `translate(${gr.left + gr.width / 2 - (r.left + r.width / 2)}px, ${gr.top + gr.height / 2 - (r.top + r.height / 2)}px) scale(${(gr.width / r.width).toFixed(3)}) rotate(-5deg)`, opacity: 1 }], { duration: 190, easing: 'cubic-bezier(.2,.8,.2,1)' });
+        // 25/11: dois quadros: sai de onde o dedo soltou e assenta no lugar (com um quadro só ela ia e voltava)
+        b.animate([{ transform: `translate(${gr.left + gr.width / 2 - (r.left + r.width / 2)}px, ${gr.top + gr.height / 2 - (r.top + r.height / 2)}px) scale(${(gr.width / r.width).toFixed(3)}) rotate(-5deg)`, opacity: 1 },
+          { transform: 'translate(0px, 0px) scale(1) rotate(0deg)', opacity: 1 }], { duration: 200, easing: 'cubic-bezier(.2,.8,.2,1)' });
       }
     } catch (er) {}
     try { if (!store.get('dmz-arrumou')) { store.set('dmz-arrumou', String(Date.now())); track('arrumar-mao'); } } catch (er) {}
@@ -18257,7 +18270,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.37-928ba12c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.38-0ddca13e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
