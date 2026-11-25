@@ -2353,7 +2353,8 @@ html[data-mesa="palacio"] .table.wood{--wood-1:#14306e;--wood-2:#0b1c44;--wood-e
 .hf-voce{margin:10px 2px 2px;font-size:15px;line-height:1.4}
 .hf-nota{margin:8px 2px;font-size:14.5px;line-height:1.4;color:var(--muted)}
 .hf-fim{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 2px 0;font-size:13.5px;color:var(--muted)}
-.hf-fim .linkbtn{font-size:13px;font-weight:800;padding:0;min-height:0}
+.hf-fim .linkbtn{flex:none;padding:8px 14px;font-size:14px;font-weight:800;white-space:nowrap;color:var(--fg);border:1.5px solid rgba(243,192,99,.75);background:color-mix(in srgb,#f3c063 16%,transparent)}
+.hf-fim .linkbtn:active{transform:scale(.97)}
 .hf-cta{width:100%;margin-top:10px}
 .hf-abas{margin:2px 0 4px;background:var(--bg)}
 .hf-abas button{font-size:14.5px;padding:6px 10px}
@@ -4983,6 +4984,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.32', data: '25/11/2026', itens: ['Duas frases novas no Reagir da mesa online: "Quem é o CEO dessa empresa?" e "No have to do, my friend!".', 'O botão "Ver o ranking" do Hall da Fama ficou mais bonito.'] },
   { v: '3.61.31', data: '25/11/2026', itens: ['Galeria dos Campeões no topo da aba Ranking e o Hall da Fama (também no Mais): quem está na disputa agora e quanto falta para você, os campeões de cada título, os maiores campeões e a ficha de cada um.', '"Temos campeão!" no início, a comemoração com confete para o campeão e os seus títulos no perfil.', 'Na mesa online, o campeão tem um anel dourado e todo mundo vê quando ele chega.', 'O aviso do novo Rei da Calçada e do novo Campeão do Mês chega para todos, com o nome do campeão.'] },
   { v: '3.61.30', data: '25/11/2026', itens: ['Na semana da Copa dos Sócios, o cartão da Quarta dos Amigos (e o da Sexta) aparece no início junto com o da Copa, e o evento do dia fica em cima.'] },
   { v: '3.61.29', data: '24/11/2026', itens: ['Turmas: o filtro de nomes ficou mais rígido, e nome impróprio vira "Turma sem nome" até quem criou escolher outro (os pontos e os membros ficam).', 'No domingo da Copa dos Sócios, o aviso das 10h para os sócios lembra que é o último dia da Copa, até as 22h.'] },
@@ -8042,7 +8044,8 @@ const REACOES = ['Boa, parceiro!', 'Vô mermo!', 'Leseira baré!', 'Bate logo!',
   '🐓', '🤣', '😎', '🙏', '💪', '🎉', '😭', '😡', '🤔', '👀',   // 10/11 (ideia de um jogador): mais emojis (sempre no fim: os números antigos não mudam)
   // 24/11 (ideias de jogadores no "Fale com a gente", aprovadas pelo dono): mais falas de mesa e caras mais tristes
   'Aprende, que a aula é de graça!', 'Passou, coitadinho!', 'Sou profissional!', 'Jogador dodói!', 'Roubou minha batida!', 'Tirou meu galo!',
-  'Não sabe contar pedra!', 'Tinha a pedra e não fez!', '🫏', '😢', '🥲', '😩'];
+  'Não sabe contar pedra!', 'Tinha a pedra e não fez!', '🫏', '😢', '🥲', '😩',
+  'Quem é o CEO dessa empresa?', 'No have to do, my friend!'];   // 25/11 (dono)
 // 24/11: o 🫏 é novo (2022) e não existe em celular mais antigo: lá aparece o 🐴. Compara o desenho com o de um caractere que
 // nenhum celular tem; se for igual, o emoji não existe aqui
 (function () {
@@ -17088,7 +17091,7 @@ function hfDisputa() {
   else if (me && me.pos && lider && me.pontos != null) { const f = Math.max(1, (lider.pontos || 0) - me.pontos + 1); voce = `<p class="hf-voce">Você está em <b>${me.pos}º</b>, com ${rkPts(me.pontos)}. Faltam <b>${f} ${f === 1 ? 'ponto' : 'pontos'}</b> para passar ${esc(lider.nome)}: umas ${hfVit(Math.ceil(f / 3))} contra pessoas.</p>`; }
   else voce = `<p class="hf-voce">Você ainda não pontuou ${sem ? 'nesta semana' : 'neste mês'}. Cada vitória online contra pessoas vale 3 pontos.</p>`;
   return `<section class="hf-disp">${cab}${top.length ? `<ol class="hf-top">${linhas}</ol>` : '<p class="hf-nota">Ninguém pontuou ainda. A primeira vitória online já abre a disputa.</p>'}${lid}${voce}
-    <p class="hf-fim"><span>${fim}</span><button type="button" class="linkbtn" data-hf="ranking">ver o ranking ›</button></p></section>`;
+    <p class="hf-fim"><span>${fim}</span><button type="button" class="linkbtn" data-hf="ranking">Ver o ranking ›</button></p></section>`;
 }
 function hfAbaHTML() {
   const d = CAMP.dados;
@@ -18106,7 +18109,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.31-e62e4e28';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.32-c7a90eef';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
