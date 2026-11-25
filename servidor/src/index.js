@@ -12,6 +12,7 @@ import * as presenca from './presenca.js';
 import { donoNumeros, limparNumeros, donoCrescimento, donoRitmo } from './numeros.js';
 import * as rk from './ranking.js';
 import * as campeoes from './campeoes.js';   // 24/11: Galeria dos Campeões e Hall da Fama
+import { avisosDicas } from './dicas.js';   // 25/11: a dica da semana (sexta de manhã)
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos, pegaPeloApelido, donoApelidos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
 import { limitesValem, limitesAgora, happyHour, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
@@ -535,6 +536,7 @@ async function avisosDeEvento(env, agora) {
   try { lista.push(...await turmas.avisosDesafio(env, agora)); } catch (e) {}   // 10/11: avisos do Desafio das Confrarias
   try { lista.push(...await avisosSabado(env, agora)); } catch (e) {}   // 17/11: Sábado dos Torneios (10h) e o campeão (domingo de manhã)
   try { lista.push(...await campeoes.avisosCampeoes(env, agora)); } catch (e) {}   // 25/11: o Campeão do Mês (dia 1º), para todo mundo
+  try { lista.push(...avisosDicas(agora)); } catch (e) {}   // 25/11 (pedido do dono): a dica da semana, toda sexta de manhã, no sino e na notificação
   const temChave = !!(env.VAPID_PRIVATE_JWK && env.VAPID_PUBLIC);
   let ok = 0, falhas = 0, sobra = EV_POR_RODADA;
   const naoFoi = 'NOT EXISTS (SELECT 1 FROM avisos_ev e WHERE e.aviso = a.id AND e.chave = ?)';
