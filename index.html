@@ -4636,15 +4636,18 @@ function layoutBorda(T, B) {
   const chain = T.chain, center = T.center, bu = T.bucho || {};
   const res = { main: new Array(chain.length), U: [], D: [], fora: false };
   if (!chain.length) return res;
-  const c = chain[center], pin = c.a === c.b, X = B.xb, YT = B.yt, YB = B.yb, eps = 1e-6, folga = 0.2;
+  const c = chain[center], pin = c.a === c.b, eps = 1e-6, folga = 0.2;
   const rects = [{ r: pin ? [-0.5, 0.5, -1, 1] : [-1, 1, -0.5, 0.5], arm: 'C', i: 0 }];
   res.main[center] = { x: 0, y: 0, o: pin ? 'v' : 'h', v1: c.a, v2: c.b };
   // a parte de cada ponta (retângulos [x0, x1, y0, y1]); entre partes vizinhas fica meia unidade livre
-  const terr = pin ? {
+  const parte = (X, YT, YB) => pin ? {
     R: [[0.5, X, -1, 1], [1.5, X, -1, YB]], D: [[-1, 1, 1, YB], [-X, 1, 1.5, YB]],
     L: [[-X, -0.5, -1, 1], [-X, -1.5, -YT, 1]], U: [[-1, 1, -YT, -1], [-1, X, -YT, -1.5]]
   } : { R: [[1, X, -1, 1.5], [-X, X, 1.5, YB]], L: [[-X, -1, -1.5, 1], [-X, X, -YT, -1.5]] };
-  const dentro = (r, arm) => terr[arm].some(t => r[0] >= t[0] - eps && r[1] <= t[1] + eps && r[2] >= t[2] - eps && r[3] <= t[3] + eps);
+  // 25/11 (o dono: "a carroça deve ficar centralizada na outra pedra"): as pedras comuns ficam meia pedra longe da borda; a
+  // carroça atravessada (centrada na pedra anterior) pode usar essa meia pedra, então cabe mesmo com a fileira correndo rente à borda
+  const terr = parte(B.xb - 0.5, B.yt - 0.5, B.yb - 0.5), terrCar = parte(B.xb, B.yt, B.yb);
+  const dentro = (r, arm, car) => (car ? terrCar : terr)[arm].some(t => r[0] >= t[0] - eps && r[1] <= t[1] + eps && r[2] >= t[2] - eps && r[3] <= t[3] + eps);
   const bate = (r, arm, i) => rects.some(q => {
     if (q.arm === arm && q.i === i - 1) return false;          // a anterior do mesmo braço: encostada de propósito
     if (i === 0 && (q.arm === 'C' || q.i === 0)) return false;  // a primeira de cada ponta encosta no centro (e nas outras primeiras)
@@ -4672,11 +4675,11 @@ function layoutBorda(T, B) {
   const poe = (arm, tiles, hx, hy, d, out) => {
     let dbl = null;
     tiles.forEach((t, i) => {
-      // 24/11 (foto do dono: a ponta virou cedo porque a carroça atravessada não cabia rente à borda): se a carroça não
-      // cabe atravessada, ela segue na linha, deitada no sentido da fileira, e a ponta continua reta
-      const op = [reta(hx, hy, d, t), t.near === t.far ? reta(hx, hy, d, t, true) : null, vira(hx, hy, d, GIRA[d], t, dbl), vira(hx, hy, d, GIRA[d], t, dbl, true),
+      // 24/11 a carroça que não cabia atravessada ia deitada na linha; 25/11 (jogadora: "induzindo ao erro ao contar pontos"):
+      // não deita mais. Com a meia pedra de folga na borda, ela cabe atravessada e centrada; se nem assim couber, a ponta vira
+      const op = [reta(hx, hy, d, t), vira(hx, hy, d, GIRA[d], t, dbl), vira(hx, hy, d, GIRA[d], t, dbl, true),
         vira(hx, hy, d, VOLTA[d], t, dbl), vira(hx, hy, d, VOLTA[d], t, dbl, true)].filter(Boolean);
-      let ok = op.find(o => dentro(o.r, arm) && !bate(o.r, arm, i));
+      let ok = op.find(o => dentro(o.r, arm, !!o.dbl) && !bate(o.r, arm, i));
       if (!ok) { ok = op[0]; res.fora = true; }
       rects.push({ r: ok.r, arm, i }); out(t, ok.pos);
       hx = ok.hx; hy = ok.hy; d = ok.d; dbl = ok.dbl || null;
@@ -4984,6 +4987,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.34', data: '25/11/2026', itens: ['Mesa no celular em pé: a carroça fica sempre atravessada e centrada na pedra anterior, também perto da borda (antes ela podia ficar deitada na linha, igual a uma pedra comum, e confundia a contagem na ponta). As fileiras correm meia pedra longe da borda.'] },
   { v: '3.61.33', data: '25/11/2026', itens: ['No iPhone, o resumo do fim da mão (e as outras janelas que sobem de baixo) abre sempre do começo, não mais rolado para o fim.'] },
   { v: '3.61.32', data: '25/11/2026', itens: ['Duas frases novas no Reagir da mesa online: "Quem é o CEO dessa empresa?" e "No have to do, my friend!".', 'O botão "Ver o ranking" do Hall da Fama ficou mais bonito.'] },
   { v: '3.61.31', data: '25/11/2026', itens: ['Galeria dos Campeões no topo da aba Ranking e o Hall da Fama (também no Mais): quem está na disputa agora e quanto falta para você, os campeões de cada título, os maiores campeões e a ficha de cada um.', '"Temos campeão!" no início, a comemoração com confete para o campeão e os seus títulos no perfil.', 'Na mesa online, o campeão tem um anel dourado e todo mundo vê quando ele chega.', 'O aviso do novo Rei da Calçada e do novo Campeão do Mês chega para todos, com o nome do campeão.'] },
@@ -18113,7 +18117,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.33-a4081c60';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.34-da4637b1';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
