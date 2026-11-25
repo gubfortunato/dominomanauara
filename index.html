@@ -4884,6 +4884,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.29', data: '24/11/2026', itens: ['Turmas: o filtro de nomes ficou mais rígido, e nome impróprio vira "Turma sem nome" até quem criou escolher outro (os pontos e os membros ficam).', 'No domingo da Copa dos Sócios, o aviso das 10h para os sócios lembra que é o último dia da Copa, até as 22h.'] },
   { v: '3.61.28', data: '24/11/2026', itens: ['Uma mesa por vez: quem já está sentado numa mesa online não senta em outra ao mesmo tempo (nem por outro celular ou pelo navegador). O jogo oferece voltar para a mesa ou sair de lá e jogar na nova.', 'Sem plano: de novo 5 partidas por dia na mesa rápida e 2 nas mesas com os amigos (ou até 3 na mesa de um sócio).', 'Sábado dos Torneios: no fim de semana da Copa dos Sócios a lista não anda, e o Torneio Encontro das Águas fica para 05/12.', 'No iPhone, o placar da mesa desceu um pouco e saiu da faixa que o sistema deixa desfocada embaixo da barra de status.', 'Quem assiste: o nome comprido de quem está embaixo encurta com "…" e a contagem de pedras fica sempre à vista.', 'Turma: a bolinha de online não aparece para quem tem menos de 18 anos.'] },
   { v: '3.61.27', data: '24/11/2026', itens: ['Mesa maior: o placar ficou mais baixo (o "0 × 0" e o Menu na mesma linha) e as pedras crescem junto.', 'Quem assiste: a mesa vai até embaixo, com as pedras maiores e espalhadas até a borda, e uma linha só com o nome e as pedras de quem está embaixo.', 'O balão dos pontos e das conversas fica por cima das pedrinhas embaixo do nome.'] },
   { v: '3.61.26', data: '24/11/2026', itens: ['Torneios: a ilustração agora ocupa o cartão inteiro, nítida, com a parte mais marcante de cada uma (o relógio, a cúpula, a cabeça do bicho) em destaque.', 'Copa dos Sócios: a janela abre sem piscar.', 'Termos de uso e Privacidade atualizados com os planos, os eventos da Calçada e as regras novas da mesa.'] },
@@ -5743,7 +5744,9 @@ const NOME_RUIM_PARTE = ['porra', 'caralh', 'buceta', 'boceta', 'xoxota', 'xerec
   'onlyfans', 'pepek', 'xaninh', 'grelinh', 'bundinh', 'bundud', 'rabud', 'peitud', 'gozad', 'enrab', 'rapariga', 'desgrac', 'imbecil',
   'idiota', 'mongoloid', 'aleijad', 'vagab', 'arromb', 'fuck', 'shit', 'pussy', 'bitch', 'whore', 'nigg', 'slut', 'boobs',
   // 04/11 (dono): "Pombona" passou no nome de Turma (gíria de baixo calão)
-  'pombon', 'pombao', 'pombud', 'pirocud'];
+  'pombon', 'pombao', 'pombud', 'pirocud',
+  // 24/11 (dono): "Caceta" passou no nome de Confraria
+  'cacet'];
 // Curtas: só barram como palavra separada (para não pegar "Cunha" ou "Disputa").
 const NOME_RUIM_PALAVRA = ['cu', 'puta', 'putas', 'puto', 'foda', 'fode', 'rola', 'xota', 'viado', 'veado', 'bicha', 'sapatao',
   'crioulo', 'corno', 'otario', 'babaca', 'anus', 'penis', 'vagina', 'kct', 'vsf', 'tnc', 'fdps', 'teba', 'cui', 'tobo',
@@ -9641,7 +9644,7 @@ document.addEventListener('click', async e => {
     const j = await dnMsgPedir('/dono/vigia/tirar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nome: b.dataset.vigTirar }) });
     toast(j.soltos ? `Pronto. ${j.soltos} ${j.soltos === 1 ? 'aparelho desbloqueado' : 'aparelhos desbloqueados'}, e o apelido saiu da vigia.` : 'Pronto. O apelido saiu da vigia.');
   } catch (er) { toast('Não deu agora. Tente de novo.'); }
-  dnBurlasCarregar(); if (typeof dnAplCarregar === 'function') dnAplCarregar();
+  dnBurlasCarregar(); if (typeof dnAplCarregar === 'function') dnAplCarregar(); if (typeof dnTmCarregar === 'function') dnTmCarregar();
 });
 // 14/11 (pedido do dono): pôr de volta na vigia quem foi tirado sem querer (se estava bloqueado, bloqueia de novo)
 document.addEventListener('click', async e => {
@@ -9652,7 +9655,7 @@ document.addEventListener('click', async e => {
     const j = await dnMsgPedir('/dono/vigia/voltar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nome: b.dataset.vigVoltar }) });
     toast(j.bloqueados ? `Pronto. Voltou para a vigia e ${j.bloqueados} ${j.bloqueados === 1 ? 'aparelho foi bloqueado' : 'aparelhos foram bloqueados'} de novo.` : 'Pronto. O apelido voltou para a vigia por 7 dias.');
   } catch (er) { toast('Não deu agora. Tente de novo.'); }
-  dnBurlasCarregar(); if (typeof dnAplCarregar === 'function') dnAplCarregar();
+  dnBurlasCarregar(); if (typeof dnAplCarregar === 'function') dnAplCarregar(); if (typeof dnTmCarregar === 'function') dnTmCarregar();
 });
 renderDono = function () { renderDonoBase(); dnPagCarregar(); dnApoiadoresCarregar(); dnBurlasCarregar(); dnQuartaCarregar(); dnRelCarregar(); dnTreinoCarregar(); };
 // 17/11 (pedido do dono): dar presente a um jogador (busca pelo apelido; dois toques para confirmar)
@@ -13862,6 +13865,10 @@ const quandoFoi = ms => { const m = Math.round((Date.now() - ms) / 60000); retur
     <p class="dn-avn">Quem volta com outro aparelho usando um destes apelidos é bloqueado sozinho (no jogo online e no offline). O apelido de quem você bloqueia entra aqui sozinho. Para pegar as variações, escreva um pedaço (5 letras ou mais).</p>
     <div class="dn-apl-add"><input type="text" id="dnAplTermo" maxlength="20" placeholder="Pedaço do apelido" autocomplete="off"><button type="button" class="secondary" id="dnAplAdd">Bloquear</button></div>
     <ul class="dn-joglista" id="dnAplLista"></ul>
+    <span class="ck dn-jog-k">Nomes das Turmas</span>
+    <p class="dn-avn">Turma com nome impróprio: toque em "Tirar o nome". Ela vira "Turma sem nome" em todo lugar e quem criou escolhe outro nome; os pontos e os membros ficam. Os pedaços bloqueados acima também barram nome de Turma novo.</p>
+    <div class="dn-apl-add"><input type="text" id="dnTmBusca" maxlength="24" placeholder="Procurar Turma" autocomplete="off"></div>
+    <ul class="dn-joglista" id="dnTmLista"></ul>
   </div>`);
 })();
 // 3.41 (pedido do dono): "derrubar" quem está com apelido ofensivo que passou pelo filtro, sem bloquear. A pessoa sai
@@ -13892,10 +13899,34 @@ async function dnJogCarregar() {
       : '<li class="dn-jog-vazio">Ninguém jogou online nos últimos 7 dias.</li>';
     $('#dnBloqK').hidden = !blq.length;
     dnAplCarregar();   // 11/11
+    dnTmCarregar();   // 24/11: os nomes das Turmas
     $('#dnBloqLista').innerHTML = blq.map(x => `<li><span class="dn-jog-t"><b>${esc(x.nome || 'Sem apelido')}</b><small>${x.motivo ? esc(x.motivo) + ' · ' : ''}${quandoFoi(x.em)}</small></span>
         <button type="button" class="linkbtn dn-jog-b" data-desbloq="${esc(x.aparelho)}">Desbloquear</button></li>`).join('');
   } catch (e) { $('#dnJogLista').innerHTML = '<li class="dn-jog-vazio">Não deu para carregar agora.</li>'; }
 }
+// 24/11 (dono: "um comando para evitar nomes impróprios para as confrarias"): as Turmas, com "Tirar o nome"
+let dnTmTodas = [];
+function dnTmDesenhar() {
+  const ul = $('#dnTmLista'); if (!ul) return;
+  const q = (($('#dnTmBusca') || {}).value || '').trim().toLowerCase();
+  const l = dnTmTodas.filter(x => !q || String(x.nome).toLowerCase().includes(q)).slice(0, 60);
+  ul.innerHTML = l.length ? l.map(x => `<li><span class="dn-jog-t"><b>${esc(x.retirado ? 'Turma sem nome' : x.nome)}</b><small>${x.retirado ? (x.filtro ? 'nome barrado pelo filtro · ' : 'nome tirado · ') + 'quem criou escolhe outro · ' : ''}${x.membros} ${x.membros === 1 ? 'pessoa' : 'pessoas'} · ${x.pontos} ${x.pontos === 1 ? 'ponto' : 'pontos'}</small></span>
+      ${x.retirado ? '' : `<button type="button" class="linkbtn dn-jog-b" data-tm-tirar="${esc(x.codigo)}">Tirar o nome</button>`}</li>`).join('') : '<li class="dn-jog-vazio">Nenhuma Turma.</li>';
+}
+async function dnTmCarregar() {
+  const ul = $('#dnTmLista'); if (!ul) return;
+  try { const j = await dnMsgPedir('/dono/turmas'); dnTmTodas = j.turmas || []; dnTmDesenhar(); }
+  catch (e) { ul.innerHTML = '<li class="dn-jog-vazio">Não deu para carregar agora.</li>'; }
+}
+document.addEventListener('input', e => { if (e.target && e.target.id === 'dnTmBusca') dnTmDesenhar(); });
+document.addEventListener('click', async e => {
+  const b = e.target.closest && e.target.closest('[data-tm-tirar]'); if (!b) return;
+  if (!b.dataset.armado) { b.dataset.armado = '1'; b.textContent = 'Toque de novo'; return; }
+  b.disabled = true;
+  try { await dnMsgPedir('/dono/turmas/nome', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ codigo: b.dataset.tmTirar }) }); toast('Nome tirado. Quem criou a Turma vai escolher outro.'); }
+  catch (er) { toast('Não deu agora. Tente de novo.'); }
+  dnTmCarregar();
+});
 // 11/11 (pedido do dono): apelidos bloqueados (quem volta com outro aparelho e o mesmo apelido)
 async function dnAplCarregar() {
   const ul = $('#dnAplLista'); if (!ul) return;
@@ -17731,7 +17762,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.28-d77d6e3c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.29-63a0499e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
