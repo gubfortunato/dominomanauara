@@ -4984,6 +4984,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.33', data: '25/11/2026', itens: ['No iPhone, o resumo do fim da mão (e as outras janelas que sobem de baixo) abre sempre do começo, não mais rolado para o fim.'] },
   { v: '3.61.32', data: '25/11/2026', itens: ['Duas frases novas no Reagir da mesa online: "Quem é o CEO dessa empresa?" e "No have to do, my friend!".', 'O botão "Ver o ranking" do Hall da Fama ficou mais bonito.'] },
   { v: '3.61.31', data: '25/11/2026', itens: ['Galeria dos Campeões no topo da aba Ranking e o Hall da Fama (também no Mais): quem está na disputa agora e quanto falta para você, os campeões de cada título, os maiores campeões e a ficha de cada um.', '"Temos campeão!" no início, a comemoração com confete para o campeão e os seus títulos no perfil.', 'Na mesa online, o campeão tem um anel dourado e todo mundo vê quando ele chega.', 'O aviso do novo Rei da Calçada e do novo Campeão do Mês chega para todos, com o nome do campeão.'] },
   { v: '3.61.30', data: '25/11/2026', itens: ['Na semana da Copa dos Sócios, o cartão da Quarta dos Amigos (e o da Sexta) aparece no início junto com o da Copa, e o evento do dia fica em cima.'] },
@@ -10496,11 +10497,14 @@ closeSheet = function () {
   closeSheet.t = setTimeout(() => { back.classList.remove('saindo'); if (!sheetKind) closeSheetSeco(); }, 210);
 };
 const openSheetSuave = openSheet;
+try { $('#sheet').addEventListener('touchstart', () => { $('#sheet').__mexeu = true; }, { passive: true }); } catch (e) {}
 openSheet = function (kind, html) {
-  const back = $('#back'), trocando = !back.hidden && !back.classList.contains('saindo');
+  const back = $('#back'), trocando = !back.hidden && !back.classList.contains('saindo'), antes = sheetKind;
   clearTimeout(closeSheet.t); back.classList.remove('saindo');
   openSheetSuave(kind, html);
   const sh = $('#sheet');
+  // 25/11 (dono): janela nova (ou outra no lugar) abre no topo; a mesma sendo atualizada fica onde a pessoa deixou
+  if (!trocando || antes !== kind) { void sh.offsetHeight; sh.scrollTop = 0; requestAnimationFrame(() => { if (sheetKind === kind && sh.scrollTop && !sh.__mexeu) sh.scrollTop = 0; }); sh.__mexeu = false; }
   if (trocando && !reduzMov()) { sh.classList.remove('troca'); void sh.offsetWidth; sh.classList.add('troca'); }
 };
 // Avisos rápidos (toast): entram e saem com fade
@@ -17964,7 +17968,7 @@ function openSheet(kind, html) {
   sheetKind = kind; $('#sheet').innerHTML = html; $('#back').hidden = false;
   const f = $('#sheet').querySelector('.primary'); if (f) f.focus({ preventScroll: true });
 }
-function closeSheet() { sheetKind = null; $('#back').hidden = true; $('#sheet').innerHTML = ''; }
+function closeSheet() { sheetKind = null; const sh = $('#sheet'); sh.scrollTop = 0; $('#back').hidden = true; sh.innerHTML = ''; }   // 25/11: zera a rolagem antes de esconder (o Safari guarda)
 
 // 24/11: a pedra batendo na mesa (o selo de quem bateu no resumo da mão)
 const BATEU_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".22"/><path d="M7 12.4l3.3 3.3L17.2 8.8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -18109,7 +18113,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.32-c7a90eef';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.33-a4081c60';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
