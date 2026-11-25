@@ -18,7 +18,9 @@ export function bonusConfig(env) { const v = Number(env && env.BONUS_ATE); if (N
 // 18/11 (Natal): de 1º a 25/12 (dia de Manaus), a mesa de Natal fica livre para todo mundo e entra no sorteio. NATAL_TESTE=1 liga fora da época (só no teste local).
 let natalTeste = false;
 export const natalNoAr = (agora) => { if (natalTeste) return true; const d = new Date((agora || Date.now()) - 4 * 3600000).toISOString().slice(5, 10); return d >= '12-01' && d <= '12-25'; };
-export const LIMITE = { mesas: 1, get partidas() { return bonusValendo() ? 2 : 1; }, partidasSocio: 3, get publicas() { return bonusValendo() ? 5 : 3; }, desafios: 2 };
+// 24/11 (dono: "volte as 5 partidas grátis para quem não tem o plano" e "o bônus de 2, ok"): mesa rápida de novo com 5 por
+// dia e mesas com os amigos com 2
+export const LIMITE = { mesas: 1, get partidas() { return 2; }, partidasSocio: 3, get publicas() { return 5; }, desafios: 2 };
 // as 2 mesas a mais de cada dia (a ordem é a mesma no app: index.html, MESAS_RODIZIO)
 export const MESAS_RODIZIO = ['teatro', 'tucano', 'encontro', 'boto', 'peixeboi', 'mercado', 'araraazul', 'pontanegra', 'arena', 'vitoria', 'arara', 'centro', 'floresta', 'ponte',
   'calcadao', 'acairoxo', 'amazonas', 'relogio', 'skylinenoite', 'acai', 'palacio', 'beiradao', 'rionegro', 'tucuma', 'chamine', 'barco', 'roxoacai', 'pordosol', 'feltro'];

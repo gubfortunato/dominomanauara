@@ -19,8 +19,12 @@ export const REGRAS_SABADO = [
 ];
 export const TORNEIO_MESAS = [['teatro', 'Teatro Amazonas'], ['encontro', 'Encontro das Águas'], ['arena', 'Arena da Amazônia'], ['boto', 'Boto-rosa'], ['mercado', 'Mercado Adolpho Lisboa'], ['peixeboi', 'Peixe-boi'], ['ponte', 'Ponte Rio Negro'], ['guarana', 'Guaraná'], ['palacio', 'Palácio Rio Negro'], ['onca', 'Onça-pintada'], ['pontanegra', 'Ponta Negra'], ['pirarucu', 'Pirarucu'], ['relogio', 'Relógio Municipal'], ['tucano', 'Tucano'], ['calcadao', 'Largo de São Sebastião'], ['vitoria', 'Vitória-régia'], ['igreja', 'Igreja de São Sebastião'], ['araraazul', 'Arara-Azul'], ['chamine', 'Usina Chaminé'], ['tambaqui', 'Tambaqui']];
 const BASE = Date.parse('2026-11-21T12:00:00Z');
+// 24/11 (dono): a lista só anda nos sábados que têm torneio: o sábado da Copa dos Sócios não gasta a vez de ninguém
 export function temaDoSabado(dia) {
-  const k = Math.round((Date.parse(dia + 'T12:00:00Z') - BASE) / SEMANA), r = REGRAS_SABADO, m = TORNEIO_MESAS;
+  const fim = Date.parse(dia + 'T12:00:00Z'), r = REGRAS_SABADO, m = TORNEIO_MESAS;
+  let k = 0;
+  if (fim >= BASE) { for (let t = BASE; t < fim; t += SEMANA) if (semCopa(t)) k++; }
+  else k = Math.round((fim - BASE) / SEMANA);
   const g = r[((k % r.length) + r.length) % r.length], me = m[((k % m.length) + m.length) % m.length];
   return { id: g.id, regra: g.regra, mesa: me[0], nome: 'Torneio ' + me[1] };
 }

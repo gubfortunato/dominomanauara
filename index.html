@@ -2615,7 +2615,13 @@ body.assistindo #scrGame .hand{display:none}   /* 03/11: quem assiste não vê a
 body.assistindo #scrGame.game{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 76px)}
 /* 24/11: quem assiste: uma linha só embaixo da mesa (de quem é a vez já aparece na cadeira e na própria linha) */
 body.assistindo #scrGame #prompt{display:none}
-body.assistindo #scrGame .me-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.assistindo #scrGame .me-name{display:flex;align-items:center;white-space:nowrap;min-width:0}
+body.assistindo #scrGame .me-name .mn-nome{overflow:hidden;text-overflow:ellipsis;min-width:0}
+body.assistindo #scrGame .me-name > :not(.mn-nome){flex:none}
+body.assistindo #scrGame .me-name small{margin-left:.3em}
+/* 24/11 (o dono: "essa parte de cima tá meio apagada/embaçada"): no app instalado do iPhone, o sistema desfoca uma
+   faixa logo abaixo da barra de status; na mesa em pé, o placar começa abaixo dela */
+@media (display-mode: standalone) and (orientation: portrait){@supports (-webkit-touch-callout: none){#scrGame .score{padding-top:18px}}}
 /* 3.29: conquistas à vista — cartão no Perfil, linha no cartão do nível e "falta pouco" no fim da mão */
 .cq-card{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:14px;width:100%;padding:14px 16px 14px 14px;border-radius:16px;border:1.5px solid var(--nos);background:color-mix(in srgb,var(--nos) 8%,var(--bg-2));color:var(--fg);font:inherit;text-align:left;cursor:pointer}
 .cq-card:active{transform:scale(.99)}
@@ -3822,8 +3828,8 @@ body.papo-aberto{overflow:hidden}
       <span class="ap-k" id="apPlanoK">Grátis ou sócio</span>
       <div class="ap-cmp-tab" id="apGratis" role="table" aria-label="O que tem no plano grátis e sendo sócio">
         <div class="ap-cmp-cab" role="row"><span role="columnheader"></span><span role="columnheader" class="ap-cmp-g">Grátis</span><span role="columnheader" class="ap-cmp-s">Sócio ★</span></div>
-        <div class="ap-cmp-l" role="row"><b role="rowheader">Mesa rápida online</b><span role="cell" class="ap-cmp-g" id="apCmpRapida">3 partidas por dia</span><span role="cell" class="ap-cmp-s">Sem limite</span></div>
-        <div class="ap-cmp-l" role="row"><b role="rowheader">Mesas com os amigos</b><span role="cell" class="ap-cmp-g" id="apCmpAmigos">1 partida por dia, ou 3 na mesa de um sócio</span><span role="cell" class="ap-cmp-s">Sem limite, e crie quantas mesas quiser</span></div>
+        <div class="ap-cmp-l" role="row"><b role="rowheader">Mesa rápida online</b><span role="cell" class="ap-cmp-g" id="apCmpRapida">5 partidas por dia</span><span role="cell" class="ap-cmp-s">Sem limite</span></div>
+        <div class="ap-cmp-l" role="row"><b role="rowheader">Mesas com os amigos</b><span role="cell" class="ap-cmp-g" id="apCmpAmigos">2 partidas por dia, ou 3 na mesa de um sócio</span><span role="cell" class="ap-cmp-s">Sem limite, e crie quantas mesas quiser</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Jogo offline</b><span role="cell" class="ap-cmp-g">5 partidas por dia</span><span role="cell" class="ap-cmp-s">Sem limite</span></div>
         <div class="ap-cmp-l" role="row"><b role="rowheader">Papo de mesa (com os amigos)</b><span role="cell" class="ap-cmp-g">Na partida do dia, e ouve os áudios</span><span role="cell" class="ap-cmp-s">Em todas as partidas, e manda áudio</span></div>
         <!-- 11/11 (pedido do dono): a tabela mostra também a Sexta e a reta final do Desafio, como a oferta e a carta -->
@@ -4878,6 +4884,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.28', data: '24/11/2026', itens: ['Uma mesa por vez: quem já está sentado numa mesa online não senta em outra ao mesmo tempo (nem por outro celular ou pelo navegador). O jogo oferece voltar para a mesa ou sair de lá e jogar na nova.', 'Sem plano: de novo 5 partidas por dia na mesa rápida e 2 nas mesas com os amigos (ou até 3 na mesa de um sócio).', 'Sábado dos Torneios: no fim de semana da Copa dos Sócios a lista não anda, e o Torneio Encontro das Águas fica para 05/12.', 'No iPhone, o placar da mesa desceu um pouco e saiu da faixa que o sistema deixa desfocada embaixo da barra de status.', 'Quem assiste: o nome comprido de quem está embaixo encurta com "…" e a contagem de pedras fica sempre à vista.', 'Turma: a bolinha de online não aparece para quem tem menos de 18 anos.'] },
   { v: '3.61.27', data: '24/11/2026', itens: ['Mesa maior: o placar ficou mais baixo (o "0 × 0" e o Menu na mesma linha) e as pedras crescem junto.', 'Quem assiste: a mesa vai até embaixo, com as pedras maiores e espalhadas até a borda, e uma linha só com o nome e as pedras de quem está embaixo.', 'O balão dos pontos e das conversas fica por cima das pedrinhas embaixo do nome.'] },
   { v: '3.61.26', data: '24/11/2026', itens: ['Torneios: a ilustração agora ocupa o cartão inteiro, nítida, com a parte mais marcante de cada uma (o relógio, a cúpula, a cabeça do bicho) em destaque.', 'Copa dos Sócios: a janela abre sem piscar.', 'Termos de uso e Privacidade atualizados com os planos, os eventos da Calçada e as regras novas da mesa.'] },
   { v: '3.61.25', data: '24/11/2026', itens: ['Sócio da Calçada: depois da promoção (até 30/11), fica R$ 12,90 por mês, R$ 27,90 a cada 3 meses ou R$ 84,90 por ano, menos do que estava previsto. Quem assinou na promoção também renova por esses valores.'] },
@@ -7867,7 +7874,7 @@ function conectar(cod) {
   ws.onopen = () => {
     ON.tent = 0;
     let mesa = null; try { mesa = mesaEscolhida().id; } catch (e) {}
-    const entrar = () => { if (ws.readyState === 1) ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), est: estCod(), mesa, mesaFixa: !!ON.mesaFixa, fila: true, apelido: true, menor: !!(profile && profile.idade === 'menor'), convite: conviteNovo(cod) })); };   // 12/11: convite: 1ª vez no app pelo link desta mesa   // fila: este app mostra a fila do ganha-chama
+    const entrar = () => { if (ws.readyState === 1) ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), est: estCod(), mesa, mesaFixa: !!ON.mesaFixa, fila: true, apelido: true, menor: !!(profile && profile.idade === 'menor'), convite: conviteNovo(cod), umaMesa: true, trocar: ON.trocar || undefined })); ON.trocar = null; };   // 24/11: uma mesa por vez   // 12/11: convite: 1ª vez no app pelo link desta mesa   // fila: este app mostra a fila do ganha-chama
     // 3.41: o servidor só deixa entrar quem está com o app aberto: antes, o app garante que avisou ("No app agora")
     (typeof presGarantir === 'function' ? presGarantir() : Promise.resolve()).then(entrar, entrar).then(() => { ON.mesaFixa = false; });
     clearInterval(ON.pingT);
@@ -7996,7 +8003,29 @@ function avisoTempoRobo(n) {
   $('#tempoVoltar').addEventListener('click', () => { closeSheet(); track('tempo-robo-voltou'); voltarMesa(); });
   $('#tempoDepois').addEventListener('click', () => { closeSheet(); track('tempo-robo-depois'); });
 }
+// 24/11 (uma mesa por vez): já está sentado em outra mesa
+function avisoOutraMesa(aqui, la, publica, mesmo) {
+  const onde = publica ? 'numa mesa rápida' : `na mesa ${esc(la)}`;
+  openSheet('info', `<p class="eyebrow">Mesa online</p><h2 id="sheetTitle">Você já está jogando ${onde}</h2>
+    <p>${mesmo ? '' : 'Ela está aberta em outro lugar (outro celular ou o navegador). '}Para ninguém jogar em duas mesas ao mesmo tempo, é uma mesa por vez.</p>
+    ${mesmo ? `<button type="button" class="primary" id="omVoltar" style="width:100%">Voltar para ${publica ? 'a mesa rápida' : 'a mesa ' + esc(la)}</button>` : ''}
+    <button type="button" class="${mesmo ? 'secondary' : 'primary'}" id="omTrocar" style="width:100%;margin-top:8px">Sair de lá e jogar aqui</button>
+    <p class="muted" style="margin:8px 0 0;font-size:14px">Saindo no meio de uma partida, vale a regra de quem sai no meio: um robô da turma assume a cadeira lá.</p>
+    <button type="button" class="secondary" id="omDepois" style="width:100%;margin-top:8px">Agora não</button>`);
+  const vai = cod => { closeSheet(); ON.vista = null; show('sala'); conectar(cod); renderSala(); };
+  const v = $('#omVoltar'); if (v) v.addEventListener('click', () => { track('uma-mesa-voltou'); vai(la); });
+  $('#omTrocar').addEventListener('click', () => { track('uma-mesa-trocou'); if (aqui === 'nova') { closeSheet(); ON.trocarNova = la; show('sala'); criarMesa(); } else if (aqui) { ON.trocar = la; vai(aqui); } else { closeSheet(); ON.trocarRapida = la; mesaRapida(); } });   // aqui: 'nova' = criar mesa; null = a mesa rápida
+  $('#omDepois').addEventListener('click', () => { closeSheet(); track('uma-mesa-depois'); });
+}
 function receberOnline(m) {
+  if (m.t === 'erro' && (m.cod === 'outra-mesa' || m.cod === 'foi-outra-mesa')) {   // 24/11: uma mesa por vez
+    const aqui = ON.cod;
+    pausarOnline(); ON.cod = null; store.del(MKEY);
+    if (screen === 'game') { leaveGameBase(); show('home'); } else if (screen === 'sala') show('home');
+    if (m.cod === 'foi-outra-mesa') { track('uma-mesa-saiu-daqui'); toast('Você foi jogar em outra mesa. Nesta, um robô da turma ficou no seu lugar.'); return; }
+    track('uma-mesa'); if (aqui && m.mesa) avisoOutraMesa(aqui, String(m.mesa), !!m.publica, !!m.mesmo);
+    return;
+  }
   if (m.t === 'tempo') {   // 24/11
     pausarOnline();
     if (screen === 'game') { leaveGameBase(); show('home'); } else if (screen === 'sala') show('home');
@@ -8307,14 +8336,16 @@ async function criarMesa() {
   try {
     if (typeof presGarantir === 'function') await presGarantir();
     const pede = () => fetch(CONFIG.api + '/mesa/nova', { method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), desafio: ON.desafioPedido ? 1 : 0 }) });
+      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), desafio: ON.desafioPedido ? 1 : 0, trocar: ON.trocarNova || undefined }) });   // 24/11: uma mesa por vez
     let r = await pede(), j = await r.json().catch(() => ({}));
+    ON.trocarNova = null;
     // 3.41: o servidor não viu o app aberto (o aviso não tinha chegado): avisa de novo e tenta mais uma vez
     if (r.status === 403 && j.erro === 'app' && typeof presAvisar === 'function') {
       await Promise.race([presAvisar(true) || Promise.resolve(), new Promise(ok => setTimeout(ok, 2500))]).catch(() => {});
       r = await pede(); j = await r.json().catch(() => ({}));
     }
     if (r.status === 201 && j.codigo) { track('mesa-online-criada'); ON.vista = null; conectar(j.codigo); renderSala(); return; }
+    if (r.status === 409 && j.erro === 'outra-mesa' && j.mesa) { track('uma-mesa'); avisoOutraMesa('nova', String(j.mesa), !!j.publica, !!j.mesmo); return; }   // 24/11
     if (r.status === 403 && j.erro === 'apelido') { pedirOutroApelido(); return; }   // 3.41
     if (r.status === 403 && /^limite/.test(j.erro || '') && typeof convitePlano === 'function') { if (j.pessoa) LIM_PESSOA.em = Date.now(); convitePlano(j.erro); return; }   // 28/10: planos (12/11: pessoa)
     if (r.status === 403 && j.erro === 'bloqueado') store.set(BLOQKEY, '1');   // 11/11
@@ -8348,8 +8379,9 @@ async function mesaRapida() {
   try {
     if (typeof presGarantir === 'function') await presGarantir();
     const pede = () => fetch(CONFIG.api + '/mesa/rapida', { method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel() }) });
+      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), trocar: ON.trocarRapida || undefined }) });   // 24/11: uma mesa por vez
     let r = await pede(), j = await r.json().catch(() => ({}));
+    ON.trocarRapida = null;
     // 3.41: o servidor não viu o app aberto (o aviso não tinha chegado): avisa de novo e tenta mais uma vez
     if (r.status === 403 && j.erro === 'app' && typeof presAvisar === 'function') {
       await Promise.race([presAvisar(true) || Promise.resolve(), new Promise(ok => setTimeout(ok, 2500))]).catch(() => {});
@@ -8358,6 +8390,7 @@ async function mesaRapida() {
     ON.buscando = false;
     if (r.ok && /^\d{5}$/.test(j.codigo || '')) { track('mesa-rapida'); ON.rapida = true; conectar(j.codigo); renderSala(); return; }
     if (r.status === 403 && j.erro === 'apelido') { show('home'); pedirOutroApelido(); return; }   // 3.41
+    if (r.status === 409 && j.erro === 'outra-mesa' && j.mesa) { show('home'); track('uma-mesa'); avisoOutraMesa(null, String(j.mesa), !!j.publica, !!j.mesmo); return; }   // 24/11
     if (r.status === 403 && j.erro === 'limite-rapida' && typeof convitePlano === 'function') { if (j.pessoa) LIM_PESSOA.em = Date.now(); show('home'); convitePlano('limite-rapida'); return; }   // 28/10: planos (12/11: pessoa)
     if (r.status === 403 && j.erro === 'abandonos') { show('home'); avisoAbandonos(j); return; }   // 10/11: quem abandona partidas
     if (r.status === 403 && j.erro === 'bloqueado') store.set(BLOQKEY, '1');   // 11/11
@@ -9288,8 +9321,8 @@ function renderPrecos() {
   const an = $('#apAntes'); if (an) an.hidden = typeof planosValem !== 'function' || planosValem();
   const np = $('#apNotaPreco'); if (np) np.textContent = pr ? `Os preços promocionais valem para quem assinar até ${PROMO_DIA}; depois, ${brl(precoDe('apm').normal)} por mês, ${brl(precoDe('ap3').normal)} a cada 3 meses ou ${brl(precoDe('ap12').normal)} por ano.` : `Preços: ${brl(precoDe('apm').valor)} por mês, ${brl(precoDe('ap3').valor)} a cada 3 meses ou ${brl(precoDe('ap12').valor)} por ano.`;   // 24/11
   try { const b = bonusHoje(), r = $('#apCmpRapida'), a = $('#apCmpAmigos');   // 12/11: no bônus, o número do dia e até quando
-    if (r) r.textContent = b ? `${limRapida()} partidas por dia até ${bonusAte()} (depois, 3)` : '3 partidas por dia';
-    if (a) a.textContent = b ? `${limAmigos()} partidas por dia até ${bonusAte()} (depois, 1), ou 3 na mesa de um sócio` : '1 partida por dia, ou 3 na mesa de um sócio'; } catch (e) {}
+    if (r) r.textContent = b ? `${limRapida()} partidas por dia até ${bonusAte()} (depois, 3)` : '5 partidas por dia';
+    if (a) a.textContent = b ? `${limAmigos()} partidas por dia até ${bonusAte()} (depois, 1), ou 3 na mesa de um sócio` : '2 partidas por dia, ou 3 na mesa de um sócio'; } catch (e) {}
   const ps = $('#apPasse'); if (ps) { ps.hidden = !pagamentosAtivos(); ps.innerHTML = `<b>Só quer jogar esta semana?</b> Passe de 7 dias por ${brl(precoDe('aps').valor)}, sem renovar`; }   // 12/11
 }
 $('#apPasse').addEventListener('click', () => abrirPasse('tela-socio'));
@@ -14696,7 +14729,7 @@ render = function () {
         // 3.39.2: o selo (★ Apoiador, ♥ doador) de quem está embaixo também aparece para quem assiste
         const selo0 = c0.bot ? '' : seloSVG(c0.apoiador, c0.doador);
         const nb = G.hands && G.hands[0] ? G.hands[0].length : 0;   // 03/11: as pedras de baixo não aparecem para quem assiste: a contagem vai na linha do nome
-        me.innerHTML = `${src ? `<img class="fotoimg" src="${src}" alt="">` : ''}${!c0.bot && c0.turma && typeof brasao === 'function' ? `<span class="sn-br">${brasao(c0.turma, 16)}</span>` : ''}${esc(c0.nome)}${selo0 ? ` <span class="me-selo">${selo0}</span>` : ''} <small>· ${nb === 1 ? '1 pedra' : nb + ' pedras'}${G.phase === 'play' && !dealing && G.turn === base() ? ' · jogando' : ''}</small>`;   // 24/11: o parceiro já aparece em cima ("Parceiro")
+        me.innerHTML = `${src ? `<img class="fotoimg" src="${src}" alt="">` : ''}${!c0.bot && c0.turma && typeof brasao === 'function' ? `<span class="sn-br">${brasao(c0.turma, 16)}</span>` : ''}<span class="mn-nome">${esc(c0.nome)}</span>${selo0 ? ` <span class="me-selo">${selo0}</span>` : ''} <small>· ${nb === 1 ? '1 pedra' : nb + ' pedras'}${G.phase === 'play' && !dealing && G.turn === base() ? ' · jogando' : ''}</small>`;   // 24/11: o parceiro já aparece em cima ("Parceiro")
       }
       $('#prompt').textContent = G.phase === 'play' ? `Vez de ${G.names[G.turn] || ''}` : 'Fim da mão';
     } else if (ON.vista && ON.vista.assistindo > 0) {
@@ -15408,7 +15441,7 @@ const planosValem = () => Math.max(Date.now(), +(store.get('dmz-hora-max') || 0)
 // celular: o dia dos limites vira à meia-noite de Brasília (23h em Manaus).
 const bonusHoje = () => typeof BONUS_INI !== 'undefined' && Date.now() >= BONUS_INI && Date.now() < BONUS_FIM;
 const bonusAte = () => ddmmM(BONUS_FIM - 1);   // 12/11: último dia do bônus (19/11)
-const limRapida = () => bonusHoje() ? 5 : 3, limAmigos = () => bonusHoje() ? 2 : 1;
+const limRapida = () => 5, limAmigos = () => 2;   // 24/11 (dono): 5 na mesa rápida e 2 com os amigos
 function quandoTemMais() {
   const ag = Date.now(), d = new Date(ag); d.setUTCHours(3, 0, 0, 0); if (d.getTime() <= ag) d.setUTCDate(d.getUTCDate() + 1);
   const h = d.getHours(); return h === 0 ? 'À meia-noite' : `Às ${h}h`;
@@ -15546,7 +15579,7 @@ function avisoPlanoRapida() {
   const mostra = !temPlano() && typeof pagamentosAtivos === 'function' && pagamentosAtivos();
   el.hidden = !mostra;
   // 12/11 (dono): no bônus (até 19/11) são 5; o cartão dizia 3. Agora segue o número do dia
-  if (mostra) el.textContent = planosValem() ? (bonusHoje() ? `Sem plano: ${limRapida()} partidas por dia até ${bonusAte()} (depois, 3). Sócio joga sem limite.` : 'Sem plano: 3 partidas por dia. Sócio joga sem limite.') : `Até 4/11, sem limite para todos. A partir de ${PLANOS_DIA}, sem plano: 3 partidas por dia.`;
+  if (mostra) el.textContent = planosValem() ? (bonusHoje() ? `Sem plano: ${limRapida()} partidas por dia até ${bonusAte()} (depois, 3). Sócio joga sem limite.` : 'Sem plano: 5 partidas por dia. Sócio joga sem limite.') : `Até 4/11, sem limite para todos. A partir de ${PLANOS_DIA}, sem plano: 3 partidas por dia.`;
 }
 const renderHomePlano = renderHome;
 renderHome = function () { const r = renderHomePlano.apply(this, arguments); try { avisoPlanoRapida(); } catch (e) {} return r; };
@@ -17698,7 +17731,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.27-072fcbe7';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.28-d77d6e3c';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -18579,7 +18612,7 @@ MAIS_IC.som = '<svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"
 // partida ou jogo novo depois dos 200). Terminar uma partida que já estava no meio continua liberado. A conta fica neste
 // celular (o offline funciona sem internet). A partida treino das lições não conta. Vale a partir de 5/11, como os outros
 // limites; sócio e administrador jogam sem limite.
-const OFFKEY = 'dmz-offline-dia', OFF_POR_DIA = 5, RAPIDA_POR_DIA = 3, AMIGOS_SOCIO = 3;
+const OFFKEY = 'dmz-offline-dia', OFF_POR_DIA = 5, RAPIDA_POR_DIA = 5, AMIGOS_SOCIO = 3;
 // 04/11 (dono): travas do offline. (1) Relógio: o app guarda a maior hora que já viu e a hora do servidor da última
 // conferência; voltar a data do celular não devolve partidas. (2) Conferência: com internet, o app manda ao servidor
 // quantas partidas offline jogou hoje e recebe o número guardado lá (quem apaga os dados do app e volta pela mesma rede
@@ -19093,7 +19126,11 @@ const REGRAS_SABADO = [
 const TORNEIO_MESAS = [['teatro', 'Teatro Amazonas'], ['encontro', 'Encontro das Águas'], ['arena', 'Arena da Amazônia'], ['boto', 'Boto-rosa'], ['mercado', 'Mercado Adolpho Lisboa'], ['peixeboi', 'Peixe-boi'], ['ponte', 'Ponte Rio Negro'], ['guarana', 'Guaraná'], ['palacio', 'Palácio Rio Negro'], ['onca', 'Onça-pintada'], ['pontanegra', 'Ponta Negra'], ['pirarucu', 'Pirarucu'], ['relogio', 'Relógio Municipal'], ['tucano', 'Tucano'], ['calcadao', 'Largo de São Sebastião'], ['vitoria', 'Vitória-régia'], ['igreja', 'Igreja de São Sebastião'], ['araraazul', 'Arara-Azul'], ['chamine', 'Usina Chaminé'], ['tambaqui', 'Tambaqui']];
 function sbTema(t) {
   const dia = manausDe(t || Date.now()).toISOString().slice(0, 10), r = REGRAS_SABADO, m = TORNEIO_MESAS;
-  const k = Math.round((Date.parse(dia + 'T12:00:00Z') - Date.parse('2026-11-21T12:00:00Z')) / (7 * 864e5));
+  // 24/11 (dono): a lista só anda nos sábados que têm torneio (o da Copa dos Sócios não gasta a vez de ninguém); igual a sabado.js
+  const base = Date.parse('2026-11-21T12:00:00Z'), fim = Date.parse(dia + 'T12:00:00Z');
+  let k = 0;
+  if (fim >= base) { for (let x = base; x < fim; x += 7 * 864e5) if (csAgora(x).fase !== 'agora') k++; }
+  else k = Math.round((fim - base) / (7 * 864e5));
   const g = r[((k % r.length) + r.length) % r.length], me = m[((k % m.length) + m.length) % m.length];
   return { id: g.id, regra: g.regra, mesa: me[0], nome: 'Torneio ' + me[1] };
 }

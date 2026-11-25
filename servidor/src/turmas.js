@@ -176,8 +176,8 @@ async function resumo(env, ap) {
   if (idOk(ap)) {
     const t = await turmaDoAparelho(env, ap);
     if (t) {
-      // 24/11: e quem está com o app aberto agora (a bolinha verde na lista, só para quem é da Turma)
-      const { results } = await env.DB.prepare('SELECT m.nome, m.aparelho, (SELECT p.visto_em FROM presenca p WHERE p.aparelho = m.aparelho) AS visto FROM turma_membros m WHERE m.turma = ? ORDER BY m.entrou LIMIT ?').bind(t.codigo, MAX_MEMBROS).all()
+      // 24/11: e quem está com o app aberto agora (a bolinha verde na lista, só para quem é da Turma; menor de 18, nunca)
+      const { results } = await env.DB.prepare('SELECT m.nome, m.aparelho, (SELECT p.visto_em FROM presenca p WHERE p.aparelho = m.aparelho AND COALESCE(p.menor, 0) = 0) AS visto FROM turma_membros m WHERE m.turma = ? ORDER BY m.entrou LIMIT ?').bind(t.codigo, MAX_MEMBROS).all()
         .catch(() => env.DB.prepare('SELECT nome FROM turma_membros WHERE turma = ? ORDER BY entrou LIMIT ?').bind(t.codigo, MAX_MEMBROS).all());
       const p = await env.DB.prepare('SELECT pontos FROM desafio_pontos WHERE edicao = ? AND turma = ?').bind(e.ano, t.codigo).first();
       const i = rk.findIndex(r => r.codigo === t.codigo);
