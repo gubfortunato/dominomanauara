@@ -195,6 +195,8 @@ export const TEXTOS = {
   sexta20: { titulo: 'Começou a Sexta da Calçada!', texto: 'Até as 23h, sócio ganha moral em dobro: o nível sobe duas vezes mais rápido. Bora pra mesa?', url: '/' },
   // 14/11 (pedido do dono): Domingão da Calçada, às 10h (um texto para o sócio e outro para quem não é)
   domingoSocio: { titulo: '☀️ Hoje é Domingão da Calçada!', texto: 'Das 10h às 22h tem sol, churrasco e pagode na mesa. Chama a turma e bora jogar!', url: '/' },
+  // 24/11 (dono): no domingo da Copa, o sócio recebe o do último dia da Copa (o Domingão vem junto)
+  domingoCopa: { titulo: '🏆 Último dia da Copa dos Sócios!', texto: 'Vai até as 22h e cada vitória online ainda conta ponto. E hoje é Domingão da Calçada: sol, churrasco e pagode na mesa. Bora!', url: '/?abrir=copa' },
   domingoTodos: { titulo: '☀️ Hoje é Domingão da Calçada!', texto: 'Das 10h às 22h a calçada fica cheia. Chama a turma! E se quiser jogar sem limite o dia todo, seja Sócio da Calçada.', url: '/' },
   copa12: e => ({ titulo: `Hoje começa a ${e.nome}! 🏆`, texto: 'Às 20h começa a Copa e a Sexta da Calçada, com moral em dobro para os sócios. Só sócios pontuam na Copa.', url: '/?abrir=copa' }),
   copa20: e => ({ titulo: `Começou a ${e.nome}! 🏆`, texto: `Vai até domingo, 22h. Cada vitória online conta ponto para os sócios. E hoje o sócio tem moral em dobro até as 23h.`, url: '/?abrir=copa' }),
@@ -233,7 +235,7 @@ export async function avisosAgendados(env, agora) {
   }
   // 14/11: domingo, às 10h (o que não sair nessa rodada sai às 11h; cada um recebe uma vez)
   if (t.sem === 0 && (t.h === 10 || t.h === 11)) {
-    out.push({ chave: `dm:${t.dia}:socio`, msg: TEXTOS.domingoSocio, para: 'socios', caixa: false });
+    out.push({ chave: `dm:${t.dia}:socio`, msg: c.ativa ? TEXTOS.domingoCopa : TEXTOS.domingoSocio, para: 'socios', caixa: false });   // 24/11: no domingo da Copa
     out.push({ chave: `dm:${t.dia}:todos`, msg: TEXTOS.domingoTodos, para: 'naoSocios', caixa: false });
   }
   // uma semana antes da Copa (de manhã)

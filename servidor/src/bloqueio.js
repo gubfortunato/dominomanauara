@@ -32,6 +32,8 @@ async function termos(env) {
   } catch (e) { TERMOS.lista = TERMOS.lista || []; }
   return TERMOS.lista;
 }
+// 24/11: nome de Turma com um pedaço que o administrador bloqueou
+export async function termoDoDono(env, nome) { return !!bateTermo(nome, (await termos(env)).filter(x => x.parte)); }
 export function bateTermo(nome, lista) {
   const ks = chavesApelido(nome).map(juntas);
   return (lista || []).find(x => ks.some(k => x.parte ? k.includes(x.t) : k === x.t)) || null;

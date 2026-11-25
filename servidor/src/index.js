@@ -691,6 +691,7 @@ export default {
       if (url.pathname === '/dono/papo/voz' && req.method === 'GET') return await donoPapoVoz(req, env, origin, H);   // 10/11: áudio denunciado
       if (url.pathname === '/dono/apelido' && req.method === 'POST') return await donoApelido(req, env, origin, H);   // 3.41
       if (url.pathname === '/dono/apelidos' || url.pathname === '/dono/apelidos/tirar') return await donoApelidos(req, env, origin, H, url);   // 11/11: apelidos bloqueados
+      if (url.pathname === '/dono/turmas' || url.pathname === '/dono/turmas/nome') return await turmas.donoTurmas(req, env, origin, H, url);   // 24/11: nomes de Turma
       if (url.pathname === '/dono/robos' && req.method === 'GET') return await donoRobos(req, env, origin, H);   // 3.41
       const dv = url.pathname.match(/^\/dono\/pagamentos\/([0-9a-f]{20})\/devolver$/);
       if (dv && req.method === 'POST') return await donoDevolver(req, env, origin, H, dv[1]);

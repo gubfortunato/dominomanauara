@@ -3,7 +3,7 @@
 // Desafio das Confrarias: de 1º/11 a 20/12 (horário de Manaus), cada vitória numa partida online contra alguém de
 // outra Turma vale 1 ponto para a Turma de quem ganhou (no máximo 5 por dia contra a mesma Turma, para ninguém
 // combinar resultado). A Turma com mais pontos leva o título do ano; com 3 títulos, a Grande Taça.
-import { bloqueado, pegaPeloApelido } from './bloqueio.js';
+import { bloqueado, pegaPeloApelido, termoDoDono } from './bloqueio.js';
 import { nomeOfensivo } from './motor.js';
 import { enviarPush } from './webpush.js';
 import { temPlano } from './planos.js';
@@ -31,11 +31,13 @@ const limpa = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u00
 const MANAUS = 4 * 3600000;
 const diaManaus = t => new Date(t - MANAUS).toISOString().slice(0, 10);
 // 04/11 (dono): nome de Turma com termo de baixo calão não aparece em lugar nenhum (fica "Turma sem nome")
-const nomeSeguro = n => n && nomeOfensivo(n) ? 'Turma sem nome' : n;
+// 24/11: o nome que o administrador tirou fica "Turma sem nome <código>" no banco (o nome é único) e aparece como "Turma sem nome"
+const SEM_NOME_RE = /^turma sem nome( [a-z0-9]+)?$/i;
+const nomeSeguro = n => n && (nomeOfensivo(n) || SEM_NOME_RE.test(String(n).trim())) ? 'Turma sem nome' : n;
 // 04/11 (dono): Turma que perdeu o nome (palavrão) pode escolher outro, uma vez, por quem criou (ou, se essa pessoa
 // saiu, por quem está há mais tempo). Os pontos e os membros ficam.
 const SEM_NOME = 'turma sem nome';
-const nomeRetirado = n => !n || String(n).trim().toLowerCase() === SEM_NOME || nomeOfensivo(n);
+const nomeRetirado = n => !n || String(n).trim().toLowerCase() === SEM_NOME || SEM_NOME_RE.test(String(n).trim()) || nomeOfensivo(n);
 async function responsavel(env, t) {
   if (t.criador) { const c = await env.DB.prepare('SELECT aparelho, nome FROM turma_membros WHERE turma = ? AND aparelho = ?').bind(t.codigo, t.criador).first(); if (c) return c; }
   return await env.DB.prepare('SELECT aparelho, nome FROM turma_membros WHERE turma = ? ORDER BY entrou LIMIT 1').bind(t.codigo).first();
@@ -209,7 +211,7 @@ export async function nova(req, env, origin, h) {
   if (await bloqueado(env, b.aparelho)) return h.json({ erro: 'bloqueado' }, 403, origin);   // 3.25
   if (await pegaPeloApelido(env, b.aparelho, b.apelido)) return h.json({ erro: 'bloqueado' }, 403, origin);   // 11/11: voltou com outro aparelho
   const nome = limpa(b.nome, 24);
-  if (nome.length < 3 || nomeRetirado(nome)) return h.json({ erro: 'nome' }, 400, origin);
+  if (nome.length < 3 || nomeRetirado(nome) || await termoDoDono(env, nome)) return h.json({ erro: 'nome' }, 400, origin);   // 24/11: e os pedaços do dono
   if (await turmaDoAparelho(env, b.aparelho)) return h.json({ erro: 'ja-tem' }, 409, origin);
   if (await env.DB.prepare('SELECT 1 FROM turmas WHERE lower(nome) = lower(?)').bind(nome).first()) return h.json({ erro: 'nome-usado' }, 409, origin);
   const marca = await h.marcaDoDia(req, env);
@@ -258,11 +260,29 @@ export async function renomear(req, env, origin, h) {
   if (k && k.n >= 15) return h.json({ erro: 'muitas' }, 429, origin);
   await env.DB.prepare("INSERT INTO tentativas (marca, tipo, criado_em) VALUES (?, 'turma-nome', ?)").bind(marca, Date.now()).run();
   const nome = limpa(b.nome, 24);
-  if (nome.length < 3 || nomeRetirado(nome)) return h.json({ erro: 'nome' }, 400, origin);
+  if (nome.length < 3 || nomeRetirado(nome) || await termoDoDono(env, nome)) return h.json({ erro: 'nome' }, 400, origin);   // 24/11: e os pedaços do dono
   if (await env.DB.prepare('SELECT 1 FROM turmas WHERE lower(nome) = lower(?) AND codigo <> ?').bind(nome, t.codigo).first()) return h.json({ erro: 'nome-usado' }, 409, origin);
   try { await env.DB.prepare('UPDATE turmas SET nome = ? WHERE codigo = ?').bind(nome, t.codigo).run(); }
   catch (e) { return h.json({ erro: 'nome-usado' }, 409, origin); }
   return h.json(await resumo(env, b.aparelho), 200, origin);
+}
+// 24/11 (dono: "um comando para evitar nomes impróprios para as confrarias"): GET /dono/turmas (as Turmas, com o nome
+// de verdade, quantos membros e pontos) e POST /dono/turmas/nome {codigo}: tira o nome (vira "Turma sem nome" em todo lugar
+// e quem criou escolhe outro, como quando o filtro pega o nome; os pontos e os membros ficam)
+export async function donoTurmas(req, env, origin, h, url) {
+  if (!(await h.ehDono(req, env))) return h.json({ erro: 'nao-autorizado' }, 401, origin);
+  if (req.method === 'POST') {
+    let b; try { b = await req.json(); } catch (e) { return h.json({ erro: 'formato' }, 400, origin); }
+    const cod = String((b && b.codigo) || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 12);
+    const t = cod && await env.DB.prepare('SELECT codigo, nome FROM turmas WHERE codigo = ?').bind(cod).first();
+    if (!t) return h.json({ erro: 'nao-existe' }, 404, origin);
+    if (!nomeRetirado(t.nome)) await env.DB.prepare('UPDATE turmas SET nome = ? WHERE codigo = ?').bind('Turma sem nome ' + t.codigo.toLowerCase(), t.codigo).run();
+    return h.json({ ok: true }, 200, origin);
+  }
+  const ed = edicao(env);
+  const { results } = await env.DB.prepare(`SELECT t.codigo, t.nome, t.criada, (SELECT COUNT(*) FROM turma_membros m WHERE m.turma = t.codigo) AS membros,
+      (SELECT p.pontos FROM desafio_pontos p WHERE p.edicao = ? AND p.turma = t.codigo) AS pontos FROM turmas t ORDER BY t.criada DESC LIMIT 300`).bind(ed.ano).all();
+  return h.json({ turmas: (results || []).map(r => ({ codigo: r.codigo, nome: r.nome, retirado: nomeRetirado(r.nome), filtro: !!nomeOfensivo(r.nome), membros: r.membros || 0, pontos: r.pontos || 0, criada: r.criada })) }, 200, origin);
 }
 // POST /turma/escudo {aparelho, cor, simbolo}: quem criou a Turma (sócio) escolhe o escudo
 export async function escudo(req, env, origin, h) {
