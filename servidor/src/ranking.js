@@ -193,6 +193,20 @@ export async function campeaoDoMes(env) {
   CAMP.mes = mes; CAMP.em = agora; CAMP.quase = quase; CAMP.dados = x ? { aparelho: x.aparelho, nome: x.nome, av: x.av, nv: x.nv, mes } : null;
   return CAMP.dados;
 }
+// 24/11 (dono: "bastante destaque para os campeões"): o Rei de uma semana e o Campeão de um mês quaisquer (já acabados),
+// com a mesma regra da coroa e da Dourada, para o Hall da Fama (campeoes.js guarda cada um quando aparece)
+export const inicioPeriodo = inicio;
+export async function reiDe(env, sem) {
+  const lista = await ordenados(env, sem); let x = lista[0] || null;
+  if (x && limitesValem(env, inicio(sem) + 7 * DIA - 1)) { const s = await socios(env, lista.map(y => y.aparelho)); if (!s.has(x.aparelho)) x = lista.find(y => s.has(y.aparelho)) || null; }
+  return x ? { aparelho: x.aparelho, nome: x.nome, av: x.av, nv: x.nv, pontos: x.pontos || x.ganhas || 0 } : null;
+}
+export async function campeaoMesDe(env, mes) {
+  if (mes < CAMPEAO_DESDE) return null;
+  const lista = await ordenados(env, mes); let x = lista[0] || null;
+  if (x) { const s = await socios(env, lista.map(y => y.aparelho)); if (!s.has(x.aparelho)) x = lista.find(y => s.has(y.aparelho)) || null; }
+  return x ? { aparelho: x.aparelho, nome: x.nome, av: x.av, nv: x.nv, pontos: x.pontos || x.ganhas || 0 } : null;
+}
 // GET /ranking/campeao?aparelho= -> { campeao: { nome, mes, eu } | null, quase } (o app confere ao abrir, para liberar a Dourada)
 export async function campeaoRota(req, env, origin, h, url) {
   const ap = idOk(url.searchParams.get('aparelho')) ? url.searchParams.get('aparelho') : null;

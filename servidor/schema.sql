@@ -365,3 +365,7 @@ CREATE INDEX IF NOT EXISTS segunda_placar_dia ON segunda_placar (dia, vitorias);
 CREATE TABLE IF NOT EXISTS sabado_placar (dia TEXT NOT NULL, aparelho TEXT NOT NULL, nome TEXT, partidas INTEGER NOT NULL DEFAULT 0, vitorias INTEGER NOT NULL DEFAULT 0, galos INTEGER NOT NULL DEFAULT 0, carrocas INTEGER NOT NULL DEFAULT 0, pontos INTEGER NOT NULL DEFAULT 0, em INTEGER, PRIMARY KEY (dia, aparelho));
 CREATE INDEX IF NOT EXISTS sabado_placar_dia ON sabado_placar (dia, pontos);
 CREATE TABLE IF NOT EXISTS sabado_campeao (dia TEXT PRIMARY KEY, aparelho TEXT, nome TEXT, pontos INTEGER, lider TEXT, em INTEGER);
+
+-- 24/11 (dono: "bastante destaque para os campeões"): o Hall da Fama. O Rei da Calçada de cada semana e o Campeão de cada
+-- mês, guardados quando aparecem (a Copa fica em copa_premios e o sábado em sabado_campeao). 13 meses (faxina da Privacidade).
+CREATE TABLE IF NOT EXISTS campeoes (tipo TEXT NOT NULL, periodo TEXT NOT NULL, aparelho TEXT, nome TEXT, av TEXT, pontos INTEGER, em INTEGER NOT NULL, PRIMARY KEY (tipo, periodo));

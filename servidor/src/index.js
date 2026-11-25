@@ -11,6 +11,7 @@ import * as vivo from './vivo.js';
 import * as presenca from './presenca.js';
 import { donoNumeros, limparNumeros, donoCrescimento, donoRitmo } from './numeros.js';
 import * as rk from './ranking.js';
+import * as campeoes from './campeoes.js';   // 24/11: Galeria dos Campeões e Hall da Fama
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos, pegaPeloApelido, donoApelidos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
 import { limitesValem, limitesAgora, happyHour, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
@@ -407,6 +408,7 @@ async function faxinaPrivacidade(env) {
   await q('DELETE FROM mensagens WHERE criado_em < ?', agora - 365 * DIA);
   await q('DELETE FROM apelidos_vigia WHERE ate < ? AND bloqueado IS NULL AND (perdao IS NULL OR perdao < ?)', agora - 30 * DIA, agora);
   await q('DELETE FROM vigia_tentativas WHERE em < ?', agora - 30 * DIA);
+  await q('DELETE FROM campeoes WHERE em < ?', agora - 400 * DIA);   // 24/11: Hall da Fama, 13 meses
 }
 async function lembretesDoDia(env) {
   // faxina: registros do limite de mesas com mais de 2 dias
@@ -461,7 +463,7 @@ export const EVENTO_POR_RODADA = { manha: 45, tarde: 15 };   // à tarde: + plan
 const MANAUS_MS = 4 * 3600000;
 const diaManaus = t => new Date(t - MANAUS_MS).toISOString().slice(0, 10);
 const diaMesDe = t => { const d = new Date(t - MANAUS_MS); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0'); };
-export const AVISO_REI = { titulo: 'Você é o Rei da Calçada! 👑', texto: 'Você foi o 1º da semana. A coroa fica no seu avatar na mesa online até domingo. Bora defender?', url: '/?abrir=ranking' };
+export const AVISO_REI = { titulo: 'Você é o Rei da Calçada! 👑', texto: 'Você foi o 1º da semana. A coroa fica no seu avatar na mesa online até domingo. Bora defender?', url: '/?abrir=campeoes' };
 export async function eventoDoDia(env, agora) {
   const hoje = diaManaus(agora);
   if (DATAS[hoje]) return { tipo: 'data', msg: Object.assign({ url: '/' }, DATAS[hoje]) };
@@ -469,7 +471,7 @@ export async function eventoDoDia(env, agora) {
   if (diaManaus(ed.inicio) === hoje) return { tipo: 'desafio', msg: { titulo: 'Começou o Desafio das Confrarias!', texto: `Até ${diaMesDe(ed.fim - 1)}, cada vitória online contra outra Turma vale ponto para a sua. Junte a turma e bora!`, url: '/?abrir=turma' } };
   if (new Date(agora - MANAUS_MS).getUTCDay() === 1) {
     let rei = null; try { rei = await rk.reiDaSemana(env); } catch (e) {}
-    if (rei) return { tipo: 'rei', rei, msg: { titulo: 'Tem Rei novo na Calçada 👑', texto: 'Veja quem levou a coroa da semana. Ganhe partidas online e a próxima pode ser sua.', url: '/?abrir=ranking' } };
+    if (rei) return { tipo: 'rei', rei, msg: { titulo: `👑 ${rei.nome} é o Rei da Calçada!`, texto: 'Levou a coroa da semana e joga com ela na mesa online até domingo. Ganhe partidas online e a próxima pode ser sua.', url: '/?abrir=campeoes' } };   // 24/11: com o nome do Rei
   }
   return null;
 }
@@ -530,6 +532,7 @@ async function avisosDeEvento(env, agora) {
   const lista = await avisosAgendados(env, agora);
   try { lista.push(...await turmas.avisosDesafio(env, agora)); } catch (e) {}   // 10/11: avisos do Desafio das Confrarias
   try { lista.push(...await avisosSabado(env, agora)); } catch (e) {}   // 17/11: Sábado dos Torneios (10h) e o campeão (domingo de manhã)
+  try { lista.push(...await campeoes.avisosCampeoes(env, agora)); } catch (e) {}   // 25/11: o Campeão do Mês (dia 1º), para todo mundo
   const temChave = !!(env.VAPID_PRIVATE_JWK && env.VAPID_PUBLIC);
   let ok = 0, falhas = 0, sobra = EV_POR_RODADA;
   const naoFoi = 'NOT EXISTS (SELECT 1 FROM avisos_ev e WHERE e.aviso = a.id AND e.chave = ?)';
@@ -720,6 +723,7 @@ export default {
       if (url.pathname === '/presenca' && req.method === 'POST') return await presenca.avisar(req, env, origin, H);
       // Ranking da calçada (3.29)
       if (url.pathname === '/ranking' && req.method === 'GET') return await rk.ranking(req, env, origin, H, url);
+      if (url.pathname === '/campeoes' && req.method === 'GET') return await campeoes.rota(req, env, origin, H, url);   // 24/11: Hall da Fama
       if (url.pathname === '/ranking/campeao' && req.method === 'GET') return await rk.campeaoRota(req, env, origin, H, url);   // 13/11: Campeão do Mês
       if (url.pathname === '/ranking/fora' && req.method === 'POST') return await rk.sairDoRanking(req, env, origin, H);
       if (url.pathname === '/copa' && req.method === 'GET') return await copaInfo(req, env, origin, H, url);   // 10/11: Copa dos Sócios

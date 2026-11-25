@@ -2275,6 +2275,104 @@ html[data-mesa="palacio"] .table.wood{--wood-1:#14306e;--wood-2:#0b1c44;--wood-e
 .seat .seat-pd{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);display:flex;gap:2px;pointer-events:none}
 /* 24/11 (dono: "o balão dos pontos e das conversas está misturado com as pedras; o ideal seria ficar por cima") */
 .seat .bubble{z-index:6}
+/* 24/11 (dono: "bastante destaque para os campeões"): Galeria dos Campeões, "Temos campeão!", Hall da Fama, títulos e mesa */
+.camp-gal{display:block;width:100%;margin:2px 0 16px;padding:11px 10px 10px;border:0;border-radius:18px;background:linear-gradient(160deg,#fbe3a2 0%,#f3c063 46%,#dd9e36 100%);color:#2a1a0b;text-align:left;font:inherit;cursor:pointer;box-shadow:0 8px 20px rgba(150,95,20,.3),inset 0 0 0 1.5px rgba(255,255,255,.5)}
+.camp-gal:active{transform:scale(.99)}
+.camp-gal .cg-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 4px 9px}
+.camp-gal .cg-k{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#7a4b06}
+.camp-gal .cg-ver{font-size:14px;font-weight:800;white-space:nowrap}
+.camp-gal .cg-grade{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.cg-it{display:grid;justify-items:center;align-content:start;gap:3px;padding:9px 3px 8px;border-radius:13px;background:rgba(255,250,235,.62);text-align:center;min-width:0}
+.cg-it.eu{background:rgba(255,255,255,.92);box-shadow:inset 0 0 0 2px #a87410}
+.cg-it.vazio{background:rgba(255,250,235,.3)}
+.cg-it small{margin-top:5px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#7a4b06}
+.cg-it b{font-size:13.5px;line-height:1.15;width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.cg-it.vazio b{opacity:.7;font-weight:700}
+.cg-face,.cn-face,.hf-face,.cf-face{position:relative;display:block;border-radius:50%;flex:none}
+.cg-face{width:50px;height:50px;box-shadow:0 0 0 2.5px #a87410,0 3px 7px rgba(120,70,0,.3)}
+.cg-face > img,.cg-face > .rk-ini,.cn-face > img,.cn-face > .rk-ini,.hf-face > img,.hf-face > .rk-ini,.cf-face > img,.cf-face > .rk-ini{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;object-fit:cover;background:#fff4d6;color:#7a4b06;font-style:normal;font-weight:800;font-size:22px}
+.cg-face.cg-vazia{background:rgba(255,250,235,.6);box-shadow:0 0 0 2px rgba(168,116,16,.45)}
+.cg-ic{position:absolute;right:-7px;bottom:-5px;font-style:normal;font-size:20px;line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.cg-face.cg-vazia .cg-ic{right:auto;left:50%;top:50%;bottom:auto;transform:translate(-50%,-50%);opacity:.6}
+.camp-novo{display:grid;grid-template-columns:68px minmax(0,1fr);gap:14px;align-items:center;width:100%;margin:0;padding:14px 16px;border:0;border-radius:18px;background:linear-gradient(150deg,#fbe3a2 0%,#f3c063 50%,#dd9e36 100%);color:#2a1a0b;text-align:left;font:inherit;cursor:pointer;box-shadow:0 10px 24px rgba(150,95,20,.35),inset 0 0 0 1.5px rgba(255,255,255,.5);animation:campChega .6s cubic-bezier(.2,.9,.3,1.2) both}
+.camp-novo[hidden]{display:none}
+.cn-face{width:68px;height:68px;box-shadow:0 0 0 3px #a87410,0 4px 10px rgba(120,70,0,.35)}
+.cn-face > i{position:absolute;right:-8px;bottom:-6px;font-style:normal;font-size:26px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+.cn-tx{display:grid;gap:2px;min-width:0}
+.cn-tx small{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#7a4b06}
+.cn-tx b{font-family:var(--font-display);font-weight:400;font-size:21px;line-height:1.12}
+.cn-tx i{font-style:normal;font-size:13.5px;line-height:1.3;opacity:.85}
+@keyframes campChega{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.cm-meus{display:grid;gap:6px;margin:4px 0 12px}
+.cm-meus small{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.cm-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cm-chip{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:999px;background:linear-gradient(150deg,#fbe3a2,#f3c063);color:#2a1a0b;font-weight:800;font-size:14.5px;box-shadow:inset 0 0 0 1px rgba(168,116,16,.45)}
+.camp-meus{display:block;width:100%;margin:0 0 12px;padding:12px 14px;border:1.5px solid rgba(243,192,99,.7);border-radius:16px;background:color-mix(in srgb,#f3c063 12%,var(--bg-2));color:var(--fg);font:inherit;text-align:left;cursor:pointer}
+.camp-meus .cm-meus{margin:0 0 6px}
+.camp-meus .cm-ver{font-size:14px;font-weight:800;color:var(--nos)}
+.hf-sec{margin:14px 0 4px}
+.hf-sec h3{margin:0 0 2px;font-size:18px}
+.hf-reg{margin:0 0 8px;font-size:14px;line-height:1.4;color:var(--muted)}
+.hf-lista{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.hf-lista li{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;background:var(--bg-2)}
+.hf-lista li.atual{background:linear-gradient(150deg,#fbe3a2,#f3c063);color:#2a1a0b}
+.hf-lista li.atual small{color:#5a3a10}
+.hf-lista li.eu:not(.atual){box-shadow:inset 0 0 0 2px #f3c063}
+.hf-lista li.hf-vazio{display:block;color:var(--muted);font-size:14.5px}
+.hf-face{width:40px;height:40px;box-shadow:0 0 0 2px #c9973f}
+.hf-tx{display:grid;min-width:0}
+.hf-tx b{font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hf-tx b em{font-style:normal;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;margin-left:4px;border-radius:999px;background:#2a1a0b;color:#f6cf6a;vertical-align:2px}
+.hf-tx small{font-size:12.5px;line-height:1.3;color:var(--muted)}
+.hf-ic{font-size:22px}
+.cf-face{width:112px;height:112px;margin:6px auto 12px;box-shadow:0 0 0 4px #f3c063,0 0 0 8px rgba(243,192,99,.35),0 0 30px 8px rgba(243,192,99,.55);animation:campFesta 1.8s ease-in-out infinite alternate}
+.cf-face > i{position:absolute;right:-10px;bottom:-6px;font-style:normal;font-size:40px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+@keyframes campFesta{from{box-shadow:0 0 0 4px #f3c063,0 0 0 8px rgba(243,192,99,.3),0 0 22px 6px rgba(243,192,99,.45)}to{box-shadow:0 0 0 4px #ffe08a,0 0 0 10px rgba(243,192,99,.45),0 0 36px 12px rgba(243,192,99,.7)}}
+/* mesa: o campeão com anel dourado que pulsa, e a faixa de quem chegou */
+.seat:not(.semnet)[data-rei] .av,.seat:not(.semnet)[data-campeao] .av,.seat:not(.semnet)[data-dourada] .av,.seat:not(.semnet)[data-sabado] .av{outline:2.5px solid #f3c063;outline-offset:2px;animation:campAnel 2.2s ease-in-out infinite alternate}
+@keyframes campAnel{from{outline-color:rgba(243,192,99,.6);filter:drop-shadow(0 0 2px rgba(243,192,99,.35))}to{outline-color:#ffe08a;filter:drop-shadow(0 0 10px rgba(255,214,120,1))}}
+.camp-faixa{position:fixed;left:50%;top:36vh;z-index:27;max-width:min(92vw,460px);width:max-content;padding:10px 18px;border-radius:999px;background:linear-gradient(150deg,#fbe3a2,#f3c063 55%,#dd9e36);color:#2a1a0b;font-weight:800;font-size:16px;line-height:1.3;text-align:center;box-shadow:0 10px 26px rgba(0,0,0,.35),inset 0 0 0 1.5px rgba(255,255,255,.5);transform:translate(-50%,-10px) scale(.96);opacity:0;transition:transform .3s cubic-bezier(.2,.9,.3,1.2),opacity .25s;pointer-events:none}
+.camp-faixa.show{opacity:1;transform:translate(-50%,0) scale(1)}
+@media (prefers-reduced-motion:reduce){.seat[data-rei] .av,.seat[data-campeao] .av,.seat[data-dourada] .av,.seat[data-sabado] .av,.cf-face,.camp-novo{animation:none}}
+.confete-solto{position:fixed;inset:0;width:100vw;height:100vh;z-index:24;pointer-events:none}
+/* 25/11 (dono: "achei interessante o hall da fama... podemos melhorar?"): na disputa agora, abas por título, maiores campeões e a ficha */
+#rnkCampeoes{margin:0 0 12px}
+.hf-disp{margin:6px 0 14px;padding:12px;border-radius:16px;background:color-mix(in srgb,#f3c063 9%,var(--bg-2));border:1.5px solid rgba(243,192,99,.55)}
+.hf-disp-cab{display:grid;gap:8px;margin-bottom:10px}
+.hf-k{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.hf-seg{display:flex;width:100%;box-sizing:border-box}
+.hf-seg button{flex:1;padding:6px 6px;font-size:14px;white-space:nowrap}
+.hf-top{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.hf-top li{display:grid;grid-template-columns:26px 36px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 9px;border-radius:12px;background:color-mix(in srgb,var(--fg) 6%,transparent)}
+.hf-top li.lider{background:linear-gradient(150deg,#fbe3a2,#f3c063);color:#2a1a0b}
+.hf-top li.lider .hf-tx small{color:#5a3a10}
+.hf-top li.eu:not(.lider){box-shadow:inset 0 0 0 2px #f3c063}
+.hf-top .hf-face{width:36px;height:36px}
+.hf-pos{font-weight:800;text-align:center;font-size:15px}
+.hf-pts{font-weight:800;font-size:14px;white-space:nowrap}
+.hf-voce{margin:10px 2px 2px;font-size:15px;line-height:1.4}
+.hf-nota{margin:8px 2px;font-size:14.5px;line-height:1.4;color:var(--muted)}
+.hf-fim{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 2px 0;font-size:13.5px;color:var(--muted)}
+.hf-fim .linkbtn{font-size:13px;font-weight:800;padding:0;min-height:0}
+.hf-cta{width:100%;margin-top:10px}
+.hf-abas{margin:2px 0 4px;background:var(--bg)}
+.hf-abas button{font-size:14.5px;padding:6px 10px}
+.hf-it{all:unset;box-sizing:border-box;grid-column:1/-1;display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hf-it:focus-visible{outline:2px solid var(--nos);outline-offset:4px;border-radius:10px}
+.hf-go{color:var(--muted);font-size:22px;line-height:1;padding-right:2px}
+.hf-lista li.atual .hf-go{color:#5a3a10}
+.hf-n{display:grid;justify-items:end;line-height:1.05}
+.hf-n b{font-size:22px}
+.hf-n small{font-size:11.5px;color:var(--muted)}
+.hf-lista li.atual .hf-n small{color:#5a3a10}
+.hf-voltar{all:unset;cursor:pointer;display:inline-block;font-weight:800;color:var(--nos);font-size:15.5px;padding:6px 0;margin:0 0 4px}
+.hf-ficha{display:grid;justify-items:center;text-align:center;gap:6px;margin:2px 0 14px}
+.hf-ficha h2{margin:4px 0 0}
+.hf-voce-tag{font-style:normal;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:#2a1a0b;color:#f6cf6a;vertical-align:4px;font-family:var(--font-body,inherit)}
+.hf-total{margin:0;color:var(--muted);font-size:15px}
+.hf-ficha .cm-chips{justify-content:center}
+.hf-tits li{grid-template-columns:30px minmax(0,1fr)}
+.hf-tic{font-size:22px;text-align:center}
 .seat .seat-pd i{display:block;flex:none;width:6px;height:11px;border-radius:1.5px;background:linear-gradient(180deg,#fdf8ec,#e2d2b3);box-shadow:0 1px 0 rgba(0,0,0,.5),inset 0 0 0 .6px rgba(110,80,40,.4)}
 /* 28/10: etiqueta do robô da turma que entrou no lugar de quem saiu */
 .seat .sc .sc-robo{display:inline-block;font-size:.82em;font-weight:800;line-height:1.35;padding:0 6px;border-radius:7px;background:rgba(255,255,255,.2);color:#fff;letter-spacing:.02em;vertical-align:1px}
@@ -3716,6 +3814,7 @@ body.papo-aberto{overflow:hidden}
       <h2 class="aba-tit">Ranking</h2>
       <p class="aba-sub">Quem mais ganha nas mesas online. Quem conta é o servidor: só valem partidas jogadas do começo ao fim.</p>
     </header>
+    <button type="button" class="camp-gal" id="rnkCampeoes" hidden aria-label="Galeria dos Campeões: ver o Hall da Fama"></button>
     <div class="rk-abas rnk-abas" id="rnkAbas" role="tablist" aria-label="Rankings"></div>
     <div class="rnk-corpo" id="rnkCorpo"><span id="rnkAncora" hidden></span></div>
   </section>
@@ -4884,6 +4983,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.31', data: '25/11/2026', itens: ['Galeria dos Campeões no topo da aba Ranking e o Hall da Fama (também no Mais): quem está na disputa agora e quanto falta para você, os campeões de cada título, os maiores campeões e a ficha de cada um.', '"Temos campeão!" no início, a comemoração com confete para o campeão e os seus títulos no perfil.', 'Na mesa online, o campeão tem um anel dourado e todo mundo vê quando ele chega.', 'O aviso do novo Rei da Calçada e do novo Campeão do Mês chega para todos, com o nome do campeão.'] },
   { v: '3.61.30', data: '25/11/2026', itens: ['Na semana da Copa dos Sócios, o cartão da Quarta dos Amigos (e o da Sexta) aparece no início junto com o da Copa, e o evento do dia fica em cima.'] },
   { v: '3.61.29', data: '24/11/2026', itens: ['Turmas: o filtro de nomes ficou mais rígido, e nome impróprio vira "Turma sem nome" até quem criou escolher outro (os pontos e os membros ficam).', 'No domingo da Copa dos Sócios, o aviso das 10h para os sócios lembra que é o último dia da Copa, até as 22h.'] },
   { v: '3.61.28', data: '24/11/2026', itens: ['Uma mesa por vez: quem já está sentado numa mesa online não senta em outra ao mesmo tempo (nem por outro celular ou pelo navegador). O jogo oferece voltar para a mesa ou sair de lá e jogar na nova.', 'Sem plano: de novo 5 partidas por dia na mesa rápida e 2 nas mesas com os amigos (ou até 3 na mesa de um sócio).', 'Sábado dos Torneios: no fim de semana da Copa dos Sócios a lista não anda, e o Torneio Encontro das Águas fica para 05/12.', 'No iPhone, o placar da mesa desceu um pouco e saiu da faixa que o sistema deixa desfocada embaixo da barra de status.', 'Quem assiste: o nome comprido de quem está embaixo encurta com "…" e a contagem de pedras fica sempre à vista.', 'Turma: a bolinha de online não aparece para quem tem menos de 18 anos.'] },
@@ -7335,7 +7435,7 @@ function confete(cores, ms) {
       if (p.q) cx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r); else cx.fillRect(-p.r / 2, -p.r / 5, p.r, p.r / 2.5);
       cx.restore();
     }
-    if (vivos && !$('#festa').hidden) confeteRAF = requestAnimationFrame(passo); else cx.clearRect(0, 0, W, H);
+    if (vivos && (!$('#festa').hidden || cv.classList.contains('confete-solto'))) confeteRAF = requestAnimationFrame(passo); else cx.clearRect(0, 0, W, H);   // 24/11: o confete solto (por cima de uma folha) também cai
   };
   confeteRAF = requestAnimationFrame(passo);
 }
@@ -8067,6 +8167,7 @@ function receberOnline(m) {
   if (m.minha < 0) { sairDaMesa(); toast('Você não está mais nessa mesa.'); if (screen === 'sala') renderSala(); return; }
   const antes = ON.vista;
   ON.vista = m; ON.recebido = Date.now();
+  try { campChegada(antes, m); } catch (e) {}   // 24/11: o campeão chegou na mesa
   if (m.fase === 'espera') ON.esperou = true;
   // quem criou trocou a mesa: muda na hora para todo mundo
   if (!antes || antes.tema !== m.tema) {
@@ -8215,6 +8316,8 @@ render = function () {
     if (sc) { const r = sc.querySelector('.sc-robo'); if (r) r.remove(); if (porRobo) sc.insertAdjacentHTML('afterbegin', '<span class="sc-robo">robô</span> '); }
     if (c.rei) el.dataset.rei = '1'; else delete el.dataset.rei;   // 3.37: coroa do Rei da Calçada em cima do avatar
     if (c.campeao) el.dataset.campeao = '1'; else delete el.dataset.campeao;   // 10/11: troféu do campeão da Copa dos Sócios
+    if (c.dourada && !c.bot) el.dataset.dourada = '1'; else delete el.dataset.dourada;   // 24/11: o anel dourado dos campeões
+    if (c.sabado && !c.bot) el.dataset.sabado = '1'; else delete el.dataset.sabado;
     if (sc) { const o = sc.querySelector('.sc-ouro'); if (o) o.remove(); if (c.dourada && !c.bot) sc.insertAdjacentHTML('afterbegin', '<span class="sc-ouro" title="Campeão do Mês" aria-label="Campeão do Mês">🥇</span> '); }   // 13/11
     if (sc) { const o = sc.querySelector('.sc-sabado'); if (o) o.remove(); if (c.sabado && !c.bot) sc.insertAdjacentHTML('afterbegin', '<span class="sc-sabado" title="Campeão do Sábado" aria-label="Campeão do Sábado">🏅</span> '); }   // 17/11: Campeão do Sábado
     if (sc) { const v = sc.querySelector('.sc-campea'); if (v) v.remove(); if (c.campea && !c.bot) sc.insertAdjacentHTML('afterbegin', '<span class="sc-campea" title="Turma campeã do Desafio das Confrarias" aria-label="Turma campeã do Desafio das Confrarias">🏆</span> '); }   // 10/11: selo da Turma campeã
@@ -11126,6 +11229,7 @@ function campeaoParabens() {
     <button type="button" class="secondary" id="campDepois" style="width:100%;margin-top:10px">Depois</button>`);
   $('#campUsar').addEventListener('click', () => { store.set(PDRKEY, 'ouro'); aplicarPedra(); closeSheet(); toast('Pedra Dourada na mesa!'); });
   $('#campDepois').addEventListener('click', closeSheet);
+  try { campConfete(); } catch (e) {}   // 24/11
 }
 setTimeout(() => { try { campeaoBuscar(); } catch (e) {} }, 4000);
 function pedraAtual() { const pd = PEDRAS.find(x => x.id === store.get(PDRKEY)); return pd && pedraLivre(pd) ? pd : PEDRAS[0]; }
@@ -13150,7 +13254,7 @@ function abrirEstanteDe(c) {
   track('estante-outro');
 }
 const renderProfileEst = renderProfile;
-renderProfile = function () { const r = renderProfileEst.apply(this, arguments); try { renderPerfilEstante(); } catch (e) {} return r; };
+renderProfile = function () { const r = renderProfileEst.apply(this, arguments); try { renderPerfilEstante(); } catch (e) {} try { renderPerfilTitulos(); campBuscar().then(() => { try { renderPerfilTitulos(); } catch (e) {} }); } catch (e) {} return r; };   // 24/11: os títulos
 // Na sala da mesa online: tocar em quem já sentou mostra a estante (a cadeira vazia continua sendo para sentar)
 (function () {
   const sm = $('#salaMesa'); if (!sm) return;
@@ -14158,6 +14262,7 @@ const ABA_IC = {
   mais: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="ic-c" x="3.5" y="3.5" width="7" height="7" rx="2"/><rect class="ic-c" x="13.5" y="3.5" width="7" height="7" rx="2"/><rect class="ic-c" x="3.5" y="13.5" width="7" height="7" rx="2"/><rect class="ic-c" x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>'
 };
 const MAIS_IC = {
+  hall: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 4.5h9v4.2a4.5 4.5 0 0 1-9 0z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M7.5 6H4.8c0 2.6 1.2 4.2 3.2 4.6M16.5 6h2.7c0 2.6-1.2 4.2-3.2 4.6M12 13.2v3.3M8.6 19.5h6.8M9.8 19.5c0-1.7.9-3 2.2-3s2.2 1.3 2.2 3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>',   // 25/11: Hall da Fama
   historia: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C10.2 5.2 7.6 4.6 4 4.8v13.4c3.6-.2 6.2.4 8 1.7 1.8-1.3 4.4-1.9 8-1.7V4.8c-3.6-.2-6.2.4-8 1.7zM12 6.5v13.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>',   // 17/11
   estat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19.5V12M10 19.5V6M15 19.5v-9M20 19.5V9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
   carteira: '<svg viewBox="0 0 24 24"><rect x="2.8" y="5.5" width="18.4" height="13" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="8.4" cy="10.8" r="2.1" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 15.7c.6-1.4 1.6-2.1 2.9-2.1s2.3.7 2.9 2.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M13.8 10h4.2M13.8 13.4h2.8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',   // 10/11
@@ -14255,6 +14360,7 @@ function renderMais() {
   try { if (typeof renderDonoCard === 'function') renderDonoCard(); } catch (e) {}
   const itens = [
     souAdmin() && vis('donoCard') && { k: 'dono', ic: 'dono', t: 'Área do administrador', s: (el('donoCardTx') || {}).textContent || 'Os números do jogo', destaque: true },
+    { k: 'hall', ic: 'hall', t: 'Hall da Fama', s: 'Os campeões da Calçada e a disputa da semana' },   // 25/11
     { k: 'aprender', ic: 'aprender', t: 'Aprender a jogar', s: 'Lições curtas e partida treino com dicas' },   // 03/11
     { k: 'regras', ic: 'regras', t: 'Regras', s: 'Bucho, garagem, passe e galo, explicados' },
     { k: 'historia', ic: 'historia', t: 'Histórias das mesas', s: 'Bichos, frutas, lugares e monumentos de Manaus' },   // 17/11
@@ -14310,6 +14416,7 @@ function abasMaisClique(k) {
   if (k === 'dono') clica('donoCard');
   else if (k === 'regras') clica('howBtn');
   else if (k === 'aprender') abrirAprender();
+  else if (k === 'hall') abrirCampeoes();   // 25/11
   else if (k === 'historia') abrirHistoria(mesaAtual().id);   // 17/11
   else if (k === 'som') abrirSom();
   else if (k === 'apoio') clica('footApoio');
@@ -15735,12 +15842,12 @@ function rkDesenhar() {
   const periodo = RK.aba === 'semana' ? 'esta semana' : 'este mês', g = rkRegras();
   // 3.37: Rei da Calçada (o 1º da semana passada), em cima da lista
   const rei = d.rei, reiBox = $('#rkRei');
-  reiBox.hidden = !rei;
+  reiBox.hidden = !rei || campGalVisivel();   // 25/11 (dono): a Galeria dos Campeões já mostra
   if (rei) reiBox.innerHTML = `<span class="rk-face">${rkRosto(rei.av, rei.nome, rei.foto)}</span><span class="rk-rei-tx"><small>👑 Rei da Calçada</small><b>${esc(rei.nome)}${rei.eu ? ' <small class="rk-voce">você</small>' : ''}</b><small>${rei.eu ? 'Você foi o 1º da semana passada: está com a coroa na mesa online até domingo.' : '1º da semana passada · está com a coroa na mesa online até domingo'}</small></span>`;
   // 13/11: Campeão do Mês (o sócio que mais pontuou no mês passado fica com a Dourada)
   let cb = $('#rkCamp');
   if (!cb) { reiBox.insertAdjacentHTML('afterend', '<div class="rk-rei rk-camp" id="rkCamp" hidden></div>'); cb = $('#rkCamp'); }
-  const cp = d.campeao; cb.hidden = !cp;
+  const cp = d.campeao; cb.hidden = !cp || campGalVisivel();
   if (cp) { cb.innerHTML = `<span class="rk-face">${rkRosto(cp.av, cp.nome, cp.foto)}</span><span class="rk-rei-tx"><small>🥇 Campeão de ${esc(nomeMes(cp.mes))}</small><b>${esc(cp.nome)}${cp.eu ? ' <small class="rk-voce">você</small>' : ''}</b><small>${cp.eu ? 'A pedra Dourada é sua até o fim do mês.' : 'Joga com a pedra Dourada até o fim do mês'}</small></span>`; try { campeaoAnotar(cp); } catch (e) {} }
   else if (d.campeao === null) { try { campeaoAnotar(null); } catch (e) {} }
   // 03/11: a coroa é só de sócio. Quem ficou em 1º sem ser sócio fica sabendo que seria o Rei.
@@ -16136,7 +16243,7 @@ function abrirPeloAviso(alvo, ver) {
     if (sheetKind) closeSheet(); if (!store.get(SUPKEY)) store.set(SUPKEY, String(Date.now()));
     track('aviso-abrir-suporte'); abrirFale('aviso'); return true;
   }
-  if (!profile || !['ranking', 'turma', 'copa', 'carteira', 'aovivo'].includes(alvo)) return false;
+  if (!profile || !['ranking', 'turma', 'copa', 'carteira', 'aovivo', 'campeoes'].includes(alvo)) return false;
   if (['game', 'sala', 'who'].includes(screen) || (typeof ON !== 'undefined' && (ON.ativo || ON.buscando))) return false;
   if (sheetKind) closeSheet();
   track('aviso-abrir-' + alvo);
@@ -16157,6 +16264,7 @@ function abrirPeloAviso(alvo, ver) {
     return true;
   }
   if (alvo === 'copa') { if (screen !== 'home') show('home'); setTimeout(() => abrirCopa(), 300); return true; }   // 10/11
+  if (alvo === 'campeoes') { if (screen !== 'home') show('home'); setTimeout(() => abrirCampeoes(), 300); return true; }   // 24/11: Hall da Fama
   if (alvo === 'carteira') { setTimeout(() => abrirCarteira(), 300); return true; }
   if (alvo === 'ranking') {
     rankingAbrir('semana');   // 17/11: a aba Ranking
@@ -16760,6 +16868,7 @@ function copaComemorar() {
     <button type="button" class="secondary" id="cpFechar" style="width:100%;margin-top:8px">Fechar</button>`);
   const sh = $('#cpShare'); if (sh) sh.addEventListener('click', e => compartilharCarteira(e.currentTarget));
   $('#cpFechar').addEventListener('click', closeSheet);
+  if (x.pos === 1) { try { campConfete(); } catch (e) {} }   // 24/11
   return true;
 }
 // 10/11 (pedido do dono, reformulado: "somente o convite para chamar os amigos"): recado único, só com o convite para
@@ -16887,10 +16996,236 @@ function codigoNaHome() {
   $('#caDepois').addEventListener('click', () => { track('codigo-aviso-depois'); closeSheet(); });
   return true;
 }
+// ===== 24/11 (dono: "quero bastante destaque para os campeões da semana, mês, Copa dos Sócios e torneios") =====
+// Galeria dos Campeões no topo da Calçada, "Temos campeão!" no início (2 dias depois de cada título), o Hall da Fama,
+// a comemoração para o próprio campeão, os títulos no perfil e, na mesa, o anel dourado e o aviso "chegou na mesa".
+const CAMP = { dados: null, em: 0, buscando: null };
+const CAMP_TIPOS = [
+  { k: 'semana', curto: 'Rei', ic: '👑', tit: 'Rei da Calçada', o: 'o Rei da Calçada', tx: 'O sócio mais bem colocado do ranking da semana. Leva a coroa na mesa online a semana seguinte inteira.', vazio: 'O primeiro sai na segunda-feira.' },
+  { k: 'mes', curto: 'Mês', ic: '🥇', tit: 'Campeão do Mês', o: 'o Campeão do Mês', tx: 'O sócio mais bem colocado do ranking do mês. Joga o mês seguinte com a pedra Dourada.', vazio: 'O primeiro sai em 1º de dezembro.' },
+  { k: 'copa', curto: 'Copa', ic: '🏆', tit: 'Campeão da Copa', o: 'o Campeão da Copa dos Sócios', tx: 'O campeão da Copa dos Sócios leva o troféu na carteira e a Mesa do Campeão até a Copa seguinte.', vazio: 'A 1ª Copa é de 27 a 29/11: o campeão sai na segunda, 30/11.' },
+  { k: 'sabado', curto: 'Sábado', ic: '🏅', tit: 'Campeão do Sábado', o: 'o Campeão do Sábado', tx: 'O sócio mais bem colocado do torneio de sábado. Leva o selo 🏅 até o próximo sábado.', vazio: 'O primeiro sai no próximo sábado de torneio.' }
+];
+async function campBuscar(forcar) {
+  if (!forcar && CAMP.dados && Date.now() - CAMP.em < 5 * 60000) return CAMP.dados;
+  if (CAMP.buscando) return CAMP.buscando;
+  CAMP.buscando = (async () => {
+    try {
+      const r = await fetch(CONFIG.api + '/campeoes?aparelho=' + encodeURIComponent(meuId()), { cache: 'no-store' });
+      if (r.ok) { CAMP.dados = await r.json(); CAMP.em = Date.now(); }
+    } catch (e) {}
+    CAMP.buscando = null; return CAMP.dados;
+  })();
+  return CAMP.buscando;
+}
+const campRosto = (x, cls) => `<span class="${cls}">${rkRosto(x.av, x.nome, x.foto)}</span>`;
+// a galeria (os 4 do momento), no topo da aba Ranking (25/11, dono: o Hall da Fama mora no Ranking)
+function desenharCampGal() {
+  const el = $('#rnkCampeoes'); if (!el) return;
+  const d = CAMP.dados; if (!d || !d.atuais) { el.hidden = true; return; }
+  // 25/11: compacta (uma linha com os 4), para o ranking continuar à vista logo abaixo
+  const itens = CAMP_TIPOS.map(t => {
+    const x = d.atuais[t.k];
+    return x ? `<span class="cg-it${x.eu ? ' eu' : ''}" data-aba="${t.k}"><span class="cg-face">${rkRosto(x.av, x.nome, x.foto)}<i class="cg-ic" aria-hidden="true">${t.ic}</i></span><small>${t.curto}</small><b>${x.eu ? 'Você' : esc(x.nome)}</b></span>`
+      : `<span class="cg-it vazio" data-aba="${t.k}"><span class="cg-face cg-vazia"><i class="cg-ic" aria-hidden="true">${t.ic}</i></span><small>${t.curto}</small><b>Em disputa</b></span>`;
+  }).join('');
+  el.innerHTML = `<span class="cg-top"><span class="cg-k">Galeria dos Campeões</span><span class="cg-ver">Hall da Fama ›</span></span><span class="cg-grade">${itens}</span>`;
+  el.hidden = false;
+  ['#rkRei', '#rkCamp'].forEach(q => { const e = $(q); if (e) e.hidden = true; });   // 25/11 (dono): sem repetir o Rei e o Campeão do Mês logo abaixo
+}
+function campGalVisivel() { const g = $('#rnkCampeoes'); return !!g && !g.hidden; }
+// Início: "Temos campeão!" por 2 dias depois de cada título (o mais novo; a Copa já tem o cartão dela)
+function desenharCampNovo() {
+  let b = $('#campNovo');
+  if (!b) {
+    const ref = $('#evCard2') || $('#evCard'); if (!ref) return;
+    ref.insertAdjacentHTML('afterend', '<button type="button" class="camp-novo" id="campNovo" hidden></button>');
+    b = $('#campNovo'); b.addEventListener('click', () => { track('campeao-cartao'); abrirCampeoes(b.dataset.aba || null); });
+  }
+  const d = CAMP.dados, agora = Date.now();
+  const l = d && d.atuais ? CAMP_TIPOS.filter(t => t.k !== 'copa').map(t => ({ t, x: d.atuais[t.k] })).filter(o => o.x && o.x.desde && agora - o.x.desde >= 0 && agora - o.x.desde < 2 * 86400000) : [];
+  if (!profile || !l.length) { b.hidden = true; return; }
+  l.sort((a, c) => c.x.desde - a.x.desde);
+  const { t, x } = l[0]; b.dataset.aba = t.k;
+  b.innerHTML = `<span class="cn-face">${rkRosto(x.av, x.nome, x.foto)}<i aria-hidden="true">${t.ic}</i></span>
+    <span class="cn-tx"><small>${x.eu ? 'Parabéns!' : 'Temos campeão!'}</small><b>${x.eu ? `Você é ${t.o}!` : `${esc(x.nome)} é ${t.o}`}</b><i>${esc(x.quando || '')} · ver o Hall da Fama ›</i></span>`;
+  b.hidden = false;
+}
+// o Hall da Fama (25/11, dono: "achei interessante o hall da fama... podemos melhorar?"): na disputa agora (quem levaria a
+// coroa e a Dourada se acabasse agora, e quanto falta para você), abas por título, os maiores campeões e a ficha de cada um
+function campMeusHTML(m) {
+  if (!m) return '';
+  const l = CAMP_TIPOS.filter(t => m[t.k] > 0).map(t => `<span class="cm-chip">${t.ic} ${t.tit}${m[t.k] > 1 ? ' ' + m[t.k] + 'x' : ''}</span>`);
+  return l.length ? `<div class="cm-meus"><small>Seus títulos</small><span class="cm-chips">${l.join('')}</span></div>` : '';
+}
+const HF = { aba: 'semana', disp: 'semana', ficha: null, rk: null, rkEm: 0 };
+async function hfRanking() {
+  if (HF.rk && Date.now() - HF.rkEm < 60000) return HF.rk;
+  try { const r = await fetch(CONFIG.api + '/ranking?aparelho=' + encodeURIComponent(meuId()), { cache: 'no-store' }); if (r.ok) { HF.rk = await r.json(); HF.rkEm = Date.now(); } } catch (e) {}
+  return HF.rk;
+}
+const hfVit = n => n === 1 ? '1 vitória' : n + ' vitórias';
+// quem levaria se acabasse agora: o sócio mais bem colocado (antes dos limites, o 1º)
+function hfDisputa() {
+  const rk = HF.rk, sem = HF.disp === 'semana', socio = temPlano();
+  const d = rk && (sem ? rk.semana : rk.mes);
+  const fim = sem ? 'Termina domingo' : (() => { const m = manausDe(Date.now()); const u = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 0)); return `Termina dia ${u.getUTCDate()}`; })();
+  const seg = `<div class="rk-abas hf-seg" role="tablist"><button type="button" role="tab" data-disp="semana" aria-selected="${sem}">👑 Rei da semana</button><button type="button" role="tab" data-disp="mes" aria-selected="${!sem}">🥇 Campeão do mês</button></div>`;
+  const cab = `<div class="hf-disp-cab"><span class="hf-k"><span class="vivo-ponto vivo-ponto-p" aria-hidden="true"></span>Na disputa agora</span>${seg}</div>`;
+  if (!rk) return `<section class="hf-disp">${cab}<p class="hf-nota">Carregando…</p></section>`;
+  const cta = `<button type="button" class="primary hf-cta" data-hf="socio">Quero ser sócio</button>`;
+  if (!d || d.trancado && !sem) return `<section class="hf-disp">${cab}<p class="hf-nota">🔒 O ranking do mês é dos sócios. O Campeão do Mês joga o mês seguinte inteiro com a pedra Dourada.</p>${!socio && pagamentosAtivos() && !menorDeIdade() ? cta : ''}</section>`;
+  const top = d.top || [], valem = planosValem() || !sem;
+  const lider = valem ? top.find(x => x.socio) : top[0];
+  const linhas = top.slice(0, 3).map(x => `<li class="${x === lider ? 'lider' : ''}${x.eu ? ' eu' : ''}"><span class="hf-pos">${x.pos}º</span><span class="hf-face">${rkRosto(x.av, x.nome, x.foto)}</span>
+      <span class="hf-tx"><b>${esc(x.nome)}${x.eu ? ' <em>você</em>' : ''}</b><small>${x === lider ? (sem ? 'levaria a coroa 👑' : 'levaria a Dourada 🥇') : valem && !x.socio ? 'não é sócio: não leva o título' : (x.socio ? '★ sócio' : '')}</small></span>
+      <span class="hf-pts">${rkPts(x.pontos != null ? x.pontos : x.ganhas)}</span></li>`).join('');
+  const lid = lider && !top.slice(0, 3).includes(lider) ? `<p class="hf-nota">Hoje, quem levaria ${sem ? 'a coroa' : 'a Dourada'}: <b>${esc(lider.nome)}</b> (${lider.pos}º, ${rkPts(lider.pontos)}).</p>` : '';
+  const me = top.find(x => x.eu) || d.eu;
+  let voce = '';
+  if (valem && !socio) voce = `<p class="hf-voce">${me && me.pos ? `Você está em <b>${me.pos}º</b>! ` : ''}${sem ? 'A coroa' : 'O título'} é só de sócio: seja sócio para disputar ${sem ? 'o Rei da Calçada' : 'o Campeão do Mês'}.</p>${pagamentosAtivos() && !menorDeIdade() ? cta : ''}`;
+  else if (me && lider && (me === lider || me.eu && lider.eu)) voce = `<p class="hf-voce">Hoje ${sem ? 'a coroa' : 'a Dourada'} é sua! Segure até o fim${sem ? ' da semana' : ' do mês'}.</p>`;
+  else if (me && me.pos && lider && me.pontos != null) { const f = Math.max(1, (lider.pontos || 0) - me.pontos + 1); voce = `<p class="hf-voce">Você está em <b>${me.pos}º</b>, com ${rkPts(me.pontos)}. Faltam <b>${f} ${f === 1 ? 'ponto' : 'pontos'}</b> para passar ${esc(lider.nome)}: umas ${hfVit(Math.ceil(f / 3))} contra pessoas.</p>`; }
+  else voce = `<p class="hf-voce">Você ainda não pontuou ${sem ? 'nesta semana' : 'neste mês'}. Cada vitória online contra pessoas vale 3 pontos.</p>`;
+  return `<section class="hf-disp">${cab}${top.length ? `<ol class="hf-top">${linhas}</ol>` : '<p class="hf-nota">Ninguém pontuou ainda. A primeira vitória online já abre a disputa.</p>'}${lid}${voce}
+    <p class="hf-fim"><span>${fim}</span><button type="button" class="linkbtn" data-hf="ranking">ver o ranking ›</button></p></section>`;
+}
+function hfAbaHTML() {
+  const d = CAMP.dados;
+  const abas = [...CAMP_TIPOS.map(t => ({ k: t.k, n: t.curto })), { k: 'maiores', n: 'Maiores' }];   // sem emoji: as 5 cabem numa linha
+  const bar = `<div class="rk-abas rnk-abas hf-abas" role="tablist" aria-label="Títulos">${abas.map(a => `<button type="button" role="tab" data-aba="${a.k}" aria-selected="${a.k === HF.aba}">${a.n}</button>`).join('')}</div>`;
+  if (!d || !d.hall) return bar + '<p class="hf-nota">Carregando…</p>';
+  if (HF.aba === 'maiores') {
+    const l = d.hall.maiores || [];
+    return bar + `<p class="hf-reg">Quem mais levou títulos na Calçada, somando o Rei, o Mês, a Copa e o Sábado.</p>` + (l.length ? `<ul class="hf-lista">${l.map((m, i) => `<li class="${m.eu ? 'eu' : ''}${i === 0 ? ' atual' : ''}"><button type="button" class="hf-it" data-k="${m.k || ''}">
+        ${campRosto(m, 'hf-face')}<span class="hf-tx"><b>${esc(m.nome)}${m.eu ? ' <em>você</em>' : ''}</b><small>${CAMP_TIPOS.filter(t => m[t.k]).map(t => t.ic + (m[t.k] > 1 ? '×' + m[t.k] : '')).join('  ')}</small></span>
+        <span class="hf-n"><b>${m.total}</b><small>${m.total === 1 ? 'título' : 'títulos'}</small></span></button></li>`).join('')}</ul>` : '<p class="hf-nota">Os primeiros campeões aparecem aqui.</p>');
+  }
+  const t = CAMP_TIPOS.find(x => x.k === HF.aba) || CAMP_TIPOS[0], l = d.hall[t.k] || [];
+  return bar + `<p class="hf-reg">${esc(t.tx)}</p>` + (l.length ? `<ul class="hf-lista">${l.map((x, i) => `<li class="${x.eu ? 'eu' : ''}${i === 0 ? ' atual' : ''}"><button type="button" class="hf-it" data-k="${x.k || ''}">
+      ${campRosto(x, 'hf-face')}<span class="hf-tx"><b>${esc(x.nome)}${x.eu ? ' <em>você</em>' : ''}</b><small>${esc(x.quando || '')}${x.pontos ? ' · ' + rkPts(x.pontos) : ''}</small></span>${i === 0 ? `<span class="hf-ic" aria-hidden="true">${t.ic}</span>` : '<span class="hf-go" aria-hidden="true">›</span>'}</button></li>`).join('')}</ul>`
+    : `<p class="hf-nota">${esc(t.vazio)}</p>`);
+}
+// a ficha: todos os títulos de uma pessoa
+function hfFichaHTML(k) {
+  const d = CAMP.dados, h = d && d.hall; if (!h) return '';
+  const tit = CAMP_TIPOS.flatMap(t => (h[t.k] || []).filter(x => x.k === k).map(x => Object.assign({ t }, x))).sort((a, b) => (b.desde || 0) - (a.desde || 0));
+  const m = (h.maiores || []).find(x => x.k === k) || tit[0]; if (!m) return '';
+  const cont = CAMP_TIPOS.map(t => ({ t, n: tit.filter(x => x.t.k === t.k).length })).filter(o => o.n);
+  return `<button type="button" class="hf-voltar" data-hf="voltar">‹ Hall da Fama</button>
+    <div class="hf-ficha"><div class="cf-face">${rkRosto(m.av, m.nome, m.foto)}<i aria-hidden="true">${(cont[0] || { t: CAMP_TIPOS[0] }).t.ic}</i></div>
+    <h2 id="sheetTitle">${esc(m.nome)}${m.eu ? ' <em class="hf-voce-tag">você</em>' : ''}</h2>
+    <p class="hf-total">${tit.length === 1 ? '1 título' : tit.length + ' títulos'} na Calçada</p>
+    <span class="cm-chips">${cont.map(o => `<span class="cm-chip">${o.t.ic} ${o.t.tit}${o.n > 1 ? ' ' + o.n + 'x' : ''}</span>`).join('')}</span></div>
+    <ul class="hf-lista hf-tits">${tit.map(x => `<li><span class="hf-tic" aria-hidden="true">${x.t.ic}</span><span class="hf-tx"><b>${x.t.tit}</b><small>${esc(x.quando || '')}${x.pontos ? ' · ' + rkPts(x.pontos) : ''}</small></span></li>`).join('')}</ul>`;
+}
+function hfPintar() {
+  if (sheetKind !== 'info' || !$('#hfCorpo')) return;
+  const box = $('#hfCorpo'), y = ($('.sheet') || {}).scrollTop || 0;
+  if (HF.ficha) { box.innerHTML = hfFichaHTML(HF.ficha); const sh = $('.sheet'); if (sh) sh.scrollTop = 0; return; }
+  const d = CAMP.dados;
+  box.innerHTML = `<p class="eyebrow">Hall da Fama</p><h2 id="sheetTitle">🏆 Os campeões da Calçada</h2>
+    ${d ? campMeusHTML(d.meus) : ''}${hfDisputa()}<div id="hfAba">${hfAbaHTML()}</div>
+    <button type="button" class="secondary" data-hf="fechar" style="width:100%;margin-top:14px">Fechar</button>`;
+  const sh = $('.sheet'); if (sh) sh.scrollTop = y;
+  const sel = box.querySelector('.hf-abas [aria-selected="true"]'), bar = box.querySelector('.hf-abas');
+  if (sel && bar && bar.scrollWidth > bar.clientWidth) bar.scrollLeft = Math.max(0, sel.offsetLeft - (bar.clientWidth - sel.offsetWidth) / 2);
+}
+function abrirCampeoes(aba, ficha) {
+  track('campeoes-abrir');
+  HF.aba = aba && (aba === 'maiores' || CAMP_TIPOS.some(t => t.k === aba)) ? aba : 'semana'; HF.ficha = ficha || null;
+  HF.disp = HF.aba === 'mes' ? 'mes' : 'semana';
+  openSheet('info', '<div id="hfCorpo" class="hf"></div>');
+  const box = $('#hfCorpo');
+  box.addEventListener('click', e => {
+    const a = e.target.closest('[data-aba]'), dp = e.target.closest('[data-disp]'), it = e.target.closest('.hf-it[data-k]'), b = e.target.closest('[data-hf]');
+    if (a && box.contains(a)) { HF.aba = a.dataset.aba; track('hall-aba-' + HF.aba); const x = $('#hfAba'); if (x) { x.innerHTML = hfAbaHTML(); const sel = x.querySelector('[aria-selected="true"]'), bar = x.querySelector('.hf-abas'); if (sel && bar && bar.scrollWidth > bar.clientWidth) bar.scrollLeft = Math.max(0, sel.offsetLeft - (bar.clientWidth - sel.offsetWidth) / 2); } return; }
+    if (dp) { HF.disp = dp.dataset.disp; track('hall-disputa-' + HF.disp); hfPintar(); return; }
+    if (it && it.dataset.k) { HF.ficha = it.dataset.k; track('hall-ficha'); hfPintar(); return; }
+    if (!b) return;
+    const k = b.dataset.hf;
+    if (k === 'voltar') { HF.ficha = null; hfPintar(); }
+    else if (k === 'fechar') closeSheet();
+    else if (k === 'ranking') { closeSheet(); rankingAbrir(HF.disp); }
+    else if (k === 'socio') { track('hall-socio'); closeSheet(); const f = $('#footApoio'); if (f) f.click(); }
+  });
+  hfPintar();
+  campBuscar(true).then(hfPintar);
+  hfRanking().then(hfPintar);
+}
+// a comemoração do próprio campeão (uma vez por título, até 7 dias depois): o Rei e o Campeão do Sábado. A Copa e o
+// mês já têm a deles (copaComemorar e campeaoParabens), que ganham o confete
+function campComemorar() {
+  const d = CAMP.dados; if (!d || !d.atuais) return false;
+  const agora = Date.now();
+  for (const t of CAMP_TIPOS) {
+    if (t.k === 'copa' || t.k === 'mes') continue;
+    const x = d.atuais[t.k];
+    if (!x || !x.eu || !x.desde || agora - x.desde < 0 || agora - x.desde > 7 * 86400000) continue;
+    const ch = 'dmz-camp-' + t.k + '-' + x.desde; if (store.get(ch)) continue;
+    store.set(ch, '1'); track('campeao-festa-' + t.k);
+    const tx = t.k === 'semana' ? 'A coroa 👑 fica no seu avatar na mesa online a semana inteira, e todo mundo vê quando você chega.'
+      : 'O selo 🏅 fica com você na mesa até o próximo sábado, e o seu nome está no Hall da Fama.';
+    openSheet('info', `<div class="cf-face">${rkRosto(x.av, x.nome, x.foto)}<i aria-hidden="true">${t.ic}</i></div>
+      <p class="eyebrow" style="text-align:center">${esc(x.quando || '')}</p><h2 id="sheetTitle" style="text-align:center">Você é ${t.o}!</h2>
+      <p class="pr-lead" style="text-align:center">${tx}</p>
+      <button type="button" class="primary" id="cfHall" style="width:100%">Ver o Hall da Fama</button>
+      <button type="button" class="secondary" id="cfJogar" style="width:100%;margin-top:8px">Bora defender o título</button>`);
+    campConfete();
+    $('#cfHall').addEventListener('click', () => { closeSheet(); abrirCampeoes(t.k); });
+    $('#cfJogar').addEventListener('click', () => { closeSheet(); });
+    return true;
+  }
+  return false;
+}
+// o confete por cima da folha (o canvas mora na tela de fim de partida: sai dela enquanto o confete cai)
+function campConfete() {
+  const cv = $('#confete'), festa = $('#festa'); if (!cv) return;
+  const cores = ['#f3c063', '#ffe08a', '#e5a650', '#fff4d6', '#c9973f'];
+  if (festa && !festa.hidden) { try { confete(cores, 5000); } catch (e) {} return; }
+  cv.classList.add('confete-solto'); document.body.appendChild(cv);
+  try { confete(cores, 5000); } catch (e) {}
+  clearTimeout(campConfete.t); campConfete.t = setTimeout(() => { cv.classList.remove('confete-solto'); if (festa && cv.parentNode !== festa) festa.prepend(cv); }, 9000);
+}
+// o perfil: os títulos de quem já foi campeão
+function renderPerfilTitulos() {
+  let el = $('#perfilTitulos');
+  const ref = $('#perfilEstante');
+  if (!el) { if (!ref) return; ref.insertAdjacentHTML('beforebegin', '<button type="button" class="camp-meus" id="perfilTitulos" hidden aria-label="Ver o Hall da Fama"></button>'); el = $('#perfilTitulos'); el.addEventListener('click', () => { const h = CAMP.dados && CAMP.dados.hall, k = h && CAMP_TIPOS.map(t => (h[t.k] || []).find(x => x.eu)).find(Boolean); abrirCampeoes(null, k && k.k); }); }
+  const m = CAMP.dados && CAMP.dados.meus, html = campMeusHTML(m);
+  el.hidden = !profile || !html; if (el.hidden) return;
+  el.innerHTML = `${html}<span class="cm-ver">Ver a sua ficha no Hall da Fama ›</span>`;
+}
+// a mesa: quando um campeão está (ou chega) na mesa, todo mundo vê a faixa; ele fica com o anel dourado (CSS)
+const CAMP_SELO = [['rei', '👑', 'o Rei da Calçada'], ['campeao', '🏆', 'o Campeão da Copa dos Sócios'], ['dourada', '🥇', 'o Campeão do Mês'], ['sabado', '🏅', 'o Campeão do Sábado']];
+function campChegada(antes, m) {
+  if (!m || !Array.isArray(m.cad)) return;
+  const cod = ON.cod || '?'; ON.campVistos = ON.campVistos || {};
+  const vistos = ON.campVistos[cod] || (ON.campVistos[cod] = new Set());
+  m.cad.forEach((c, p) => {
+    if (!c || c.bot || c.saiu || p === m.minha) return;
+    const t = CAMP_SELO.filter(([k]) => c[k]); if (!t.length) return;
+    const id = c.nome + '|' + t.map(x => x[0]).join(',');
+    if (vistos.has(id)) return; vistos.add(id);
+    campFaixa(`${t.map(x => x[1]).join('')} ${c.nome}, ${t[0][2]}, ${antes ? 'chegou na mesa!' : 'está na mesa!'}`);
+  });
+}
+const CAMP_FAIXAS = [];
+function campFaixa(txt) {
+  CAMP_FAIXAS.push(txt); if (CAMP_FAIXAS.length > 1) return;
+  const vai = () => {
+    const t = CAMP_FAIXAS[0]; if (!t) return;
+    let f = $('#campFaixa'); if (!f) { document.body.insertAdjacentHTML('beforeend', '<div class="camp-faixa" id="campFaixa" role="status" hidden></div>'); f = $('#campFaixa'); }
+    f.textContent = t; f.hidden = false; f.classList.remove('show'); void f.offsetWidth; f.classList.add('show');
+    setTimeout(() => { f.classList.remove('show'); setTimeout(() => { f.hidden = true; CAMP_FAIXAS.shift(); vai(); }, 350); }, 3600);
+  };
+  vai();
+}
 function pertencimentoNaHome() {
   try { desenharEvCard(); } catch (e) {}
   if (screen !== 'home' || sheetKind || !profile) return;
   try { if (copaComemorar()) return; } catch (e) {}
+  try { if (campComemorar()) return; } catch (e) {}   // 24/11: você é o campeão (semana, mês ou sábado)
   try { if (casaComemorar()) return; } catch (e) {}
   try { if (suporteNaHome()) { dsConviteHoje = true; return; } } catch (e) {}   // 12/11: chegou resposta do suporte
   try { if (sextaResumoNaHome()) { dsConviteHoje = true; return; } } catch (e) {}   // 13/11: o resumo da Sexta, depois das 23h
@@ -16900,11 +17235,13 @@ function pertencimentoNaHome() {
   try { if (fotoAvisoNaHome()) { dsConviteHoje = true; return; } } catch (e) {}
   try { if (!dsConviteHoje) desafioConviteNaHome(); } catch (e) {}
 }
+try { const g = $('#rnkCampeoes'); if (g) g.addEventListener('click', e => { const it = e.target.closest('[data-aba]'); track('campeoes-galeria'); abrirCampeoes(it ? it.dataset.aba : null); }); } catch (e) {}
 const renderHomeCasa = renderHome;
 renderHome = function () {
   renderHomeCasa.apply(this, arguments);
   try { desenharEvCard(); } catch (e) {}
   if (csAgora().fase !== 'longe') csBuscar().then(() => { try { desenharEvCard(); desenharCsCalcada(); } catch (e) {} });
+  campBuscar().then(() => { try { desenharCampNovo(); } catch (e) {} });   // 24/11: Temos campeão!
   setTimeout(pertencimentoNaHome, 3300);
 };
 (function () {
@@ -17769,7 +18106,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.30-d50a0bac';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.31-e62e4e28';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -19109,7 +19446,7 @@ const showRnk = show;
 show = function (name) {
   const r = showRnk.apply(this, arguments);
   try {
-    if (name === 'ranking') { if (!RNK.pedido) RNK.auto = true; RNK.pedido = false; rnkAtualizar(true); }
+    if (name === 'ranking') { if (!RNK.pedido) RNK.auto = true; RNK.pedido = false; rnkAtualizar(true); try { desenharCampGal(); campBuscar(true).then(desenharCampGal); } catch (e) {} }   // 25/11: a Galeria dos Campeões
     if (name === 'calcada') calcRankResumo();
   } catch (e) {}
   return r;
