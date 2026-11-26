@@ -2918,9 +2918,9 @@ body.calc-quarta #calcCorpo .vivo-mesa.livre{background:linear-gradient(180deg,r
 .qa-placar .sxp-n{display:inline-flex;align-items:center;gap:6px}.qa-placar .qa-tr{color:#f3f1e7;opacity:.85;flex:none}
 body.jogo-noite.jogo-quarta{background:radial-gradient(120% 70% at 50% 0%,#2c4c3e 0%,#172a22 55%,#0e1a15 100%) fixed}
 /* 25/11: os risquinhos de giz da série, logo acima de Nós e Eles (só na Quarta) */
-.qa-serie{display:none;position:absolute;bottom:100%;margin-bottom:3px;height:26px;pointer-events:none}
-.team.L .qa-serie{left:-2px} .team.R .qa-serie{right:-2px}
-.qa-serie svg{height:26px;width:auto;display:block;overflow:visible}
+.qa-serie{display:none;position:absolute;bottom:100%;margin-bottom:7px;height:22px;pointer-events:none}
+.team.L .qa-serie{right:6px} .team.R .qa-serie{left:6px}   /* 25/11 (dono): mais pro meio, longe do nome */
+.qa-serie svg{height:22px;width:auto;display:block;overflow:visible}
 body.jogo-quarta .qa-serie{display:block}
 body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1;--line:rgba(243,241,231,.18)}
 #scrGame .mesa-noite .mn-giz{position:absolute;inset:0;width:100%;height:100%}
@@ -5048,6 +5048,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.44', data: '25/11/2026', itens: ['Quarta dos Amigos: os risquinhos de giz da série ficam mais pro meio, longe dos nomes.'] },
   { v: '3.61.43', data: '25/11/2026', itens: ['Quarta dos Amigos: os risquinhos de giz em cima de Nós e Eles agora contam de verdade as partidas ganhas da série (antes era só desenho e não batia com o placar).'] },
   { v: '3.61.42', data: '25/11/2026', itens: ['Novo: Duelo entre sócios! No Ranking ou na ficha do Hall da Fama, toque em ⚔️ Desafiar: o outro sócio recebe o aviso, vocês jogam em lados opostos e o placar de vocês fica guardado.'] },
   { v: '3.61.41', data: '25/11/2026', itens: ['Mesa nova: Réveillon na Ponta Negra, com os fogos sobre o Rio Negro. Fica livre para todo mundo de 26/12 a 1º/1.', 'Dica da semana: toda sexta de manhã, uma dica do jogo no sino 🔔, no aviso do celular e numa janela ao abrir o jogo.', 'Carteira de sócio: a pedra apagada do fundo agora é uma carroça de sena de verdade, igual às da mesa.'] },
@@ -18634,7 +18635,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.43-63c24537';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.44-854389b2';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
