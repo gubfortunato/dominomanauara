@@ -17,7 +17,7 @@ import { anotarCodigoErrado } from './codigos.js';
 import { campeaoAte } from './copa.js';   // 10/11: o campeão da Copa dos Sócios (troféu na mesa e a mesa do campeão)
 import { VOZ, transcrever } from './voz.js';
 import { limitesValem, limitesAgora, diaBR, usoDoDia, somarUso, podeJogar, LIMITE, aparelhoDesde, limiteHerdado, limiteDoIrmao, anotarLimite, mesasDoDia, bonusConfig, natalNoAr, reveillonNoAr } from './planos.js';
-import { limitePessoa, nomeComum } from './pessoa.js';
+import { limitePessoa, nomeComum, anotarSocioRede } from './pessoa.js';
 import { nomeChave } from './planos.js';
 import { quartaValendo, contarQuarta, anotarConvite, anotarQuarta } from './quarta.js';
 import { pesosRobo } from './robo.js';   // 13/11: robô treinado toda noite
@@ -601,6 +601,7 @@ export class Mesa {
     const jaEstava = m.cad.some(c => c && (c.id === quem.id || (c.bot && c.lugarDe && c.lugarDe === quem.id))) || (m.fila || []).some(c => c.id === quem.id);
     if (!jaEstava && exigeApp(this.env) && !(await appAberto(this.env, quem.id))) { await anotarRitmo(this.env, quem.id, { semApp: 1 }); return this.recusar(ws, 'app'); }
     Object.assign(quem, await this.apoiador(quem.id));
+    if (quem.apoiador && att.rede && limitesValem(this.env)) { try { await anotarSocioRede(this.env, att.rede, quem.id, quem.nome); } catch (e) {} }   // 26/11: o apelido de sócio fica livre nesta internet
     // planos (28/10; 03/11): sem plano, 1 partida por dia nas mesas com os amigos (mesmo convidado; até 3 na mesa de um sócio) e 3 na mesa rápida
     if (limitesAgora(this.env) && !quem.apoiador && !quem.planoIncerto) {   // 17/11: fora do Happy Hour
       quem.uso = await usoDoDia(this.env, quem.id);

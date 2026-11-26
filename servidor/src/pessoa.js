@@ -10,6 +10,9 @@
 //     aviso no celular quando começa uma vigia e quando bloqueia, e desfaz no painel ("Possíveis burlas").
 // Travas: nada disso vale para apelido comum (nome muito usado, curto, ou com mais de 12 aparelhos no mês) nem para apelido
 // de sócio (se qualquer aparelho com o apelido tem plano valendo, nenhuma regra vale para ele). Sócio nunca tem limite.
+// 26/11 (varredura do dono): na regra 1, apelido parecido (um começa com o outro: Ed, Edinho, Eds) também é a mesma pessoa;
+// o apelido de sócio só fica livre na internet em que um aparelho de sócio com ele jogou hoje; e apelido comum, na mesma
+// internet, com aparelho novo (menos de 24 h), entra na regra 1. A vigia (regra 2) continua só para apelido não livre.
 // O servidor guarda só o apelido limpo, o código do aparelho e o resumo da rede do dia (que muda todo dia), por 2 dias.
 import { diaBR, nomeChave, CHAVE_SQL, aparelhoDesde, anotarBurla } from './planos.js';
 import { termoLimpo, termosMudaram } from './bloqueio.js';
@@ -63,6 +66,26 @@ async function apelidoLivre(env, n) {
   return livre;
 }
 
+// 26/11: só o "muito usado" (sem a parte do sócio), guardado 1 minuto
+const COMUM = new Map();
+async function apelidoComum(env, n) {
+  const c = COMUM.get(n); if (c && Date.now() - c.em < 60000) return c.comum;
+  let comum = nomeComum(n);
+  if (!comum) {
+    try { const q = await env.DB.prepare(`SELECT COUNT(*) AS n FROM jogadores_vistos WHERE visto_em > ? AND ${CHAVE_SQL} = ?`).bind(Date.now() - 30 * DIA, n).first(); comum = !!(q && q.n > NOMES_COMUNS_MAX); } catch (e) { comum = true; }
+  }
+  COMUM.set(n, { comum, em: Date.now() }); if (COMUM.size > 800) COMUM.clear();
+  return comum;
+}
+// 26/11: um aparelho de sócio com este apelido jogou hoje nesta internet? (o app e o navegador do sócio, a família dele)
+async function socioNaRede(env, n, rede) {
+  try { return !!(await env.DB.prepare('SELECT 1 AS x FROM pessoa_dia d JOIN planos p ON p.aparelho = d.aparelho WHERE d.dia = ? AND d.marca = ? AND d.nome = ? AND p.ate > ? LIMIT 1').bind(diaBR(), rede, n, Date.now()).first()); }
+  catch (e) { return true; }   // banco com problema: não barra ninguém
+}
+// 26/11: um apelido começa com o outro (Ed e Edinho, Ktuaba e Ktuabadeburiti)
+export const parecidos = (a, b) => !!a && !!b && a !== b && Math.min(a.length, b.length) >= 2 && (a.startsWith(b) || b.startsWith(a));
+// 26/11: o sócio também fica anotado na internet do dia (para a regra acima); só o apelido limpo, o código e o resumo da rede
+export async function anotarSocioRede(env, rede, aparelho, nome) { const n = nomeChave(nome); if (n && rede && idOk(aparelho)) await anotarPessoa(env, rede, aparelho, n); }
 // início do dia de Brasília (o dia dos limites)
 const inicioDoDia = dia => Date.parse(dia + 'T03:00:00Z');
 
@@ -94,17 +117,25 @@ export async function limitePessoa(env, { rede, tipo, aparelho, nome, proprio, l
   const n = nomeChave(nome); if (!n) return nada;
   try {
     const dia = diaBR();
-    await aparelhoDesde(env, aparelho);
+    const desde = await aparelhoDesde(env, aparelho);
     await anotarPessoa(env, rede, aparelho, n);
-    if (await apelidoLivre(env, n)) return nada;
-    let v = await vigiaDe(env, n);
-    if (!(v && v.ate > Date.now())) v = await comecarVigia(env, n, nome, v);
-    let aps;
-    if (v) aps = (await env.DB.prepare('SELECT DISTINCT aparelho FROM pessoa_dia WHERE dia = ? AND nome = ? AND aparelho <> ? LIMIT 40').bind(dia, n, aparelho).all()).results;
-    else if (rede) aps = (await env.DB.prepare('SELECT DISTINCT aparelho FROM pessoa_dia WHERE dia = ? AND nome = ? AND marca = ? AND aparelho <> ? LIMIT 40').bind(dia, n, rede, aparelho).all()).results;
-    else return nada;
-    const outros = await usoDe(env, tipo, (aps || []).map(r => r.aparelho), dia);
-    const via = v ? 'vigia' : 'pessoa';
+    // 26/11: apelido de sócio só fica livre na internet em que um aparelho de sócio com ele jogou hoje
+    if (rede && await socioNaRede(env, n, rede)) return nada;
+    const livre = await apelidoLivre(env, n);   // comum ou de sócio: sem vigia (que pode bloquear), como antes
+    let v = null;
+    if (!livre) { v = await vigiaDe(env, n); if (!(v && v.ate > Date.now())) v = await comecarVigia(env, n, nome, v); }
+    const aps = new Set(); let parecido = false;
+    if (v) for (const r of (await env.DB.prepare('SELECT DISTINCT aparelho FROM pessoa_dia WHERE dia = ? AND nome = ? AND aparelho <> ? LIMIT 40').bind(dia, n, aparelho).all()).results || []) aps.add(r.aparelho);
+    // regra 1: mesma internet, mesmo dia, o mesmo apelido ou um parecido. Apelido muito comum só com aparelho novo (dois
+    // "Lucas" antigos no mesmo Wi-Fi continuam separados)
+    const comum = livre && await apelidoComum(env, n);
+    if (rede && (!comum || desde > Date.now() - DIA)) {
+      const { results } = await env.DB.prepare('SELECT DISTINCT aparelho, nome FROM pessoa_dia WHERE dia = ? AND marca = ? AND aparelho <> ? LIMIT 80').bind(dia, rede, aparelho).all();
+      for (const r of results || []) { if (r.nome === n) aps.add(r.aparelho); else if (parecidos(r.nome, n)) { aps.add(r.aparelho); parecido = true; } }
+    }
+    if (!aps.size) return nada;
+    const outros = await usoDe(env, tipo, [...aps], dia);
+    const via = v ? 'vigia' : parecido ? 'parecido' : 'pessoa';
     if ((proprio || 0) + outros < limite) return { barrar: false, outros, via };
     await anotarBurla(env, tipo, via, aparelho, nome);
     if (v && tipo !== 'offline') await tentativa(env, v, n, aparelho);   // o offline confere ao abrir o app: só divide o limite, não conta para bloqueio
