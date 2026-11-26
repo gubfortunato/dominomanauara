@@ -19,6 +19,7 @@ import { termoLimpo, termosMudaram } from './bloqueio.js';
 import { enviarPush } from './webpush.js';
 
 const DIA = 86400000;
+export const VINCULO_DIAS = 7;   // 26/11
 export const VIGIA_DIAS = 7, VIGIA_PERDAO_DIAS = 30, BLOQUEIO_TENTATIVAS = 2, NOMES_COMUNS_MAX = 12;
 export const MOTIVO_AUTO = 'burla do limite grátis (vários aparelhos, automático)';
 const TIPOS = { publicas: 'limites', partidas: 'limites', offline: 'offline_uso' };
@@ -84,6 +85,17 @@ async function socioNaRede(env, n, rede) {
 }
 // 26/11: um apelido começa com o outro (Ed e Edinho, Ktuaba e Ktuabadeburiti)
 export const parecidos = (a, b) => !!a && !!b && a !== b && Math.min(a.length, b.length) >= 2 && (a.startsWith(b) || b.startsWith(a));
+// 26/11: liga este aparelho (por 7 dias) aos aparelhos sem plano que dividiram a internet com ele no mesmo dia (hoje ou
+// ontem: o que a tabela do dia ainda guarda) com o apelido igual ou parecido. Sócio fica de fora (não tem limite).
+async function vincular(env, aparelho, n) {
+  const { results } = await env.DB.prepare(`SELECT DISTINCT d2.aparelho AS x, d2.nome AS nome FROM pessoa_dia d1 JOIN pessoa_dia d2 ON d2.dia = d1.dia AND d2.marca = d1.marca
+      WHERE d1.aparelho = ? AND d1.marca <> '' AND d2.aparelho <> d1.aparelho AND d2.aparelho NOT IN (SELECT aparelho FROM planos WHERE ate > ?) LIMIT 40`).bind(aparelho, Date.now()).all();
+  const par = (results || []).filter(r => idOk(r.x) && (r.nome === n || parecidos(r.nome, n)));
+  if (!par.length) return;
+  const st = env.DB.prepare('INSERT INTO vinculos (a, b, em) VALUES (?, ?, ?) ON CONFLICT (a, b) DO UPDATE SET em = excluded.em');
+  await env.DB.batch(par.map(r => { const [a, b] = [aparelho, r.x].sort(); return st.bind(a, b, Date.now()); }));
+  if (Math.random() < .03) await env.DB.prepare('DELETE FROM vinculos WHERE em < ?').bind(Date.now() - VINCULO_DIAS * DIA).run();
+}
 // 26/11: o sócio também fica anotado na internet do dia (para a regra acima); só o apelido limpo, o código e o resumo da rede
 export async function anotarSocioRede(env, rede, aparelho, nome) { const n = nomeChave(nome); if (n && rede && idOk(aparelho)) await anotarPessoa(env, rede, aparelho, n); }
 // início do dia de Brasília (o dia dos limites)
@@ -132,7 +144,15 @@ export async function limitePessoa(env, { rede, tipo, aparelho, nome, proprio, l
     if (rede && (!comum || desde > Date.now() - DIA)) {
       const { results } = await env.DB.prepare('SELECT DISTINCT aparelho, nome FROM pessoa_dia WHERE dia = ? AND marca = ? AND aparelho <> ? LIMIT 80').bind(dia, rede, aparelho).all();
       for (const r of results || []) { if (r.nome === n) aps.add(r.aparelho); else if (parecidos(r.nome, n)) { aps.add(r.aparelho); parecido = true; } }
+      // 26/11: vínculo de 7 dias com quem dividiu a internet (hoje ou ontem) com apelido igual ou parecido
+      try { await vincular(env, aparelho, n); } catch (e) {}
     }
+    // 26/11: os aparelhos vinculados nos últimos 7 dias entram em qualquer internet (o 4G não separa)
+    try {
+      const { results } = await env.DB.prepare('SELECT b AS x FROM vinculos WHERE a = ? AND em > ? UNION SELECT a AS x FROM vinculos WHERE b = ? AND em > ? LIMIT 20')
+        .bind(aparelho, Date.now() - VINCULO_DIAS * DIA, aparelho, Date.now() - VINCULO_DIAS * DIA).all();
+      for (const r of results || []) if (!aps.has(r.x)) { aps.add(r.x); parecido = true; }
+    } catch (e) {}
     if (!aps.size) return nada;
     const outros = await usoDe(env, tipo, [...aps], dia);
     const via = v ? 'vigia' : parecido ? 'parecido' : 'pessoa';
