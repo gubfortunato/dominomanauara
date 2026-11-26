@@ -5050,6 +5050,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.48', data: '25/11/2026', itens: ['Desafio das Confrarias: na mesa rápida com confronto rolando (Confraria contra Confraria), ninguém senta no meio da partida. Quem toca em Entrar assiste e senta na próxima partida.', 'Mesa rápida: quem a fila manda para uma mesa no meio da mão também assiste e senta na próxima mão, com pedras novas.'] },
   { v: '3.61.47', data: '25/11/2026', itens: ['Quem chega numa mesa com a mão já rolando não pega mais as pedras do robô pela metade: assiste até a mão acabar e senta na próxima, com pedras novas (ideia de um jogador no Fale com a gente). Antes da primeira pedra na mesa, senta na hora.'] },
   { v: '3.61.46', data: '25/11/2026', itens: ['Opinião no app: quem marca 😍 Tô gostando muito pode autorizar que a frase apareça com o apelido no Instagram do Dominó Manauara (só se marcar; para maiores de 18).'] },
   { v: '3.61.45', data: '25/11/2026', itens: ['Quarta dos Amigos: os risquinhos de giz voltam a ser só desenho, iguais aos do cartão da Calçada, e desceram para a linha de Nós e Eles (antes ficavam lá em cima, perto do relógio do celular).'] },
@@ -12228,7 +12229,7 @@ function avisarTroca(m, antes) {
 // pedras novas (o servidor guarda a cadeira). Quando sentar, o app sai do "assistindo" sozinho (como quem sai da fila).
 function esperarMao(m) {
   ON.vista = m; ON.recebido = Date.now();
-  if (!ON.assistindo) { ON.assistindo = true; ON.assistirDe = 'fila'; track('espera-mao'); toast('A mão já está rolando: você assiste e senta na próxima, com pedras novas.'); }
+  if (!ON.assistindo) { ON.assistindo = true; ON.assistirDe = 'fila'; track(m.esperaFim ? 'espera-partida' : 'espera-mao'); toast(m.esperaFim ? 'Partida do Desafio das Confrarias rolando: você assiste e senta na próxima partida.' : 'A mão já está rolando: você assiste e senta na próxima, com pedras novas.'); }   // 25/11: no confronto, até a partida acabar
   assistirAplicar(m);
 }
 // Estou na fila: mostra o painel (e, se estava jogando e a dupla perdeu, sai da mesa para a sala)
@@ -14037,7 +14038,7 @@ function vivoDesenha() {
     // 3.28: dois botões — entrar (se tem lugar vago) e assistir (quem tem o número: mesa rápida; o administrador, todas)
     const ver = v.codigo || (v.desafio && v.desafio.ver) ? `<button type="button" class="vivo-assistir" data-i="${i}" data-acao="assistir" aria-label="Assistir a partida na mesa ${esc(m.nome)}"><span aria-hidden="true">👀</span> Assistir</button>` : '';   // 10/11: Desafio ao vivo
     const estado = `<span class="vivo-acoes">${convite ? `<span class="vivo-st vivo-cheia-st vivo-convite"><span aria-hidden="true">●</span> ${ver ? 'Só por convite' : 'Mesa com os amigos · só por convite'}</span>` : livre
-      ? `<button type="button" class="vivo-st vivo-entra" data-i="${i}" data-acao="entrar"><span aria-hidden="true">▶</span> Entrar · ${sxSocio ? `${lugares} ${lugares === 1 ? 'vaga' : 'vagas'} · 🔥 dobro` : `${lugares} ${lugares === 1 ? 'lugar vago' : 'lugares vagos'}`}</button>`
+      ? `<button type="button" class="vivo-st vivo-entra" data-i="${i}" data-acao="entrar"><span aria-hidden="true">▶</span> ${v.fechada ? 'Entrar na próxima partida' : `Entrar · ${sxSocio ? `${lugares} ${lugares === 1 ? 'vaga' : 'vagas'} · 🔥 dobro` : `${lugares} ${lugares === 1 ? 'lugar vago' : 'lugares vagos'}`}`}</button>`
       : `<span class="vivo-st vivo-cheia-st"><span aria-hidden="true">●</span> Mesa cheia</span>`}${ver}</span>`;
     const abre = `<div class="vivo-mesa${livre ? ' livre' : ' cheia'}" role="group" data-i="${i}" aria-label="${esc(m.nome)}: ${nPessoas} ${nPessoas === 1 ? 'pessoa' : 'pessoas'}${adm ? `, ${nRobos} ${nRobos === 1 ? 'robô' : 'robôs'}` : ''}. ${livre ? `${lugares} ${lugares === 1 ? 'lugar vago' : 'lugares vagos'}` : convite ? 'Mesa com os amigos, só por convite' : 'Mesa cheia'}">
       <span class="vivo-sw" style="background:${fundoMesa(m)}"></span>`;
@@ -15104,7 +15105,7 @@ function assistirFaixa(m) {
   if (!ver) return;
   const outros = Math.max(0, ((m && m.assistindo) || 1) - 1);
   const espMao = ON.assistirDe === 'fila' && ((ON.vistaReal || {}).espera >= 0);   // 25/11: esperando a próxima mão
-  $('#assistirTx').textContent = espMao ? 'Assistindo · você senta na próxima mão'
+  $('#assistirTx').textContent = espMao ? ((ON.vistaReal || {}).esperaFim ? 'Assistindo · você senta na próxima partida' : 'Assistindo · você senta na próxima mão')
     : ON.assistirDe === 'fila'
     ? `Assistindo · ${(((ON.vistaReal || {}).naFila) || 0) + 1}º na fila`
     : m && m.confronto ? (outros ? `⚔️ Desafio · ${outros + 1} assistindo` : '⚔️ Desafio ao vivo')   // 11/11: confronto entre Turmas
@@ -18660,7 +18661,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.47-0547225e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.48-6c33f258';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
