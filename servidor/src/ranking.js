@@ -14,6 +14,7 @@
 // continuam por vitórias (tabela ranking), para ninguém perder o que já tinha no meio da semana.
 // Rei da Calçada: o 1º da semana passada ganha a coroa na mesa online durante a semana seguinte.
 // Apelido genérico ("Anonimous", "Jogador"...) não aparece no ranking: a pessoa vê o aviso para escolher um apelido.
+import { chaveHall } from './chaves.js';   // 25/11: Duelo entre sócios
 import { nomeGenerico, nomeOfensivo } from './motor.js';
 import { limitesValem, temPlano } from './planos.js';   // 28/10: ranking completo é dos sócios
 import { fotosDe } from './fotos.js';   // 10/11: foto do sócio no lugar do avatar
@@ -122,8 +123,9 @@ export async function lista(env, per, fim, eu, reiAp) {
   const pts = usaPontos(env, per), todos = await ordenados(env, per);
   const soc = await socios(env, todos.slice(0, TOP).map(x => x.aparelho));   // 03/11: a ★ de sócio aparece no ranking
   let fts = new Map(); try { fts = await fotosDe(env, todos.slice(0, TOP).map(x => x.aparelho)); } catch (e) {}   // 10/11: a foto do sócio no lugar do avatar
+  const ks = new Map(); for (const a of soc) { try { ks.set(a, await chaveHall(a)); } catch (e) {} }   // 25/11: a chave do sócio (para o Duelo)
   const top = todos.slice(0, TOP).map((x, i) => Object.assign({ pos: i + 1, nome: x.nome, av: x.av, nv: x.nv, ganhas: x.ganhas, jogadas: x.jogadas },
-    pts ? { pontos: x.pontos } : {}, { eu: !!eu && x.aparelho === eu, rei: !!reiAp && x.aparelho === reiAp, socio: soc.has(x.aparelho), foto: fts.get(x.aparelho) || null }));
+    pts ? { pontos: x.pontos } : {}, { eu: !!eu && x.aparelho === eu, rei: !!reiAp && x.aparelho === reiAp, socio: soc.has(x.aparelho), foto: fts.get(x.aparelho) || null, k: ks.get(x.aparelho) || null }));
   let meu = null;
   if (eu && !top.some(x => x.eu)) {
     const me = await env.DB.prepare(`SELECT nome, ${pts ? 'pontos, ' : ''}ganhas, jogadas, atualizado FROM ${pts ? 'calcada' : 'ranking'} WHERE periodo = ? AND aparelho = ?`)

@@ -375,3 +375,10 @@ CREATE TABLE IF NOT EXISTS turma_pedidos (id INTEGER PRIMARY KEY AUTOINCREMENT, 
 CREATE INDEX IF NOT EXISTS turma_pedidos_ap ON turma_pedidos (aparelho, em);
 CREATE INDEX IF NOT EXISTS turma_pedidos_t ON turma_pedidos (turma, estado);
 CREATE TABLE IF NOT EXISTS turma_fora (turma TEXT NOT NULL, aparelho TEXT NOT NULL, em INTEGER NOT NULL, PRIMARY KEY (turma, aparelho));
+-- 25/11: Duelo entre sócios: os desafios (30 dias), quem não quer receber e o placar de cada dupla de sócios (a < b)
+CREATE TABLE IF NOT EXISTS duelos (id INTEGER PRIMARY KEY AUTOINCREMENT, de TEXT NOT NULL, para TEXT NOT NULL, de_nome TEXT, mesa TEXT NOT NULL, frase INTEGER NOT NULL DEFAULT 0, em INTEGER NOT NULL, estado TEXT NOT NULL DEFAULT 'aberto', decidido INTEGER, partidas INTEGER NOT NULL DEFAULT 0);
+CREATE INDEX IF NOT EXISTS duelos_para ON duelos (para, em);
+CREATE INDEX IF NOT EXISTS duelos_de ON duelos (de, em);
+CREATE INDEX IF NOT EXISTS duelos_mesa ON duelos (mesa, em);
+CREATE TABLE IF NOT EXISTS duelo_off (aparelho TEXT PRIMARY KEY, em INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS duelo_placar (a TEXT NOT NULL, b TEXT NOT NULL, va INTEGER NOT NULL DEFAULT 0, vb INTEGER NOT NULL DEFAULT 0, em INTEGER NOT NULL, PRIMARY KEY (a, b));

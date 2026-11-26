@@ -13,6 +13,7 @@ import { donoNumeros, limparNumeros, donoCrescimento, donoRitmo } from './numero
 import * as rk from './ranking.js';
 import * as campeoes from './campeoes.js';   // 24/11: Galeria dos Campeões e Hall da Fama
 import { avisosDicas } from './dicas.js';   // 25/11: a dica da semana (sexta de manhã)
+import * as duelos from './duelos.js';   // 25/11: Duelo entre sócios
 import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos, pegaPeloApelido, donoApelidos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
 import { limitesValem, limitesAgora, happyHour, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
@@ -411,6 +412,7 @@ async function faxinaPrivacidade(env) {
   await q('DELETE FROM vigia_tentativas WHERE em < ?', agora - 30 * DIA);
   await q('DELETE FROM campeoes WHERE em < ?', agora - 400 * DIA);   // 24/11: Hall da Fama, 13 meses
   await q('DELETE FROM turma_pedidos WHERE em < ?', agora - 30 * DIA);   // 25/11: pedidos para entrar numa Turma, 30 dias
+  await q('DELETE FROM duelos WHERE em < ?', agora - 30 * DIA);   // 25/11: os desafios do Duelo entre sócios, 30 dias (o placar fica)
   await q('DELETE FROM turma_fora WHERE em < ?', agora - 400 * DIA);   // 25/11: quem foi tirado de uma Turma, 13 meses
 }
 async function lembretesDoDia(env) {
@@ -676,6 +678,11 @@ export default {
       if (url.pathname === '/turma/pedido/cancelar' && req.method === 'POST') return await turmas.cancelarPedido(req, env, origin, H);
       if (url.pathname === '/turma/pedido/responder' && req.method === 'POST') return await turmas.responderPedido(req, env, origin, H);
       if (url.pathname === '/turma/tirar' && req.method === 'POST') return await turmas.tirar(req, env, origin, H);
+      // 25/11: Duelo entre sócios
+      if (url.pathname === '/duelo' && req.method === 'GET') return await duelos.meus(req, env, origin, H, url);
+      if (url.pathname === '/duelo' && req.method === 'POST') return await duelos.desafiar(req, env, origin, H);
+      if (url.pathname === '/duelo/responder' && req.method === 'POST') return await duelos.responder(req, env, origin, H);
+      if (url.pathname === '/duelo/config' && req.method === 'POST') return await duelos.config(req, env, origin, H);
       if (url.pathname === '/turma/nome' && req.method === 'POST') return await turmas.renomear(req, env, origin, H);
       if (url.pathname === '/turma/escudo' && req.method === 'POST') return await turmas.escudo(req, env, origin, H);   // 24/11: o escudo da Turma (quem criou, sócio)   // 04/11: novo nome da Turma que perdeu o nome
       if (url.pathname === '/pagar' && req.method === 'POST') return await pagar(req, env, origin, H);

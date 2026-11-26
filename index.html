@@ -2394,6 +2394,22 @@ html[data-mesa="palacio"] .table.wood{--wood-1:#14306e;--wood-2:#0b1c44;--wood-e
 .hf-fim{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 2px 0;font-size:13.5px;color:var(--muted)}
 .hf-fim .linkbtn{flex:none;padding:8px 14px;font-size:14px;font-weight:800;white-space:nowrap;color:var(--fg);border:1.5px solid rgba(243,192,99,.75);background:color-mix(in srgb,#f3c063 16%,transparent)}
 .hf-fim .linkbtn:active{transform:scale(.97)}
+/* 25/11: Duelo entre sócios */
+.rk-duelo{justify-self:start;margin-top:5px;padding:3px 11px;border-radius:999px;font:inherit;font-size:12.5px;font-weight:800;color:var(--fg);border:1.5px solid rgba(243,192,99,.75);background:color-mix(in srgb,#f3c063 16%,transparent);cursor:pointer}
+.rk-duelo:active{transform:scale(.96)}
+.hf-duelo{width:100%;margin-top:14px}
+.du-frases{display:grid;gap:8px;margin:14px 0 16px}
+.du-frase{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);font:inherit;font-size:16px;font-weight:700;color:var(--fg);text-align:left;cursor:pointer}
+.du-frase[aria-pressed="true"]{border-color:#e0a63e;background:color-mix(in srgb,#f3c063 18%,var(--bg))}
+.du-frase i{font-style:normal}
+.du-placar{display:flex;justify-content:center;align-items:center;gap:14px;margin:10px 0 4px;font-weight:800}
+.du-placar b{font-family:"Alfa Slab One",serif;font-size:30px;font-weight:400}
+.du-placar small{display:block;font-size:12px;font-weight:700;opacity:.75;text-align:center}
+.du-citacao{margin:10px 0;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,#f3c063 14%,var(--bg));font-size:18px;font-weight:800;text-align:center}
+.du-nao{display:block;margin:12px auto 0;font-size:14px}
+.sala-duelo{margin:0 0 12px;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,#5a2d10,#24120a);color:#fbecd6;font-size:15px;line-height:1.4;text-align:center}
+.sala-duelo b{color:#f3c063}
+.sala-duelo.erro{background:linear-gradient(135deg,#5b1f1f,#2a0d0d)}
 .hf-cta{width:100%;margin-top:10px}
 .hf-abas{margin:2px 0 4px;background:var(--bg)}
 .hf-abas button{font-size:14.5px;padding:6px 10px}
@@ -5027,6 +5043,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.42', data: '25/11/2026', itens: ['Novo: Duelo entre sócios! No Ranking ou na ficha do Hall da Fama, toque em ⚔️ Desafiar: o outro sócio recebe o aviso, vocês jogam em lados opostos e o placar de vocês fica guardado.'] },
   { v: '3.61.41', data: '25/11/2026', itens: ['Mesa nova: Réveillon na Ponta Negra, com os fogos sobre o Rio Negro. Fica livre para todo mundo de 26/12 a 1º/1.', 'Dica da semana: toda sexta de manhã, uma dica do jogo no sino 🔔, no aviso do celular e numa janela ao abrir o jogo.', 'Carteira de sócio: a pedra apagada do fundo agora é uma carroça de sena de verdade, igual às da mesa.'] },
   { v: '3.61.40', data: '25/11/2026', itens: ['Hall da Fama mais macio: trocar de aba, abrir a ficha de um campeão e voltar agora deslizam suave, sem a janela pular de tamanho. E ao voltar da ficha você continua de onde parou na lista.'] },
   { v: '3.61.39', data: '25/11/2026', itens: ['Mesa nova: Pupunha, a fruta que a gente come cozida com sal e café preto (para os sócios da Calçada).'] },
@@ -16060,7 +16077,7 @@ function rkDesenhar() {
     : `<p class="rk-vazio"><b>Ninguém ganhou partida online ${periodo} ainda.</b><span>Ganhe uma e apareça aqui primeiro!</span></p>`) + trava;
   else box.innerHTML = `<ol class="rk-ol">${p.top.map(x => `<li class="${x.eu ? 'eu' : ''}${x.pos <= 3 ? ' podio' : ''}">
       <span class="rk-pos">${x.pos <= 3 ? RK_MEDALHA[x.pos - 1] : x.pos + 'º'}</span><span class="rk-face">${rkRosto(x.av, x.nome, x.foto)}</span>
-      <span class="rk-nome"><b>${x.rei ? '<span class="rk-coroa" title="Rei da Calçada">👑</span> ' : ''}${x.socio ? `<span class="nome-selo rk-socio" title="Sócio da Calçada">${seloEstrela()}</span>` : ''}${esc(x.nome)}${x.eu ? ' <small class="rk-voce">você</small>' : ''}</b><small>Nível ${x.nv || 1}</small></span>
+      <span class="rk-nome"><b>${x.rei ? '<span class="rk-coroa" title="Rei da Calçada">👑</span> ' : ''}${x.socio ? `<span class="nome-selo rk-socio" title="Sócio da Calçada">${seloEstrela()}</span>` : ''}${esc(x.nome)}${x.eu ? ' <small class="rk-voce">você</small>' : ''}</b>${x.k && x.socio && !x.eu && duMostrar() ? `<button type="button" class="rk-duelo" data-duelo="${esc(x.k)}" data-n="${esc(x.nome)}">⚔️ Desafiar</button>` : ''}<small>Nível ${x.nv || 1}</small></span>
       ${p.pontos ? `<span class="rk-pts"><b>${rkPts(x.pontos)}</b><small>${rkVit(x.ganhas)}<br>em ${rkPart(x.jogadas)}</small></span>`
         : `<span class="rk-pts"><b>${rkVit(x.ganhas)}</b><small>em ${rkPart(x.jogadas)}</small></span>`}</li>`).join('')}</ol>` + trava;
   const sb = $('#rkSocio'); if (sb) sb.addEventListener('click', () => { track('ranking-socio'); abrirApoio(screen === 'ranking' ? 'ranking' : 'calcada', 'plano'); });
@@ -16434,6 +16451,14 @@ function abrirPeloAviso(alvo, ver) {
     if (!profile || ['game', 'sala', 'who'].includes(screen) || (typeof ON !== 'undefined' && (ON.ativo || ON.buscando))) return false;
     if (sheetKind) closeSheet(); if (!store.get(SUPKEY)) store.set(SUPKEY, String(Date.now()));
     track('aviso-abrir-suporte'); abrirFale('aviso'); return true;
+  }
+  if (alvo === 'duelo') {   // 25/11: Duelo entre sócios: "Fulano te desafiou"
+    if (!profile || ['game'].includes(screen) || (typeof ON !== 'undefined' && (ON.ativo || ON.buscando))) return false;
+    if (sheetKind) closeSheet();
+    track('aviso-abrir-duelo');
+    if (screen !== 'home') show('home');
+    duBuscar(true).then(() => { if (!dueloNaHome()) toast('Esse desafio já venceu ou foi cancelado.'); });
+    return true;
   }
   if (alvo === 'socio') {   // 25/11: a dica da semana que fala do Sócio da Calçada
     if (!profile || ['game', 'sala', 'who'].includes(screen) || (typeof ON !== 'undefined' && (ON.ativo || ON.buscando))) return false;
@@ -17313,6 +17338,167 @@ function hfAbaCorpoHTML() {
     : `<p class="hf-nota">${esc(t.vazio)}</p>`);
 }
 // a ficha: todos os títulos de uma pessoa
+// ===== Duelo entre sócios (25/11, ideia de um sócio, aprovada pelo dono) =====
+// No lugar de um chat aberto (o jogo não junta desconhecidos): no ranking ou na ficha do Hall da Fama, um sócio desafia
+// outro. O app cria a mesa com os amigos (ou usa a que ele já está esperando) e o desafiado recebe o aviso no celular e
+// no app, com Aceitar e Agora não. Quem chega senta na cadeira seguinte: os dois ficam em lados opostos, cada um com a
+// turma do bairro de parceiro. Só frases prontas; só sócio desafia e é desafiado (menor nunca); dá para não receber.
+const DU = { dados: null, em: 0, buscando: null, enviando: null, meu: null, timer: null, vistos: new Set() };
+const DU_FRASES = ['Bora um duelo?', 'Quero revanche!', 'Tô na mesa, vem!', 'Duvido tu ganhar de mim, maninho!'];
+const DU_ERROS = { socio: 'O duelo é para os sócios da Calçada.', alvo: 'Essa pessoa não é sócia agora: só dá pra desafiar sócio.', voce: 'Você não pode desafiar você mesmo 😄',
+  'nao-recebe': 'Essa pessoa não está recebendo desafios agora.', limite: 'Você já mandou 6 desafios hoje. Amanhã tem mais!', par: 'Você já desafiou essa pessoa 2 vezes hoje. Dá um tempo pra ela, maninho.',
+  cheio: 'Essa pessoa já recebeu muitos desafios hoje. Tenta amanhã.', mesa: 'A mesa precisa estar esperando, com cadeira livre. Crie uma mesa nova e tente de novo.',
+  apelido: 'Escolha outro apelido para desafiar.', menor: 'O duelo é só para maiores de 18.', bloqueado: 'Não deu para desafiar agora.' };
+const duPode = () => !!CONFIG.api && !!profile && temPlano() && !menorDeIdade();
+async function duBuscar(agora) {
+  if (!duPode()) return null;
+  if (DU.buscando) return DU.buscando;
+  if (!agora && DU.dados && Date.now() - DU.em < 45000) return DU.dados;
+  DU.buscando = (async () => {
+    try { const r = await fetch(CONFIG.api + '/duelo?aparelho=' + encodeURIComponent(meuId()), { cache: 'no-store' }); if (r.ok) { DU.dados = await r.json(); DU.em = Date.now(); } } catch (e) {}
+    DU.buscando = null; return DU.dados;
+  })();
+  return DU.buscando;
+}
+const duPost = (rota, corpo) => fetch(CONFIG.api + rota, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(Object.assign({ aparelho: meuId() }, corpo)) })
+  .then(async r => Object.assign({ status: r.status }, await r.json().catch(() => ({}))));
+const duPlacarHTML = (pl, nome) => pl && (pl.eu || pl.ele) ? `<div class="du-placar"><span><b>${pl.eu}</b><small>você</small></span><span>×</span><span><b>${pl.ele}</b><small>${esc(nome)}</small></span></div>` : '';
+// o botão de desafiar (ranking e ficha do Hall): quem não é sócio vê o convite para ser sócio
+function abrirDuelo(k, nome) {
+  if (!k || !nome) return;
+  track('duelo-abrir');
+  if (!temPlano()) {
+    if (menorDeIdade() || !pagamentosAtivos()) { toast('O duelo é para os sócios da Calçada.'); return; }
+    // 25/11 (dono: "precisa ser mais amigável"): um convite, não uma barreira
+    openSheet('duelo', `<p class="eyebrow">⚔️ Duelo entre sócios</p><h2 id="sheetTitle">Bora desafiar ${esc(nome)}? ⚔️</h2>
+      <p class="pr-lead">O duelo é uma das vantagens do Sócio da Calçada: você chama quem quiser, a pessoa recebe o aviso no celular e vocês jogam frente a frente, cada um com a turma do bairro de parceiro.</p>
+      <p class="pr-lead">E o placar de vocês fica guardado pra revanche! 😄</p>
+      <button type="button" class="primary" id="duSer" style="width:100%">Quero ser sócio</button>
+      <button type="button" class="secondary" id="duFechar" style="width:100%;margin-top:8px">Agora não</button>`);
+    $('#duSer').addEventListener('click', () => { track('duelo-ser-socio'); closeSheet(); abrirApoio(screen || 'home', 'plano'); });
+    $('#duFechar').addEventListener('click', closeSheet);
+    return;
+  }
+  if (menorDeIdade()) { toast(DU_ERROS.menor); return; }
+  if (mode === 'on' && screen === 'game') { toast('Termine a partida antes de desafiar alguém.'); return; }
+  let f = 0;
+  openSheet('duelo', `<p class="eyebrow">⚔️ Duelo entre sócios</p><h2 id="sheetTitle">Desafiar ${esc(nome)}</h2>
+    <p class="pr-lead">Você cria a mesa e ${esc(nome)} recebe o aviso no celular. Vocês jogam em lados opostos, cada um com a turma do bairro de parceiro, e o placar de vocês fica guardado.</p>
+    <div id="duPl"></div>
+    <div class="du-frases" role="group" aria-label="Escolha o recado">${DU_FRASES.map((t, i) => `<button type="button" class="du-frase" data-f="${i}" aria-pressed="${i === 0}"><i aria-hidden="true">💬</i>${esc(t)}</button>`).join('')}</div>
+    <button type="button" class="primary" id="duMandar" style="width:100%">Mandar o desafio</button>
+    <button type="button" class="secondary" id="duFechar" style="width:100%;margin-top:8px">Cancelar</button>`);
+  $$('.du-frase').forEach(b => b.addEventListener('click', () => { f = Number(b.dataset.f); $$('.du-frase').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
+  $('#duFechar').addEventListener('click', closeSheet);
+  duPost('/duelo', { nome: me, alvo: k, frase: 0, menor: menorDeIdade() }).then(j => { const x = $('#duPl'); if (x && j.placar) x.innerHTML = duPlacarHTML(j.placar, nome); }).catch(() => {});
+  $('#duMandar').addEventListener('click', async () => {
+    const bt = $('#duMandar'); bt.disabled = true; bt.textContent = 'Conferindo…';
+    let j = null; try { j = await duPost('/duelo', { nome: me, alvo: k, frase: f, menor: menorDeIdade() }); } catch (e) {}
+    if (!j || !j.ok) { bt.disabled = false; bt.textContent = 'Mandar o desafio'; toast(j ? (DU_ERROS[j.erro] || 'Não deu para desafiar agora.') : 'Sem internet agora.'); return; }
+    track('duelo-mandar');
+    DU.enviando = { k, nome, frase: f, placar: j.placar || null };
+    closeSheet();
+    show('sala');
+    const v = ON.vista;
+    if (ON.ativo && ON.cod && v && v.fase === 'espera' && !v.publica) duEnviar();
+    else { await criarMesa(); if (DU.enviando && ON.cod) duEnviar(); }
+  });
+}
+async function duEnviar() {
+  const e = DU.enviando; if (!e || !ON.cod) return;
+  DU.enviando = null;
+  DU.meu = { nome: e.nome, mesa: ON.cod, estado: 'mandando', placar: e.placar };
+  duBanner();
+  let j = null;
+  for (let t = 0; t < 3; t++) {   // a mesa acabou de nascer: dá um tempinho para a cadeira aparecer no servidor
+    try { j = await duPost('/duelo', { nome: me, alvo: e.k, frase: e.frase, mesa: ON.cod, menor: menorDeIdade() }); } catch (x) { j = null; }
+    if (!j || j.ok || j.erro !== 'mesa') break;
+    await new Promise(ok => setTimeout(ok, 1500));
+  }
+  if (j && j.ok) { DU.meu = { id: j.id, nome: e.nome, mesa: ON.cod, estado: 'aberto', vence: j.vence, placar: j.placar }; track('duelo-enviado'); }
+  else DU.meu = { nome: e.nome, mesa: ON.cod, estado: 'erro', erro: j ? (DU_ERROS[j.erro] || 'Não deu para mandar o desafio.') : 'Sem internet agora.' };
+  duBanner(); duAcompanhar();
+}
+// na sala de quem desafiou: o recado de como está o desafio (esperando, aceitou, não pode agora, venceu)
+function duBanner() {
+  const esp = $('#salaEspera'); if (!esp) return;
+  let x = $('#salaDuelo');
+  if (!x) { esp.insertAdjacentHTML('afterbegin', '<div class="sala-duelo" id="salaDuelo" role="status" aria-live="polite" hidden></div>'); x = $('#salaDuelo'); }
+  const d = DU.meu, aqui = d && ON.cod && d.mesa === ON.cod;
+  x.hidden = !aqui; if (!aqui) return;
+  const n = esc(d.nome), chegou = !!(ON.vista && (ON.vista.cad || []).some(c => c && !c.bot && c.nome === d.nome));
+  if (chegou && (d.estado === 'aberto' || d.estado === 'aceito')) d.estado = 'chegou';
+  x.classList.toggle('erro', d.estado === 'erro' || d.estado === 'recusado' || d.estado === 'vencido');
+  x.innerHTML = d.estado === 'mandando' ? `⚔️ Mandando o desafio pra <b>${n}</b>…`
+    : d.estado === 'aberto' ? `⚔️ Desafio enviado pra <b>${n}</b>! Esperando a resposta (vale 10 minutos).`
+    : d.estado === 'aceito' ? `⚔️ <b>${n}</b> aceitou o duelo! Tá chegando na mesa…`
+    : d.estado === 'chegou' ? `⚔️ <b>${n}</b> chegou! Vocês estão em lados opostos: é só começar.`
+    : d.estado === 'jogado' ? `⚔️ Duelo com <b>${n}</b>.`
+    : d.estado === 'recusado' ? `<b>${n}</b> não pode agora. Fica pra próxima! Você pode chamar outra pessoa pelo WhatsApp.`
+    : d.estado === 'vencido' ? `<b>${n}</b> não respondeu a tempo. O desafio venceu.`
+    : d.estado === 'cancelado' ? 'O desafio foi cancelado.' : esc(d.erro || 'Não deu para mandar o desafio.');
+  x.insertAdjacentHTML('beforeend', duPlacarHTML(d.placar, d.nome));
+}
+function duAcompanhar() {
+  clearTimeout(DU.timer);
+  const d = DU.meu; if (!d || !['aberto', 'aceito', 'chegou'].includes(d.estado)) return;
+  DU.timer = setTimeout(async () => {
+    if (screen !== 'sala' || !DU.meu || DU.meu.mesa !== ON.cod) return;
+    const j = await duBuscar(true);
+    if (j && j.meu && DU.meu && j.meu.id === DU.meu.id) { if (DU.meu.estado !== 'chegou' || j.meu.estado === 'jogado') DU.meu.estado = j.meu.estado; DU.meu.placar = j.meu.placar || DU.meu.placar; duBanner(); }
+    duAcompanhar();
+  }, 6000);
+}
+// para o desafiado: a janela "Fulano te desafiou!" (ao abrir o jogo, ao tocar no aviso, ou na hora em que chega)
+function dueloNaHome() {
+  if (!duPode() || screen !== 'home' || sheetKind) return false;
+  const d = DU.dados && (DU.dados.abertos || []).find(x => x.vence > Date.now() && !DU.vistos.has(x.id));
+  if (!d) return false;
+  DU.vistos.add(d.id);
+  track('duelo-recebido');
+  openSheet('duelo', `<p class="eyebrow">⚔️ Duelo entre sócios</p><h2 id="sheetTitle">${esc(d.nome)} te desafiou!</h2>
+    <p class="du-citacao">“${esc(d.frase)}”</p>
+    ${duPlacarHTML(d.placar, d.nome)}
+    <p class="pr-lead">A mesa ${esc(d.mesa)} está esperando. Vocês ficam em lados opostos, cada um com a turma do bairro de parceiro.</p>
+    <button type="button" class="primary" id="duAceitar" style="width:100%">Aceitar e ir pra mesa</button>
+    <button type="button" class="secondary" id="duAgoraNao" style="width:100%;margin-top:8px">Agora não</button>
+    <button type="button" class="linkbtn du-nao" id="duDesligar">Não quero receber desafios</button>`);
+  $('#duAceitar').addEventListener('click', async () => {
+    const b = $('#duAceitar'); b.disabled = true;
+    let j = null; try { j = await duPost('/duelo/responder', { id: d.id, aceitar: true }); } catch (e) {}
+    if (!j || !j.ok) { b.disabled = false; toast(j && j.erro === 'cancelado' ? 'Esse desafio foi cancelado.' : j && j.erro === 'vencido' ? 'Esse desafio já venceu.' : 'Não deu agora. Tente de novo.'); if (j && (j.erro === 'cancelado' || j.erro === 'vencido')) closeSheet(); return; }
+    track('duelo-aceito'); closeSheet(); show('sala'); entrarMesa(j.mesa || d.mesa);
+  });
+  $('#duAgoraNao').addEventListener('click', () => { track('duelo-agora-nao'); closeSheet(); duPost('/duelo/responder', { id: d.id, aceitar: false }).catch(() => {}); });
+  $('#duDesligar').addEventListener('click', async () => {
+    track('duelo-desligar'); closeSheet();
+    try { await duPost('/duelo/config', { receber: false }); if (DU.dados) DU.dados.receber = false; toast('Pronto: você não recebe mais desafios. Dá pra voltar a receber no Ranking.'); } catch (e) { toast('Sem internet agora.'); }
+  });
+  return true;
+}
+async function duVerNaHome() { await duBuscar(); try { dueloNaHome(); } catch (e) {} }
+// os botões de desafiar (ranking e ficha do Hall) e o "voltar a receber" no ranking
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-duelo]'); if (!b) return;
+  e.preventDefault(); e.stopPropagation(); abrirDuelo(b.dataset.duelo, b.dataset.n);
+}, true);
+function duRankingNota() {
+  const box = $('#rkMeu'); if (!box || !DU.dados || DU.dados.receber !== false || $('#rkDuOff')) return;
+  box.insertAdjacentHTML('afterend', '<p class="rk-meu" id="rkDuOff">⚔️ Você não recebe desafios. <button type="button" class="linkbtn" id="rkDuVolta">Voltar a receber</button></p>');
+  $('#rkDuVolta').addEventListener('click', async () => {
+    try { await duPost('/duelo/config', { receber: true }); DU.dados.receber = true; const x = $('#rkDuOff'); if (x) x.remove(); toast('Pronto: você volta a receber desafios.'); } catch (e) { toast('Sem internet agora.'); }
+  });
+}
+// a sala: o recado do desafio e o acompanhamento; ao chegar na sala com um desafio pendente (mesa recém-criada)
+(function () {
+  const rs = renderSala;
+  renderSala = function () { const r = rs.apply(this, arguments); try { duBanner(); } catch (e) {} return r; };
+  const rk = rkDesenhar;
+  rkDesenhar = function () { const r = rk.apply(this, arguments); try { if (duPode()) duBuscar().then(duRankingNota); } catch (e) {} return r; };
+  addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && screen === 'home') setTimeout(duVerNaHome, 1200); });
+})();
+// o botão aparece para sócio e, como convite, para quem pode virar sócio (nunca para menor)
+function duMostrar() { return !!CONFIG.api && !!profile && !menorDeIdade() && (temPlano() || pagamentosAtivos()); }
 function hfFichaHTML(k) {
   const d = CAMP.dados, h = d && d.hall; if (!h) return '';
   const tit = CAMP_TIPOS.flatMap(t => (h[t.k] || []).filter(x => x.k === k).map(x => Object.assign({ t }, x))).sort((a, b) => (b.desde || 0) - (a.desde || 0));
@@ -17322,7 +17508,8 @@ function hfFichaHTML(k) {
     <div class="hf-ficha"><div class="cf-face">${rkRosto(m.av, m.nome, m.foto)}<i aria-hidden="true">${(cont[0] || { t: CAMP_TIPOS[0] }).t.ic}</i></div>
     <h2 id="sheetTitle">${esc(m.nome)}${m.eu ? ' <em class="hf-voce-tag">você</em>' : ''}</h2>
     <p class="hf-total">${tit.length === 1 ? '1 título' : tit.length + ' títulos'} na Calçada</p>
-    <span class="cm-chips">${cont.map(o => `<span class="cm-chip">${o.t.ic} ${o.t.tit}${o.n > 1 ? ' ' + o.n + 'x' : ''}</span>`).join('')}</span></div>
+    <span class="cm-chips">${cont.map(o => `<span class="cm-chip">${o.t.ic} ${o.t.tit}${o.n > 1 ? ' ' + o.n + 'x' : ''}</span>`).join('')}</span>
+    ${!m.eu && duMostrar() ? `<button type="button" class="primary hf-duelo" data-duelo="${esc(k)}" data-n="${esc(m.nome)}">⚔️ Desafiar pra um duelo</button>` : ''}</div>
     <ul class="hf-lista hf-tits">${tit.map(x => `<li><span class="hf-tic" aria-hidden="true">${x.t.ic}</span><span class="hf-tx"><b>${x.t.tit}</b><small>${esc(x.quando || '')}${x.pontos ? ' · ' + rkPts(x.pontos) : ''}</small></span></li>`).join('')}</ul>`;
 }
 // 25/11 (dono: "transição das telas no Hall da Fama mais macia"): o conteúdo novo entra deslizando de leve (para a
@@ -17521,6 +17708,7 @@ function dicaNaHome() {
 function pertencimentoNaHome() {
   try { desenharEvCard(); } catch (e) {}
   if (screen !== 'home' || sheetKind || !profile) return;
+  try { if (dueloNaHome()) return; } catch (e) {}   // 25/11: te desafiaram pra um duelo (agora)
   try { if (copaComemorar()) return; } catch (e) {}
   try { if (campComemorar()) return; } catch (e) {}   // 24/11: você é o campeão (semana, mês ou sábado)
   try { if (casaComemorar()) return; } catch (e) {}
@@ -17541,6 +17729,7 @@ renderHome = function () {
   if (csAgora().fase !== 'longe') csBuscar().then(() => { try { desenharEvCard(); desenharCsCalcada(); } catch (e) {} });
   campBuscar().then(() => { try { desenharCampNovo(); } catch (e) {} });   // 24/11: Temos campeão!
   setTimeout(pertencimentoNaHome, 3300);
+  try { if (duPode()) setTimeout(duVerNaHome, 900); } catch (e) {}   // 25/11: um desafio chegando
 };
 (function () {
   const showCs = show;
@@ -18416,7 +18605,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.41-0b72639b';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.42-f530f336';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
