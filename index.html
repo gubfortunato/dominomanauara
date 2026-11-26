@@ -2140,6 +2140,7 @@ html.reveillon[data-mesa="pontanegra"] .table.wood{--wood-1:#0d0b22;--wood-2:#0d
 .qc-socio span{font-size:15.5px;font-weight:700;line-height:1.35}
 .qc-socio button{min-height:46px;border:0;border-radius:12px;background:#3b220c;color:#fbe7ad;font:inherit;font-size:16.5px;font-weight:800;cursor:pointer}
 .op-tx{font-size:17px;line-height:1.45;margin:4px 0 14px}
+.op-pode{margin:12px 0 14px;font-size:15.5px}.op-pode span{font-weight:600}   /* 25/11: autorização para o Instagram */
 .op-notas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px}
 .op-notas button{display:grid;justify-items:center;align-content:start;gap:7px;min-height:96px;padding:12px 4px 10px;border:2px solid var(--line);border-radius:14px;background:var(--bg-2);color:inherit;font:inherit;cursor:pointer;transition:opacity .15s,transform .15s}
 .op-notas i{font-style:normal;font-size:34px;line-height:1}
@@ -5049,6 +5050,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.46', data: '25/11/2026', itens: ['Opinião no app: quem marca 😍 Tô gostando muito pode autorizar que a frase apareça com o apelido no Instagram do Dominó Manauara (só se marcar; para maiores de 18).'] },
   { v: '3.61.45', data: '25/11/2026', itens: ['Quarta dos Amigos: os risquinhos de giz voltam a ser só desenho, iguais aos do cartão da Calçada, e desceram para a linha de Nós e Eles (antes ficavam lá em cima, perto do relógio do celular).'] },
   { v: '3.61.44', data: '25/11/2026', itens: ['Quarta dos Amigos: os risquinhos de giz da série ficam mais pro meio, longe dos nomes.'] },
   { v: '3.61.43', data: '25/11/2026', itens: ['Quarta dos Amigos: os risquinhos de giz em cima de Nós e Eles agora contam de verdade as partidas ganhas da série (antes era só desenho e não batia com o placar).'] },
@@ -16855,7 +16857,7 @@ setTimeout(quartaConvite, 4000);
 // Sem resposta ("Agora não"): volta em 5 dias, no máximo 3 vezes. Deu a nota ou escreveu: volta em 45 dias.
 const OPN_KEY = 'dmz-opiniao', OPN_T0 = Date.now();
 const OPN_NOTAS = [
-  { n: 4, e: '😍', r: 'Tô gostando muito', p: 'Massa! Do que você mais gosta? E o que ainda falta no jogo?', tipo: 'elogio' },
+  { n: 4, e: '😍', r: 'Tô gostando muito', p: 'Massa! Conta do que você mais gosta no jogo. Se faltar alguma coisa, pode falar também.', tipo: 'elogio' },
   { n: 3, e: '🙂', r: 'Tá bom', p: 'O que deixaria o jogo ainda melhor?', tipo: 'ideia' },
   { n: 2, e: '😐', r: 'Mais ou menos', p: 'O que está faltando ou atrapalhando?', tipo: 'ideia' },
   { n: 1, e: '😕', r: 'Não tô gostando', p: 'Poxa! O que não está legal? A gente quer consertar.', tipo: 'problema' }
@@ -16883,6 +16885,7 @@ function opiniaoPedir(forcar) {
       <div class="op-mais" id="opMais" hidden>
         <label for="opTexto" id="opPergunta"></label>
         <textarea id="opTexto" class="fale-texto" rows="4" maxlength="940" placeholder="Pode falar de tudo: regras, mesas, turma do bairro, mesa online…"></textarea>
+        <label class="patro-aceite op-pode" id="opPodeL" hidden><input type="checkbox" id="opPode"><span>Pode mostrar a minha frase com o meu apelido no Instagram do Dominó Manauara</span></label>
         <button type="button" class="primary" id="opEnviar" style="width:100%">Enviar minha opinião</button>
       </div>
       <button type="button" class="secondary" id="opDepois" style="width:100%;margin-top:10px">Agora não</button>`);
@@ -16898,6 +16901,8 @@ function opiniaoPedir(forcar) {
       $$('#opNotas button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
       $('#opNotas').classList.add('tem');
       $('#opPergunta').textContent = nota.p; $('#opMais').hidden = false;
+      const podeVer = nota.n === 4 && !!profile && profile.idade !== 'menor';   // 25/11: só no 😍 e só para maiores de 18
+      $('#opPodeL').hidden = !podeVer; if (!podeVer) $('#opPode').checked = false;
       $('#opDepois').textContent = 'Só a nota, valeu';
       track('feedback-nota-' + nota.n); opnRespondeu();
       setTimeout(() => { try { $('#opTexto').focus({ preventScroll: true }); $('#opMais').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {} }, 60);
@@ -16907,13 +16912,14 @@ function opiniaoPedir(forcar) {
       const texto = $('#opTexto').value.trim();
       if (!nota) return;
       if (texto.length < 3) { toast('Escreva o que você achou antes de enviar.'); $('#opTexto').focus(); return; }
-      const msg = { tipo: nota.tipo, texto: `${nota.e} ${nota.r} (opinião pedida na tela)\n${texto}`, contato: '', nome: me || '', versao: APP_VERSION, aparelho: deviceInfo(), id: meuId() };
+      const pode = nota.n === 4 && !!profile && profile.idade !== 'menor' && $('#opPode').checked;   // 25/11: a autorização vai na 1ª linha
+      const msg = { tipo: nota.tipo, texto: `${nota.e} ${nota.r} (opinião pedida na tela)${pode ? ' · ✅ pode mostrar com o apelido no Instagram' : ''}\n${texto}`, contato: '', nome: me || '', versao: APP_VERSION, aparelho: deviceInfo(), id: meuId() };
       const btn = $('#opEnviar'); btn.disabled = true; btn.textContent = 'Enviando…';
       const st = await faleMandar(msg);
       btn.disabled = false; btn.textContent = 'Enviar minha opinião';
       if (st === 429) { toast('Muitas mensagens em pouco tempo. Tente de novo mais tarde.'); return; }
       if (st === 400) { toast('Escreva um pouco mais sobre o que você achou.'); return; }
-      track('feedback-enviou'); opnRespondeu();
+      track('feedback-enviou'); if (pode) track('feedback-pode-instagram'); opnRespondeu();
       if (st === 201) {
         store.set(SUPKEY, String(Date.now()));   // entra na conversa do Fale com a gente: a resposta do dono volta para cá
         (SUP.itens = SUP.itens || []).push({ de: 'j', texto: msg.texto, em: Date.now() });
@@ -18642,7 +18648,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.45-eb755e2f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.46-ab39ffca';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
