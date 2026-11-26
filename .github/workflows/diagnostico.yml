@@ -28,7 +28,7 @@ jobs:
           AGORA=$(($(date +%s) * 1000))
           p() { echo "== $1" >> $OUT; wrangler d1 execute dominomanauara --remote --json --command "$2" 2>/dev/null | jq -c '.[0].results' >> $OUT 2>/dev/null; }
           # 24/11, 21h30: só leitura (pagou no Pix e o app diz sem plano)
-          python3 "$GITHUB_WORKSPACE/.github/diag/campeoes_verif.py" $OUT 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
+          python3 "$GITHUB_WORKSPACE/.github/diag/fale_positivos.py" $OUT 2>> /tmp/err.txt || echo "falhou: $(tail -c 300 /tmp/err.txt)" >> $OUT
           rm -f wrangler.toml
           cat > /tmp/cert.pem <<'CERT'
           -----BEGIN CERTIFICATE-----
