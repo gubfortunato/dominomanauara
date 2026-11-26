@@ -1,6 +1,6 @@
 // Dominó Manauara: guarda o jogo no celular para abrir rápido e funcionar sem internet.
 // Ao publicar uma versão nova, troque o número abaixo para os celulares baixarem tudo de novo.
-const CACHE = 'dominomanauara-3.61.50-db03a4cc';
+const CACHE = 'dominomanauara-3.61.51-4d2db9af';
 const FILES = [
   './',
   './index.html',
