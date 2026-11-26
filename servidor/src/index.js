@@ -216,7 +216,7 @@ async function mesaRapida(req, env, origin) {
     if (await limiteDoIrmao(env, 'publicas', b && b.id, b && b.nome)) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);   // 10/11 (desligado): outro aparelho com o mesmo apelido
   } else if (b && b.id) await aparelhoDesde(env, b.id);
   const res = await env.MESA.get(env.MESA.idFromName('fila')).fetch('https://mesa/fila', { method: 'POST',
-    body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro, nv: b.nv }) });
+    body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro, nv: b.nv, agora: b && b.agora ? 1 : undefined }) });   // 25/11: jogar agora
   const j = await res.json().catch(() => ({}));
   if (res.status === 201) { try { await env.DB.prepare('INSERT INTO mesas_criadas (marca, criado_em) VALUES (?, ?)').bind(marca, Date.now()).run(); } catch (e) {} }
   return json(j, res.status === 201 ? 200 : res.status, origin);
