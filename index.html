@@ -2696,6 +2696,10 @@ body.com-abas #profileBack{display:none}
 .calc-abrir .ca-go{color:var(--nos);font-weight:800;white-space:nowrap}
 .calc-abrir.so-acao{justify-content:center}
 .calc-abrir:active{transform:scale(.99)}
+/* 25/11 (dono: "a opção de abrir uma nova mesa precisa ser mais visível"): botão cheio, como os de entrar */
+.calc-abrir{border:0;background:var(--nos);color:var(--bg-2);min-height:58px;padding:14px 18px;box-shadow:0 10px 22px -14px rgba(0,0,0,.55)}
+.calc-abrir .ca-tx{color:inherit;opacity:.88;font-weight:600}
+.calc-abrir .ca-go{color:inherit;font-size:17.5px}
 
 /* Aviso no início: mesas jogando agora */
 .calc-aviso{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;padding:12px 16px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;text-align:left;cursor:pointer}
@@ -2756,6 +2760,12 @@ button.vivo-st:active,.vivo-assistir:active{transform:scale(.98)}
 .assistir-faixa{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);transform:translateX(-50%);z-index:26;display:flex;align-items:center;gap:10px;width:max-content;max-width:calc(100vw - 24px);padding:8px 8px 8px 14px;border-radius:999px;background:var(--tile);color:var(--pip);box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:15px;font-weight:700}
 .assistir-faixa .af-tx{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .af-sair{border:0;border-radius:999px;padding:8px 14px;background:var(--nos);color:#fff;font:inherit;font-size:14.5px;font-weight:800;cursor:pointer;white-space:nowrap}
+/* 25/11 (dono: "as pessoas precisam ter opções e estar visível"): esperando a próxima partida, duas saídas à vista */
+.af-outra{display:none}
+.assistir-faixa.af-esp{flex-wrap:wrap;width:calc(100vw - 24px);max-width:460px;border-radius:20px;padding:10px 12px 12px;gap:8px 10px}
+.af-esp .af-tx{flex:1 1 calc(100% - 40px);white-space:normal;line-height:1.3}
+.af-esp .af-outra{display:block;flex:1 1 auto;border:0;border-radius:999px;padding:10px 14px;background:var(--nos);color:#fff;font:inherit;font-size:14.5px;font-weight:800;cursor:pointer}
+.af-esp .af-sair{background:transparent;color:inherit;box-shadow:inset 0 0 0 1.5px currentColor;padding:10px 16px}
 body.assistindo #menuBtn,body.assistindo #passBtn{visibility:hidden}
 #filaAssistir{width:100%}
 /* 04/11 (dono): exemplo da tela da fila, aberto pela área do administrador */
@@ -3867,7 +3877,7 @@ body.papo-aberto{overflow:hidden}
       <p class="aba-sub" id="calcSub">As mesas jogando agora. Toque numa mesa rápida com lugar vago e entre na partida.</p>
     </header>
     <div id="calcCorpo"></div>
-    <button type="button" class="calc-abrir" id="calcAbrir"><span class="ca-tx" id="calcAbrirTx">Nenhuma mesa com lugar vago agora.</span><span class="ca-go">Abrir uma mesa rápida <span aria-hidden="true">›</span></span></button>
+    <button type="button" class="calc-abrir" id="calcAbrir"><span class="ca-tx" id="calcAbrirTx">Nenhuma mesa com lugar vago agora.</span><span class="ca-go"><span aria-hidden="true">▶</span> Abrir uma mesa e jogar agora</span></button>
     <p class="aba-nota" id="calcNota">Na mesa com os amigos, só entra quem tem o número da mesa.</p>
     <div class="aba-patro" id="calcPatro"></div>
   </section>
@@ -5050,6 +5060,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.49', data: '25/11/2026', itens: ['Quem espera a próxima partida numa mesa com confronto do Desafio das Confrarias vê o botão Jogar agora em outra mesa: entra numa mesa que começa na hora (nada de esperar de novo).', 'Calçada: o Abrir uma mesa e jogar agora virou um botão cheio, bem à vista, e a mesa abre em até 5 segundos.'] },
   { v: '3.61.48', data: '25/11/2026', itens: ['Desafio das Confrarias: na mesa rápida com confronto rolando (Confraria contra Confraria), ninguém senta no meio da partida. Quem toca em Entrar assiste e senta na próxima partida.', 'Mesa rápida: quem a fila manda para uma mesa no meio da mão também assiste e senta na próxima mão, com pedras novas.'] },
   { v: '3.61.47', data: '25/11/2026', itens: ['Quem chega numa mesa com a mão já rolando não pega mais as pedras do robô pela metade: assiste até a mão acabar e senta na próxima, com pedras novas (ideia de um jogador no Fale com a gente). Antes da primeira pedra na mesa, senta na hora.'] },
   { v: '3.61.46', data: '25/11/2026', itens: ['Opinião no app: quem marca 😍 Tô gostando muito pode autorizar que a frase apareça com o apelido no Instagram do Dominó Manauara (só se marcar; para maiores de 18).'] },
@@ -8560,7 +8571,7 @@ async function entrarMesa(cod) {
   finally { b.disabled = false; }
 }
 // Mesa rápida: a fila do servidor junta quem quer jogar com qualquer um (robôs completam a mesa)
-async function mesaRapida() {
+async function mesaRapida(agora) {   // 25/11: agora = jogar já (sem esperar mão nem os 20 s da mesa nova)
   if (!onlineAtivo()) { toast('A mesa rápida precisa de internet.'); return; }
   if (!profile || profile.idade === 'menor') { toast('A mesa rápida é para maiores de 18. Jogue com os amigos pelo número da mesa.'); return; }
   if (mesaGuardada()) { voltarMesa(); toast('Você ainda está nesta mesa. Para jogar em outra, saia dela primeiro.'); return; }
@@ -8571,7 +8582,7 @@ async function mesaRapida() {
   try {
     if (typeof presGarantir === 'function') await presGarantir();
     const pede = () => fetch(CONFIG.api + '/mesa/rapida', { method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), trocar: ON.trocarRapida || undefined }) });   // 24/11: uma mesa por vez
+      body: JSON.stringify({ id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), trocar: ON.trocarRapida || undefined, agora: agora === true ? 1 : undefined }) });   // 24/11: uma mesa por vez
     let r = await pede(), j = await r.json().catch(() => ({}));
     ON.trocarRapida = null;
     // 3.41: o servidor não viu o app aberto (o aviso não tinha chegado): avisa de novo e tenta mais uma vez
@@ -14594,12 +14605,12 @@ function abasVivo() {
   // mesa rápida com lugar vago; com vaga, a ação fica no "Entrar" de cada cartão
   const ab = $('#calcAbrir');
   if (ab) {
-    const temVaga = ms.some(v => v.publica !== false && v.livres > 0);
+    const temVaga = ms.some(v => v.publica !== false && v.livres > 0 && !v.fechada);   // 25/11: mesa com confronto rolando não conta
     ab.hidden = temVaga;
     const tx = $('#calcAbrirTx'); if (tx) tx.hidden = !ms.length;   // lista vazia: o cartão já diz que não tem ninguém
     ab.classList.toggle('so-acao', !ms.length);
   }
-  const vagas = ms.filter(v => v.publica !== false && v.livres > 0);
+  const vagas = ms.filter(v => v.publica !== false && v.livres > 0 && !v.fechada);
   // 3.31 (pedido do dono): a bolinha só aparece com mesa jogando agora (e pulsa)
   const bol = $('#abaVivo'); if (bol) { bol.hidden = !(vivoMostra() && ms.length > 0); bol.classList.add('pulsa'); }
   const av = $('#calcAviso'); if (!av) return;
@@ -14710,7 +14721,7 @@ function abasMaisClique(k) {
   const av = $('#calcAviso'); if (av) av.addEventListener('click', () => { track('calcada-aviso'); irAba('calcada'); });
   $('#calcAbrir').addEventListener('click', () => {
     if (!profile || profile.idade === 'menor') { toast('A mesa rápida é para maiores de 18. Jogue com os amigos pelo número da mesa.'); return; }
-    track('calcada-abrir'); mesaRapida();
+    track('calcada-abrir'); mesaRapida(true);   // 25/11: abre e joga já
   });
   // a cada desenho da lista de mesas, atualiza o aviso e a bolinha
   const vivoDesenhaAbas = vivoDesenha;
@@ -15095,8 +15106,11 @@ function assistirAplicar(m) {
 (function () {
   document.body.insertAdjacentHTML('beforeend', `<div class="assistir-faixa" id="assistirFaixa" hidden role="status">
     <span class="af-olho" aria-hidden="true">👀</span><span class="af-tx" id="assistirTx">Assistindo</span>
+    <button type="button" class="af-outra" id="assistirOutra">Jogar agora em outra mesa</button>
     <button type="button" class="af-sair" id="assistirSair">Parar de assistir</button></div>`);
   $('#assistirSair').addEventListener('click', () => { track('assistir-parou'); assistirParar(); });
+  // 25/11: esperando a próxima partida: sai desta mesa e chama a mesa rápida (a fila não manda para mesa com confronto rolando)
+  $('#assistirOutra').addEventListener('click', () => { track('espera-outra-mesa'); assistirParar(); setTimeout(() => { try { mesaRapida(true); } catch (e) {} }, 700); });
 })();
 function assistirFaixa(m) {
   const fx = $('#assistirFaixa'); if (!fx) return;
@@ -15105,7 +15119,9 @@ function assistirFaixa(m) {
   if (!ver) return;
   const outros = Math.max(0, ((m && m.assistindo) || 1) - 1);
   const espMao = ON.assistirDe === 'fila' && ((ON.vistaReal || {}).espera >= 0);   // 25/11: esperando a próxima mão
-  $('#assistirTx').textContent = espMao ? ((ON.vistaReal || {}).esperaFim ? 'Assistindo · você senta na próxima partida' : 'Assistindo · você senta na próxima mão')
+  const espFim = espMao && !!(ON.vistaReal || {}).esperaFim;   // 25/11: confronto do Desafio: até a partida acabar
+  fx.classList.toggle('af-esp', espFim);
+  $('#assistirTx').textContent = espMao ? (espFim ? '⚔️ Partida do Desafio rolando: você senta na próxima partida' : 'Assistindo · você senta na próxima mão')
     : ON.assistirDe === 'fila'
     ? `Assistindo · ${(((ON.vistaReal || {}).naFila) || 0) + 1}º na fila`
     : m && m.confronto ? (outros ? `⚔️ Desafio · ${outros + 1} assistindo` : '⚔️ Desafio ao vivo')   // 11/11: confronto entre Turmas
@@ -18661,7 +18677,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.48-6c33f258';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.49-7de6b351';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

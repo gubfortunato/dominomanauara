@@ -204,6 +204,7 @@ export class Mesa {
   reservada(k) { return !!(this.m && this.m.chegando && this.m.chegando[k]); }
   // 25/11 (pedido do dono): mesa rápida com confronto do Desafio das Confrarias rolando: ninguém senta no meio da partida
   fechadaConfronto() { const m = this.m; return !!(m && m.publica && m.fase === 'jogo' && m.G && edicao(this.env).aberto && this.confronto()); }
+  jaJa() { return Math.min(this.T.espera, 5000); }   // 25/11: "jogar agora": a mesa rápida começa em até 5 s
   entrePartidas() { const G = this.m && this.m.G; return !!(G && G.phase === 'handEnd' && G.result && G.result.matchWinner != null); }
   viva() { return this.m && this.m.ultimo > Date.now() - VIDA ? this.m : null; }
 
@@ -217,7 +218,7 @@ export class Mesa {
     const agora = Date.now();
     this.m = { codigo: limpa(b.codigo, 5), criada: agora, ultimo: agora, fase: 'espera', seq: 0, dono: quem.id,
       cad: [quem, null, null, null], G: null, proximo: null, turnoDesde: agora, porRobo: null,
-      publica: !!b.publica, daSocio: !b.publica && !!b.apoiador, vs: !b.publica && b.desafio ? limpa(b.desafio, 40) : null, iniciaEm: b.publica ? agora + this.T.espera : null, tema: sortearTema(null, !b.publica && limitesValem(this.env) && !b.apoiador ? temasGratis() : null), temaSorteado: true };   // 28/10
+      publica: !!b.publica, daSocio: !b.publica && !!b.apoiador, vs: !b.publica && b.desafio ? limpa(b.desafio, 40) : null, iniciaEm: b.publica ? agora + (b.agora ? this.jaJa() : this.T.espera) : null, tema: sortearTema(null, !b.publica && limitesValem(this.env) && !b.apoiador ? temasGratis() : null), temaSorteado: true };   // 28/10
     if (this.m.publica) this.m.chegadas = this.sortearChegadas(this.m.iniciaEm);
     if (this.m.publica) this.agendar();
     this.papo = []; this.denunciadas = new Set(); await this.ctx.storage.delete('papo');   // 3.42: mesa nova, papo novo
@@ -273,7 +274,7 @@ export class Mesa {
     }
     for (let k = 0; k < 8; k++) {
       const codigo = String(10000 + Math.floor(Math.random() * 90000));
-      const r = await mesa(codigo).fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro, nv: b.nv, codigo, publica: true }) });
+      const r = await mesa(codigo).fetch('https://mesa/criar', { method: 'POST', body: JSON.stringify({ id: b.id, nome: b.nome, av: b.av, bairro: b.bairro, nv: b.nv, codigo, publica: true, agora: b.agora ? 1 : undefined }) });
       if (r.status === 201) { l.unshift({ codigo, criada: agora }); return fim(codigo, true); }
       if (r.status === 400) return Response.json({ erro: 'dados' }, { status: 400 });
     }
@@ -459,11 +460,13 @@ export class Mesa {
       quem.nome = this.nomeUnico(quem.nome, p);
       m.cad[p] = quem;
       if (m.cad.every(c => c && !c.bot)) m.iniciaEm = Math.min(m.iniciaEm || Infinity, Date.now() + this.T.cheia);
+      if (b.agora) m.iniciaEm = Math.min(m.iniciaEm || Infinity, Date.now() + this.jaJa());   // 25/11: quem quer jogar agora não espera os 20 s
     } else {
       if ((p = this.voltarAoLugar(quem)) < 0) {   // 28/10: quem volta retoma a cadeira que o robô guardava
         if (b.so !== 'jogo') return Response.json({ erro: 'cheia' }, { status: 409 });
         if (this.chegandoDe(quem.id) >= 0) return Response.json({ ok: true }, { status: 200 });   // 25/11: já espera a próxima mão aqui
         if (this.fechadaConfronto() && !this.entrePartidas()) return Response.json({ erro: 'cheia' }, { status: 409 });   // 25/11: confronto rolando
+        if (b.agora && m.G && m.G.phase === 'play' && (m.G.chain || []).length) return Response.json({ erro: 'cheia' }, { status: 409 });   // 25/11: jogar agora: nada de esperar a mão
         // na mesa rápida, quem saiu de vez libera a cadeira (o robô que estava no lugar dá a vez)
         p = -1;
         if (b.lado === 0 || b.lado === 1) p = m.cad.findIndex((c, i) => c && c.bot && !c.lugarDe && i % 2 === b.lado && !this.reservada(i));   // 17/11: o lado pedido pela fila (Desafio)
