@@ -11,7 +11,7 @@ import { pontuar, nomeDaTurma, apelido as apelidoNaTurma, edicao, campeaDesafioA
 import { somarVivo } from './vivo.js';
 import { somarRanking, reiDaSemana, anotarAbandono, campeaoDoMes } from './ranking.js';
 import { anotarDuelo } from './duelos.js';   // 25/11: o placar do Duelo entre sócios
-import { bloqueado, visto, apelidoBarrado, exigeApp, appAberto, anotarRitmo, RAPIDA_MS, pegaPeloApelido } from './bloqueio.js';
+import { bloqueado, bloqueioPorBurla, visto, apelidoBarrado, exigeApp, appAberto, anotarRitmo, RAPIDA_MS, pegaPeloApelido } from './bloqueio.js';
 import { PAPO, limparPapo, tamanho, papoRuim } from './papo.js';
 import { anotarCodigoErrado } from './codigos.js';
 import { campeaoAte } from './copa.js';   // 10/11: o campeão da Copa dos Sócios (troféu na mesa e a mesa do campeão)
@@ -592,7 +592,7 @@ export class Mesa {
     if (!quem) return this.enviar(ws, { t: 'erro', cod: 'dados' });
     if (att.trava && !this.jaNaMesa(quem.id)) return this.recusar(ws, 'muitos-codigos');   // 10/11: rede travada não entra em mesa nova
     att.apelido = !!msg.apelido;   // 3.38.2: este app entende o aviso 'apelido' (escolher outro apelido)
-    if (await bloqueado(this.env, quem.id)) return this.recusar(ws, 'bloqueado');
+    if (await bloqueado(this.env, quem.id)) return this.recusar(ws, 'bloqueado', (await bloqueioPorBurla(this.env, quem.id)) ? { burla: true } : null);   // 26/11
     if (await pegaPeloApelido(this.env, quem.id, quem.nome)) return this.recusar(ws, 'bloqueado');   // 11/11: voltou com outro aparelho
     // 3.41: o administrador pediu outro apelido e a pessoa voltou com o mesmo (app antigo: 'nao-existe', volta ao início)
     if (await apelidoBarrado(this.env, quem.id, quem.nome)) return this.recusar(ws, att.apelido ? 'apelido' : 'nao-existe');
@@ -616,7 +616,7 @@ export class Mesa {
       if (!jaEstava && !this.mesaDesafio() && !livre) {
         const lim = m.publica ? LIMITE.publicas : this.mesaDeSocio() ? LIMITE.partidasSocio : LIMITE.partidas;
         const lp = await limitePessoa(this.env, { rede: att.rede, tipo, aparelho: quem.id, nome: quem.nome, proprio: quem.uso[tipo] || 0, limite: lim });
-        if (lp.barrar) return this.recusar(ws, m.publica ? 'limite-rapida' : 'limite', { pessoa: true });
+        if (lp.barrar) return this.recusar(ws, m.publica ? 'limite-rapida' : 'limite', { pessoa: true, parecido: lp.via === 'parecido' || undefined });
         if (lp.outros) { quem.uso = Object.assign({}, quem.uso, { [tipo]: (quem.uso[tipo] || 0) + lp.outros }); quem.outros = lp.outros; }
       }
       if (!jaEstava && !this.mesaDesafio() && !livre && !(quem.uso[tipo] || 0) && await limiteHerdado(this.env, att.rede, tipo, quem.id, quem.nome)) return this.recusar(ws, m.publica ? 'limite-rapida' : 'limite');   // 10/11: rede ou apelido

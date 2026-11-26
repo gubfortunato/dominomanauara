@@ -96,6 +96,11 @@ export async function liberarQuemPagou(env, aparelho) {
   try { await env.DB.prepare('DELETE FROM bloqueios WHERE aparelho = ? AND (motivo LIKE ? OR motivo LIKE ?)').bind(aparelho, '%burla%', '%voltou com outro aparelho%').run(); } catch (e) {}
 }
 
+// 26/11 (pedido do dono): o bloqueio é por burla do limite grátis? (virar sócio desbloqueia: o app convida)
+export async function bloqueioPorBurla(env, aparelho) {
+  if (!aparelho) return false;
+  try { const r = await env.DB.prepare('SELECT motivo FROM bloqueios WHERE aparelho = ?').bind(aparelho).first(); return !!(r && /burla/i.test(r.motivo || '')); } catch (e) { return false; }
+}
 export async function bloqueado(env, aparelho) {
   if (!aparelho) return false;
   try { return !!(await env.DB.prepare('SELECT 1 AS ok FROM bloqueios WHERE aparelho = ?').bind(aparelho).first()); } catch (e) { return false; }
