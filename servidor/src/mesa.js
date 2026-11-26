@@ -178,7 +178,7 @@ export class Mesa {
     if (url.pathname === '/info' && url.searchParams.get('vivo')) return Response.json(this.infoVivo());
     if (url.pathname === '/info') {
       const m = this.viva(), id = url.searchParams.get('id');
-      return Response.json(m ? Object.assign({ existe: true, fase: m.fase, publica: !!m.publica, humanos: m.cad.filter(c => c && !c.bot).length, livres: m.cad.filter(c => !c || (c.bot && !c.saiu)).length },
+      return Response.json(m ? Object.assign({ existe: true, fase: m.fase, publica: !!m.publica, humanos: m.cad.filter(c => c && !c.bot).length, livres: m.cad.filter((c, k) => !c || (c.bot && !c.saiu && !this.reservada(k))).length },
         id ? { meu: this.jaNaMesa(id) } : {}) : { existe: false });   // 10/11: meu = já está sentado ou na fila (rede travada ainda volta)
     }
     if ((req.headers.get('upgrade') || '').toLowerCase() === 'websocket') {
@@ -197,8 +197,11 @@ export class Mesa {
   }
   jaNaMesa(id) {
     const m = this.m; if (!m || !id) return false;
-    return m.cad.some(c => c && (c.id === id || c.lugarDe === id)) || (m.fila || []).some(c => c.id === id);
+    return m.cad.some(c => c && (c.id === id || c.lugarDe === id)) || (m.fila || []).some(c => c.id === id) || this.chegandoDe(id) >= 0;   // 25/11: e quem espera a próxima mão
   }
+  // 25/11: quem chegou no meio da mão e espera a próxima para sentar (a cadeira continua com o robô até lá)
+  chegandoDe(id) { const c = this.m && this.m.chegando; if (!c || !id) return -1; const k = Object.keys(c).find(x => c[x] && c[x].id === id); return k == null ? -1 : Number(k); }
+  reservada(k) { return !!(this.m && this.m.chegando && this.m.chegando[k]); }
   viva() { return this.m && this.m.ultimo > Date.now() - VIDA ? this.m : null; }
 
   async criar(b) {
@@ -365,10 +368,10 @@ export class Mesa {
   // 5 min jogando. Antes, a fila perguntava a cada mesa a cada 15 s: eram 2 de cada 3 pedidos das mesas no Cloudflare.
   resumoFila(m) {
     return { fase: m.fase, publica: !!m.publica, humanos: m.cad.filter(c => c && !c.bot).length,
-      livres: m.cad.filter(c => !c || (c.bot && !c.saiu)).length,
-      vagaEspera: m.cad.some(c => !c || c.bot), vagaJogo: m.cad.some(c => c && c.bot),
-      ids: m.cad.filter(c => c && (c.id || c.lugarDe)).map(c => c.id || c.lugarDe),   // só para a fila saber quem volta para a própria mesa
-      pes: m.cad.filter(c => c && !c.bot && c.pe).map(c => c.pe),   // 24/11: uma mesa por vez (resumo do apelido + rede do dia)
+      livres: m.cad.filter((c, k) => !c || (c.bot && !c.saiu && !this.reservada(k))).length,
+      vagaEspera: m.cad.some(c => !c || c.bot), vagaJogo: m.cad.some((c, k) => c && c.bot && !this.reservada(k)),   // 25/11: sem a cadeira prometida
+      ids: m.cad.filter(c => c && (c.id || c.lugarDe)).map(c => c.id || c.lugarDe).concat(Object.values(m.chegando || {}).map(c => c.id)),   // 25/11: e quem espera a próxima mão   // só para a fila saber quem volta para a própria mesa
+      pes: m.cad.filter(c => c && !c.bot && c.pe).map(c => c.pe).concat(Object.values(m.chegando || {}).filter(c => c.pe).map(c => c.pe)),   // 24/11: uma mesa por vez (resumo do apelido + rede do dia)
       // 17/11: as Turmas de quem está em cada lado e se cada lado tem cadeira (vazia ou de robô), para a fila juntar Turmas diferentes
       tl: [0, 1].map(w => [...new Set(m.cad.filter((c, p) => c && !c.bot && c.turma && p % 2 === w).map(c => c.turma))]),
       vl: [0, 1].map(w => m.cad.some((c, p) => p % 2 === w && (!c || (c.bot && (m.fase === 'espera' || !c.lugarDe))))) };
@@ -621,7 +624,7 @@ export class Mesa {
       }
     }
     try { await apelidoNaTurma(this.env, quem.id, quem.nome); } catch (e) {}
-    let p = m.cad.findIndex(c => c && c.id === quem.id);
+    let p = m.cad.findIndex(c => c && c.id === quem.id), espera = false;   // 25/11: espera = chegou no meio da mão
     const f = (m.fila || []).findIndex(c => c.id === quem.id);
     if (p < 0 && f >= 0) {
       // já estava na fila (voltou): continua esperando a vez
@@ -649,13 +652,22 @@ export class Mesa {
     } else {
       // jogo já começou: entra no lugar de um robô da turma, se houver (na mesa rápida, também no de quem saiu de vez)
       // 28/10: primeiro o de um robô que não guarda lugar de ninguém
-      p = m.cad.findIndex(c => c && c.bot && !c.saiu && !c.lugarDe);
-      if (p < 0) p = m.cad.findIndex(c => c && c.bot && !c.saiu);
-      if (p < 0 && m.publica) p = m.cad.findIndex(c => c && c.bot);
+      // 25/11: quem já esperava a próxima mão (voltou ou reconectou) fica com a mesma cadeira; as prometidas não contam
+      p = this.chegandoDe(quem.id);
+      if (p >= 0) delete m.chegando[p];
+      if (p < 0) p = m.cad.findIndex((c, k) => c && c.bot && !c.saiu && !c.lugarDe && !this.reservada(k));
+      if (p < 0) p = m.cad.findIndex((c, k) => c && c.bot && !c.saiu && !this.reservada(k));
+      if (p < 0 && m.publica) p = m.cad.findIndex((c, k) => c && c.bot && !this.reservada(k));
       if (p < 0) return (m.publica || !msg.fila) ? this.recusar(ws, 'cheia') : this.entrarNaFila(ws, att, quem);
       quem.nome = this.nomeUnico(quem.nome, p);
+      // 25/11 (ideia de um jogador, aprovada pelo dono): no meio da mão, quem chega assiste até a mão acabar e senta na
+      // próxima, com pedras novas (não herda a mão do robô pela metade, e a dupla não muda no meio da rodada). Só app novo.
+      // (com a mão ainda sem nenhuma pedra na mesa, senta na hora: as pedras do robô ainda estão inteiras)
+      if (msg.espera && m.G && m.G.phase === 'play' && (m.G.chain || []).length) { m.chegando = m.chegando || {}; m.chegando[p] = quem; espera = true; }
+      else {
       m.cad[p] = quem; m.G.names[p] = quem.nome;
       if (!m.publica) this.contarPartida(quem);   // planos: entrou no meio da partida, ela conta
+      }
     }
     att.id = quem.id; ws.serializeAttachment(att);
     try { await visto(this.env, quem, m.codigo); } catch (e) {}
@@ -664,9 +676,9 @@ export class Mesa {
       const anf = m.cad.concat(m.fila || []).find(c => c && !c.bot && c.id === m.dono);
       try { await anotarConvite(this.env, quem.id, m.dono, !!(anf && anf.apoiador) || !!m.daSocio, this.socioArg() === 'livre', m.codigo); } catch (e) {}
     }
-    if (!m.dono || !m.cad.some(c => c && c.id === m.dono && !c.bot)) m.dono = quem.id;
+    if (!espera && (!m.dono || !m.cad.some(c => c && c.id === m.dono && !c.bot))) m.dono = quem.id;   // 25/11: quem espera a próxima mão, só quando sentar
     // a mesa de quem criou vale para todos (até ele trocar)
-    if (m.dono === quem.id && temaOk(msg.mesa) && this.temaPermitido(msg.mesa) && (!m.tema || (msg.mesaFixa && m.temaSorteado && m.fase === 'espera'))) {
+    if (!espera && m.dono === quem.id && temaOk(msg.mesa) && this.temaPermitido(msg.mesa) && (!m.tema || (msg.mesaFixa && m.temaSorteado && m.fase === 'espera'))) {
       m.tema = msg.mesa;   // 28/10: mesa escolhida de propósito por quem criou (a Copa 357): fica; senão vale o sorteio
       if (msg.mesaFixa) { m.temaDono = true; m.temaSorteado = false; }
     }
@@ -710,7 +722,14 @@ export class Mesa {
     m.ultimo = Date.now(); await this.salvar(); this.espalhar(); this.mandarPapo(ws, att);
   }
   async sairDaFila(ws, id) {
-    const m = this.m, f = id ? (m.fila || []).findIndex(c => c.id === id) : -1;
+    const m = this.m, ch = this.chegandoDe(id);
+    if (ch >= 0) {   // 25/11: esperava a próxima mão e desistiu
+      delete m.chegando[ch];
+      const att = ws.deserializeAttachment() || {}; att.id = null; ws.serializeAttachment(att);
+      try { ws.close(1000, 'saiu'); } catch (e) {}
+      m.ultimo = Date.now(); await this.salvar(); this.espalhar(); return;
+    }
+    const f = id ? (m.fila || []).findIndex(c => c.id === id) : -1;
     if (f < 0) return;
     m.fila.splice(f, 1);
     const att = ws.deserializeAttachment() || {}; att.id = null; ws.serializeAttachment(att);
@@ -951,6 +970,8 @@ export class Mesa {
         if (i >= 0) { const novo = m.fila.splice(i, 1)[0]; novo.nome = this.nomeUnico(novo.nome, p); m.cad[p] = novo; }
       } else this.substituir(p, 'saiu');
     });
+    for (const k of Object.keys(m.chegando || {})) { const c = m.chegando[k]; if (c && this.daPessoa(c, id, pe)) { ids.add(c.id); delete m.chegando[k]; mudou = true; } }   // 25/11: esperava a próxima mão aqui
+    if (m.fase === 'jogo' && !m.cad.some(c => c && !c.bot) && m.chegando) this.sentarChegando(false);   // 25/11: senão a mesa acabaria com alguém esperando
     if (!mudou) return { ok: true };
     for (const ws of this.ctx.getWebSockets()) {
       const a = ws.deserializeAttachment() || {};
@@ -1070,8 +1091,9 @@ export class Mesa {
         if (!m.cad.some(c => c && !c.bot) && !(m.fila || []).length) { await this.apagar(); return; }   // não sobrou ninguém para jogar
         this.sentarRobos(); m.cad.forEach((c, p) => { G.names[p] = c.nome; });
       }
-      if ((m.fila || []).length && this.ganhaChama(w)) { this.puxarDaFila(); this.contarPartidas(); this.novaMaoRobo(true); return this.depoisDaAcao(null, this.tempoDistribuir()); }
+      if ((m.fila || []).length && this.ganhaChama(w)) { this.puxarDaFila(); this.sentarChegando(true); this.contarPartidas(); this.novaMaoRobo(true); return this.depoisDaAcao(null, this.tempoDistribuir()); }
     }
+    this.sentarChegando(r && r.matchWinner != null);   // 25/11: quem chegou no meio da mão senta agora, com pedras novas
     nextHand(G);
     if (r && r.matchWinner != null && !m.publica) { this.puxarDaFila(); this.contarPartidas(); }
     this.novaMaoRobo(r && r.matchWinner != null);
@@ -1178,6 +1200,7 @@ export class Mesa {
     }
     const att = ws.deserializeAttachment() || {}; att.id = null; ws.serializeAttachment(att);
     try { ws.close(1000, 'saiu'); } catch (e) {}
+    if (m.fase === 'jogo' && !m.cad.some(c => c && !c.bot) && m.chegando) this.sentarChegando(false);   // 25/11: senão a mesa acabaria com alguém esperando
     const humanos = m.cad.filter(c => c && !c.bot);
     if (!humanos.length) { await this.apagar(); return; }
     if (!humanos.some(c => c.id === m.dono)) m.dono = humanos[0].id;
@@ -1620,6 +1643,27 @@ export class Mesa {
       if (m.publica) for (const q of sairam) { try { await anotarAbandono(this.env, q.id); } catch (e) {} }
     }
   }
+  // 25/11: senta quem esperava a próxima mão (na cadeira prometida; se ela já tem gente, em outra do robô; senão, na fila
+  // da mesa com os amigos). Quem não está mais conectado perde a vez.
+  sentarChegando(nova) {
+    const m = this.m, ch = m && m.chegando; if (!ch || !m.G) return;
+    delete m.chegando;
+    const entraram = [], sairam = [];
+    for (const k of Object.keys(ch)) {
+      const quem = ch[k]; if (!quem || !this.conectadoId(quem.id)) continue;
+      let p = Number(k);
+      if (!(m.cad[p] && m.cad[p].bot)) p = m.cad.findIndex(c => c && c.bot && !c.lugarDe);
+      if (p < 0) { if (!m.publica && (m.fila || []).length < 8) { m.fila = m.fila || []; m.fila.push(quem); } continue; }
+      sairam.push(m.cad[p].nome);
+      quem.nome = this.nomeUnico(quem.nome, p);
+      m.cad[p] = quem; m.G.names[p] = quem.nome;
+      if (m.seguidos) m.seguidos[p] = 0;
+      if (!m.publica && !nova) this.contarPartida(quem);   // planos: entrou no meio da partida, ela conta (na partida nova, conta com todos)
+      if (!m.dono || !m.cad.some(c => c && c.id === m.dono && !c.bot)) m.dono = quem.id;
+      entraram.push(quem.nome);
+    }
+    if (entraram.length) this.avisarTroca({ entraram, sairam });
+  }
   novaMaoRobo(novaPartida) {
     const m = this.m;
     if (novaPartida) { this.inicioDePartida(); m.tempos = null; }   // 03/11: as vezes que passou do tempo contam por partida
@@ -1671,7 +1715,8 @@ export class Mesa {
   vista(id, so) {
     const m = this.m, G = m.G;
     const minha = id ? m.cad.findIndex(c => c && c.id === id) : -1;
-    const naFila = id ? (m.fila || []).findIndex(c => c.id === id) : -1;
+    const espera = minha < 0 ? this.chegandoDe(id) : -1;   // 25/11: esperando a próxima mão (assiste como quem está na fila)
+    const naFila = id ? ((m.fila || []).findIndex(c => c.id === id) >= 0 ? (m.fila || []).findIndex(c => c.id === id) : espera >= 0 ? 0 : -1) : -1;
     let jogo = null;
     if (G) {
       // só a própria mão vai para cada celular; no fim da mão todas aparecem (o resultado mostra)
@@ -1685,7 +1730,7 @@ export class Mesa {
       prontos: G && G.phase === 'handEnd' ? this.prontosAgora().length : 0, precisam: G && G.phase === 'handEnd' ? this.precisamPronto().length : 0,   // 18/11
       euPronto: minha >= 0 && G && G.phase === 'handEnd' && m.prontosSeq === m.seq && (m.prontos || []).includes(minha),
       vezMs: G && G.phase === 'play' && m.cad[G.turn] && !m.cad[G.turn].bot ? this.limiteVez(G.turn) : null,   // 18/11: limite da vez de quem joga
-      naFila, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, foto: c.menor ? null : c.foto || null, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
+      naFila, espera, fila: (m.fila || []).map(c => ({ nome: c.nome, av: c.av, foto: c.menor ? null : c.foto || null, on: this.conectadoId(c.id) })), fica: m.fica || null, troca: m.troca || null,
       tema: m.tema || null, temaSorteado: !!m.temaSorteado, daSocio: this.mesaDeSocio(), quarta: !m.publica && this.socioArg() === 'livre', meuUso: this.meuUso(id), vs: this.mesaDesafio() ? m.vs : null, torneio: !!m.torneio, alvo: m.alvo || 200, vence: m.vence || 2, desafio: m.desafio || null, turnoDesde: m.turnoDesde || null, porTempo: !!m.porTempo, publica: !!m.publica, papo: m.publica ? null : { aberto: this.papoAberto(), escreve: this.podeEscrever(id), voz: this.podeVoz(id), vozLigada: !!this.env.AI }, minGente: m.publica ? 1 : this.minAmigos(), iniciaEm: m.fase === 'espera' && m.iniciaEm ? m.iniciaEm : null,
       cad: m.cad.map((c, p) => c ? { nome: c.nome, av: c.av, bairro: c.bot || !id ? null : c.bairro || null, bot: !!c.bot, saiu: !!c.saiu, apoiador: !!c.apoiador && !c.saiu, rei: !!c.rei && !c.saiu && !c.bot, campeao: !!c.campeao && !c.saiu && !c.bot, campea: !!c.campea && !c.saiu && !c.bot, dourada: !!c.dourada && !c.saiu && !c.bot, sabado: !!c.sabado && !c.saiu && !c.bot, doador: c.saiu ? 0 : (c.doador || 0), foto: c.saiu || c.bot || c.menor ? null : (c.foto || null), turma: c.bot ? null : (c.turma || null), nv: c.nv || 1, est: c.bot ? null : (c.est || null), on: c.bot ? true : this.conectado(p), sub: !!(c.bot && c.lugarDe) } : null),   // 28/10: sub = robô no lugar de quem saiu (etiqueta "robô")
       robo: minha >= 0 && m.robo ? { mao: !!m.robo.mao[minha], partida: !!m.robo.partida[minha] } : { mao: false, partida: false },
