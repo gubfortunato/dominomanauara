@@ -5060,6 +5060,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.53', data: '26/11/2026', itens: ['Limite grátis por pessoa: aparelhos com apelidos iguais ou parecidos que já apareceram juntos na mesma internet continuam dividindo as partidas do dia por 7 dias, em qualquer internet (inclusive no 4G).'] },
   { v: '3.61.52', data: '26/11/2026', itens: ['Quem foi bloqueado por usar vários aparelhos para passar das partidas grátis vê, no aviso, que virando Sócio da Calçada o bloqueio sai na hora, com o botão Quero ser sócio.', 'A janela do limite explica quando as partidas somaram aparelhos com apelido parecido na mesma internet.'] },
   { v: '3.61.51', data: '26/11/2026', itens: ['Limite grátis por pessoa mais justo: na mesma internet, apelidos parecidos (como Ed e Edinho) dividem as partidas do dia. O apelido de um sócio só fica fora dessa regra na internet em que o sócio está jogando.'] },
   { v: '3.61.50', data: '25/11/2026', itens: ['Chegou com a mão rolando? Você escolhe: espera a próxima mão e senta com pedras novas, ou toca em Entrar agora e senta na hora no lugar da turma do bairro, com as pedras dela.'] },
@@ -9857,7 +9858,7 @@ async function dnBurlasCarregar() {
     $('#dnBurlasLista').innerHTML = itens.length ? itens.join('') : '<li class="dn-jog-vazio">Nenhuma tentativa hoje.</li>';
   } catch (e) { $('#dnBurlasR').textContent = 'Não deu para carregar agora.'; }
 }
-const VIA_LIM = { irmao: 'outro aparelho com o mesmo apelido já tinha batido o limite', pessoa: 'mesmo apelido e mesma internet: somou as partidas do outro aparelho', parecido: 'apelido parecido na mesma internet (Ed e Edinho): somou as partidas dos outros aparelhos', vigia: 'apelido em vigia: somou as partidas dos outros aparelhos' };   // 12/11
+const VIA_LIM = { irmao: 'outro aparelho com o mesmo apelido já tinha batido o limite', pessoa: 'mesmo apelido e mesma internet: somou as partidas do outro aparelho', parecido: 'apelido parecido (Ed e Edinho) na mesma internet, ou aparelhos já ligados por isso nos últimos 7 dias: somou as partidas', vigia: 'apelido em vigia: somou as partidas dos outros aparelhos' };   // 12/11
 // 12/11: tirar da vigia (foi engano): desfaz o bloqueio automático e o apelido não volta para a vigia por 30 dias
 document.addEventListener('click', async e => {
   const b = e.target.closest && e.target.closest('[data-vig-tirar]'); if (!b) return;
@@ -15898,7 +15899,7 @@ function convitePlano(motivo) {
   const resta = [podeRapida ? 'na mesa rápida' : '', podeOff ? 'no jogo offline' : '', off || rapida ? 'com os amigos' : ''].filter(Boolean);
   openSheet('plano', `<p class="eyebrow">${rapida ? 'Mesa rápida' : off ? 'Jogo offline' : motivo === 'limite-desafio' ? 'Desafio das Confrarias' : 'Mesas com os amigos'}</p><h2 id="sheetTitle">${tit}</h2>
     <p>${tx}</p>
-    ${pessoa ? `<p class="pl-pessoa">As partidas grátis são por pessoa, não por aparelho: ${LIM_PESSOA.parecido ? `somando os outros aparelhos desta internet com apelido parecido com <b>${esc((profile && profile.name) || '')}</b>` : `somando o seu outro celular ou navegador com o apelido <b>${esc((profile && profile.name) || '')}</b>`}, as de hoje já foram jogadas.</p>` : ''}
+    ${pessoa ? `<p class="pl-pessoa">As partidas grátis são por pessoa, não por aparelho: ${LIM_PESSOA.parecido ? `somando os seus outros aparelhos com apelido parecido com <b>${esc((profile && profile.name) || '')}</b>` : `somando o seu outro celular ou navegador com o apelido <b>${esc((profile && profile.name) || '')}</b>`}, as de hoje já foram jogadas.</p>` : ''}
     ${pode ? `<div class="pl-ap"><p><b>Quer continuar agora?</b> Sendo Sócio da Calçada, a calçada é sua o dia inteiro:</p>
       <ul class="pr-lista pl-lista">${['<b>Partidas sem limite</b> na mesa rápida, com os amigos e no offline', (vit ? `<b>Todas as mesas de Manaus</b>, como a mesa ${esc(vit.nome)} que você jogou hoje` : '<b>Todas as mesas de Manaus</b>, do Teatro Amazonas ao Peixe-boi'), '<b>Papo de mesa</b>, foto na mesa e o selo ★ de sócio', '<b>Ranking completo</b> e as suas estatísticas'].map(t => `<li>${typeof CHECK !== 'undefined' ? CHECK : '✓'}<span>${t}</span></li>`).join('')}</ul>
       ${a}<p class="note">E você ainda ajuda o Dominó Manauara a crescer.</p></div>` : ''}
@@ -18684,7 +18685,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.52-56049f42';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.53-cc3be777';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

@@ -382,3 +382,8 @@ CREATE INDEX IF NOT EXISTS duelos_de ON duelos (de, em);
 CREATE INDEX IF NOT EXISTS duelos_mesa ON duelos (mesa, em);
 CREATE TABLE IF NOT EXISTS duelo_off (aparelho TEXT PRIMARY KEY, em INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS duelo_placar (a TEXT NOT NULL, b TEXT NOT NULL, va INTEGER NOT NULL DEFAULT 0, vb INTEGER NOT NULL DEFAULT 0, em INTEGER NOT NULL, PRIMARY KEY (a, b));
+
+-- 26/11 (pedido do dono): vínculo de 7 dias entre dois aparelhos sem plano com apelidos iguais ou parecidos que já apareceram
+-- na mesma internet no mesmo dia: dividem o limite grátis do dia em qualquer internet. Só os dois códigos (a < b) e quando.
+CREATE TABLE IF NOT EXISTS vinculos (a TEXT NOT NULL, b TEXT NOT NULL, em INTEGER NOT NULL, PRIMARY KEY (a, b));
+CREATE INDEX IF NOT EXISTS vinculos_b ON vinculos (b);
