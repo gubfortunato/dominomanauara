@@ -2917,11 +2917,12 @@ body.calc-quarta #calcCorpo .vivo-mesa.livre{background:linear-gradient(180deg,r
 .qa-placar .sxp-nome{white-space:normal;line-height:1.2}.qa-placar .qa-galos{font-weight:600;color:var(--muted);font-size:13px}
 .qa-placar .sxp-n{display:inline-flex;align-items:center;gap:6px}.qa-placar .qa-tr{color:#f3f1e7;opacity:.85;flex:none}
 body.jogo-noite.jogo-quarta{background:radial-gradient(120% 70% at 50% 0%,#2c4c3e 0%,#172a22 55%,#0e1a15 100%) fixed}
-/* 25/11: os risquinhos de giz da série, logo acima de Nós e Eles (só na Quarta) */
-.qa-serie{display:none;position:absolute;bottom:100%;margin-bottom:7px;height:22px;pointer-events:none}
-.team.L .qa-serie{right:6px} .team.R .qa-serie{left:6px}   /* 25/11 (dono): mais pro meio, longe do nome */
-.qa-serie svg{height:22px;width:auto;display:block;overflow:visible}
+/* 25/11 (dono): os risquinhos de giz da Quarta (desenho fixo, como no cartão da Calçada) na linha de Nós e Eles, do lado de dentro */
+.qa-serie{display:none;position:absolute;top:-2px;height:23px;pointer-events:none}
+.team.L .qa-serie{right:4px} .team.R .qa-serie{left:4px}
+.qa-serie svg{height:23px;width:auto;display:block;overflow:visible}
 body.jogo-quarta .qa-serie{display:block}
+body.jogo-quarta.assistindo .qa-serie,body.jogo-quarta .team.giz-sem .qa-serie{display:none}
 body.jogo-noite.jogo-quarta #scrGame{--bg:#14241d;--bg-2:#1e3329;--muted:#bccdc1;--line:rgba(243,241,231,.18)}
 #scrGame .mesa-noite .mn-giz{position:absolute;inset:0;width:100%;height:100%}
 /* 17/11 (pedido do dono): foto ou avatar e a ★ de sócio no resumo da Calçada e nos placares da Sexta e da Segunda */
@@ -5048,6 +5049,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.45', data: '25/11/2026', itens: ['Quarta dos Amigos: os risquinhos de giz voltam a ser só desenho, iguais aos do cartão da Calçada, e desceram para a linha de Nós e Eles (antes ficavam lá em cima, perto do relógio do celular).'] },
   { v: '3.61.44', data: '25/11/2026', itens: ['Quarta dos Amigos: os risquinhos de giz da série ficam mais pro meio, longe dos nomes.'] },
   { v: '3.61.43', data: '25/11/2026', itens: ['Quarta dos Amigos: os risquinhos de giz em cima de Nós e Eles agora contam de verdade as partidas ganhas da série (antes era só desenho e não batia com o placar).'] },
   { v: '3.61.42', data: '25/11/2026', itens: ['Novo: Duelo entre sócios! No Ranking ou na ficha do Hall da Fama, toque em ⚔️ Desafiar: o outro sócio recebe o aviso, vocês jogam em lados opostos e o placar de vocês fica guardado.'] },
@@ -13621,28 +13623,33 @@ const VARAL_PLACAR = (() => {
 const GIZ_CALCADA = '<svg class="giz qa" viewBox="0 0 400 78" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path d="M18 66 Q130 44 236 70" fill="none" stroke="#f3f1e7" stroke-opacity=".05" stroke-width="16" stroke-linecap="round"/><path d="M210 14 Q300 2 388 22" fill="none" stroke="#f3f1e7" stroke-opacity=".04" stroke-width="12" stroke-linecap="round"/><g transform="translate(22 0)"><path d="M29.6 18 L30.3 56" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><path d="M37.6 19 L36.8 56" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><path d="M43.6 18 L44.3 56" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><path d="M51.6 19 L50.8 56" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><path d="M24 49 L58 24" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><rect x="102" y="22" width="56" height="28" rx="5" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><path d="M130.0 26 L130.0 46" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><circle cx="109.5" cy="29.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="122.5" cy="42.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="137.5" cy="29.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="150.5" cy="29.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="144.0" cy="36.0" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="137.5" cy="42.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="150.5" cy="42.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><rect x="160" y="22" width="56" height="28" rx="5" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><path d="M188.0 26 L188.0 46" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><circle cx="167.5" cy="29.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="180.5" cy="29.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="174.0" cy="36.0" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="167.5" cy="42.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="180.5" cy="42.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="195.5" cy="29.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="202.0" cy="36.0" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="208.5" cy="42.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><rect x="218" y="22" width="56" height="28" rx="5" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><path d="M246.0 26 L246.0 46" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><circle cx="225.5" cy="29.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="232.0" cy="36.0" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="238.5" cy="42.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="253.5" cy="29.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="260.0" cy="29.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="266.5" cy="29.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="253.5" cy="42.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="260.0" cy="42.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="266.5" cy="42.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><path d="M317.6 18 L318.3 56" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><path d="M325.6 19 L324.8 56" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><path d="M331.6 18 L332.3 56" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><path d="M112 64 Q190 76 266 62" fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/></g></svg>';
 const GIZ_JOGO = '<svg class="mn-giz" viewBox="0 0 400 860" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><path d="M-10 180 Q120 140 260 200" fill="none" stroke="#f3f1e7" stroke-opacity=".035" stroke-width="22" stroke-linecap="round"/><path d="M150 520 Q280 480 420 540" fill="none" stroke="#f3f1e7" stroke-opacity=".03" stroke-width="26" stroke-linecap="round"/><path d="M-20 760 Q140 720 300 790" fill="none" stroke="#f3f1e7" stroke-opacity=".03" stroke-width="20" stroke-linecap="round"/></svg>';
 const GIZ_ICONE = '<svg class="ct-giz" viewBox="0 0 60 32" aria-hidden="true"><rect x="2" y="2" width="56" height="28" rx="5" fill="none" stroke="#f3f1e7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><path d="M30.0 6 L30.0 26" fill="none" stroke="#f3f1e7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"/><circle cx="9.5" cy="9.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="22.5" cy="22.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="37.5" cy="9.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="50.5" cy="9.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="44.0" cy="16.0" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="37.5" cy="22.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/><circle cx="50.5" cy="22.5" r="2.3" fill="#f3f1e7" fill-opacity=".92"/></svg>';
-// 25/11 (print do dono): os risquinhos de giz da Quarta, logo acima de "Nós" e "Eles", contam as partidas ganhas da
-// série (o "1 × 1"): um risco por partida, de 5 em 5 (o 5º corta os 4), até 10. Antes era um desenho fixo (5 e 3).
-const GZS = [0, 0];
-function serieTracos(n) {
-  n = Math.min(10, Math.max(0, n | 0)); if (!n) return '';
-  const g = Math.ceil(n / 5); let d = '';
-  for (let k = 0; k < g; k++) {
-    const m = Math.min(5, n - k * 5), bx = 8 + k * 40;
-    for (let i = 0; i < Math.min(4, m); i++) { const x = bx + i * 7; d += `<path d="M${x} ${3 + (i % 2)} L${(x + (i % 2 ? -.8 : .7)).toFixed(1)} 27"/>`; }
-    if (m === 5) d += `<path d="M${(bx - 5.6).toFixed(1)} 20 L${(bx + 28.4).toFixed(1)} 9"/>`;
-  }
-  return `<svg viewBox="0 0 ${g * 40 + 4} 30" aria-hidden="true"><g fill="none" stroke="#f3f1e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9">${d}</g></svg>`;
-}
-function gizSerie(a, b) {
-  if (a != null) { GZS[0] = a; GZS[1] = b; }
-  for (const [lado, n] of [['L', GZS[0]], ['R', GZS[1]]]) {
+// 25/11 (dono: "os pauzinhos podem ser fixos como é no card da sexta da calçada. Ele ficou muito em cima na tela. Baixe
+// mais"): os risquinhos de giz da Quarta são só desenho, os mesmos do cartão da Calçada (5 com o corte do lado de Nós, 3 do
+// lado de Eles), na linha de "Nós" e "Eles", do lado de dentro. Somem quando não cabem ao lado do nome (o 🐟 de quem ganha
+// seguido) e para quem assiste (os nomes das duplas no lugar de Nós e Eles).
+const GIZ_FIXO = { L: '<svg viewBox="22 16 38 42" aria-hidden="true"><g fill="none" stroke="#f3f1e7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"><path d="M29.6 18 L30.3 56"/><path d="M37.6 19 L36.8 56"/><path d="M43.6 18 L44.3 56"/><path d="M51.6 19 L50.8 56"/><path d="M24 49 L58 24"/></g></svg>', R: '<svg viewBox="315 16 20 42" aria-hidden="true"><g fill="none" stroke="#f3f1e7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 1.6 4 1.2" stroke-opacity=".9"><path d="M317.6 18 L318.3 56"/><path d="M325.6 19 L324.8 56"/><path d="M331.6 18 L332.3 56"/></g></svg>' };
+function gizSerie() {
+  for (const lado of ['L', 'R']) {
     const t = document.querySelector('#scrGame .team.' + lado); if (!t) continue;
     let x = t.querySelector('.qa-serie');
     if (!x) { t.insertAdjacentHTML('afterbegin', '<span class="qa-serie" aria-hidden="true"></span>'); x = t.querySelector('.qa-serie'); }
-    const h = serieTracos(n); if (x.__d !== h) { x.innerHTML = h; x.__d = h; }
+    if (!x.__d) { x.innerHTML = GIZ_FIXO[lado]; x.__d = 1; }
   }
 }
+// não deixa os riscos encostarem no nome (o 🐟 entra depois do desenho da mesa, por isso confere no fim)
+function gizCabe() {
+  if (!document.body.classList.contains('jogo-quarta') || screen !== 'game') return;
+  for (const lado of ['L', 'R']) {
+    const t = document.querySelector('#scrGame .team.' + lado), lb = t && t.querySelector('.tlabel'), x = t && t.querySelector('.qa-serie');
+    if (!x || !lb) continue;
+    t.classList.remove('giz-sem');
+    const rg = document.createRange(); rg.selectNodeContents(lb);
+    const a = rg.getBoundingClientRect(), b = x.getBoundingClientRect();
+    t.classList.toggle('giz-sem', !!b.width && a.width > 0 && a.left < b.right + 6 && b.left < a.right + 6);
+  }
+}
+const renderGizBase = render;
+render = function () { renderGizBase(); try { gizCabe(); } catch (e) {} };
 // risquinhos de giz para as vitórias das Duplas (de 5 em 5, até 10; acima disso, só o número)
 function tracosGiz(n) {
   n = Math.min(10, Math.max(0, n | 0)); if (!n) return '';
@@ -17904,7 +17911,7 @@ function render() {
   $('#bR').style.width = Math.min(100, G.score[R] / alvoDe(G) * 100) + '%';
   $('#ptLbl').textContent = `Partida ${G.partida} · até ${alvoDe(G)}`;
   $('#srLbl').textContent = `${G.series[L]} × ${G.series[R]}`;
-  try { gizSerie(G.series[L], G.series[R]); } catch (e) {}   // 25/11: os risquinhos de giz da Quarta contam a série
+  try { gizSerie(); } catch (e) {}   // 25/11: os risquinhos de giz da Quarta (desenho fixo, como no cartão da Calçada)
   for (const pos of [1, 2, 3]) {
     const p = (base() + pos) % 4, n = dealing ? dealtCount[p] : G.hands[p].length, el = $(`.seat[data-pos="${pos}"]`);
     el.classList.toggle('nos', TEAM(p) === L);
@@ -18635,7 +18642,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.44-854389b2';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.45-eb755e2f';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
