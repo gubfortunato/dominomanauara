@@ -5050,6 +5050,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.47', data: '25/11/2026', itens: ['Quem chega numa mesa com a mão já rolando não pega mais as pedras do robô pela metade: assiste até a mão acabar e senta na próxima, com pedras novas (ideia de um jogador no Fale com a gente). Antes da primeira pedra na mesa, senta na hora.'] },
   { v: '3.61.46', data: '25/11/2026', itens: ['Opinião no app: quem marca 😍 Tô gostando muito pode autorizar que a frase apareça com o apelido no Instagram do Dominó Manauara (só se marcar; para maiores de 18).'] },
   { v: '3.61.45', data: '25/11/2026', itens: ['Quarta dos Amigos: os risquinhos de giz voltam a ser só desenho, iguais aos do cartão da Calçada, e desceram para a linha de Nós e Eles (antes ficavam lá em cima, perto do relógio do celular).'] },
   { v: '3.61.44', data: '25/11/2026', itens: ['Quarta dos Amigos: os risquinhos de giz da série ficam mais pro meio, longe dos nomes.'] },
@@ -8060,7 +8061,7 @@ function conectar(cod) {
   ws.onopen = () => {
     ON.tent = 0;
     let mesa = null; try { mesa = mesaEscolhida().id; } catch (e) {}
-    const entrar = () => { if (ws.readyState === 1) ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), est: estCod(), mesa, mesaFixa: !!ON.mesaFixa, fila: true, apelido: true, menor: !!(profile && profile.idade === 'menor'), convite: conviteNovo(cod), umaMesa: true, trocar: ON.trocar || undefined })); ON.trocar = null; };   // 24/11: uma mesa por vez   // 12/11: convite: 1ª vez no app pelo link desta mesa   // fila: este app mostra a fila do ganha-chama
+    const entrar = () => { if (ws.readyState === 1) ws.send(JSON.stringify({ t: 'entrar', id: meuId(), nome: me, av: meuAv(), bairro: meuBairro(), nv: meuNivel(), est: estCod(), mesa, mesaFixa: !!ON.mesaFixa, fila: true, espera: 1, apelido: true, menor: !!(profile && profile.idade === 'menor'), convite: conviteNovo(cod), umaMesa: true, trocar: ON.trocar || undefined })); ON.trocar = null; };   // 24/11: uma mesa por vez   // 12/11: convite: 1ª vez no app pelo link desta mesa   // fila: este app mostra a fila do ganha-chama
     // 3.41: o servidor só deixa entrar quem está com o app aberto: antes, o app garante que avisou ("No app agora")
     (typeof presGarantir === 'function' ? presGarantir() : Promise.resolve()).then(entrar, entrar).then(() => { ON.mesaFixa = false; });
     clearInterval(ON.pingT);
@@ -12223,6 +12224,13 @@ function avisarTroca(m, antes) {
     else toast(t.ficam.length ? `${juntar(t.entraram)} ${n > 1 ? 'entraram' : 'entrou'}. Quem come jaraqui não sai mais daqui!` : `${juntar(t.entraram)} entrou no lugar de ${juntar(t.sairam)}.`);
   }
 }
+// 25/11 (ideia de um jogador, aprovada pelo dono): chegou no meio da mão: assiste até ela acabar e senta na próxima, com
+// pedras novas (o servidor guarda a cadeira). Quando sentar, o app sai do "assistindo" sozinho (como quem sai da fila).
+function esperarMao(m) {
+  ON.vista = m; ON.recebido = Date.now();
+  if (!ON.assistindo) { ON.assistindo = true; ON.assistirDe = 'fila'; track('espera-mao'); toast('A mão já está rolando: você assiste e senta na próxima, com pedras novas.'); }
+  assistirAplicar(m);
+}
 // Estou na fila: mostra o painel (e, se estava jogando e a dupla perdeu, sai da mesa para a sala)
 function ficarNaFila(m) {
   ON.vista = m; ON.recebido = Date.now();
@@ -12236,6 +12244,7 @@ receberOnline = function (m) {
   if (m && m.t === 'mesa') {
     const antes = ON.vista;
     avisarTroca(m, antes);
+    if (emFila(m) && m.espera >= 0 && m.fase === 'jogo') { esperarMao(m); return; }   // 25/11: chegou no meio da mão
     if (emFila(m)) { ficarNaFila(m); return; }
     // saiu da fila e sentou: entra no jogo como quem acabou de chegar (com a mesa de quem criou)
     if (emFila(antes) && m.minha >= 0) ON.vista = null;
@@ -15016,6 +15025,7 @@ function assistirParar(volta) {
   ON.assistindo = false; ON.assistirDe = null;
   document.body.classList.remove('assistindo'); const fx = $('#assistirFaixa'); if (fx) fx.hidden = true;
   clearTimeout(timer); closeSheet(); endDrag();
+  if (de === 'fila' && ((ON.vistaReal || {}).espera >= 0)) { ON.vistaReal = null; sairDaMesa(); leaveGameBase(); show('home'); return; }   // 25/11: esperava a próxima mão: sai da mesa
   if (de === 'fila') {
     // continua na fila: volta para o painel
     const real = ON.vistaReal || ON.vista; ON.vistaReal = null; ON.vista = real;
@@ -15093,11 +15103,13 @@ function assistirFaixa(m) {
   fx.hidden = !ver; document.body.classList.toggle('assistindo', ver);
   if (!ver) return;
   const outros = Math.max(0, ((m && m.assistindo) || 1) - 1);
-  $('#assistirTx').textContent = ON.assistirDe === 'fila'
+  const espMao = ON.assistirDe === 'fila' && ((ON.vistaReal || {}).espera >= 0);   // 25/11: esperando a próxima mão
+  $('#assistirTx').textContent = espMao ? 'Assistindo · você senta na próxima mão'
+    : ON.assistirDe === 'fila'
     ? `Assistindo · ${(((ON.vistaReal || {}).naFila) || 0) + 1}º na fila`
     : m && m.confronto ? (outros ? `⚔️ Desafio · ${outros + 1} assistindo` : '⚔️ Desafio ao vivo')   // 11/11: confronto entre Turmas
     : `Assistindo${outros ? ` com mais ${outros}` : ''}`;
-  $('#assistirSair').textContent = ON.assistirDe === 'fila' ? 'Voltar para a fila' : 'Parar de assistir';
+  $('#assistirSair').textContent = espMao ? 'Sair' : ON.assistirDe === 'fila' ? 'Voltar para a fila' : 'Parar de assistir';
 }
 // ---- quem assiste: sem mão, sem falas; quem joga vê quantos assistem ----
 const renderAssistir = render;
@@ -18648,7 +18660,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.46-ab39ffca';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.47-0547225e';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
