@@ -3,7 +3,7 @@
 // devolve a hora certa (contra quem mexe no relógio do celular) e, para quem apagou os dados do app e voltou com outro
 // código na mesma rede logo depois de bater o limite, mantém o limite (a mesma regra das mesas online).
 import { limitesAgora, diaBR, temPlano, marcaRede, aparelhoDesde, anotarLimite, limiteHerdado, limiteDoIrmao } from './planos.js';
-import { bloqueado, pegaPeloApelido } from './bloqueio.js';
+import { bloqueado, bloqueioPorBurla, pegaPeloApelido } from './bloqueio.js';
 import { limitePessoa } from './pessoa.js';
 
 const idOk = v => /^[a-z0-9-]{8,40}$/i.test(String(v || ''));
@@ -15,7 +15,7 @@ export async function conferir(req, env, origin, h) {
   if (!idOk(ap)) return h.json({ erro: 'dados' }, 400, origin);
   // 11/11 (pedido do dono: endurecer): quem está bloqueado (ou volta com outro aparelho e o mesmo apelido) fica sem o jogo
   // offline também (antes, o bloqueio era só das mesas online). Sócio continua.
-  if (!(await temPlano(env, ap)) && (await bloqueado(env, ap) || await pegaPeloApelido(env, ap, b.nome))) return h.json({ erro: 'bloqueado' }, 403, origin);
+  if (!(await temPlano(env, ap)) && (await bloqueado(env, ap) || await pegaPeloApelido(env, ap, b.nome))) return h.json({ erro: 'bloqueado', burla: (await bloqueioPorBurla(env, ap)) || undefined }, 403, origin);   // 26/11
   const dia = diaBR(), agora = Date.now();
   const local = b.dia === dia ? Math.max(0, Math.min(60, Number(b.n) | 0)) : 0;
   let n = local;

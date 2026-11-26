@@ -5060,6 +5060,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.52', data: '26/11/2026', itens: ['Quem foi bloqueado por usar vários aparelhos para passar das partidas grátis vê, no aviso, que virando Sócio da Calçada o bloqueio sai na hora, com o botão Quero ser sócio.', 'A janela do limite explica quando as partidas somaram aparelhos com apelido parecido na mesma internet.'] },
   { v: '3.61.51', data: '26/11/2026', itens: ['Limite grátis por pessoa mais justo: na mesma internet, apelidos parecidos (como Ed e Edinho) dividem as partidas do dia. O apelido de um sócio só fica fora dessa regra na internet em que o sócio está jogando.'] },
   { v: '3.61.50', data: '25/11/2026', itens: ['Chegou com a mão rolando? Você escolhe: espera a próxima mão e senta com pedras novas, ou toca em Entrar agora e senta na hora no lugar da turma do bairro, com as pedras dela.'] },
   { v: '3.61.49', data: '25/11/2026', itens: ['Quem espera a próxima partida numa mesa com confronto do Desafio das Confrarias vê o botão Jogar agora em outra mesa: entra numa mesa que começa na hora (nada de esperar de novo).', 'Calçada: o Abrir uma mesa e jogar agora virou um botão cheio, bem à vista, e a mesa abre em até 5 segundos.'] },
@@ -8243,7 +8244,7 @@ function receberOnline(m) {
   }
   if (m.t === 'erro') {
     if (ERROS_MESA[m.cod]) {
-      if (m.cod === 'bloqueado') store.set(BLOQKEY, '1');   // 11/11: bloqueado também no offline
+      if (m.cod === 'bloqueado') { store.set(BLOQKEY, '1'); if (m.burla) { store.set(BLOQBURLA, '1'); setTimeout(avisoBloqueado, 500); } }   // 11/11: bloqueado também no offline (26/11: por burla, o convite)
       sairDaMesa();
       // 3.41: trocar o apelido: no lugar do aviso rápido, a janela que leva ao perfil (ao voltar para o início)
       if (m.cod === 'apelido' && profile && profile.name) store.set(APKEY, profile.name); else if (!/^limite/.test(m.cod)) toast(ERROS_MESA[m.cod]);   // 05/11: no limite, só a janela amigável
@@ -8552,8 +8553,8 @@ async function criarMesa() {
     if (r.status === 201 && j.codigo) { track('mesa-online-criada'); ON.vista = null; conectar(j.codigo); renderSala(); return; }
     if (r.status === 409 && j.erro === 'outra-mesa' && j.mesa) { track('uma-mesa'); avisoOutraMesa('nova', String(j.mesa), !!j.publica, !!j.mesmo); return; }   // 24/11
     if (r.status === 403 && j.erro === 'apelido') { pedirOutroApelido(); return; }   // 3.41
-    if (r.status === 403 && /^limite/.test(j.erro || '') && typeof convitePlano === 'function') { if (j.pessoa) LIM_PESSOA.em = Date.now(); convitePlano(j.erro); return; }   // 28/10: planos (12/11: pessoa)
-    if (r.status === 403 && j.erro === 'bloqueado') store.set(BLOQKEY, '1');   // 11/11
+    if (r.status === 403 && /^limite/.test(j.erro || '') && typeof convitePlano === 'function') { if (j.pessoa) { LIM_PESSOA.em = Date.now(); LIM_PESSOA.parecido = !!j.parecido; } convitePlano(j.erro); return; }   // 28/10: planos (12/11: pessoa)
+    if (r.status === 403 && j.erro === 'bloqueado') { store.set(BLOQKEY, '1'); if (j.burla) { store.set(BLOQBURLA, '1'); avisoBloqueado(); return; } }   // 11/11 (26/11: por burla, o convite)
     toast(r.status === 403 && j.erro === 'bloqueado' ? ERROS_MESA.bloqueado : r.status === 429 ? 'Muitas mesas criadas agora. Tente de novo daqui a pouco.' : 'Não deu para criar a mesa. Tente de novo.');
   } catch (e) { toast('Sem internet agora. A mesa online precisa de conexão.'); }
   finally { b.disabled = false; b.textContent = 'Criar uma mesa'; }
@@ -8596,9 +8597,9 @@ async function mesaRapida(agora) {   // 25/11: agora = jogar já (sem esperar m�
     if (r.ok && /^\d{5}$/.test(j.codigo || '')) { track('mesa-rapida'); ON.rapida = true; conectar(j.codigo); renderSala(); return; }
     if (r.status === 403 && j.erro === 'apelido') { show('home'); pedirOutroApelido(); return; }   // 3.41
     if (r.status === 409 && j.erro === 'outra-mesa' && j.mesa) { show('home'); track('uma-mesa'); avisoOutraMesa(null, String(j.mesa), !!j.publica, !!j.mesmo); return; }   // 24/11
-    if (r.status === 403 && j.erro === 'limite-rapida' && typeof convitePlano === 'function') { if (j.pessoa) LIM_PESSOA.em = Date.now(); show('home'); convitePlano('limite-rapida'); return; }   // 28/10: planos (12/11: pessoa)
+    if (r.status === 403 && j.erro === 'limite-rapida' && typeof convitePlano === 'function') { if (j.pessoa) { LIM_PESSOA.em = Date.now(); LIM_PESSOA.parecido = !!j.parecido; } show('home'); convitePlano('limite-rapida'); return; }   // 28/10: planos (12/11: pessoa)
     if (r.status === 403 && j.erro === 'abandonos') { show('home'); avisoAbandonos(j); return; }   // 10/11: quem abandona partidas
-    if (r.status === 403 && j.erro === 'bloqueado') store.set(BLOQKEY, '1');   // 11/11
+    if (r.status === 403 && j.erro === 'bloqueado') { store.set(BLOQKEY, '1'); if (j.burla) { store.set(BLOQBURLA, '1'); show('home'); avisoBloqueado(); return; } }   // 11/11 (26/11: por burla, o convite)
     toast(r.status === 403 && j.erro === 'bloqueado' ? ERROS_MESA.bloqueado : r.status === 429 ? 'Muitas mesas agora. Tente de novo daqui a pouco.' : 'Não deu para achar uma mesa agora. Tente de novo.');
     show('home');
   } catch (e) { ON.buscando = false; toast('Sem internet agora. A mesa rápida precisa de conexão.'); show('home'); }
@@ -15881,7 +15882,7 @@ function planoTxt(motivo) {
 }
 // 12/11 (pedido do dono: endurecer contra quem usa vários aparelhos): o servidor avisa quando o limite foi pela pessoa (as
 // partidas do outro celular ou navegador com o mesmo apelido entraram na conta). A tela do limite explica, sem acusar.
-const LIM_PESSOA = { em: 0 };
+const LIM_PESSOA = { em: 0, parecido: false };   // 26/11: parecido = apelido parecido na mesma internet
 function limitePorPessoa(off) {
   if (off) { try { const p = offPasse(); return !!(p && p.pessoa && p.dia === diaBRLocal()); } catch (e) { return false; } }
   const sim = Date.now() - LIM_PESSOA.em < 20000; LIM_PESSOA.em = 0; return sim;
@@ -15897,7 +15898,7 @@ function convitePlano(motivo) {
   const resta = [podeRapida ? 'na mesa rápida' : '', podeOff ? 'no jogo offline' : '', off || rapida ? 'com os amigos' : ''].filter(Boolean);
   openSheet('plano', `<p class="eyebrow">${rapida ? 'Mesa rápida' : off ? 'Jogo offline' : motivo === 'limite-desafio' ? 'Desafio das Confrarias' : 'Mesas com os amigos'}</p><h2 id="sheetTitle">${tit}</h2>
     <p>${tx}</p>
-    ${pessoa ? `<p class="pl-pessoa">As partidas grátis são por pessoa, não por aparelho: somando o seu outro celular ou navegador com o apelido <b>${esc((profile && profile.name) || '')}</b>, as de hoje já foram jogadas.</p>` : ''}
+    ${pessoa ? `<p class="pl-pessoa">As partidas grátis são por pessoa, não por aparelho: ${LIM_PESSOA.parecido ? `somando os outros aparelhos desta internet com apelido parecido com <b>${esc((profile && profile.name) || '')}</b>` : `somando o seu outro celular ou navegador com o apelido <b>${esc((profile && profile.name) || '')}</b>`}, as de hoje já foram jogadas.</p>` : ''}
     ${pode ? `<div class="pl-ap"><p><b>Quer continuar agora?</b> Sendo Sócio da Calçada, a calçada é sua o dia inteiro:</p>
       <ul class="pr-lista pl-lista">${['<b>Partidas sem limite</b> na mesa rápida, com os amigos e no offline', (vit ? `<b>Todas as mesas de Manaus</b>, como a mesa ${esc(vit.nome)} que você jogou hoje` : '<b>Todas as mesas de Manaus</b>, do Teatro Amazonas ao Peixe-boi'), '<b>Papo de mesa</b>, foto na mesa e o selo ★ de sócio', '<b>Ranking completo</b> e as suas estatísticas'].map(t => `<li>${typeof CHECK !== 'undefined' ? CHECK : '✓'}<span>${t}</span></li>`).join('')}</ul>
       ${a}<p class="note">E você ainda ajuda o Dominó Manauara a crescer.</p></div>` : ''}
@@ -15937,7 +15938,7 @@ convitePlano = function (motivo) {
 const receberOnlinePlano = receberOnline;
 receberOnline = function (m) {
   const r = receberOnlinePlano.apply(this, arguments);
-  if (m && m.t === 'erro' && (m.cod === 'limite' || m.cod === 'limite-rapida' || m.cod === 'limite-desafio')) { if (m.pessoa) LIM_PESSOA.em = Date.now(); setTimeout(() => convitePlano(m.cod), 450); }
+  if (m && m.t === 'erro' && (m.cod === 'limite' || m.cod === 'limite-rapida' || m.cod === 'limite-desafio')) { if (m.pessoa) { LIM_PESSOA.em = Date.now(); LIM_PESSOA.parecido = !!m.parecido; } setTimeout(() => convitePlano(m.cod), 450); }
   if (m && m.t === 'erro' && m.cod === 'formato-socio') toast('Escolher até quantos pontos e quantas partidas é para os sócios da Calçada.');   // 18/11
   if (m && m.t === 'erro' && m.cod === 'mesa-socio') { toast(avisoMesaSocio()); try { aplicarMesa(); } catch (e) {} }
   return r;
@@ -18683,7 +18684,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.51-4d2db9af';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.52-56049f42';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -19609,11 +19610,11 @@ async function offConferir(forcar) {
   try {
     const r = await fetch(CONFIG.api + '/offline', { method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ aparelho: meuId(), dia: diaBRLocal(), n: offlineUsoLocal(), nome: profile.name || '' }) });
-    if (r.status === 403) { let jb = null; try { jb = await r.json(); } catch (e) {} if (jb && jb.erro === 'bloqueado') { store.set(BLOQKEY, '1'); store.del(OFFPASSE); return 'bloqueado'; } }   // 11/11
+    if (r.status === 403) { let jb = null; try { jb = await r.json(); } catch (e) {} if (jb && jb.erro === 'bloqueado') { store.set(BLOQKEY, '1'); if (jb.burla) store.set(BLOQBURLA, '1'); else store.del(BLOQBURLA); store.del(OFFPASSE); return 'bloqueado'; } }   // 11/11
     if (!r.ok) return 'falhou';
     const j = await r.json();
     if (!j || !j.agora || !j.dia) return 'falhou';
-    store.del(BLOQKEY);   // 11/11: o servidor liberou (desbloqueado)
+    store.del(BLOQKEY); store.del(BLOQBURLA);   // 11/11: o servidor liberou (desbloqueado)
     store.set(OFFPASSE, JSON.stringify({ dia: j.dia, agora: j.agora, n: j.n | 0, herdou: !!j.herdou, pessoa: !!j.pessoa, em: Date.now() }));   // 12/11: pessoa
     store.set(HORAMAX, String(j.agora));   // a hora certa é a do servidor (desfaz o relógio adiantado)
     if ((j.n | 0) > offlineUsoLocal()) store.set(OFFKEY, JSON.stringify({ dia: j.dia, n: j.n | 0 }));
@@ -19666,13 +19667,19 @@ addEventListener('online', () => { offConferir(true); });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') offConferir(false); });
 setTimeout(() => offConferir(false), 2500);
 // 11/11 (pedido do dono): aparelho bloqueado (por exemplo, quem usou vários aparelhos para passar do limite grátis)
-const BLOQKEY = 'dmz-bloq';
+const BLOQKEY = 'dmz-bloq', BLOQBURLA = 'dmz-bloq-burla';   // 26/11: bloqueado por burla (o aviso convida para ser sócio)
 function avisoBloqueado() {
+  // 26/11 (pedido do dono): bloqueado por burla do limite grátis: virar sócio tira o bloqueio na hora (o app convida)
+  const burla = store.get(BLOQBURLA) === '1' && typeof pagamentosAtivos === 'function' && pagamentosAtivos() && !(profile && profile.idade === 'menor');
   openSheet('info', `<p class="eyebrow">Dominó Manauara</p><h2 id="sheetTitle">Acesso bloqueado</h2>
-    <p>${ERROS_MESA.bloqueado}</p>
-    <button type="button" class="primary" id="bloqFale" style="width:100%">Fale com a gente</button>
+    ${burla ? `<p>O seu aparelho foi bloqueado na mesa online porque o mesmo jogador usou vários aparelhos para passar das partidas grátis do dia.</p>
+    <p><b>Virando Sócio da Calçada, o bloqueio sai na hora</b>, com partidas sem limite na mesa rápida, com os amigos e no offline.</p>
+    <button type="button" class="primary" id="bloqSocio" style="width:100%">Quero ser sócio</button>
+    <button type="button" class="secondary" id="bloqFale" style="width:100%;margin-top:10px">Fale com a gente</button>` : `<p>${ERROS_MESA.bloqueado}</p>
+    <button type="button" class="primary" id="bloqFale" style="width:100%">Fale com a gente</button>`}
     <button type="button" class="linkbtn" id="bloqFechar" style="width:100%;margin-top:6px">Fechar</button>`);
-  track('aviso-bloqueado');
+  track(burla ? 'aviso-bloqueado-burla' : 'aviso-bloqueado');
+  if ($('#bloqSocio')) $('#bloqSocio').addEventListener('click', () => { track('bloqueado-quero-socio'); closeSheet(); setTimeout(() => abrirApoio('home', 'plano'), 250); });
   $('#bloqFechar').addEventListener('click', closeSheet);
   $('#bloqFale').addEventListener('click', () => { closeSheet(); setTimeout(() => abrirFale('bloqueado'), 250); });
 }

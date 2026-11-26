@@ -14,7 +14,7 @@ import * as rk from './ranking.js';
 import * as campeoes from './campeoes.js';   // 24/11: Galeria dos Campeões e Hall da Fama
 import { avisosDicas } from './dicas.js';   // 25/11: a dica da semana (sexta de manhã)
 import * as duelos from './duelos.js';   // 25/11: Duelo entre sócios
-import { bloqueado, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos, pegaPeloApelido, donoApelidos } from './bloqueio.js';
+import { bloqueado, bloqueioPorBurla, donoJogadores, donoBloquear, donoDesbloquear, limparVistos, apelidoBarrado, donoApelido, exigeApp, appAberto, anotarRitmo, donoRobos, pegaPeloApelido, donoApelidos } from './bloqueio.js';
 import { donoPapo, donoPapoApagar } from './papo.js';
 import { limitesValem, limitesAgora, happyHour, temPlano, usoDoDia, somarUso, LIMITE, marcaRede, aparelhoDesde, limiteHerdado, limiteDoIrmao, donoBurlas, bonusConfig, salRede } from './planos.js';
 import { limitePessoa, donoVigiaTirar, donoVigiaVoltar, vigiados } from './pessoa.js';
@@ -130,7 +130,7 @@ async function marcaDoDia(req, env) {
 async function novaMesa(req, env, origin) {
   let b;
   try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
-  if (await bloqueado(env, b && b.id)) return json({ erro: 'bloqueado' }, 403, origin);
+  if (await bloqueado(env, b && b.id)) return json({ erro: 'bloqueado', burla: (await bloqueioPorBurla(env, b.id)) || undefined }, 403, origin);   // 26/11: por burla, o app convida para ser sócio
   if (await pegaPeloApelido(env, b && b.id, b && b.nome)) return json({ erro: 'bloqueado' }, 403, origin);   // 11/11: voltou com outro aparelho
   if (await apelidoBarrado(env, b && b.id, b && b.nome)) return json({ erro: 'apelido' }, 403, origin);   // 3.41
   // 3.41: só pelo app aberto (robôs de fora não passam)
@@ -163,7 +163,7 @@ async function novaMesa(req, env, origin) {
       if (uso.partidas >= LIMITE.partidas) return json({ erro: 'limite-partida' }, 403, origin);
       // 12/11: o limite grátis é por pessoa (o mesmo apelido em outro aparelho da mesma rede, ou um apelido em vigia)
       const lp = await limitePessoa(env, { rede, tipo: 'partidas', aparelho: b && b.id, nome: b && b.nome, proprio: uso.partidas || 0, limite: LIMITE.partidas });
-      if (lp.barrar) return json({ erro: 'limite-partida', pessoa: true }, 403, origin);
+      if (lp.barrar) return json({ erro: 'limite-partida', pessoa: true, parecido: lp.via === 'parecido' || undefined }, 403, origin);
       if (lp.outros) { uso = Object.assign({}, uso, { partidas: (uso.partidas || 0) + lp.outros }); outrosP = lp.outros; }
       // aparelho novo na mesma rede de quem acabou de bater o limite (apagou os dados do app): o limite continua
       if (!uso.partidas && !uso.mesas && await limiteHerdado(env, rede, 'partidas', b && b.id, b && b.nome)) return json({ erro: 'limite-partida' }, 403, origin);   // 10/11: rede ou apelido
@@ -188,7 +188,7 @@ async function novaMesa(req, env, origin) {
 async function mesaRapida(req, env, origin) {
   let b;
   try { b = await req.json(); } catch (e) { return json({ erro: 'formato' }, 400, origin); }
-  if (await bloqueado(env, b && b.id)) return json({ erro: 'bloqueado' }, 403, origin);
+  if (await bloqueado(env, b && b.id)) return json({ erro: 'bloqueado', burla: (await bloqueioPorBurla(env, b.id)) || undefined }, 403, origin);   // 26/11
   if (await pegaPeloApelido(env, b && b.id, b && b.nome)) return json({ erro: 'bloqueado' }, 403, origin);   // 11/11: voltou com outro aparelho
   if (await apelidoBarrado(env, b && b.id, b && b.nome)) return json({ erro: 'apelido' }, 403, origin);   // 3.41
   { const ate = await rk.travaAbandono(env, b && b.id); if (ate) return json({ erro: 'abandonos', ate, porDia: rk.ABANDONO.porDia }, 403, origin); }   // 10/11: quem abandona partidas
@@ -211,7 +211,7 @@ async function mesaRapida(req, env, origin) {
     const uso = await usoDoDia(env, b && b.id);
     if (uso.publicas >= LIMITE.publicas) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);
     { const lp = await limitePessoa(env, { rede, tipo: 'publicas', aparelho: b && b.id, nome: b && b.nome, proprio: uso.publicas || 0, limite: LIMITE.publicas });   // 12/11: por pessoa
-      if (lp.barrar) return json({ erro: 'limite-rapida', limite: LIMITE.publicas, pessoa: true }, 403, origin); }
+      if (lp.barrar) return json({ erro: 'limite-rapida', limite: LIMITE.publicas, pessoa: true, parecido: lp.via === 'parecido' || undefined }, 403, origin); }
     if (!uso.publicas && await limiteHerdado(env, rede, 'publicas', b && b.id, b && b.nome)) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);   // 10/11: rede ou apelido
     if (await limiteDoIrmao(env, 'publicas', b && b.id, b && b.nome)) return json({ erro: 'limite-rapida', limite: LIMITE.publicas }, 403, origin);   // 10/11 (desligado): outro aparelho com o mesmo apelido
   } else if (b && b.id) await aparelhoDesde(env, b.id);
