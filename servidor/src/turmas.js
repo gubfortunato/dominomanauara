@@ -429,9 +429,9 @@ async function temMenor(env, codigo) {
   try { return !!(await env.DB.prepare('SELECT 1 FROM turma_membros m JOIN presenca p ON p.aparelho = m.aparelho WHERE m.turma = ? AND p.menor = 1 LIMIT 1').bind(codigo).first()); }
   catch (e) { return true; }   // na dúvida, não recebe pedido
 }
-async function ehMenor(env, ap) { try { const r = await env.DB.prepare('SELECT menor FROM presenca WHERE aparelho = ?').bind(ap).first(); return !!(r && r.menor); } catch (e) { return false; } }
+export async function ehMenor(env, ap) { try { const r = await env.DB.prepare('SELECT menor FROM presenca WHERE aparelho = ?').bind(ap).first(); return !!(r && r.menor); } catch (e) { return false; } }
 // um aviso no celular para um aparelho (uma vez por chave)
-async function pushPara(env, ap, chave, msg) {
+export async function pushPara(env, ap, chave, msg) {
   if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC || !idOk(ap)) return 0;
   const agora = Date.now();
   let lista = [];

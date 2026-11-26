@@ -10,6 +10,7 @@ import { fotoPublica } from './fotos.js';
 import { pontuar, nomeDaTurma, apelido as apelidoNaTurma, edicao, campeaDesafioAte, avisarConfronto } from './turmas.js';
 import { somarVivo } from './vivo.js';
 import { somarRanking, reiDaSemana, anotarAbandono, campeaoDoMes } from './ranking.js';
+import { anotarDuelo } from './duelos.js';   // 25/11: o placar do Duelo entre sócios
 import { bloqueado, visto, apelidoBarrado, exigeApp, appAberto, anotarRitmo, RAPIDA_MS, pegaPeloApelido } from './bloqueio.js';
 import { PAPO, limparPapo, tamanho, papoRuim } from './papo.js';
 import { anotarCodigoErrado } from './codigos.js';
@@ -1611,6 +1612,7 @@ export class Mesa {
     if (quem.length && segundaValendo(this.env)) { try { await anotarSegunda(this.env, m, quem); } catch (e) {} }   // 17/11: Placar da Segunda
     if (quem.length && sabadoValendo(this.env)) { try { await anotarSabado(this.env, m, quem); } catch (e) {} }   // 17/11: Sábado dos Torneios
     if (quem.length && !m.publica && quartaValendo(this.env)) { try { await anotarQuarta(this.env, m, quem); } catch (e) {} }   // 13/11: Duplas da Quarta
+    if (quem.length >= 2 && !m.publica) { try { await anotarDuelo(this.env, m.codigo, quem); } catch (e) {} }   // 25/11: o placar do Duelo entre sócios
     // 10/11: quem abandonou a partida perde como se tivesse perdido para pessoas; na mesa rápida, conta para a trava do dia
     const sairam = quemAbandonou(m);
     if (sairam.length) {
