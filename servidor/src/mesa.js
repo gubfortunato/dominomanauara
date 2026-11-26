@@ -529,6 +529,7 @@ export class Mesa {
       case 'jogar': if (p >= 0) return this.jogar(ws, p, msg); return;
       case 'proxima': if (p >= 0) return this.proxima(msg, p); return;   // 18/11: o toque é o Pronto dessa pessoa
       case 'sair': if (p >= 0) return this.sair(ws, p); return this.sairDaFila(ws, att.id);
+      case 'sentar-ja': if (p < 0) return this.sentarJa(att.id); return;   // 25/11: quem espera a próxima mão e quer entrar agora
       case 'reacao': if (p >= 0) return this.reagir(p, msg.k); return;
       case 'mesa': if (p >= 0 && m.cad[p].id === m.dono) return this.trocarTema(msg.id); return;
       case 'torneio': if (p >= 0 && m.cad[p].id === m.dono) return this.ligarTorneio(msg.on); return;
@@ -1680,6 +1681,25 @@ export class Mesa {
     }
     if (Object.keys(resto).length) m.chegando = resto;
     if (entraram.length) this.avisarTroca({ entraram, sairam });
+  }
+  // 25/11 (pedido do dono): quem espera a próxima mão tocou em "Entrar agora": senta já no lugar do robô, com as pedras
+  // dele (como antes). No confronto do Desafio rolando, não (só na partida nova).
+  async sentarJa(id) {
+    const m = this.m, k = this.chegandoDe(id);
+    if (k < 0 || !m.G || m.fase !== 'jogo' || this.fechadaConfronto()) return;
+    const quem = m.chegando[k];
+    let p = k;
+    if (!(m.cad[p] && m.cad[p].bot)) p = m.cad.findIndex((c, i) => c && c.bot && !c.lugarDe && !this.reservada(i));
+    if (p < 0) return;
+    delete m.chegando[k]; if (!Object.keys(m.chegando).length) delete m.chegando;
+    const sai = m.cad[p].nome;
+    quem.nome = this.nomeUnico(quem.nome, p);
+    m.cad[p] = quem; m.G.names[p] = quem.nome;
+    if (m.seguidos) m.seguidos[p] = 0;
+    if (!m.publica) this.contarPartida(quem);   // planos: entrou no meio da partida, ela conta
+    if (!m.dono || !m.cad.some(c => c && c.id === m.dono && !c.bot)) m.dono = quem.id;
+    this.avisarTroca({ entraram: [quem.nome], sairam: [sai] });
+    m.ultimo = Date.now(); this.agendar(); await this.salvar(); this.espalhar();
   }
   novaMaoRobo(novaPartida) {
     const m = this.m;

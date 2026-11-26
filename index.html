@@ -2764,7 +2764,7 @@ button.vivo-st:active,.vivo-assistir:active{transform:scale(.98)}
 .af-outra{display:none}
 .assistir-faixa.af-esp{flex-wrap:wrap;width:calc(100vw - 24px);max-width:460px;border-radius:20px;padding:10px 12px 12px;gap:8px 10px}
 .af-esp .af-tx{flex:1 1 calc(100% - 40px);white-space:normal;line-height:1.3}
-.af-esp .af-outra{display:block;flex:1 1 auto;border:0;border-radius:999px;padding:10px 14px;background:var(--nos);color:#fff;font:inherit;font-size:14.5px;font-weight:800;cursor:pointer}
+.af-esp .af-outra:not([hidden]){display:block;flex:1 1 auto;border:0;border-radius:999px;padding:10px 14px;background:var(--nos);color:#fff;font:inherit;font-size:14.5px;font-weight:800;cursor:pointer}
 .af-esp .af-sair{background:transparent;color:inherit;box-shadow:inset 0 0 0 1.5px currentColor;padding:10px 16px}
 body.assistindo #menuBtn,body.assistindo #passBtn{visibility:hidden}
 #filaAssistir{width:100%}
@@ -5060,6 +5060,7 @@ const TURMA = 'a turma do bairro';
 // ---- Versões ----
 // A cada publicação: acrescente a nova versão no topo. O build usa este número e o celular de todo mundo se atualiza sozinho.
 const NOVIDADES = [
+  { v: '3.61.50', data: '25/11/2026', itens: ['Chegou com a mão rolando? Você escolhe: espera a próxima mão e senta com pedras novas, ou toca em Entrar agora e senta na hora no lugar da turma do bairro, com as pedras dela.'] },
   { v: '3.61.49', data: '25/11/2026', itens: ['Quem espera a próxima partida numa mesa com confronto do Desafio das Confrarias vê o botão Jogar agora em outra mesa: entra numa mesa que começa na hora (nada de esperar de novo).', 'Calçada: o Abrir uma mesa e jogar agora virou um botão cheio, bem à vista, e a mesa abre em até 5 segundos.'] },
   { v: '3.61.48', data: '25/11/2026', itens: ['Desafio das Confrarias: na mesa rápida com confronto rolando (Confraria contra Confraria), ninguém senta no meio da partida. Quem toca em Entrar assiste e senta na próxima partida.', 'Mesa rápida: quem a fila manda para uma mesa no meio da mão também assiste e senta na próxima mão, com pedras novas.'] },
   { v: '3.61.47', data: '25/11/2026', itens: ['Quem chega numa mesa com a mão já rolando não pega mais as pedras do robô pela metade: assiste até a mão acabar e senta na próxima, com pedras novas (ideia de um jogador no Fale com a gente). Antes da primeira pedra na mesa, senta na hora.'] },
@@ -12240,7 +12241,7 @@ function avisarTroca(m, antes) {
 // pedras novas (o servidor guarda a cadeira). Quando sentar, o app sai do "assistindo" sozinho (como quem sai da fila).
 function esperarMao(m) {
   ON.vista = m; ON.recebido = Date.now();
-  if (!ON.assistindo) { ON.assistindo = true; ON.assistirDe = 'fila'; track(m.esperaFim ? 'espera-partida' : 'espera-mao'); toast(m.esperaFim ? 'Partida do Desafio das Confrarias rolando: você assiste e senta na próxima partida.' : 'A mão já está rolando: você assiste e senta na próxima, com pedras novas.'); }   // 25/11: no confronto, até a partida acabar
+  if (!ON.assistindo) { ON.assistindo = true; ON.assistirDe = 'fila'; track(m.esperaFim ? 'espera-partida' : 'espera-mao'); toast(m.esperaFim ? 'Partida do Desafio das Confrarias rolando: você assiste e senta na próxima partida.' : 'A mão já está rolando: assista e sente na próxima com pedras novas, ou toque em Entrar agora.'); }   // 25/11: no confronto, até a partida acabar
   assistirAplicar(m);
 }
 // Estou na fila: mostra o painel (e, se estava jogando e a dupla perdeu, sai da mesa para a sala)
@@ -15107,9 +15108,12 @@ function assistirAplicar(m) {
   document.body.insertAdjacentHTML('beforeend', `<div class="assistir-faixa" id="assistirFaixa" hidden role="status">
     <span class="af-olho" aria-hidden="true">👀</span><span class="af-tx" id="assistirTx">Assistindo</span>
     <button type="button" class="af-outra" id="assistirOutra">Jogar agora em outra mesa</button>
+    <button type="button" class="af-outra" id="assistirJa">Entrar agora</button>
     <button type="button" class="af-sair" id="assistirSair">Parar de assistir</button></div>`);
   $('#assistirSair').addEventListener('click', () => { track('assistir-parou'); assistirParar(); });
   // 25/11: esperando a próxima partida: sai desta mesa e chama a mesa rápida (a fila não manda para mesa com confronto rolando)
+  // 25/11: na espera da mão, senta já no lugar do robô (com as pedras dele)
+  $('#assistirJa').addEventListener('click', () => { track('espera-entrar-ja'); const b = $('#assistirJa'); b.disabled = true; setTimeout(() => { b.disabled = false; }, 4000); if (!mandar({ t: 'sentar-ja' })) b.disabled = false; });
   $('#assistirOutra').addEventListener('click', () => { track('espera-outra-mesa'); assistirParar(); setTimeout(() => { try { mesaRapida(true); } catch (e) {} }, 700); });
 })();
 function assistirFaixa(m) {
@@ -15120,8 +15124,9 @@ function assistirFaixa(m) {
   const outros = Math.max(0, ((m && m.assistindo) || 1) - 1);
   const espMao = ON.assistirDe === 'fila' && ((ON.vistaReal || {}).espera >= 0);   // 25/11: esperando a próxima mão
   const espFim = espMao && !!(ON.vistaReal || {}).esperaFim;   // 25/11: confronto do Desafio: até a partida acabar
-  fx.classList.toggle('af-esp', espFim);
-  $('#assistirTx').textContent = espMao ? (espFim ? '⚔️ Partida do Desafio rolando: você senta na próxima partida' : 'Assistindo · você senta na próxima mão')
+  fx.classList.toggle('af-esp', espMao);   // 25/11: esperando: duas saídas à vista
+  $('#assistirOutra').hidden = !espFim; $('#assistirJa').hidden = !espMao || espFim;
+  $('#assistirTx').textContent = espMao ? (espFim ? '⚔️ Partida do Desafio rolando: você senta na próxima partida' : 'Mão rolando: você senta na próxima, com pedras novas')
     : ON.assistirDe === 'fila'
     ? `Assistindo · ${(((ON.vistaReal || {}).naFila) || 0) + 1}º na fila`
     : m && m.confronto ? (outros ? `⚔️ Desafio · ${outros + 1} assistindo` : '⚔️ Desafio ao vivo')   // 11/11: confronto entre Turmas
@@ -18677,7 +18682,7 @@ $('#back').addEventListener('click', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (screen === 'game' && G) renderBoard(); }, 80); });
 
 // ---- Começo ----
-const APP_BUILD = '3.61.49-7de6b351';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
+const APP_BUILD = '3.61.50-db03a4cc';   // trocado no build: versão-marca (o mesmo nome do cache do sw.js, sem o prefixo)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(); });
 window.addEventListener('pagehide', saveGame);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
